@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         bootstrap="./test/setup.php"
+         colors="true"
+         processIsolation="false"
+         stopOnFailure="true"
+>
+    <php>
+        <ini name="zend.enable_gc" value="0"/>
+        <ini name="memory_limit" value="-1"/>
+        <!-- error_reporting(E_ALL); -->
+        <ini name="error_reporting" value="32767"/>
+    </php>
+
+    <testsuites>
+        <testsuite name="all">
+            <directory>./test/</directory>
+        </testsuite>
+        <testsuite name="unit">
+            <directory>./test/Unit/</directory>
+        </testsuite>
+        <testsuite name="integration">
+            <directory>./test/Integration/</directory>
+        </testsuite>
+        <testsuite name="certification">
+            <directory>./test/Integration/Gateways/PorticoConnector/Certifications/</directory>
+            <!--<directory>./test/Integration/Gateways/RealexConnector/Certifications/</directory>-->
+        </testsuite>
+    </testsuites>
+
+    <filter>
+        <whitelist>
+            <directory>./src/</directory>
+            <exclude>
+                <directory>./test/</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>
+<!-- vim: set ft=xml -->
