@@ -28,4 +28,6 @@ class TransactionReference implements IPaymentMethod
      * @var string
      */
     public $transactionId;
+
+    public $orderId;
 }

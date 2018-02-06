@@ -21,6 +21,13 @@ class ValidationClause
     public $target;
 
     /**
+     * Validation clause is a precondition
+     *
+     * @var bool
+     */
+    public $precondition;
+
+    /**
      * Callback to test a given property
      *
      * @var callable
@@ -44,10 +51,12 @@ class ValidationClause
      */
     public function __construct(
         Validations $parent,
-        ValidationTarget $target
+        ValidationTarget $target,
+        $precondition = false
     ) {
         $this->parent = $parent;
         $this->target = $target;
+        $this->precondition = $precondition;
     }
 
     /**
@@ -60,7 +69,9 @@ class ValidationClause
     public function isNotNull($message = null)
     {
         $this->callback = function ($builder) {
-            if (!property_exists($builder, $this->target->property)) {
+            if (!property_exists($builder, $this->target->property)
+                && !isset($builder->{$this->target->property})
+            ) {
                 throw new BuilderException(
                     sprintf(
                         'Property `%s` does not exist on `%s`',
@@ -79,6 +90,10 @@ class ValidationClause
                 '%s cannot be null for this transaction type.',
                 $this->target->property
             );
+
+        if ($this->precondition) {
+            return $this->target;
+        }
 
         return $this->parent->of($this->target->type, $this->target->modifier);
     }

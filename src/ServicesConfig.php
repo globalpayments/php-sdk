@@ -20,6 +20,8 @@ class ServicesConfig
     public $accountId;
     public $merchantId;
     public $sharedSecret;
+    public $rebatePassword;
+    public $refundPassword;
     public $channel;
 
     // Common

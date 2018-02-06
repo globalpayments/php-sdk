@@ -6,6 +6,7 @@ use GlobalPayments\Api\Entities\Enums\TaxType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use GlobalPayments\Api\ServicesContainer;
 
@@ -34,12 +35,6 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var string
      */
-    public $authorizationCode;
-
-    /**
-     * @internal
-     * @var string
-     */
     public $clientTransactionId;
 
     /**
@@ -63,12 +58,6 @@ class ManagementBuilder extends TransactionBuilder
      * @var string|float
      */
     public $gratuity;
-
-    /**
-     * @internal
-     * @var string
-     */
-    public $orderId;
 
     /**
      * Request purchase order number
@@ -132,12 +121,32 @@ class ManagementBuilder extends TransactionBuilder
      */
     public function __get($name)
     {
-        if ($name === 'transactionId') {
-            if ($this->paymentMethod instanceof TransactionReference) {
-                return $this->paymentMethod->transactionId;
-            }
-            return null;
+        switch ($name) {
+            case 'transactionId':
+                if ($this->paymentMethod instanceof TransactionReference) {
+                    return $this->paymentMethod->transactionId;
+                }
+                return null;
+            case 'orderId':
+                if ($this->paymentMethod instanceof TransactionReference) {
+                    return $this->paymentMethod->orderId;
+                }
+                return null;
+            case 'authorizationCode':
+                if ($this->paymentMethod instanceof TransactionReference) {
+                    return $this->paymentMethod->authCode;
+                }
+                return null;
         }
+    }
+
+    public function __isset($name)
+    {
+        return in_array($name, [
+            'transactionId',
+            'orderId',
+            'authorizationId',
+        ]) || isset($this->{$name});
     }
 
     /**
@@ -162,15 +171,19 @@ class ManagementBuilder extends TransactionBuilder
     {
         $this->validations->of(
             TransactionType::CAPTURE |
-            TransactionType::EDIT
+            TransactionType::EDIT |
+            TransactionType::HOLD |
+            TransactionType::RELEASE
         )
-            ->check('paymentMethod')->isNotNull();
+            ->check('transactionId')->isNotNull();
 
-        // $this->validations->of(TransactionType::EDIT)
-        //     ->with(TransactionModifier::LEVEL_II)
-        //     ->check("taxType")->isNotNull()
-        //     ->check("taxAmount")->isNotNull()
-        //     ->check("poNumber")->isNotNull();
+        $this->validations->of(TransactionType::EDIT)
+            ->with(TransactionModifier::LEVEL_II)
+            ->check('taxType')->isNotNull();
+
+        $this->validations->of(TransactionType::REFUND)
+            ->when('amount')->isNotNull()
+            ->check('currency')->isNotNull();
     }
 
     /**

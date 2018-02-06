@@ -227,6 +227,11 @@ class GiftCard implements
         return $this->value;
     }
 
+    public function __isset($name)
+    {
+        return in_array($name, static::$valueTypes) || isset($this->{$name});
+    }
+
     public function __set($name, $value)
     {
         if (!in_array($name, static::$valueTypes)) {

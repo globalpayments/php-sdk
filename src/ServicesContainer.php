@@ -61,6 +61,8 @@ class ServicesContainer
             $gateway->sharedSecret = $config->sharedSecret;
             $gateway->accountId = $config->accountId;
             $gateway->channel = $config->channel;
+            $gateway->rebatePassword = $config->rebatePassword;
+            $gateway->refundPassword = $config->refundPassword;
             $gateway->timeout = $config->timeout;
             $gateway->serviceUrl = $config->serviceUrl;
             static::$instance = new static($gateway, $gateway);

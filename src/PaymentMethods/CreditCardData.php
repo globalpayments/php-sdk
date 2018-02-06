@@ -70,9 +70,9 @@ class CreditCardData extends Credit implements ICardData
      */
     public static $cardTypes = [
         'Visa' => '/^4/',
-        'MasterCard' => '/^(5[1-5]|2[2-7])/',
+        'MC' => '/^(5[1-5]|2[2-7])/',
         'Amex' => '/^3[47]/',
-        'Diners' => '/^3[0689]/',
+        'DinersClub' => '/^3[0689]/',
         'EnRoute' => '/^2(014|149)/',
         'Discover' => '/^6([045]|22)/',
         'Jcb' => '/^35/',
@@ -88,6 +88,18 @@ class CreditCardData extends Credit implements ICardData
         $this->cardPresent = false;
         $this->readerPresent = false;
         $this->cvnPresenceIndicator = CvnPresenceIndicator::NOT_REQUESTED;
+    }
+
+    /**
+     * @return string
+     */
+    public function getShortExpiry()
+    {
+        return sprintf(
+            '%s%s',
+            str_pad($this->expMonth, 2, '0', STR_PAD_LEFT),
+            substr(str_pad($this->expYear, 4, '0', STR_PAD_LEFT), 2, 2)
+        );
     }
 
     /**

@@ -55,7 +55,7 @@ class CreditTest extends TestCase
         $this->assertNotNull($authorization);
         $this->assertEquals('00', $authorization->responseCode);
 
-        $capture = $service->capture($authorization->transactionReference->transactionId)
+        $capture = $service->capture($authorization->transactionReference)
             ->withAmount(17)
             ->withGratuity(2)
             ->execute();
@@ -76,7 +76,6 @@ class CreditTest extends TestCase
 
     public function testCreditRefund()
     {
-        $this->markTestSkipped();
         $response = $this->card->refund(16)
             ->withCurrency('USD')
             ->withAllowDuplicates(true)
@@ -84,6 +83,36 @@ class CreditTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->responseCode);
+    }
+
+    public function testCreditRebate()
+    {
+        $response = $this->card->charge(17)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode, $response->responseMessage);
+
+        $rebate = $response->refund(17)
+            ->withCurrency('USD')
+            ->execute();
+        $this->assertNotNull($rebate);
+        $this->assertEquals('00', $rebate->responseCode, $rebate->responseMessage);
+    }
+
+    public function testCreditVoid()
+    {
+        $response = $this->card->charge(15)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode, $response->responseMessage);
+
+        $voidResponse = $response->void()->execute();
+        $this->assertNotNull($voidResponse);
+        $this->assertEquals('00', $voidResponse->responseCode, $voidResponse->responseMessage);
     }
 
     public function testCreditVerify()
@@ -99,10 +128,12 @@ class CreditTest extends TestCase
     protected function getConfig()
     {
         $config = new ServicesConfig();
-        $config->merchantId = 'realexsandbox';
-        $config->accountId = 'internet';
-        $config->sharedSecret = 'Po8lRRT67a';
-        $config->serviceUrl = 'https://test.realexpayments.com/epage-remote.cgi';
+        $config->merchantId = 'heartlandgpsandbox';
+        $config->accountId = 'api';
+        $config->sharedSecret = 'secret';
+        $config->rebatePassword = 'rebate';
+        $config->refundPassword = 'refund';
+        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
         return $config;
     }
 }

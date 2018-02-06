@@ -59,13 +59,17 @@ class GenerationUtils
      * secret and returns the SHA-1 hash to be placed in the request sent to
      * Realex.
      *
-     * @param string $toHash The value to be hashed
      * @param string $secret The shared secret
+     * @param string $toHash The value to be hashed
      *
      * @return string The hash as a hex string
      */
-    public static function generateHash($toHash, $secret)
+    public static function generateHash($secret, $toHash = null)
     {
+        if ($toHash === null) {
+            return sha1($secret);
+        }
+
         //first pass hashes the String of required fields
         $toHashFirstPass = sha1($toHash);
 

@@ -25,7 +25,7 @@
         </testsuite>
         <testsuite name="certification">
             <directory>./test/Integration/Gateways/PorticoConnector/Certifications/</directory>
-            <!--<directory>./test/Integration/Gateways/RealexConnector/Certifications/</directory>-->
+            <directory>./test/Integration/Gateways/RealexConnector/Certifications/</directory>
         </testsuite>
     </testsuites>
 

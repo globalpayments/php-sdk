@@ -13,6 +13,7 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\IChargable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IRefundable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IVerifyable;
+use GlobalPayments\Api\Entities\Enums\TransactionType;
 
 /**
  * Use credit or eCheck/ACH as a recurring payment method.
@@ -26,6 +27,7 @@ class RecurringPaymentMethod extends RecurringEntity implements
     IVerifyable,
     IRefundable
 {
+
     /**
      * The address associated with the payment method account.
      *
@@ -117,7 +119,7 @@ class RecurringPaymentMethod extends RecurringEntity implements
             return;
         }
 
-        $this->customerKey = $customerId;
+        $this->customerKey = $customerIdOrPaymentMethod;
         $this->key = $paymentId;
         $this->paymentType = "Credit Card"; // set default
     }
@@ -132,8 +134,8 @@ class RecurringPaymentMethod extends RecurringEntity implements
     public function authorize($amount = null)
     {
         return (new AuthorizationBuilder(TransactionType::AUTH, $this))
-            ->withAmount($amount)
-            ->withOneTimePayment(true);
+                        ->withAmount($amount)
+                        ->withOneTimePayment(true);
     }
 
     /**
@@ -146,8 +148,8 @@ class RecurringPaymentMethod extends RecurringEntity implements
     public function charge($amount = null)
     {
         return (new AuthorizationBuilder(TransactionType::SALE, $this))
-            ->withAmount($amount)
-            ->withOneTimePayment(true);
+                        ->withAmount($amount)
+                        ->withOneTimePayment(true);
     }
 
     /**
@@ -160,7 +162,7 @@ class RecurringPaymentMethod extends RecurringEntity implements
     public function refund($amount = null)
     {
         return (new AuthorizationBuilder(TransactionType::REFUND, $this))
-            ->withAmount($amount);
+                        ->withAmount($amount);
     }
 
     /**
@@ -201,6 +203,13 @@ class RecurringPaymentMethod extends RecurringEntity implements
         }
 
         throw new ArgumentException(sprintf('Property `%s` does not exist on Transaction', $name));
+    }
+
+    public function __isset($name)
+    {
+        return in_array($name, [
+                    'paymentMethod',
+                ]) || isset($this->{$name});
     }
 
     public function __set($name, $value)

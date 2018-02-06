@@ -106,6 +106,13 @@ class PayPlanConnector extends RestGateway implements IRecurringService
         throw new ArgumentException(sprintf('Property `%s` does not exist on PayPlanConnector', $name));
     }
 
+    public function __isset($name)
+    {
+        return in_array($name, [
+            'secretApiKey',
+        ]) || isset($this->{$name});
+    }
+
     public function __set($name, $value)
     {
         switch ($name) {

@@ -21,6 +21,7 @@ use GlobalPayments\Api\ServicesContainer;
 
 class AuthorizationBuilder extends TransactionBuilder
 {
+
     /**
      * Request alias
      *
@@ -116,6 +117,14 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var string|float
      */
     public $customerId;
+
+    /**
+     * Request customer IP address
+     *
+     * @internal
+     * @var string|float
+     */
+    public $customerIpAddress;
 
     /**
      * Payment method CVN
@@ -315,8 +324,26 @@ class AuthorizationBuilder extends TransactionBuilder
     {
         parent::execute();
         return ServicesContainer::instance()
-            ->getClient()
-            ->processAuthorization($this);
+                        ->getClient()
+                        ->processAuthorization($this);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return String
+     */
+    public function serialize()
+    {
+        $transactionModifier = TransactionModifier::HOSTEDREQUEST;
+        parent::execute();
+
+        $client = ServicesContainer::instance()->getClient();
+
+        if ($client->supportsHostedPayments()) {
+            return $client->serializeRequest($this);
+        }
+        throw new UnsupportedTransactionException("Your current gateway does not support hosted payments.");
     }
 
     /**
@@ -328,32 +355,32 @@ class AuthorizationBuilder extends TransactionBuilder
     {
         $this->validations->of(
             TransactionType::AUTH |
-            TransactionType::SALE |
-            TransactionType::REFUND |
-            TransactionType::ADD_VALUE
+                        TransactionType::SALE |
+                        TransactionType::REFUND |
+                        TransactionType::ADD_VALUE
         )
-            ->check('amount')->isNotNull()
-            ->check('currency')->isNotNull()
-            ->check('paymentMethod')->isNotNull();
+                ->check('amount')->isNotNull()
+                ->check('currency')->isNotNull()
+                ->check('paymentMethod')->isNotNull();
 
         $this->validations->of(
             TransactionType::AUTH |
-            TransactionType::SALE
+                        TransactionType::SALE
         )
-            ->with(TransactionModifier::OFFLINE)
-            ->check('amount')->isNotNull()
-            ->check('currency')->isNotNull()
-            ->check('offlineAuthCode')->isNotNull();
+                ->with(TransactionModifier::OFFLINE)
+                ->check('amount')->isNotNull()
+                ->check('currency')->isNotNull()
+                ->check('offlineAuthCode')->isNotNull();
 
         $this->validations->of(TransactionType::BALANCE)
-            ->check('paymentMethod')->isNotNull();
+                ->check('paymentMethod')->isNotNull();
 
         $this->validations->of(TransactionType::ALIAS)
-            ->check('aliasAction')->isNotNull()
-            ->check('alias')->isNotNull();
+                ->check('aliasAction')->isNotNull()
+                ->check('alias')->isNotNull();
 
         $this->validations->of(TransactionType::REPLACE)
-            ->check('replacementCard')->isNotNull();
+                ->check('replacementCard')->isNotNull();
     }
 
     /**
@@ -474,8 +501,7 @@ class AuthorizationBuilder extends TransactionBuilder
 
     public function withClientTransactionId($clientTransactionId)
     {
-        if ($this->transactionType !== TransactionType::REVERSAL
-            && $this->transactionType !== TransactionType::REFUND
+        if ($this->transactionType !== TransactionType::REVERSAL && $this->transactionType !== TransactionType::REFUND
         ) {
             $this->clientTransactionId = $clientTransactionId;
             return $this;
@@ -512,6 +538,19 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withCustomerId($customerId)
     {
         $this->customerId = $customerId;
+        return $this;
+    }
+
+    /**
+     * Set the request customer IP address
+     *
+     * @param string|float $customerIpAddress Request customer IP address
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withCustomerIpAddress($customerIpAddress)
+    {
+        $this->customerIpAddress = $customerIpAddress;
         return $this;
     }
 
@@ -641,6 +680,19 @@ class AuthorizationBuilder extends TransactionBuilder
     }
 
     /**
+     * Set the request product ID
+     *
+     * @param string|float $productId Request product ID
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withProductId($productId)
+    {
+        $this->productId = $productId;
+        return $this;
+    }
+
+    /**
      * Set the request to request multi-use token
      *
      * @param bool $requestMultiUseToken Request to request multi-use token
@@ -689,6 +741,33 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withReplacementCard(GiftCard $replacementCard)
     {
         $this->replacementCard = $replacementCard;
+        return $this;
+    }
+
+    /**
+     * Set the request CVN
+     *
+     * @param string|float $cvn Request cvn
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withCvn($cvn)
+    {
+        $this->cvn = $cvn;
+        return $this;
+    }
+
+    /**
+     * Set the request recurringType and recurringSequence
+     *
+     * @param RecurringType $recurringType & RecurringSequence $recurringSequence
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withRecurringInfo($recurringType, $recurringSequence)
+    {
+        $this->recurringType = $recurringType;
+        $this->recurringSequence = $recurringSequence;
         return $this;
     }
 }

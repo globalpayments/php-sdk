@@ -83,8 +83,11 @@ abstract class Gateway
             curl_setopt($request, CURLOPT_POSTFIELDS, $data);
             curl_setopt($request, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($request, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
+            // curl_setopt($request, CURLOPT_VERBOSE, true);
 
+            // error_log($data);
             $curlResponse = curl_exec($request);
+            // error_log($curlResponse);
             $curlInfo = curl_getinfo($request);
             $curlError = curl_errno($request);
 

@@ -27,4 +27,6 @@ class TransactionType extends Enum
     const DELETE = 1 << 18;
     const FETCH = 1 << 19;
     const SEARCH = 1 << 20;
+    const HOLD = 1 << 21;
+    const RELEASE = 1 << 22;
 }

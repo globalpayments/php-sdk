@@ -4,7 +4,7 @@ namespace GlobalPayments\Api\Builders;
 
 use GlobalPayments\Api\Builders\BaseBuilder\Validations;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
-use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Transaction;
 
 abstract class BaseBuilder
@@ -70,7 +70,7 @@ abstract class BaseBuilder
      *
      * @param mixed $key Validation rules key
      *
-     * @throws ArgumentException
+     * @throws BuilderException
      * @return void
      */
     protected function maybeRunValidationKeyRules($key)
@@ -87,7 +87,7 @@ abstract class BaseBuilder
             if ($this->transactionModifier === $validation->modifier
                 && !call_user_func($validation->clause->callback, $this)
             ) {
-                throw new ArgumentException($validation->clause->message);
+                throw new BuilderException($validation->clause->message);
             }
         }
     }

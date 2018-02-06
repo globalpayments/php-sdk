@@ -85,4 +85,19 @@ class ValidationTarget
         $this->clause = new ValidationClause($this->parent, $this);
         return $this->clause;
     }
+
+    /**
+     * Creates a new `ValidationClause` to specify conditions for future
+     * validations checked against the given property.
+     *
+     * @param string $targetProperty Property to validate
+     *
+     * @return ValidationClause
+     */
+    public function when($targetProperty)
+    {
+        $this->property = $targetProperty;
+        $this->clause = new ValidationClause($this->parent, $this, true);
+        return $this->clause;
+    }
 }

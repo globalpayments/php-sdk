@@ -363,6 +363,17 @@ class Transaction
         throw new ArgumentException(sprintf('Property `%s` does not exist on Transaction', $name));
     }
 
+    public function __isset($name)
+    {
+        return in_array($name, [
+            'transactionId',
+            'orderId',
+            'authorizationId',
+            'paymentMethodType',
+            'clientTransactionId',
+        ]) || isset($this->{$name});
+    }
+
     public function __set($name, $value)
     {
         switch ($name) {
