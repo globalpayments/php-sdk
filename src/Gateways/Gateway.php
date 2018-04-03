@@ -93,7 +93,7 @@ abstract class Gateway
 
             $response = new GatewayResponse();
             $response->statusCode = $curlInfo['http_code'];
-            $response->rawResponse = $curlResponse;
+            $response->rawResponse = $curlResponse; 
             return $response;
         } catch (\Exception $e) {
             throw new \Exception(

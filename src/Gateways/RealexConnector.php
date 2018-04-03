@@ -18,6 +18,7 @@ use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 
 class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringService
 {
@@ -87,7 +88,15 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
      * @return Transaction
      */
     public function processAuthorization(AuthorizationBuilder $builder)
-    {
+    {        
+        //for google payment amount and currency is required
+        if (!empty($builder->transactionModifier) && $builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE &&
+            $builder->paymentMethod->mobileType === EncyptedMobileType::GOOGLE_PAY &&
+            (empty($builder->amount) || empty($builder->currency))
+        ) {
+            throw new BuilderException("Amount and Currency cannot be null for google payment");
+        }
+
         $xml = new DOMDocument();
         $timestamp = isset($builder->timestamp) ? $builder->timestamp : GenerationUtils::generateTimestamp();
         $orderId = isset($builder->orderId) ? $builder->orderId : GenerationUtils::generateOrderId();
@@ -113,20 +122,25 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         // Hydrate the payment data fields
         if ($builder->paymentMethod instanceof CreditCardData) {
             $card = $builder->paymentMethod;
+            
+            if ($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE) {
+                $request->appendChild($xml->createElement("token", $card->token));
+                $request->appendChild($xml->createElement("mobile", $card->mobileType));
+            } else {
+                $cardElement = $xml->createElement("card");
+                $cardElement->appendChild($xml->createElement("number", $card->number));
+                $cardElement->appendChild($xml->createElement("expdate", $card->getShortExpiry()));
+                $cardElement->appendChild($xml->createElement("chname", $card->cardHolderName));
+                $cardElement->appendChild($xml->createElement("type", strtoupper($card->getCardType())));
 
-            $cardElement = $xml->createElement("card");
-            $cardElement->appendChild($xml->createElement("number", $card->number));
-            $cardElement->appendChild($xml->createElement("expdate", $card->getShortExpiry()));
-            $cardElement->appendChild($xml->createElement("chname", $card->cardHolderName));
-            $cardElement->appendChild($xml->createElement("type", strtoupper($card->getCardType())));
-
-            if ($card->cvn !== null) {
-                $cvnElement = $xml->createElement("cvn");
-                $cvnElement->appendChild($xml->createElement("number", $card->cvn));
-                $cvnElement->appendChild($xml->createElement("presind", $card->cvnPresenceIndicator));
-                $cardElement->appendChild($cvnElement);
+                if ($card->cvn !== null) {
+                    $cvnElement = $xml->createElement("cvn");
+                    $cvnElement->appendChild($xml->createElement("number", $card->cvn));
+                    $cvnElement->appendChild($xml->createElement("presind", $card->cvnPresenceIndicator));
+                    $cardElement->appendChild($cvnElement);
+                }
+                $request->appendChild($cardElement);
             }
-
             // issueno
             $hash = '';
             if ($builder->transactionType === TransactionType::VERIFY) {
@@ -136,24 +150,18 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                         $timestamp,
                         $this->merchantId,
                         $orderId,
-                        $card->number,
+                        $card->number
                     ])
                 );
             } else {
+                $requestValues = $this->getShal1RequestValues($timestamp, $orderId, $builder, $card);           
+                
                 $hash = GenerationUtils::generateHash(
                     $this->sharedSecret,
-                    implode('.', [
-                        $timestamp,
-                        $this->merchantId,
-                        $orderId,
-                        preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount)),
-                        $builder->currency,
-                        $card->number,
-                    ])
+                    implode('.', $requestValues)
                 );
             }
-
-            $request->appendChild($cardElement);
+           
             $request->appendChild($xml->createElement("sha1hash", $hash));
         }
         if ($builder->paymentMethod instanceof RecurringPaymentMethod) {
@@ -259,9 +267,6 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $request->appendChild($mpi);
         }
 
-        //$request->appendChild($xml->createElement("mobile");
-        //$request->appendChild($xml->createElement("token", token);
-
         $response = $this->doTransaction($xml->saveXML($request));
         return $this->mapResponse($response);
     }
@@ -285,8 +290,8 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             && $builder->transactionType !== TransactionType::VERIFY
         ) {
             throw new UnsupportedTransactionException("Only Charge and Authorize are supported through HPP.");
-        }
-
+        }        
+        
         $request["MERCHANT_ID"] = $this->merchantId;
         $request["ACCOUNT"] = $this->accountId;
         $request["CHANNEL"] = $this->channel;
@@ -615,6 +620,8 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             case TransactionType::AUTH:
                 if ($builder->transactionModifier === TransactionModifier::OFFLINE) {
                     return 'offline';
+                } elseif ($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE) {
+                    return 'auth-mobile';
                 }
                 return 'auth';
             case TransactionType::CAPTURE:
@@ -676,5 +683,56 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         );
 
         return $envelope;
+    }
+    
+    /**
+     * Return the request values for Shal hash generation based on transaction type
+     * EncyptedMobileType::GOOGLE_PAY requires amount and currency with token
+     * EncyptedMobileType::APPLE_PAY doesn't requires amount and currency. token contains those values
+     *
+     * @param string $timestamp current timestamp
+     * @param int $orderId current order id
+     * @param object $builder auth builder object
+     * @param object $card 
+     *
+     * @return array
+     */
+    private function getShal1RequestValues($timestamp, $orderId, $builder, $card)
+    {
+        $requestValues = [
+            $timestamp,
+            $this->merchantId,
+            $orderId,
+            preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount)),
+            $builder->currency,
+            $card->number
+        ];
+
+        if (($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE)) {
+            switch ($card->mobileType) {
+                case EncyptedMobileType::GOOGLE_PAY:
+                    $requestValues = [
+                        $timestamp,
+                        $this->merchantId,
+                        $orderId,
+                        preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount)),
+                        $builder->currency,
+                        $card->token
+                    ];
+                    break;
+
+                case EncyptedMobileType::APPLE_PAY:
+                    $requestValues = [
+                        $timestamp,
+                        $this->merchantId,
+                        $orderId,
+                        '',
+                        '',
+                        $card->token
+                    ];
+                    break;
+            }
+        }
+        return $requestValues;
     }
 }

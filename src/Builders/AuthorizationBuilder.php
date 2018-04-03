@@ -381,6 +381,15 @@ class AuthorizationBuilder extends TransactionBuilder
 
         $this->validations->of(TransactionType::REPLACE)
                 ->check('replacementCard')->isNotNull();
+        
+        $this->validations->of(
+            TransactionType::AUTH |
+                        TransactionType::SALE
+        )
+                ->with(TransactionModifier::ENCRYPTED_MOBILE)
+                ->check('paymentMethod')->isNotNull()
+                ->check('token')->isNotNullInSubProperty('paymentMethod')
+                ->check('mobileType')->isNotNullInSubProperty('paymentMethod');
     }
 
     /**

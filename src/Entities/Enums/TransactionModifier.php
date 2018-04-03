@@ -18,4 +18,5 @@ class TransactionModifier extends Enum
     const VOUCHER = 8;
     const RECURRING = 9;
     const HOSTEDREQUEST = 10;
+    const ENCRYPTED_MOBILE = 11;
 }

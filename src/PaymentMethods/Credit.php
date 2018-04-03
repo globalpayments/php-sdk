@@ -30,7 +30,20 @@ abstract class Credit implements
 {
     public $encryptionData;
     public $paymentMethodType = PaymentMethodType::CREDIT;
+    
+    /**
+     * The token value representing the card.
+     *
+     * For `TransactionModifier.Encrypted_Mobile` transactions, this value is the
+     * encrypted payload from the mobile payment scheme.
+     */
     public $token;
+
+    /**
+     * The type of mobile device used in `TransactionModifier.Encrypted_Mobile`
+     * transactions.
+     */
+    public $mobileType;
 
     /**
      * Authorizes the payment method

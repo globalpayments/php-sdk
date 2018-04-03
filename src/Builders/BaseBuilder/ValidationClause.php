@@ -61,14 +61,18 @@ class ValidationClause
 
     /**
      * Validates the target property is not null
-     *
+     *      
+     * @param string $subProperty Parent of current property
      * @param string $message Validation message to override the default
      *
      * @return ValidationTarget
      */
-    public function isNotNull($message = null)
+    public function isNotNull($message = null, $subProperty = null)
     {
-        $this->callback = function ($builder) {
+        $this->callback = function ($builder) use($subProperty) {
+            $builder = ($subProperty !== null && !empty($builder->{$subProperty}))
+                        ? $builder->{$subProperty} 
+                        : $builder;
             if (!property_exists($builder, $this->target->property)
                 && !isset($builder->{$this->target->property})
             ) {
@@ -96,5 +100,18 @@ class ValidationClause
         }
 
         return $this->parent->of($this->target->type, $this->target->modifier);
+    }
+    
+    /**
+     * Validates the target property is not null in a sub class
+     *      
+     * @param string $subProperty Parent of current property
+     * @param string $message Validation message to override the default
+     *
+     * @return ValidationTarget
+     */
+    public function isNotNullInSubProperty($subProperty, $message = null)
+    {
+        return $this->isNotNull($message, $subProperty);
     }
 }

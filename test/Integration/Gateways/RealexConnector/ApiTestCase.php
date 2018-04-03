@@ -19,6 +19,8 @@ use GlobalPayments\Api\Entities\Enums\ReasonCode;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Entities\Enums\TransactionModifier;
+use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use PHPUnit\Framework\TestCase;
 
 class ApiTestCase extends TestCase {
@@ -841,5 +843,178 @@ class ApiTestCase extends TestCase {
     public function testdccAuthDataSubmission() {
         // will update later
     }
+    
+    /* 29. Google pay */
+    
+    public function testauthMobileGooglePay()
+    {
+        $config = new ServicesConfig();
+        $config->merchantId = 'heartlandgpsandbox';
+        $config->accountId = 'apitest';
+        $config->sharedSecret = 'secret';
+        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
 
+        ServicesContainer::configure($config);
+
+        // create the card object
+        $card = new CreditCardData();
+        $card->token = '{"signature":"MEUCIQDapDDJyf9lH3ztEWksgAjNe...AXjW+ZM+Ut2BWoTExppDDPc1a9Z7U\u003d","protocolVersion":"ECv1","signedMessage":"{\"encryptedMessage\":\"VkqwkFuMdXp...TZQxVMnkTeJjwyc4\\u003d\",\"ephemeralPublicKey\":\"BMglUoKZWxgB...YCiBNkLaMTD9G4sec\\u003d\",\"tag\":\"4VYypqW2Q5FN7UP87QNDGsLgc48vAe5+AcjR+BxQ2Zo\\u003d\"}"}';
+        $card->mobileType = EncyptedMobileType::GOOGLE_PAY;
+
+        // process an auto-settle authorization
+        $response = $card->charge(15)
+            ->withCurrency("EUR")
+            ->withModifier(TransactionModifier::ENCRYPTED_MOBILE)
+            ->execute();
+
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+        // get the details to save to the DB for future Transaction Management requests
+        $orderId = $response->orderId;
+        $authCode = $response->authorizationCode;
+        $paymentsReference = $response->transactionId;
+        // TODO: update your application and display transaction outcome to the customer            
+
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $responseCode);
+    }
+    
+    /* 29. Apple pay */
+    
+    public function testauthMobileApplePay()
+    {
+        $config = new ServicesConfig();
+        $config->merchantId = 'heartlandgpsandbox';
+        $config->accountId = 'apitest';
+        $config->sharedSecret = 'secret';
+        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
+
+        ServicesContainer::configure($config);
+
+        // create the card object
+        $card = new CreditCardData();
+        $card->token = '{"version":"EC_v1","data":"dvMNzlcy6WNB","header":{"ephemeralPublicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E","transactionId":"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3","publicKeyHash":"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk"}}';
+        $card->mobileType = EncyptedMobileType::APPLE_PAY;
+
+        // process an auto-settle authorization
+        $response = $card->charge()
+            ->withModifier(TransactionModifier::ENCRYPTED_MOBILE)
+            ->execute();
+
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+        // get the details to save to the DB for future Transaction Management requests
+        $orderId = $response->orderId;
+        $authCode = $response->authorizationCode;
+        $paymentsReference = $response->transactionId;
+        // TODO: update your application and display transaction outcome to the customer            
+
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $responseCode);
+    }
+    
+    /* 31. Mobile payment without Token value */
+
+    /**
+     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
+     * @expectedExceptionMessage  token cannot be null for this transaction type
+     */
+    public function testauthMobileWithoutToken()
+    {
+        $config = new ServicesConfig();
+        $config->merchantId = 'heartlandgpsandbox';
+        $config->accountId = 'apitest';
+        $config->sharedSecret = 'secret';
+        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
+
+        ServicesContainer::configure($config);
+
+        // create the card object
+        $card = new CreditCardData();
+        $card->mobileType = EncyptedMobileType::GOOGLE_PAY;
+
+        $response = $card->charge(15)
+            ->withCurrency("EUR")
+            ->withModifier(TransactionModifier::ENCRYPTED_MOBILE)
+            ->execute();
+    }
+    
+    /* 32. Mobile payment without Mobile Type */
+
+    /**
+     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
+     * @expectedExceptionMessage  mobileType cannot be null for this transaction type
+     */
+    public function testauthMobileWithoutType()
+    {
+        $config = new ServicesConfig();
+        $config->merchantId = 'heartlandgpsandbox';
+        $config->accountId = 'apitest';
+        $config->sharedSecret = 'secret';
+        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
+
+        ServicesContainer::configure($config);
+
+        // create the card object
+        $card = new CreditCardData();
+        $card->token = '{"version":"EC_v1","data":"dvMNzlcy6WNB","header":{"ephemeralPublicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E","transactionId":"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3","publicKeyHash":"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk"}}';
+
+        $response = $card->charge(15)
+            ->withCurrency("EUR")
+            ->withModifier(TransactionModifier::ENCRYPTED_MOBILE)
+            ->execute();
+    }
+    
+    /* 33. Google payment without amount */
+
+    /**
+     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
+     * @expectedExceptionMessage  Amount and Currency cannot be null for google payment
+     */
+    public function testauthMobileWithoutAmount()
+    {
+        $config = new ServicesConfig();
+        $config->merchantId = 'heartlandgpsandbox';
+        $config->accountId = 'apitest';
+        $config->sharedSecret = 'secret';
+        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
+
+        ServicesContainer::configure($config);
+
+        // create the card object
+        $card = new CreditCardData();
+        $card->token = '{"version":"EC_v1","data":"dvMNzlcy6WNB","header":{"ephemeralPublicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E","transactionId":"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3","publicKeyHash":"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk"}}';
+        $card->mobileType = EncyptedMobileType::GOOGLE_PAY;
+        
+        $response = $card->charge()
+            ->withCurrency("EUR")
+            ->withModifier(TransactionModifier::ENCRYPTED_MOBILE)
+            ->execute();
+    }
+    
+    /* 34. Google payment without Currency */
+
+    /**
+     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
+     * @expectedExceptionMessage  Amount and Currency cannot be null for google payment
+     */
+    public function testauthMobileWithoutCurrency()
+    {
+        $config = new ServicesConfig();
+        $config->merchantId = 'heartlandgpsandbox';
+        $config->accountId = 'apitest';
+        $config->sharedSecret = 'secret';
+        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
+
+        ServicesContainer::configure($config);
+
+        // create the card object
+        $card = new CreditCardData();
+        $card->token = '{"version":"EC_v1","data":"dvMNzlcy6WNB","header":{"ephemeralPublicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E","transactionId":"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3","publicKeyHash":"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk"}}';
+        $card->mobileType = EncyptedMobileType::GOOGLE_PAY;
+        
+        $response = $card->charge(12)
+            ->withModifier(TransactionModifier::ENCRYPTED_MOBILE)
+            ->execute();
+    }
 }

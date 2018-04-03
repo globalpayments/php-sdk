@@ -929,6 +929,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 }
                 throw new NotImplementedException();
             case TransactionType::VERIFY:
+                if ($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE) {
+                    throw new UnsupportedTransactionException('Transaction not supported for this payment method.');
+                } 
                 return 'CreditAccountVerify';
             case TransactionType::CAPTURE:
                 return 'CreditAddToBatch';
@@ -940,6 +943,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                         return 'CreditIncrementalAuth';
                     } elseif ($builder->transactionModifier === TransactionModifier::OFFLINE) {
                         return 'CreditOfflineAuth';
+                    } elseif ($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE) {
+                        throw new UnsupportedTransactionException('Transaction not supported for this payment method.');
                     }
 
                     return 'CreditAuth';
@@ -951,6 +956,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 if ($builder->paymentMethod->paymentMethodType === PaymentMethodType::CREDIT) {
                     if ($builder->transactionModifier === TransactionModifier::OFFLINE) {
                         return 'CreditOfflineSale';
+                    } elseif ($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE) {
+                        throw new UnsupportedTransactionException('Transaction not supported for this payment method.');
                     } else {
                         return 'CreditSale';
                     }
