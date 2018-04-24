@@ -134,9 +134,14 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                 $cardElement->appendChild($xml->createElement("type", strtoupper($card->getCardType())));
 
                 if ($card->cvn !== null) {
+                    //if cvn number is not empty indicator should be PRESENT
+                    $cvnPresenceIndicator = (!empty($card->cvn)) ? 
+                                                CvnPresenceIndicator::PRESENT:
+                                                $card->cvnPresenceIndicator;
+                    
                     $cvnElement = $xml->createElement("cvn");
                     $cvnElement->appendChild($xml->createElement("number", $card->cvn));
-                    $cvnElement->appendChild($xml->createElement("presind", $card->cvnPresenceIndicator));
+                    $cvnElement->appendChild($xml->createElement("presind", $cvnPresenceIndicator));
                     $cardElement->appendChild($cvnElement);
                 }
                 $request->appendChild($cardElement);

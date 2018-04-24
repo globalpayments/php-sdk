@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 class DebitTest extends TestCase
 {
     protected $track;
+    private $enableCryptoUrl = true;
 
     public function setup()
     {
@@ -64,7 +65,9 @@ class DebitTest extends TestCase
     {
         $config = new ServicesConfig();
         $config->secretApiKey = 'skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw';
-        $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
+        $config->serviceUrl = ($this->enableCryptoUrl) ?
+                              'https://cert.api2-c.heartlandportico.com/':
+                              'https://cert.api2.heartlandportico.com';
         return $config;
     }
 }

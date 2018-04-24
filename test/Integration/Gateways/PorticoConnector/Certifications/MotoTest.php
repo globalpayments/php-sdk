@@ -43,6 +43,8 @@ class MotoTest extends TestCase
 
     /** @var string */
     public static $amexToken = null;
+    
+    private $enableCryptoUrl = true;
 
     /**
      * @return ServicesConfig
@@ -51,7 +53,9 @@ class MotoTest extends TestCase
     {
         $config = new ServicesConfig();
         $config->secretApiKey = 'skapi_cert_MRCQAQBC_VQACBE0rFaZlbDDPieMGP06JDAtjyS7NQ';
-        $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
+        $config->serviceUrl = ($this->enableCryptoUrl) ?
+                              'https://cert.api2-c.heartlandportico.com/':
+                              'https://cert.api2.heartlandportico.com';
         return $config;
     }
 

@@ -56,6 +56,8 @@ class RecurringTest extends TestCase
 
     /** @var Schedule */
     private static $scheduleCheckCcd = null;
+    
+    private $enableCryptoUrl = true;
 
     /**
      * @param string $identifier
@@ -74,7 +76,9 @@ class RecurringTest extends TestCase
     {
         $config = new ServicesConfig();
         $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
-        $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
+        $config->serviceUrl = ($this->enableCryptoUrl) ?
+                              'https://cert.api2-c.heartlandportico.com/':
+                              'https://cert.api2.heartlandportico.com';
         return $config;
     }
 

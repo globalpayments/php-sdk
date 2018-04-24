@@ -48,12 +48,16 @@ class EcommerceTest extends TestCase
 
     /** @var string|null */
     public static $amexToken = null;
+    
+    private $enableCryptoUrl = true;
 
     private function config()
     {
         $config = new ServicesConfig();
         $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
-        $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
+        $config->serviceUrl = ($this->enableCryptoUrl) ?
+                              'https://cert.api2-c.heartlandportico.com/':
+                              'https://cert.api2.heartlandportico.com';
         return $config;
     }
 

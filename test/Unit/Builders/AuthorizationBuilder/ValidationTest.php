@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 class ValidationTest extends TestCase
 {
     protected $card;
+    private $enableCryptoUrl = true;
 
     public function setup()
     {
@@ -25,8 +26,8 @@ class ValidationTest extends TestCase
     }
 
     /**
-     * @expectedException \GlobalPayments\Api\Entities\Exceptions\ArgumentException
-     * @expectedExceptionMessage amount cannot be null
+     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
+     * @expectedExceptionMessage amount cannot be null for this transaction type.
      */
     public function testCreditAuthNoAmount()
     {
@@ -35,7 +36,7 @@ class ValidationTest extends TestCase
     }
 
     /**
-     * @expectedException \GlobalPayments\Api\Entities\Exceptions\ArgumentException
+     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
      * @expectedExceptionMessage currency cannot be null
      */
     public function testCreditAuthNoCurrency()
@@ -45,7 +46,7 @@ class ValidationTest extends TestCase
     }
 
     /**
-     * @expectedException \GlobalPayments\Api\Entities\Exceptions\ArgumentException
+     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
      * @expectedExceptionMessage paymentMethod cannot be null
      */
     public function testCreditAuthNoPaymentMethod()
@@ -57,7 +58,7 @@ class ValidationTest extends TestCase
     }
 
     /**
-     * @expectedException \GlobalPayments\Api\Entities\Exceptions\ArgumentException
+     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
      * @expectedExceptionMessage amount cannot be null
      */
     public function testCreditSaleNoAmount()
@@ -67,7 +68,7 @@ class ValidationTest extends TestCase
     }
 
     /**
-     * @expectedException \GlobalPayments\Api\Entities\Exceptions\ArgumentException
+     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
      * @expectedExceptionMessage currency cannot be null
      */
     public function testCreditSaleNoCurrency()
@@ -77,7 +78,7 @@ class ValidationTest extends TestCase
     }
 
     /**
-     * @expectedException \GlobalPayments\Api\Entities\Exceptions\ArgumentException
+     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
      * @expectedExceptionMessage paymentMethod cannot be null
      */
     public function testCreditSaleNoPaymentMethod()
@@ -92,7 +93,9 @@ class ValidationTest extends TestCase
     {
         $config = new ServicesConfig();
         $config->secretApiKey = 'skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w';
-        $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
+        $config->serviceUrl = ($this->enableCryptoUrl) ?
+                              'https://cert.api2-c.heartlandportico.com/':
+                              'https://cert.api2.heartlandportico.com';
         return $config;
     }
 }

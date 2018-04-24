@@ -26,12 +26,15 @@ class RetailTest extends TestCase
     private static $mastercardtoken;
     private static $discovertoken;
     private static $amextoken;
+    private $enableCryptoUrl = true;
 
     public function __construct()
     {
         $config = new ServicesConfig();
         $config->secretApiKey = 'skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw';
-        $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
+        $config->serviceUrl = ($this->enableCryptoUrl) ?
+                              'https://cert.api2-c.heartlandportico.com/':
+                              'https://cert.api2.heartlandportico.com';
         ServicesContainer::Configure($config);
     }
 

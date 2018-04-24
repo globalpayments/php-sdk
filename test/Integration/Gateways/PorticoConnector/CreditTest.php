@@ -14,6 +14,7 @@ class CreditTest extends TestCase
 {
     protected $card;
     protected $track;
+    private $enableCryptoUrl = true;
 
     public function setup()
     {
@@ -261,7 +262,9 @@ class CreditTest extends TestCase
     {
         $config = new ServicesConfig();
         $config->secretApiKey = 'skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w';
-        $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
+        $config->serviceUrl = ($this->enableCryptoUrl) ?
+                              'https://cert.api2-c.heartlandportico.com/':
+                              'https://cert.api2.heartlandportico.com';
         return $config;
     }
 }

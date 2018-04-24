@@ -16,6 +16,7 @@ class AchTest extends TestCase
 {
     protected $eCheck;
     protected $address;
+    private $enableCryptoUrl = true;
 
     public function setup()
     {
@@ -56,7 +57,9 @@ class AchTest extends TestCase
     {
         $config = new ServicesConfig();
         $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
-        $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
+        $config->serviceUrl = ($this->enableCryptoUrl) ?
+                              'https://cert.api2-c.heartlandportico.com/':
+                              'https://cert.api2.heartlandportico.com';
         return $config;
     }
 }
