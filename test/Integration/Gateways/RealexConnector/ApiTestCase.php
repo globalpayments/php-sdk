@@ -213,6 +213,7 @@ class ApiTestCase extends TestCase {
         // supply the the payer/customer details		
         $customer = new Customer();
         $customer->id = sprintf($identifierBase, $todayDate, 'Person');
+        $customer->key = GenerationUtils::getGuid();
         $customer->title = 'Mr.';
         $customer->firstName = 'John';
         $customer->lastName = 'Doe';
@@ -225,20 +226,18 @@ class ApiTestCase extends TestCase {
         $customer->address->city = 'Halifax';
         $customer->address->province = 'TX';
         $customer->address->postalCode = '75024';
-        $customer->address->country = 'USA';
+        $customer->address->country = 'United States';
+        $customer->address->countryCode = 'USA';
         $customer->homePhone = '5551112222';
         $customer->workPhone = '5551112233';
         $customer->fax = '5551112244';
         $customer->mobilePhone = '5551112255';
 
-        try {
-            $customer->create();
+        $response = $customer->create();
 
-            // TODO: add a card/payment method to the payer, see next step
-            $this->assertNotEquals(null, $customer);
-        } catch (ApiException $e) {
-            // TODO: Add your error handling here
-        }
+        // TODO: add a card/payment method to the payer, see next step
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $response->responseCode);
     }
 
     /* 09. Card Storage Store Card */

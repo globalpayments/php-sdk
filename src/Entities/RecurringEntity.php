@@ -90,7 +90,7 @@ abstract class RecurringEntity implements IRecurringEntity
     public function saveChanges()
     {
         try {
-            RecurringService::edit($this);
+            return RecurringService::edit($this);
         } catch (ApiException $exc) {
             throw new ApiException('Update failed, see inner exception for more details', $exc);
         }

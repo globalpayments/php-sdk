@@ -470,62 +470,114 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
 
     public function processRecurring(RecurringBuilder $builder)
     {
-        // $et = new ElementTree();
-        // string timestamp = GenerationUtils::generateTimestamp();
-        // string orderId = $builder->orderId ?? GenerationUtils::generateOrderId();
+        $xml = new DOMDocument();
+        $timestamp = GenerationUtils::generateTimestamp();
+        $orderId = $builder->orderId ? $builder->orderId : GenerationUtils::generateOrderId();
 
-        // // Build Request
-        // $request = $xml->createElement("request")
-        //     .Set("type", MapRecurringRequestType(builder))
-        //     .Set("timestamp", timestamp);
-        // $request->appendChild($xml->createElement("merchantid", MerchantId);
-        // $request->appendChild($xml->createElement("account", AccountId);
-        // $request->appendChild($xml->createElement("orderid", orderId);
+        // Build Request
+        $request = $xml->createElement("request");
+        $request->setAttribute("timestamp", $timestamp);
+        $request->setAttribute("type", $this->mapRecurringRequestType($builder));
 
-        // if($builder->transactionType== TransactionType::Create || $builder->transactionType == TransactionType::Edit)
-        //	{
-        //     if ($builder->entity is Customer) {
-        //         $customer = $builder->entity as Customer;
-        //         request.Append(BuildCustomer(et, customer));
-        //         $request->appendChild($xml->createElement("sha1hash",
-        //              GenerationUtils::generateHash(SharedSecret, timestamp, MerchantId,
-        //					orderId, null, null, customer.Key));
-        //     }
-        //     else if ($builder->entity is RecurringPaymentMethod) {
-        //         $payment = $builder->entity as RecurringPaymentMethod;
-        //         $cardElement = $request->appendChild($xml->createElement("card");
-        //         et.SubElement(cardElement, "ref", payment.Key ?? payment.Id);
-        //         et.SubElement(cardElement, "payerref", payment.CustomerKey);
+        $request->appendChild($xml->createElement("merchantid", $this->merchantId));
+        $request->appendChild($xml->createElement("account", $this->accountId));
+        $request->appendChild($xml->createElement("channel", $this->channel));
+        $request->appendChild($xml->createElement("orderid", $orderId));
 
-        //         if (payment.PaymentMethod != null) {
-        //             $card = payment.PaymentMethod as CreditCardData;
-        //             string expiry = card.ShortExpiry;
-        //             et.SubElement(cardElement, "number", card.Number);
-        //             et.SubElement(cardElement, "expdate", expiry);
-        //             et.SubElement(cardElement, "chname", card.CardHolderName);
-        //             et.SubElement(cardElement, "type", card.CardType);
+        if ($builder->transactionType == TransactionType::CREATE || $builder->transactionType == TransactionType::EDIT) {
+            if ($builder->entity instanceof \GlobalPayments\Api\Entities\Customer) {
+                $hash = GenerationUtils::generateHash(
+                        $this->sharedSecret, implode('.', [
+                        $timestamp,
+                        $this->merchantId,
+                        $orderId,
+                        '',
+                        '',
+                        $builder->entity->key
+                        ])
+                );
+                $request->appendChild($this->buildCustomer($xml, $builder));
+                $request->appendChild($xml->createElement("sha1hash", $hash));
+            } else if ($builder->entity instanceof \GlobalPayments\Api\Entities\RecurringEntity) {
+                /* $payment = $builder->entity as RecurringPaymentMethod;
+                  $cardElement = $request->appendChild($xml->createElement("card");
+                  et . SubElement(cardElement, "ref", payment . Key ?? payment . Id);
+                  et . SubElement(cardElement, "payerref", payment . CustomerKey);
 
-        //             string sha1hash = string.Empty;
-        //             if ($builder->transactionType == TransactionType::Create)
-        //                 sha1hash = GenerationUtils::generateHash(SharedSecret, timestamp, MerchantId, orderId, null,
-        //								null, payment.CustomerKey, card.CardHolderName, card.Number);
-        //             else sha1hash = GenerationUtils::generateHash(SharedSecret, timestamp, MerchantId,
-        //								payment.CustomerKey, payment.Key ?? payment.Id, expiry, card.Number);
-        //             $request->appendChild($xml->createElement("sha1hash", sha1hash);
-        //         }
-        //     }
-        // }
-        // else if ($builder->transactionType == TransactionType::Delete) {
-        //     if ($builder->entity is RecurringPaymentMethod) {
-        //         $payment = $builder->entity as RecurringPaymentMethod;
-        //         $cardElement = $request->appendChild($xml->createElement("card");
-        //         et.SubElement(cardElement, "ref", payment.Key ?? payment.Id);
-        //         et.SubElement(cardElement, "payerref", payment.CustomerKey);
-        //     }
-        // }
+                  if (payment . PaymentMethod != null) {
+                  $card = payment.PaymentMethod as CreditCardData;
+                  string expiry = card . ShortExpiry;
+                  et . SubElement(cardElement, "number", card . Number);
+                  et . SubElement(cardElement, "expdate", expiry);
+                  et . SubElement(cardElement, "chname", card . CardHolderName);
+                  et . SubElement(cardElement, "type", card . CardType);
 
-        // $response = DoTransaction(et.ToString(request));
-        // return MapRecurringResponse<TResult>(response, builder);
+                  string sha1hash = string.Empty;
+                  if ($builder->transactionType == TransactionType::Create)
+                  sha1hash = GenerationUtils::generateHash(SharedSecret, timestamp, MerchantId, orderId, null, null, payment . CustomerKey, card . CardHolderName, card . Number);
+                  else sha1hash = GenerationUtils::generateHash(SharedSecret, timestamp, MerchantId, payment . CustomerKey, payment . Key ?? payment . Id, expiry, card . Number);
+                  $request->appendChild($xml->createElement("sha1hash", sha1hash);
+                  } */
+            }
+        } else if ($builder->transactionType == TransactionType::DELETE) {
+            if ($builder->entity instanceof RecurringPaymentMethod) {
+                /* $payment = $builder->entity as RecurringPaymentMethod;
+                  $cardElement = $request->appendChild($xml->createElement("card");
+                  et . SubElement(cardElement, "ref", payment . Key ?? payment . Id);
+                  et . SubElement(cardElement, "payerref", payment . CustomerKey); */
+            }
+        }
+
+        $response = $this->doTransaction($xml->saveXML($request));
+        return $this->mapResponse($response);
+    }
+
+    private function buildCustomer($xml, $builder)
+    {
+        $customer = $builder->entity;
+        $type = 'Retail';
+        if($builder->transactionType === TransactionType::EDIT){
+            $type = 'Subscriber';
+        }
+        $payer = $xml->createElement("payer");
+        $payer->setAttribute("ref", (!empty($customer->key)) ? $customer->key : GenerationUtils::generateRecurringKey());
+        $payer->setAttribute("type", $type);
+
+        $payer->appendChild($xml->createElement("title", $customer->title));
+        $payer->appendChild($xml->createElement("firstname", $customer->firstName));
+        $payer->appendChild($xml->createElement("surname", $customer->lastName));
+        $payer->appendChild($xml->createElement("company", $customer->company));
+
+
+        if ($customer->address != null) {
+            $address = $xml->createElement("address");
+            $address->appendChild($xml->createElement("line1", $customer->address->streetAddress1));
+            $address->appendChild($xml->createElement("line2", $customer->address->streetAddress2));
+            $address->appendChild($xml->createElement("line3", $customer->address->streetAddress3));
+            $address->appendChild($xml->createElement("city", $customer->address->city));
+            $address->appendChild($xml->createElement("county", $customer->address->getProvince()));
+            $address->appendChild($xml->createElement("postcode", $customer->address->postalCode));
+
+            $country = $xml->createElement("country", $customer->address->country);
+            if(!empty($customer->address->countryCode))
+            {
+                $country->setAttribute("code", $customer->address->countryCode);
+            }
+            $address->appendChild($country);
+
+            $payer->appendChild($address);
+        }
+
+        $phonenumbers = $xml->createElement("phonenumbers");
+        $phonenumbers->appendChild($xml->createElement("home", $customer->homePhone));
+        $phonenumbers->appendChild($xml->createElement("work", $customer->workPhone));
+        $phonenumbers->appendChild($xml->createElement("fax", $customer->fax));
+        $phonenumbers->appendChild($xml->createElement("mobile", $customer->mobilePhone));
+        $phonenumbers->appendChild($xml->createElement("email", $customer->email));
+
+        $payer->appendChild($phonenumbers);
+
+        return $payer;
     }
 
     /**
@@ -668,6 +720,45 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                 return 'void';
             default:
                 return 'unknown';
+        }
+    }
+
+    /**
+     * Maps a transaction builder to a Realex request type
+     *
+     * @param RecurringBuilder $builder Transaction builder
+     *
+     * @return string
+     */
+    private function mapRecurringRequestType(RecurringBuilder $builder)
+    {
+        $entity = $builder->entity;
+
+        switch ($builder->transactionType) {
+            case TransactionType::CREATE:
+                if ($entity instanceof \GlobalPayments\Api\Entities\Customer)
+                    return "payer-new";
+                else if ($entity instanceof \GlobalPayments\Api\Entities\IPaymentMethod)
+                    return "card-new";
+                throw new UnsupportedTransactionException(
+                    'The selected gateway does not support this transaction type.'
+                );
+            case TransactionType::EDIT:
+                if ($entity instanceof \GlobalPayments\Api\Entities\Customer)
+                    return "payer-edit";
+                else if ($entity instanceof \GlobalPayments\Api\Entities\IPaymentMethod)
+                    return "card-update-card";
+                throw new UnsupportedTransactionException();
+            case TransactionType::DELETE:
+                if ($entity instanceof \GlobalPayments\Api\Entities\RecurringPaymentMethod)
+                    return "card-cancel-card";
+                throw new UnsupportedTransactionException(
+                    'The selected gateway does not support this transaction type.'
+                );
+            default:
+                throw new UnsupportedTransactionException(
+                    'The selected gateway does not support this transaction type.'
+                );
         }
     }
 

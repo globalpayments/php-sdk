@@ -71,6 +71,13 @@ class Address
      * @var string
      */
     public $country;
+    
+    /**
+     * Consumer's country code.
+     *
+     * @var string
+     */
+    public $countryCode;
 
     /**
      * Gets the consumer's province.

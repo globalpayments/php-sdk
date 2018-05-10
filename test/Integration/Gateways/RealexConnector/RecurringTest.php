@@ -10,6 +10,8 @@ namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
 use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\Customer;
+use GlobalPayments\Api\Entities\Address;
 use PHPUnit\Framework\TestCase;
 
 class RecurringTest extends TestCase
@@ -67,8 +69,9 @@ class RecurringTest extends TestCase
     public function test001aCreateCustomer()
     {
         try {
-            $customer = $this->newCustomer.Create();
-            $this->assertNotNull($customer);
+            $response = $this->newCustomer->Create();
+            $this->assertNotNull($response);
+            $this->assertEquals("00", $response->responseCode);
         } catch (GatewayException $exc) {
             // check for already created
             if ($exc->responseCode != "501") {
@@ -100,10 +103,20 @@ class RecurringTest extends TestCase
 
     public function test002aEditCustomer()
     {
-        $customer = new Customer();
-        $customer->key = $this->getCustomerId();
-        $customer->firstName = "Perry";
-        $customer->saveChanges();
+        try {
+            $customer = new Customer();
+            $customer->key = $this->getCustomerId();
+            $customer->firstName = "Perry";
+            $response = $customer->saveChanges();
+
+            $this->assertNotNull($response);
+            $this->assertEquals("00", $response->responseCode);
+        } catch (GatewayException $exc) {
+            // check for already created
+            if ($exc->responseCode != "501") {
+                throw $exc;
+            }
+        }
     }
 
     public function test002bEditPaymentMethod()
