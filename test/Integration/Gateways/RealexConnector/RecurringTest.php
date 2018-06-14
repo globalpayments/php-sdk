@@ -13,9 +13,15 @@ use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Address;
 use PHPUnit\Framework\TestCase;
+use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
+use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\Entities\Enums\TransactionModifier;
+use GlobalPayments\Api\Entities\Enums\RecurringSequence;
+use GlobalPayments\Api\Entities\Enums\RecurringType;
 
 class RecurringTest extends TestCase
 {
+
     /** @var $newCustomer */
     public $newCustomer;
 
@@ -33,7 +39,7 @@ class RecurringTest extends TestCase
     {
         $config = new ServicesConfig();
         $config->merchantId = "heartlandgpsandbox";
-        $config->accountId = "api";
+        $config->accountId = "3dsecure";
         $config->refundPassword = "refund";
         $config->sharedSecret = "secret";
         $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
@@ -66,124 +72,258 @@ class RecurringTest extends TestCase
         $this->newCustomer->comments = "Campaign Ref E7373G";
     }
 
-    public function test001aCreateCustomer()
+    /* 08. Card Storage Create Payer */
+    /* Request Type: payer-new  */
+
+    public function testcardStorageCreatePayer()
     {
-        try {
-            $response = $this->newCustomer->Create();
-            $this->assertNotNull($response);
-            $this->assertEquals("00", $response->responseCode);
-        } catch (GatewayException $exc) {
-            // check for already created
-            if ($exc->responseCode != "501") {
-                throw $exc;
-            }
-        }
+        $response = $this->newCustomer->Create();
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->responseCode);
     }
 
-    public function test001bCreatePaymentMethod()
+    /* 09. Card Storage Store Card */
+    /* Request Type: card-new  */
+
+    public function testcardStorageStoreCard()
     {
         $card = new CreditCardData();
-        $card->number = "4263970000005262";
-        $card->expMonth = 5;
-        $card->expYear = 2019;
-        $card->cardHolderName = "James Mason";
+        $card->number = "4012001037141112";
+        $card->expMonth = 10;
+        $card->expYear = 2025;
+        $card->cvn = '123';
+        $card->cardHolderName = 'James Mason';
 
-        try {
-            $paymentMethod = $this->newCustomer
+        $paymentMethod = $this->newCustomer
                 ->addPaymentMethod($this->getPaymentId("Credit"), $card)
                 ->create();
-            $this->assertNotNull($paymentMethod);
-        } catch (GatewayException $exc) {
-            // check for already created
-            if ($exc->responseCode != "520") {
-                throw $exc;
-            }
-        }
+        $this->assertNotNull($paymentMethod);
     }
 
-    public function test002aEditCustomer()
-    {
-        try {
-            $customer = new Customer();
-            $customer->key = $this->getCustomerId();
-            $customer->firstName = "Perry";
-            $response = $customer->saveChanges();
+    /* 10. Card Storage Charge Card */
+    /* Request Type: receipt-in  */
 
-            $this->assertNotNull($response);
-            $this->assertEquals("00", $response->responseCode);
-        } catch (GatewayException $exc) {
-            // check for already created
-            if ($exc->responseCode != "501") {
-                throw $exc;
-            }
-        }
-    }
-
-    public function test002bEditPaymentMethod()
+    public function testcardStorageChargeCard()
     {
         $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
+        $response = $paymentMethod->charge(10)
+                ->withCurrency("EUR")
+                ->withCvn("123")
+                ->execute();
+
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+        // get the reponse details to save to the DB for future transaction management requests
+        $orderId = $response->orderId;
+        $authCode = $response->authorizationCode;
+        $paymentsReference = $response->transactionId; // pasref
+
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->responseCode);
+    }
+
+    /* 11. CardStorage ThreeDSecure Verify Enrolled */
+    /* Request Type: realvault-3ds-verifyenrolled */
+
+    public function testcardStorageThreeDSecureVerifyEnrolled()
+    {
+        $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
+        
+        $response = $paymentMethod->verify()
+                ->withAmount(10)
+                ->withCurrency('USD')
+                ->withModifier(TransactionModifier::SECURE3D)
+                ->execute();
+
+        // get the response details to update the DB
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->responseCode);
+    }
+
+    /* 12. CardStorage Dcc Rate Lookup */
+    /* Request Type: realvault-dccrate */
+
+    public function testcardStorageDccRateLookup()
+    {
+        // will update later
+    }
+  
+
+    /* 14. CardStorage UpdatePayer */
+    /* Request Type: payer-edit */
+
+    public function testcardStorageUpdatePayer()
+    {
+        $customer = new Customer();
+        $customer->key = $this->getCustomerId();
+        $customer->firstName = "Perry";
+
+        $response = $customer->saveChanges();
+
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->responseCode);
+    }
+
+    /* 15. CardStorage Continuous Authority First */
+    /* Request Type: auth */
+
+    public function testContinuousAuthorityFirst()
+    {
+        // create the card object
+        $card = new CreditCardData();
+        $card->number = '5425230000004415';
+        $card->expMonth = 12;
+        $card->expYear = 2025;
+        $card->cvn = '131';
+        $card->cardHolderName = 'James Mason';
+
+
+        // process an auto-settle authorization
+        $response = $card->charge(15)
+                ->withCurrency("EUR")
+                ->withRecurringInfo(RecurringType::VARIABLE, RecurringSequence::FIRST)
+                ->execute();
+
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+        // get the details to save to the DB for future Transaction Management requests
+        $orderId = $response->orderId;
+        $authCode = $response->authorizationCode;
+        $paymentsReference = $response->transactionId;
+
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $responseCode);
+    }
+
+    /* 15. CardStorage Continuous Authority Subsequent */
+    /* Request Type: receipt-in */
+
+    public function testContinuousAuthoritySubsequent()
+    {
+        // create the payment method object
+        $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
+
+        // charge the stored card/payment method
+        $response = $paymentMethod->charge(15)
+                ->withCurrency("EUR")
+                ->withCvn("123")
+                ->withRecurringInfo(RecurringType::VARIABLE, RecurringSequence::SUBSEQUENT)
+                ->execute();
+
+        $responseCode = $response->responseCode; // 00 == Success
+
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $responseCode);
+    }
+
+    /* 15. CardStorage Continuous Authority Last */
+    /* Request Type: receipt-in */
+
+    public function testContinuousAuthorityLast()
+    {
+        // create the payment method object
+        $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
+
+        // charge the stored card/payment method
+        $response = $paymentMethod->charge(15)
+                ->withCurrency("EUR")
+                ->withCvn("123")
+                ->withRecurringInfo(RecurringType::VARIABLE, RecurringSequence::LAST)
+                ->execute();
+
+        $responseCode = $response->responseCode; // 00 == Success
+
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $responseCode);
+    }
+
+    /* 16. Card Storage Refund */
+    /* Request Type: payment-out */
+
+    public function testcardStorageRefund()
+    {
+        // create the payment method object
+        $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
+
+        // charge the stored card/payment method
+        $response = $paymentMethod->refund(10)
+                ->withCurrency("EUR")
+                ->execute();
+
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $responseCode);
+    }
+
+    /* 17. Card Storage UpdateCard */
+    /* Request Type: card-update-card */
+
+    public function testcardStorageUpdateCard()
+    {
+        $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
+
         $paymentMethod->paymentMethod = new CreditCardData();
         $paymentMethod->paymentMethod->number = "5425230000004415";
         $paymentMethod->paymentMethod->expMonth = 10;
         $paymentMethod->paymentMethod->expYear = 2020;
         $paymentMethod->paymentMethod->cardHolderName = "Philip Marlowe";
-        $paymentMethod->SaveChanges();
+
+        $response = $paymentMethod->SaveChanges();
+
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->responseCode);
+    }
+
+    /* 18. Card Storage Verify Card */
+    /* Request Type: receipt-in-otb */
+
+    public function testcardStorageVerifyCard()
+    {
+        $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
+
+        // verify the stored card/payment method is valid and active
+        $response = $paymentMethod->verify()
+                ->withCvn("123")
+                ->execute();
+
+        // get the response details to update the DB
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $responseCode);
+    }
+    
+    /* 13. CardStorage DeleteCard */
+    /* Request Type: card-cancel-card */
+
+    public function testcardStorageDeleteCard()
+    {
+        $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
+
+        // delete the stored card/payment method
+        // WARNING! This can't be undone
+        $response = $paymentMethod->Delete();
+
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->responseCode);
     }
 
     /**
-     * @expectedException UnsupportedTransactionException
+     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
+     * @expectedExceptionMessage  customerKey cannot be null for this transaction type
      */
-    public function test003FindOnRealex()
+    public function testcardStorageChargeWithoutCustomerkey()
     {
-        Customer::Find($this->getCustomerId());
-    }
-
-    public function test004aChargeStoredCard()
-    {
-        $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
+        $paymentMethod = new RecurringPaymentMethod();
         $response = $paymentMethod->charge(10)
-            ->withCurrency("USD")
-            ->withCvn("123")
-            ->execute();
-        $this->assertNotNull($response);
-        $this->assertEquals("00", $response->responseCode);
-    }
-
-    public function test004bVerifyStoredCard()
-    {
-        $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
-        $response = $paymentMethod->verify()
-            ->withCvn("123")
-            ->execute();
-        $this->assertNotNull($response);
-        $this->assertEquals("00", $response->responseCode);
-    }
-
-    public function test004cRefundStoredCard()
-    {
-        $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
-        $response = $paymentMethod->refund(10.01)
-            ->withCurrency("USD")
-            ->execute();
-        $this->assertNotNull($response);
-        $this->assertEquals("00", $response->responseCode);
-    }
-
-    public function test005DeletePaymentMethod()
-    {
-        $this->markTestSkipped();
-        $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
-        $paymentMethod->Delete();
-    }
-
-    public function test006RecurringPayment()
-    {
-        $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
-        $response = $paymentMethod->charge(12)
-            ->withRecurringInfo(RecurringType::FIXED, RecurringSequence::FIRST)
-            ->withCurrency("USD")
-            ->execute();
-        $this->assertNotNull($response);
-        $this->assertEquals("00", $response->responseCode);
-    }
+                ->withCurrency("EUR")
+                ->withCvn("123")
+                ->execute();
+    }    
 }

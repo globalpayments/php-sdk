@@ -14,6 +14,8 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IRefundable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IVerifyable;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\Entities\Enums\DccProcessor;
+use GlobalPayments\Api\Entities\Enums\DccRateType;
 
 /**
  * Use credit or eCheck/ACH as a recurring payment method.

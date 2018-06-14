@@ -42,7 +42,7 @@ abstract class RecurringEntity implements IRecurringEntity
     public function delete($force = false)
     {
         try {
-            RecurringService::delete($this, $force);
+            return RecurringService::delete($this, $force);
         } catch (ApiException $exc) {
             throw new ApiException('Failed to delete record, see inner exception for more details', $exc);
         }

@@ -390,6 +390,14 @@ class AuthorizationBuilder extends TransactionBuilder
                 ->check('paymentMethod')->isNotNull()
                 ->check('token')->isNotNullInSubProperty('paymentMethod')
                 ->check('mobileType')->isNotNullInSubProperty('paymentMethod');
+        
+        $this->validations->of(
+            TransactionType::SALE
+        )
+                ->with(TransactionModifier::RECURRING)
+                ->check('paymentMethod')->isNotNull()
+                ->check('customerKey')->isNotNullInSubProperty('paymentMethod')
+                ->check('key')->isNotNullInSubProperty('paymentMethod');
     }
 
     /**

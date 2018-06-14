@@ -29,4 +29,5 @@ class TransactionType extends Enum
     const SEARCH = 1 << 20;
     const HOLD = 1 << 21;
     const RELEASE = 1 << 22;
+    const DCCRATELOOKUP = 1 << 23;
 }

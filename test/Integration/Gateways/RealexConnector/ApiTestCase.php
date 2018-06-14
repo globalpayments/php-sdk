@@ -23,10 +23,12 @@ use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use PHPUnit\Framework\TestCase;
 
-class ApiTestCase extends TestCase {
+class ApiTestCase extends TestCase
+{
     /* 01. Process Payment Authorisation */
 
-    public function testprocessPaymentAuthorisation() {
+    public function testprocessPaymentAuthorisation()
+    {
         $config = new ServicesConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'api';
@@ -66,7 +68,8 @@ class ApiTestCase extends TestCase {
 
     /* 02. Process Payment Refund */
 
-    public function testprocessPaymentRefund() {
+    public function testprocessPaymentRefund()
+    {
         $config = new ServicesConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'api';
@@ -103,7 +106,8 @@ class ApiTestCase extends TestCase {
 
     /* 03. Process Payment OTB */
 
-    public function testprocessPaymentOtb() {
+    public function testprocessPaymentOtb()
+    {
         $config = new ServicesConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'api';
@@ -139,19 +143,22 @@ class ApiTestCase extends TestCase {
 
     /* 04. ThreeD Secure Verify Enrolled */
 
-    public function testthreeDSecureVerifyEnrolled() {
+    public function testthreeDSecureVerifyEnrolled()
+    {
         // will update later
     }
 
     /* 05. ThreeD Secure Verify Sig */
 
-    public function testthreeDSecureVerifySig() {
+    public function testthreeDSecureVerifySig()
+    {
         // will update later
     }
 
     /* 06.ThreeD Secure Auth */
 
-    public function testthreeDSecureAuth() {
+    public function testthreeDSecureAuth()
+    {
         $config = new ServicesConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'api';
@@ -190,373 +197,15 @@ class ApiTestCase extends TestCase {
 
     /* 07. Process Payment Apple Pay */
 
-    public function testprocessPaymentApplePay() {
+    public function testprocessPaymentApplePay()
+    {
         // will update later
-    }
-
-    /* 08. Card Storage Create Payer */
-
-    public function testcardStorageCreatePayer() {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
-        $todayDate = date('Ymd');
-        $identifierBase = substr(
-                sprintf('%s-%%s', GenerationUtils::getGuid()), 0, 10
-        );
-
-        // supply the the payer/customer details		
-        $customer = new Customer();
-        $customer->id = sprintf($identifierBase, $todayDate, 'Person');
-        $customer->key = GenerationUtils::getGuid();
-        $customer->title = 'Mr.';
-        $customer->firstName = 'John';
-        $customer->lastName = 'Doe';
-        $customer->company = 'Realex Payments';
-        $customer->status = 'Active';
-        $customer->email = 'text@example.com';
-        $customer->address = new Address();
-        $customer->address->streetAddress1 = 'Flat 123';
-        $customer->address->streetAddress2 = 'House 456';
-        $customer->address->city = 'Halifax';
-        $customer->address->province = 'TX';
-        $customer->address->postalCode = '75024';
-        $customer->address->country = 'United States';
-        $customer->address->countryCode = 'USA';
-        $customer->homePhone = '5551112222';
-        $customer->workPhone = '5551112233';
-        $customer->fax = '5551112244';
-        $customer->mobilePhone = '5551112255';
-
-        $response = $customer->create();
-
-        // TODO: add a card/payment method to the payer, see next step
-        $this->assertNotEquals(null, $response);
-        $this->assertEquals("00", $response->responseCode);
-    }
-
-    /* 09. Card Storage Store Card */
-
-    public function testcardStorageStoreCard() {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
-        $todayDate = date('Ymd');
-        $identifierBase = substr(
-                sprintf('%s-%%s', GenerationUtils::getGuid()), 0, 10
-        );
-
-        // supply the the payer/customer details
-        $customer = new Customer();
-        $customer->key = "e193c21a-ce64-4820-b5b6-8f46715de931";
-
-        // create a new card/payment method reference		
-        $paymentMethodRef = sprintf($identifierBase, $todayDate, 'CreditMC');
-
-        // create the card object
-        $card = new CreditCardData();
-        $card->number = '5473500000000014';
-        $card->expMonth = 12;
-        $card->expYear = 2025;
-        $card->cardHolderName = 'James Mason';
-
-        // add the card/payment method to the payer/customer
-        $paymentMethod = $customer->addPaymentMethod($paymentMethodRef, $card);
-
-        try {
-            // store the card
-            $paymentMethod->create();
-
-            // TODO: charge the stored card, see next step
-            $this->assertNotEquals(null, $paymentMethod);
-        } catch (ApiException $e) {
-            // TODO: Add your error handling here
-        }
-    }
-
-    /* 10. Card Storage Charge Card */
-
-    public function testcardStorageChargeCard() {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
-        // supply existing customer/payer ref
-        $customerId = "e193c21a-ce64-4820-b5b6-8f46715de931";
-        // supply existing card/payment method ref
-        $paymentId = "10c3e089-fa98-4352-bc4e-4b37f7dcf108";
-
-        // create the payment method object
-        $paymentMethod = new RecurringPaymentMethod($customerId, $paymentId);
-
-        try {
-            // charge the stored card/payment method
-            $response = $paymentMethod->charge(10)
-                    ->withCurrency("USD")
-                    ->withCvn("123")
-                    ->execute();
-
-            $responseCode = $response->responseCode; // 00 == Success
-            $message = $response->responseMessage; // [ test system ] AUTHORISED
-            // get the reponse details to save to the DB for future transaction management requests
-            $orderId = $response->orderId;
-            $authCode = $response->authorizationCode;
-            $paymentsReference = $response->transactionId; // pasref
-
-            $this->assertNotEquals(null, $response);
-            $this->assertEquals("00", $responseCode);
-        } catch (ApiException $e) {
-            // TODO: Add your error handling here
-        }
-    }
-
-    /* 11. CardStorage ThreeDSecure Verify Enrolled */
-
-    public function testcardStorageThreeDSecureVerifyEnrolled() {
-        // will update later
-    }
-
-    /* 12. CardStorage Dcc Rate Lookup */
-
-    public function testcardStorageDccRateLookup() {
-        // will update later
-    }
-
-    /* 13. CardStorage DeleteCard */
-
-    public function testcardStorageDeleteCard() {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
-        // supply existing customer/payer ref
-        $customerId = "e193c21a-ce64-4820-b5b6-8f46715de931";
-        // supply existing card/payment method ref
-        $paymentId = "10c3e089-fa98-4352-bc4e-4b37f7dcf108";
-        // create the payment method object
-        $paymentMethod = new RecurringPaymentMethod($customerId, $paymentId);
-
-        try {
-            // delete the stored card/payment method
-            // WARNING! This can't be undone
-            $paymentMethod->Delete();
-
-            $this->assertNotEquals(null, $paymentMethod);
-        } catch (ApiException $e) {
-            // TODO: Add your error handling here
-        }
-    }
-
-    /* 14. CardStorage UpdatePayer */
-
-    public function testcardStorageUpdatePayer() {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
-        // supply the the payer/customer details
-        $customer = new Customer();
-        $customer->Key = "e193c21a-ce64-4820-b5b6-8f46715de931";
-        $customer->title = 'Mr.';
-        $customer->firstName = 'John';
-        $customer->lastName = 'Doe';
-        $customer->company = 'Realex Payments';
-        $customer->status = 'Active';
-        $customer->email = 'text@example.com';
-        $customer->address = new Address();
-        $customer->address->streetAddress1 = 'Flat 123';
-        $customer->address->streetAddress2 = 'House 456';
-        $customer->address->city = 'Halifax';
-        $customer->address->province = 'TX';
-        $customer->address->postalCode = '75024';
-        $customer->address->country = 'USA';
-        $customer->homePhone = '4441112222';
-        $customer->workPhone = '4441112233';
-        $customer->fax = '4441112244';
-        $customer->mobilePhone = '4441112255';
-
-        try {
-            // update the payer/customer
-            $customer->saveChanges();
-        } catch (ApiException $e) {
-            // TODO: Add your error handling here
-        }
-    }
-
-    /* 15. CardStorage Continuous Authority */
-
-    public function testcardStorageContinuousAuthority() {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
-        // supply existing customer/payer ref
-        $customerId = "e193c21a-ce64-4820-b5b6-8f46715de931";
-        // supply existing card/payment method ref
-        $paymentId = "10c3e089-fa98-4352-bc4e-4b37f7dcf108";
-        // create the payment method object
-        $paymentMethod = new RecurringPaymentMethod($customerId, $paymentId);
-
-        try {
-            // charge the stored card/payment method with continuous authority flags
-            $response = $paymentMethod->charge(15)
-                    ->withCurrency("EUR")
-                    ->withCvn("123")
-                    ->withRecurringInfo(RecurringType::VARIABLE, RecurringSequence::FIRST)
-                    ->execute();
-
-            $responseCode = $response->responseCode; // 00 == Success
-            $message = $response->responseMessage; // [ test system ] AUTHORISED
-            // get the reponse details to save to the DB for future transaction management requests
-            $orderId = $response->orderId;
-            $authCode = $response->authorizationCode;
-            $paymentsReference = $response->transactionId; // pasref
-
-            $this->assertNotEquals(null, $response);
-            $this->assertEquals("00", $responseCode);
-        } catch (ApiException $e) {
-            // TODO: Add your error handling here
-        }
-    }
-
-    /* 16. Card Storage Refund */
-
-    public function testcardStorageRefund() {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->refundPassword = 'refund';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
-        // existing customer/payer ref
-        $customerId = "e193c21a-ce64-4820-b5b6-8f46715de931";
-        // existing card/payment method ref
-        $paymentId = "10c3e089-fa98-4352-bc4e-4b37f7dcf108";
-        // create the payment method object
-        $paymentMethod = new RecurringPaymentMethod($customerId, $paymentId);
-
-        try {
-            // refund the stored card/payment method
-            $response = $paymentMethod->refund(19.99)
-                    ->withCurrency("EUR")
-                    ->execute();
-
-            // get the response details to update the DB
-            $responseCode = $response->responseCode; // 00 == Success
-            $message = $response->responseMessage; // [ test system ] AUTHORISED
-
-            $this->assertNotEquals(null, $response);
-            $this->assertEquals("00", $responseCode);
-        } catch (ApiException $e) {
-            // TODO: Add your error handling here
-        }
-    }
-
-    /* 17. Card Storage UpdateCard */
-
-    public function testcardStorageUpdateCard() {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
-        // existing customer/payer ref
-        $customerId = "e193c21a-ce64-4820-b5b6-8f46715de931";
-        // existing card/payment method ref
-        $paymentId = "10c3e089-fa98-4352-bc4e-4b37f7dcf108";
-        // create the payment method object
-        $paymentMethod = new RecurringPaymentMethod($customerId, $paymentId);
-
-        // create the card object with new details
-        $newCardDetails = new CreditCardData();
-        $newCardDetails->number = '5425230000004415';
-        $newCardDetails->expMonth = 6;
-        $newCardDetails->expYear = 2020;
-        $newCardDetails->cardHolderName = 'Philip Marlowe';
-
-        // add the new card details to the payment method object for updating
-        $paymentMethod->paymentMethod = $newCardDetails;
-
-        try {
-            // update the card details
-            $paymentMethod->SaveChanges();
-
-            $this->assertNotEquals(null, $paymentMethod);
-        } catch (ApiException $e) {
-            // TODO: Add your error handling here
-        }
-    }
-
-    /* 18. Card Storage Verify Card */
-
-    public function testcardStorageVerifyCard() {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
-        // existing customer/payer ref
-        $customerId = "e193c21a-ce64-4820-b5b6-8f46715de931";
-        // existing card/payment method ref
-        $paymentId = "10c3e089-fa98-4352-bc4e-4b37f7dcf108";
-        // create the payment method object
-        $paymentMethod = new RecurringPaymentMethod($customerId, $paymentId);
-
-        try {
-            // verify the stored card/payment method is valid and active
-            $response = $paymentMethod->verify()
-                    ->withCvn("123")
-                    ->execute();
-
-            // get the response details to update the DB
-            $responseCode = $response->responseCode; // 00 == Success
-            $message = $response->responseMessage; // [ test system ] AUTHORISED
-
-            $this->assertNotEquals(null, $response);
-            $this->assertEquals("00", $responseCode);
-        } catch (ApiException $e) {
-            // TODO: Add your error handling here
-        }
     }
 
     /* 19. Transaction Management Delayed Auth */
 
-    public function testtransactionManagementDelayedAuth() {
+    public function testtransactionManagementDelayedAuth()
+    {
         $config = new ServicesConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'api';
@@ -595,7 +244,8 @@ class ApiTestCase extends TestCase {
 
     /* 20. Transaction Management Settle */
 
-    public function testtransactionManagementSettle() {
+    public function testtransactionManagementSettle()
+    {
         $config = new ServicesConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'api';
@@ -629,7 +279,8 @@ class ApiTestCase extends TestCase {
 
     /* 21. Transaction Management Rebate */
 
-    public function testtransactionManagementRebate() {
+    public function testtransactionManagementRebate()
+    {
         $config = new ServicesConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'api';
@@ -668,7 +319,8 @@ class ApiTestCase extends TestCase {
 
     /* 22. Transaction Management Void */
 
-    public function testtransactionManagementVoid() {
+    public function testtransactionManagementVoid()
+    {
         $config = new ServicesConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'api';
@@ -701,7 +353,8 @@ class ApiTestCase extends TestCase {
 
     /* 23. Fraud Management Data Submission */
 
-    public function testfraudManagementDataSubmission() {
+    public function testfraudManagementDataSubmission()
+    {
         $config = new ServicesConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'api';
@@ -759,7 +412,8 @@ class ApiTestCase extends TestCase {
 
     /* 24. Fraud Management Hold */
 
-    public function testfraudManagementHold() {
+    public function testfraudManagementHold()
+    {
         $config = new ServicesConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'api';
@@ -793,7 +447,8 @@ class ApiTestCase extends TestCase {
 
     /* 25. Fraud Management Release */
 
-    public function testfraudManagementRelease() {
+    public function testfraudManagementRelease()
+    {
         $config = new ServicesConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'api';
@@ -827,19 +482,22 @@ class ApiTestCase extends TestCase {
 
     /* 26. Dcc Rate Lookup */
 
-    public function testdccRateLookup() {
+    public function testdccRateLookup()
+    {
         // will update later
     }
 
     /* 27. Dcc Present Choice */
 
-    public function testdccPresentChoice() {
+    public function testdccPresentChoice()
+    {
         // will update later
     }
 
     /* 28. Dcc Auth Data Submission */
 
-    public function testdccAuthDataSubmission() {
+    public function testdccAuthDataSubmission()
+    {
         // will update later
     }
     
@@ -872,7 +530,7 @@ class ApiTestCase extends TestCase {
         $orderId = $response->orderId;
         $authCode = $response->authorizationCode;
         $paymentsReference = $response->transactionId;
-        // TODO: update your application and display transaction outcome to the customer            
+        // TODO: update your application and display transaction outcome to the customer
 
         $this->assertNotEquals(null, $response);
         $this->assertEquals("00", $responseCode);
@@ -906,7 +564,7 @@ class ApiTestCase extends TestCase {
         $orderId = $response->orderId;
         $authCode = $response->authorizationCode;
         $paymentsReference = $response->transactionId;
-        // TODO: update your application and display transaction outcome to the customer            
+        // TODO: update your application and display transaction outcome to the customer
 
         $this->assertNotEquals(null, $response);
         $this->assertEquals("00", $responseCode);

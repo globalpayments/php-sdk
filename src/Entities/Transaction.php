@@ -185,6 +185,14 @@ class Transaction
      * @var GiftCard
      */
     public $giftCard;
+    
+    /**
+     * The Dcc Response
+     *
+     * @internal
+     * @var dccResponseResult
+     */
+    public $dccResponseResult ;
 
     /**
      * Creates a `Transaction` object from a stored transaction ID.

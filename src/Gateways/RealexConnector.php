@@ -19,6 +19,10 @@ use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
+use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
+use GlobalPayments\Api\Entities\Customer;
+use GlobalPayments\Api\Entities\Enums\RecurringSequence;
+use GlobalPayments\Api\Entities\Enums\RecurringType;
 
 class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringService
 {
@@ -88,7 +92,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
      * @return Transaction
      */
     public function processAuthorization(AuthorizationBuilder $builder)
-    {        
+    {
         //for google payment amount and currency is required
         if (!empty($builder->transactionModifier) && $builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE &&
             $builder->paymentMethod->mobileType === EncyptedMobileType::GOOGLE_PAY &&
@@ -135,7 +139,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
 
                 if ($card->cvn !== null) {
                     //if cvn number is not empty indicator should be PRESENT
-                    $cvnPresenceIndicator = (!empty($card->cvn)) ? 
+                    $cvnPresenceIndicator = (!empty($card->cvn)) ?
                                                 CvnPresenceIndicator::PRESENT:
                                                 $card->cvnPresenceIndicator;
                     
@@ -152,14 +156,14 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                 $hash = GenerationUtils::generateHash(
                     $this->sharedSecret,
                     implode('.', [
-                        $timestamp,
-                        $this->merchantId,
-                        $orderId,
-                        $card->number
-                    ])
+                            $timestamp,
+                            $this->merchantId,
+                            $orderId,
+                            $card->number
+                                ])
                 );
             } else {
-                $requestValues = $this->getShal1RequestValues($timestamp, $orderId, $builder, $card);           
+                $requestValues = $this->getShal1RequestValues($timestamp, $orderId, $builder, $card);
                 
                 $hash = GenerationUtils::generateHash(
                     $this->sharedSecret,
@@ -187,15 +191,29 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
 
             $hash = '';
             if ($builder->transactionType === TransactionType::VERIFY) {
-                $hash = GenerationUtils::generateHash(
-                    $this->sharedSecret,
-                    implode('.', [
-                        $timestamp,
-                        $this->merchantId,
-                        $orderId,
-                        $recurring->customerKey,
-                    ])
-                );
+                if (!empty($builder->transactionModifier) && $builder->transactionModifier === TransactionModifier::SECURE3D) {
+                    $hash = GenerationUtils::generateHash(
+                        $this->sharedSecret,
+                        implode('.', [
+                                    $timestamp,
+                                    $this->merchantId,
+                                    $orderId,
+                                    preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount)),
+                                    $builder->currency,
+                                    $recurring->customerKey,
+                                ])
+                    );
+                } else {
+                    $hash = GenerationUtils::generateHash(
+                        $this->sharedSecret,
+                        implode('.', [
+                                    $timestamp,
+                                    $this->merchantId,
+                                    $orderId,
+                                    $recurring->customerKey,
+                                ])
+                    );
+                }
             } else {
                 $hash = GenerationUtils::generateHash(
                     $this->sharedSecret,
@@ -271,7 +289,6 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $mpi->appendChild($xml->createElement("eci", $builder->ecommerceInfo->eci));
             $request->appendChild($mpi);
         }
-
         $response = $this->doTransaction($xml->saveXML($request));
         return $this->mapResponse($response);
     }
@@ -295,7 +312,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             && $builder->transactionType !== TransactionType::VERIFY
         ) {
             throw new UnsupportedTransactionException("Only Charge and Authorize are supported through HPP.");
-        }        
+        }
         
         $request["MERCHANT_ID"] = $this->merchantId;
         $request["ACCOUNT"] = $this->accountId;
@@ -485,49 +502,78 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $request->appendChild($xml->createElement("orderid", $orderId));
 
         if ($builder->transactionType == TransactionType::CREATE || $builder->transactionType == TransactionType::EDIT) {
-            if ($builder->entity instanceof \GlobalPayments\Api\Entities\Customer) {
+            if ($builder->entity instanceof Customer) {
                 $hash = GenerationUtils::generateHash(
-                        $this->sharedSecret, implode('.', [
-                        $timestamp,
-                        $this->merchantId,
-                        $orderId,
-                        '',
-                        '',
-                        $builder->entity->key
-                        ])
+                    $this->sharedSecret,
+                    implode('.', [
+                                $timestamp,
+                                $this->merchantId,
+                                $orderId,
+                                '',
+                                '',
+                                $builder->entity->key
+                                ])
                 );
+                
                 $request->appendChild($this->buildCustomer($xml, $builder));
-                $request->appendChild($xml->createElement("sha1hash", $hash));
-            } else if ($builder->entity instanceof \GlobalPayments\Api\Entities\RecurringEntity) {
-                /* $payment = $builder->entity as RecurringPaymentMethod;
-                  $cardElement = $request->appendChild($xml->createElement("card");
-                  et . SubElement(cardElement, "ref", payment . Key ?? payment . Id);
-                  et . SubElement(cardElement, "payerref", payment . CustomerKey);
-
-                  if (payment . PaymentMethod != null) {
-                  $card = payment.PaymentMethod as CreditCardData;
-                  string expiry = card . ShortExpiry;
-                  et . SubElement(cardElement, "number", card . Number);
-                  et . SubElement(cardElement, "expdate", expiry);
-                  et . SubElement(cardElement, "chname", card . CardHolderName);
-                  et . SubElement(cardElement, "type", card . CardType);
-
-                  string sha1hash = string.Empty;
-                  if ($builder->transactionType == TransactionType::Create)
-                  sha1hash = GenerationUtils::generateHash(SharedSecret, timestamp, MerchantId, orderId, null, null, payment . CustomerKey, card . CardHolderName, card . Number);
-                  else sha1hash = GenerationUtils::generateHash(SharedSecret, timestamp, MerchantId, payment . CustomerKey, payment . Key ?? payment . Id, expiry, card . Number);
-                  $request->appendChild($xml->createElement("sha1hash", sha1hash);
-                  } */
+            } elseif ($builder->entity instanceof RecurringPaymentMethod) {
+                $payment = $builder->entity;
+                $paymentKey = (!empty($payment->key)) ? $payment->key : $payment->id;
+                
+                if ($builder->transactionType == TransactionType::CREATE) {
+                    $hash = GenerationUtils::generateHash(
+                        $this->sharedSecret,
+                        implode('.', [
+                            $timestamp,
+                            $this->merchantId,
+                            $orderId,
+                            '',
+                            '',
+                            $payment->customerKey,
+                            $payment->paymentMethod->cardHolderName,
+                            $payment->paymentMethod->number
+                            ])
+                    );
+                } else {
+                    $hash = GenerationUtils::generateHash(
+                        $this->sharedSecret,
+                        implode('.', [
+                            $timestamp,
+                            $this->merchantId,
+                            $payment->customerKey,
+                            $paymentKey,
+                            $payment->paymentMethod->getShortExpiry(),
+                            $payment->paymentMethod->number
+                            ])
+                    );
+                }
+                $request->appendChild($this->buildCardElement($xml, $payment, $paymentKey));
+                $request->appendChild($xml->createElement("defaultcard", 1));
             }
-        } else if ($builder->transactionType == TransactionType::DELETE) {
+            
+            //set hash value
+            $request->appendChild($xml->createElement("sha1hash", $hash));
+        } elseif ($builder->transactionType == TransactionType::DELETE) {
             if ($builder->entity instanceof RecurringPaymentMethod) {
-                /* $payment = $builder->entity as RecurringPaymentMethod;
-                  $cardElement = $request->appendChild($xml->createElement("card");
-                  et . SubElement(cardElement, "ref", payment . Key ?? payment . Id);
-                  et . SubElement(cardElement, "payerref", payment . CustomerKey); */
+                $payment = $builder->entity;
+                $paymentKey = (!empty($payment->key)) ? $payment->key : $payment->id;
+                $cardElement = $xml->createElement("card");
+                $cardElement->appendChild($xml->createElement("ref", $paymentKey));
+                $cardElement->appendChild($xml->createElement("payerref", $payment->customerKey));
+                $request->appendChild($cardElement);
+                
+                $hash = GenerationUtils::generateHash(
+                    $this->sharedSecret,
+                    implode('.', [
+                            $timestamp,
+                            $this->merchantId,
+                            $payment->customerKey,
+                            $paymentKey
+                            ])
+                );
+                $request->appendChild($xml->createElement("sha1hash", $hash));
             }
         }
-
         $response = $this->doTransaction($xml->saveXML($request));
         return $this->mapResponse($response);
     }
@@ -536,7 +582,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
     {
         $customer = $builder->entity;
         $type = 'Retail';
-        if($builder->transactionType === TransactionType::EDIT){
+        if ($builder->transactionType === TransactionType::EDIT) {
             $type = 'Subscriber';
         }
         $payer = $xml->createElement("payer");
@@ -559,8 +605,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $address->appendChild($xml->createElement("postcode", $customer->address->postalCode));
 
             $country = $xml->createElement("country", $customer->address->country);
-            if(!empty($customer->address->countryCode))
-            {
+            if (!empty($customer->address->countryCode)) {
                 $country->setAttribute("code", $customer->address->countryCode);
             }
             $address->appendChild($country);
@@ -573,11 +618,25 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $phonenumbers->appendChild($xml->createElement("work", $customer->workPhone));
         $phonenumbers->appendChild($xml->createElement("fax", $customer->fax));
         $phonenumbers->appendChild($xml->createElement("mobile", $customer->mobilePhone));
-        $phonenumbers->appendChild($xml->createElement("email", $customer->email));
 
         $payer->appendChild($phonenumbers);
+        $payer->appendChild($xml->createElement("email", $customer->email));
 
         return $payer;
+    }
+    
+    private function buildCardElement($xml, $payment, $paymentKey = '')
+    {
+        $card = $payment->paymentMethod;
+        $cardElement = $xml->createElement("card");
+        $cardElement->appendChild($xml->createElement("ref", $paymentKey));
+        $cardElement->appendChild($xml->createElement("payerref", $payment->customerKey));
+        $cardElement->appendChild($xml->createElement("number", $card->number));
+        $cardElement->appendChild($xml->createElement("expdate", $card->getShortExpiry()));
+        $cardElement->appendChild($xml->createElement("chname", $card->cardHolderName));
+        $cardElement->appendChild($xml->createElement("type", strtoupper($card->getCardType())));
+
+        return $cardElement;
     }
 
     /**
@@ -619,7 +678,9 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
 
         if (!in_array($responseCode, $acceptedCodes)) {
             throw new GatewayException(
-                sprintf('Unexpected Gateway Response: %s - %s', $responseCode, $responseMessage)
+                sprintf('Unexpected Gateway Response: %s - %s', $responseCode, $responseMessage),
+                $responseCode,
+                $responseMessage
             );
         }
     }
@@ -675,18 +736,35 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         switch ($builder->transactionType) {
             case TransactionType::SALE:
             case TransactionType::AUTH:
-                if ($builder->transactionModifier === TransactionModifier::OFFLINE) {
-                    return 'offline';
-                } elseif ($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE) {
-                    return 'auth-mobile';
+                if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::CREDIT) {
+                    if ($builder->transactionModifier === TransactionModifier::OFFLINE) {
+                        return 'offline';
+                    } elseif ($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE) {
+                        return 'auth-mobile';
+                    }
+                    return 'auth';
+                } elseif ($builder->paymentMethod->paymentMethodType == PaymentMethodType::RECURRING) {
+                    return (!empty($builder->recurringSequence) && $builder->recurringSequence == RecurringSequence::FIRST) ?
+                            'auth' :
+                            'receipt-in';
                 }
-                return 'auth';
             case TransactionType::CAPTURE:
                 return 'settle';
             case TransactionType::VERIFY:
-                return 'otb';
+                if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::CREDIT) {
+                    return 'otb';
+                } else {
+                    if (!empty($builder->transactionModifier) && $builder->transactionModifier === TransactionModifier::SECURE3D) {
+                        return 'realvault-3ds-verifyenrolled';
+                    }
+                    return 'receipt-in-otb';
+                }
             case TransactionType::REFUND:
-                return 'credit';
+                if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::CREDIT) {
+                    return 'credit';
+                }
+                return 'payment-out';
+                
             case TransactionType::REVERSAL:
                 // TODO: should be customer type
                 throw new UnsupportedTransactionException(
@@ -736,22 +814,25 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
 
         switch ($builder->transactionType) {
             case TransactionType::CREATE:
-                if ($entity instanceof \GlobalPayments\Api\Entities\Customer)
+                if ($entity instanceof Customer) {
                     return "payer-new";
-                else if ($entity instanceof \GlobalPayments\Api\Entities\IPaymentMethod)
+                } elseif ($entity instanceof RecurringPaymentMethod) {
                     return "card-new";
+                }
                 throw new UnsupportedTransactionException(
                     'The selected gateway does not support this transaction type.'
                 );
             case TransactionType::EDIT:
-                if ($entity instanceof \GlobalPayments\Api\Entities\Customer)
+                if ($entity instanceof Customer) {
                     return "payer-edit";
-                else if ($entity instanceof \GlobalPayments\Api\Entities\IPaymentMethod)
+                } elseif ($entity instanceof RecurringPaymentMethod) {
                     return "card-update-card";
+                }
                 throw new UnsupportedTransactionException();
             case TransactionType::DELETE:
-                if ($entity instanceof \GlobalPayments\Api\Entities\RecurringPaymentMethod)
+                if ($entity instanceof RecurringPaymentMethod) {
                     return "card-cancel-card";
+                }
                 throw new UnsupportedTransactionException(
                     'The selected gateway does not support this transaction type.'
                 );
@@ -789,7 +870,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
      * @param string $timestamp current timestamp
      * @param int $orderId current order id
      * @param object $builder auth builder object
-     * @param object $card 
+     * @param object $card
      *
      * @return array
      */
