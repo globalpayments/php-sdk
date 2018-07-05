@@ -120,8 +120,9 @@ class GenerationUtils
     
     public static function generateRecurringKey($key = null)
     {
-        if($key !== null)
+        if ($key !== null) {
             return $key;
+        }
         
         $uuid = self::getGuid();
         return strtolower($uuid);

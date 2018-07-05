@@ -192,7 +192,7 @@ class Transaction
      * @internal
      * @var dccResponseResult
      */
-    public $dccResponseResult ;
+    public $dccResponseResult;
 
     /**
      * Creates a `Transaction` object from a stored transaction ID.

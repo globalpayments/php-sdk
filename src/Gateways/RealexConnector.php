@@ -23,6 +23,10 @@ use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Enums\RecurringSequence;
 use GlobalPayments\Api\Entities\Enums\RecurringType;
+use GlobalPayments\Api\Entities\Enums\DccProcessor;
+use GlobalPayments\Api\Entities\Enums\DccRateType;
+use GlobalPayments\Api\Entities\DccRateData;
+use GlobalPayments\Api\Entities\DccResponseResult;
 
 class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringService
 {
@@ -94,7 +98,8 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
     public function processAuthorization(AuthorizationBuilder $builder)
     {
         //for google payment amount and currency is required
-        if (!empty($builder->transactionModifier) && $builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE &&
+        if (!empty($builder->transactionModifier) &&
+            $builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE &&
             $builder->paymentMethod->mobileType === EncyptedMobileType::GOOGLE_PAY &&
             (empty($builder->amount) || empty($builder->currency))
         ) {
@@ -121,6 +126,30 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $amount = $xml->createElement("amount", preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount)));
             $amount->setAttribute("currency", $builder->currency);
             $request->appendChild($amount);
+        }
+
+        // For DCC rate lookup
+        if ($builder->transactionType === TransactionType::DCC_RATE_LOOKUP) {
+            $dccinfo = $xml->createElement("dccinfo");
+            $dccinfo->appendChild($xml->createElement("ccp", $builder->dccProcessor));
+            $dccinfo->appendChild($xml->createElement("type", $builder->dccType));
+            $dccinfo->appendChild($xml->createElement("ratetype", $builder->dccRateType));
+            $request->appendChild($dccinfo);
+        }
+
+        // For DCC charge/auth
+        if (!empty($builder->dccRateData)) {
+            $dccinfo = $xml->createElement("dccinfo");
+
+            $amount = $xml->createElement("amount", preg_replace('/[^0-9]/', '', $builder->dccRateData->amount));
+            $amount->setAttribute("currency", $builder->dccRateData->currency);
+
+            $dccinfo->appendChild($amount);
+            $dccinfo->appendChild($xml->createElement("ccp", $builder->dccRateData->dccProcessor));
+            $dccinfo->appendChild($xml->createElement("type", $builder->dccRateData->dccType));
+            $dccinfo->appendChild($xml->createElement("rate", $builder->dccRateData->dccRate));
+            $dccinfo->appendChild($xml->createElement("ratetype", $builder->dccRateData->dccRateType));
+            $request->appendChild($dccinfo);
         }
 
         // Hydrate the payment data fields
@@ -188,10 +217,11 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                 $paymentData->appendChild($cvn);
                 $request->appendChild($paymentData);
             }
-
+            
             $hash = '';
             if ($builder->transactionType === TransactionType::VERIFY) {
-                if (!empty($builder->transactionModifier) && $builder->transactionModifier === TransactionModifier::SECURE3D) {
+                if (!empty($builder->transactionModifier) &&
+                    $builder->transactionModifier === TransactionModifier::SECURE3D) {
                     $hash = GenerationUtils::generateHash(
                         $this->sharedSecret,
                         implode('.', [
@@ -501,7 +531,8 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $request->appendChild($xml->createElement("channel", $this->channel));
         $request->appendChild($xml->createElement("orderid", $orderId));
 
-        if ($builder->transactionType == TransactionType::CREATE || $builder->transactionType == TransactionType::EDIT) {
+        if ($builder->transactionType == TransactionType::CREATE ||
+            $builder->transactionType == TransactionType::EDIT) {
             if ($builder->entity instanceof Customer) {
                 $hash = GenerationUtils::generateHash(
                     $this->sharedSecret,
@@ -586,7 +617,8 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $type = 'Subscriber';
         }
         $payer = $xml->createElement("payer");
-        $payer->setAttribute("ref", (!empty($customer->key)) ? $customer->key : GenerationUtils::generateRecurringKey());
+        $payer->setAttribute("ref", (!empty($customer->key)) ? $customer->key :
+                GenerationUtils::generateRecurringKey());
         $payer->setAttribute("type", $type);
 
         $payer->appendChild($xml->createElement("title", $customer->title));
@@ -663,6 +695,22 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $result->transactionReference->transactionId = (string)$root->pasref;
         $result->transactionReference->authCode = (string)$root->authcode;
         $result->transactionReference->orderId = (string)$root->orderid;
+        
+        // dccinfo
+        if (!empty($root->dccinfo)) {
+            $result->dccResponseResult = new DccResponseResult();
+
+            $result->dccResponseResult->cardHolderCurrency = (string)$root->dccinfo->cardholdercurrency;
+            $result->dccResponseResult->cardHolderAmount = (string)$root->dccinfo->cardholderamount;
+            $result->dccResponseResult->cardHolderRate = (string)$root->dccinfo->cardholderrate;
+            $result->dccResponseResult->merchantCurrency = (string)$root->dccinfo->merchantcurrency;
+            $result->dccResponseResult->merchantAmount = (string)$root->dccinfo->merchantamount;
+            $result->dccResponseResult->marginRatePercentage = (string)$root->dccinfo->marginratepercentage;
+            $result->dccResponseResult->exchangeRateSourceName = (string)$root->dccinfo->exchangeratesourcename;
+            $result->dccResponseResult->commissionPercentage = (string)$root->dccinfo->commissionpercentage;
+            $result->dccResponseResult->exchangeRateSourceTimestamp = (string)
+                                            $root->dccinfo->exchangeratesourcetimestamp;
+        }
 
         return $result;
     }
@@ -742,28 +790,34 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                     } elseif ($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE) {
                         return 'auth-mobile';
                     }
-                    return 'auth';
                 } elseif ($builder->paymentMethod->paymentMethodType == PaymentMethodType::RECURRING) {
-                    return (!empty($builder->recurringSequence) && $builder->recurringSequence == RecurringSequence::FIRST) ?
+                    return (!empty($builder->recurringSequence) &&
+                            $builder->recurringSequence == RecurringSequence::FIRST) ?
                             'auth' :
                             'receipt-in';
                 }
+                return 'auth';
             case TransactionType::CAPTURE:
                 return 'settle';
             case TransactionType::VERIFY:
-                if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::CREDIT) {
-                    return 'otb';
-                } else {
-                    if (!empty($builder->transactionModifier) && $builder->transactionModifier === TransactionModifier::SECURE3D) {
+                if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::RECURRING) {
+                    if (!empty($builder->transactionModifier) &&
+                            $builder->transactionModifier === TransactionModifier::SECURE3D) {
                         return 'realvault-3ds-verifyenrolled';
                     }
                     return 'receipt-in-otb';
                 }
+                return 'otb';
             case TransactionType::REFUND:
                 if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::CREDIT) {
                     return 'credit';
                 }
                 return 'payment-out';
+            case TransactionType::DCC_RATE_LOOKUP:
+                if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::CREDIT) {
+                    return "dccrate";
+                }
+                return "realvault-dccrate";
                 
             case TransactionType::REVERSAL:
                 // TODO: should be customer type

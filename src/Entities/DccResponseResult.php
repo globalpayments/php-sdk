@@ -12,63 +12,61 @@ class DccResponseResult
      *
      * @var string|null
      */
-    public $cardholdercurrency;
+    public $cardHolderCurrency;
 
     /**
      * The amount to offer the cardholder.
      *
      * @var float|string|null
      */
-    public $cardholderamount;
+    public $cardHolderAmount;
 
     /**
      * The exchange rate offered by Currency Conversion Processor for this transaction
      *
      * @var float|string|null
      */
-    public $cardholderrate;
+    public $cardHolderRate;
 
     /**
      * The original currency sent in the request.
      *
      * @var string
      */
-    public $merchantcurrency;
+    public $merchantCurrency;
 
     /**
      * The original amount sent in the request.
      *
      * @var float|string|null
      */
-    public $merchantamount;
+    public $merchantAmount;
 
     /**
      * The foreign exchange markup.
      *
      * @var float|string
      */
-    public $marginratepercentage;
+    public $marginRatePercentage;
 
     /**
      * Source of the exchange rate.
      *
      * @var string
      */
-    public $exchangeratesourcename;
+    public $exchangeRateSourceName;
 
     /**
      * Currently not used
      *
      * @var float|string
      */
-    public $commissionpercentage;
+    public $commissionPercentage;
 
     /**
      * Timestamp of the exchange rate source.
      *
      * @var string
      */
-    public $exchangeratesourcetimestamp;
-
+    public $exchangeRateSourceTimestamp;
 }
-

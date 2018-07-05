@@ -4,6 +4,9 @@ namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Entities\Enums\CvnPresenceIndicator;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ICardData;
+use GlobalPayments\Api\Entities\Enums\DccProcessor;
+use GlobalPayments\Api\Entities\Enums\DccRateType;
+use GlobalPayments\Api\Entities\DccRateData;
 
 class CreditCardData extends Credit implements ICardData
 {

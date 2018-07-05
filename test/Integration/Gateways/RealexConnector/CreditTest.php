@@ -7,6 +7,10 @@ use GlobalPayments\Api\Services\CreditService;
 use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use PHPUnit\Framework\TestCase;
+use GlobalPayments\Api\Entities\Enums\DccProcessor;
+use GlobalPayments\Api\Entities\Enums\DccRateType;
+use GlobalPayments\Api\Entities\DccRateData;
+use GlobalPayments\Api\Utils\GenerationUtils;
 
 class CreditTest extends TestCase
 {
@@ -135,5 +139,147 @@ class CreditTest extends TestCase
         $config->refundPassword = 'refund';
         $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
         return $config;
+    }
+    
+    protected function dccSetup()
+    {
+        $config = new ServicesConfig();
+        $config->merchantId = "heartlandgpsandbox";
+        $config->accountId = "apidcc";
+        $config->refundPassword = "refund";
+        $config->sharedSecret = "secret";
+        $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
+        
+        ServicesContainer::configure($config);
+    }
+    
+    public function testCreditGetDccInfo()
+    {
+        $this->dccSetup();
+        
+        $this->card->number = '4002933640008365';
+        $orderId = GenerationUtils::generateOrderId();
+        
+        $dccDetails = $this->card->getDccRate(DccRateType::SALE, 10, 'USD', DccProcessor::FEXCO, $orderId);
+       
+        $this->assertNotNull($dccDetails);
+        $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
+        $this->assertNotNull($dccDetails->dccResponseResult);
+    }
+    
+    public function testCreditDccRateAuthorize()
+    {
+        $this->dccSetup();
+        
+        $this->card->number = '4006097467207025';
+        $orderId = GenerationUtils::generateOrderId();
+        
+        $dccDetails = $this->card->getDccRate(DccRateType::SALE, 1001, 'EUR', DccProcessor::FEXCO, $orderId);
+        
+        $this->assertNotNull($dccDetails);
+        $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
+        $this->assertNotNull($dccDetails->dccResponseResult);
+      
+        //set Currency conversion rates
+        $dccValues = new DccRateData();
+        $dccValues->orderId = $dccDetails->transactionReference->orderId;
+        $dccValues->dccProcessor = DccProcessor::FEXCO;
+        $dccValues->dccType = 1;
+        $dccValues->dccRateType = DccRateType::SALE;
+        $dccValues->currency = $dccDetails->dccResponseResult->cardHolderCurrency;
+        $dccValues->dccRate = $dccDetails->dccResponseResult->cardHolderRate;
+        $dccValues->amount = $dccDetails->dccResponseResult->cardHolderAmount;
+        
+        $response = $this->card->authorize(1001)
+            ->withCurrency('EUR')
+            ->withAllowDuplicates(true)
+            ->withDccRateData($dccValues)
+            ->withOrderId($orderId)
+            ->execute();
+        
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode, $response->responseMessage);
+    }
+    
+    public function testCreditDccRateCharge()
+    {
+        $this->dccSetup();
+        
+        $this->card->number = '4006097467207025';
+        $orderId = GenerationUtils::generateOrderId();
+        
+        $dccDetails = $this->card->getDccRate(DccRateType::SALE, 1001, 'EUR', DccProcessor::FEXCO, $orderId);
+        
+        $this->assertNotNull($dccDetails);
+        $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
+        $this->assertNotNull($dccDetails->dccResponseResult);
+      
+        //set Currency conversion rates
+        $dccValues = new DccRateData();
+        $dccValues->orderId = $dccDetails->transactionReference->orderId;
+        $dccValues->dccProcessor = DccProcessor::FEXCO;
+        $dccValues->dccType = 1;
+        $dccValues->dccRateType = DccRateType::SALE;
+        $dccValues->currency = $dccDetails->dccResponseResult->cardHolderCurrency;
+        $dccValues->dccRate = $dccDetails->dccResponseResult->cardHolderRate;
+        $dccValues->amount = $dccDetails->dccResponseResult->cardHolderAmount;
+        
+        $response = $this->card->charge(1001)
+            ->withCurrency('EUR')
+            ->withAllowDuplicates(true)
+            ->withDccRateData($dccValues)
+            ->withOrderId($orderId)
+            ->execute();
+        
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode, $response->responseMessage);
+    }
+    
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     * @expectedExceptionMessage Unexpected Gateway Response: 105 - Cannot find DCC information for that card
+     */
+    public function testCreditDccInfoNotFound()
+    {
+        $this->dccSetup();
+        
+        $this->card->number = '4002933640008365';
+        $orderId = GenerationUtils::generateOrderId();
+        
+        $dccDetails = $this->card->getDccRate(DccRateType::SALE, 10, 'EUR', DccProcessor::FEXCO, $orderId);
+    }
+    
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     * @expectedExceptionMessage Unexpected Gateway Response: 508 - Incorrect DCC information - doesn't correspond to dccrate request
+     */
+    public function testCreditDccInfoMismatch()
+    {
+        $this->dccSetup();
+        
+        $this->card->number = '4006097467207025';
+        $orderId = GenerationUtils::generateOrderId();
+        
+        $dccDetails = $this->card->getDccRate(DccRateType::SALE, 1001, 'EUR', DccProcessor::FEXCO, $orderId);
+        
+        $this->assertNotNull($dccDetails);
+        $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
+        $this->assertNotNull($dccDetails->dccResponseResult);
+        
+        $dccValues = new DccRateData();
+        $dccValues->orderId = $dccDetails->transactionReference->orderId;
+        $dccValues->dccProcessor = DccProcessor::FEXCO;
+        $dccValues->dccType = 1;
+        $dccValues->dccRateType = DccRateType::SALE;
+        $dccValues->currency = $dccDetails->dccResponseResult->cardHolderCurrency;
+        $dccValues->dccRate = $dccDetails->dccResponseResult->cardHolderRate;
+        $dccValues->amount = $dccDetails->dccResponseResult->cardHolderAmount;
+        
+        $response = $this->card->authorize(100)
+            ->withCurrency('EUR')
+            ->withAllowDuplicates(true)
+            ->withDccRateData($dccValues)
+            ->withOrderId($orderId)
+            ->execute();
     }
 }

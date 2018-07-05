@@ -15,46 +15,44 @@ class DccRateData
     public $amount;
     
     /**
-     * The currency 
+     * The currency
      *
      * @var string
      */
     public $currency;
     
     /**
-     * The dccProcessor  
+     * The dccProcessor
      *
      * @var string
      */
     public $dccProcessor;
     
     /**
-     * The dccRate   
+     * The dccRate
      *
      * @var string
      */
     public $dccRate;
     
     /**
-     * The dccRateType    
+     * The dccRateType
      *
      * @var string
      */
     public $dccRateType;
     
     /**
-     * The dccType     
+     * The dccType
      *
      * @var string
      */
     public $dccType;
     
     /**
-     * The oredrId      
+     * The orderId
      *
      * @var string
      */
-    public $oredrId;
-
+    public $orderId;
 }
-

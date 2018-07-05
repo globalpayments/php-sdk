@@ -6,6 +6,6 @@ use GlobalPayments\Api\Entities\Enum;
 
 class DccRateType extends Enum
 {
-    const SALE = 'Sale';
-    const REFUND = 'Refund';
+    const SALE = 'S';
+    const REFUND = 'R';
 }

@@ -428,7 +428,7 @@ class MotoTest extends TestCase
     // AUTHORIZATION
 
 
-public function test015AuthorizationVisa()
+    public function test015AuthorizationVisa()
     {
         $address = new Address();
         $address->streetAddress1 = '6860 Dallas Pkwy';

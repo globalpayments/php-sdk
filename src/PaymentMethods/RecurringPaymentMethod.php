@@ -235,4 +235,16 @@ class RecurringPaymentMethod extends RecurringEntity implements
 
         throw new ArgumentException(sprintf('Property `%s` does not exist on Transaction', $name));
     }
+    
+    public function getDccRate($dccRateType, $amount, $currency, $ccp, $orderId)
+    {
+        return (new AuthorizationBuilder(TransactionType::DCC_RATE_LOOKUP, $this))
+                        ->withAmount($amount)
+                        ->withCurrency($currency)
+                        ->withDccRateType($dccRateType)
+                        ->withDccProcessor($ccp)
+                        ->withDccType("1")
+                        ->withOrderId($orderId)
+                        ->execute();
+    }
 }

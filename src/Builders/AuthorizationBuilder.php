@@ -18,6 +18,9 @@ use GlobalPayments\Api\PaymentMethods\GiftCard;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Entities\Enums\DccProcessor;
+use GlobalPayments\Api\Entities\Enums\DccRateType;
+use GlobalPayments\Api\Entities\DccRateData;
 
 class AuthorizationBuilder extends TransactionBuilder
 {
@@ -299,6 +302,39 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var string|float
      */
     public $timestamp;
+    
+    /**
+     * DCC rate Data
+     *
+     * @internal
+     * @var dccRateData
+     */
+    public $dccRateData;
+    
+    /**
+     * DCC processor
+     *
+     * @internal
+     * @var dccProcessor
+     */
+    public $dccProcessor;
+    
+    /**
+     * DCC Rate Type
+     *
+     * @internal
+     * @var dccRateType
+     */
+    public $dccRateType;
+    
+    /**
+     * DCC Type
+     *
+     * @internal
+     * @var dccType
+     */
+    public $dccType;
+    
 
     /**
      * {@inheritdoc}
@@ -390,14 +426,6 @@ class AuthorizationBuilder extends TransactionBuilder
                 ->check('paymentMethod')->isNotNull()
                 ->check('token')->isNotNullInSubProperty('paymentMethod')
                 ->check('mobileType')->isNotNullInSubProperty('paymentMethod');
-        
-        $this->validations->of(
-            TransactionType::SALE
-        )
-                ->with(TransactionModifier::RECURRING)
-                ->check('paymentMethod')->isNotNull()
-                ->check('customerKey')->isNotNullInSubProperty('paymentMethod')
-                ->check('key')->isNotNullInSubProperty('paymentMethod');
     }
 
     /**
@@ -785,6 +813,58 @@ class AuthorizationBuilder extends TransactionBuilder
     {
         $this->recurringType = $recurringType;
         $this->recurringSequence = $recurringSequence;
+        return $this;
+    }
+    
+    /**
+     * Set the request dccRateData
+     *
+     * @param DccRateData dccRateData
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withDccRateData($value)
+    {
+        $this->dccRateData = $value;
+        return $this;
+    }
+    
+    /**
+     * Set the request dccProcessor
+     *
+     * @param DccProcessor dccProcessor
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withDccProcessor($value)
+    {
+        $this->dccProcessor = $value;
+        return $this;
+    }
+    
+    /**
+     * Set the request dccRateType
+     *
+     * @param DccRateType dccRateType
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withDccRateType($value)
+    {
+        $this->dccRateType = $value;
+        return $this;
+    }
+    
+    /**
+     * Set the request dccType
+     *
+     * @param string dccType
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withDccType($value)
+    {
+        $this->dccType = $value;
         return $this;
     }
 }

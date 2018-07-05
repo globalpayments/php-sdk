@@ -931,7 +931,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             case TransactionType::VERIFY:
                 if ($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE) {
                     throw new UnsupportedTransactionException('Transaction not supported for this payment method.');
-                } 
+                }
                 return 'CreditAccountVerify';
             case TransactionType::CAPTURE:
                 return 'CreditAddToBatch';

@@ -2,11 +2,6 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
 
-// using System;
-// using GlobalPayments.Api.Entities;
-// using GlobalPayments.Api.PaymentMethods;
-// using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
@@ -18,6 +13,10 @@ use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\RecurringSequence;
 use GlobalPayments\Api\Entities\Enums\RecurringType;
+use GlobalPayments\Api\Entities\Enums\DccProcessor;
+use GlobalPayments\Api\Entities\Enums\DccRateType;
+use GlobalPayments\Api\Entities\DccRateData;
+use GlobalPayments\Api\Utils\GenerationUtils;
 
 class RecurringTest extends TestCase
 {
@@ -45,11 +44,23 @@ class RecurringTest extends TestCase
         $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
         return $config;
     }
+    
+    protected function dccSetup()
+    {
+        $config = new ServicesConfig();
+        $config->merchantId = "heartlandgpsandbox";
+        $config->accountId = "apidcc";
+        $config->refundPassword = "refund";
+        $config->sharedSecret = "secret";
+        $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
+        
+        ServicesContainer::configure($config);
+    }
 
     public function setup()
     {
         ServicesContainer::configure($this->config());
-
+        
         $this->newCustomer = new Customer();
         $this->newCustomer->key = $this->getCustomerId();
         $this->newCustomer->title = "Mr.";
@@ -77,9 +88,15 @@ class RecurringTest extends TestCase
 
     public function testcardStorageCreatePayer()
     {
-        $response = $this->newCustomer->Create();
-        $this->assertNotNull($response);
-        $this->assertEquals("00", $response->responseCode);
+        try {
+            $response = $this->newCustomer->Create();
+            $this->assertNotNull($response);
+            $this->assertEquals("00", $response->responseCode);
+        } catch (GatewayException $exc) {
+            if ($exc->responseCode != '501' && $exc->responseCode != '520') {
+                throw $exc;
+            }
+        }
     }
 
     /* 09. Card Storage Store Card */
@@ -94,10 +111,16 @@ class RecurringTest extends TestCase
         $card->cvn = '123';
         $card->cardHolderName = 'James Mason';
 
-        $paymentMethod = $this->newCustomer
-                ->addPaymentMethod($this->getPaymentId("Credit"), $card)
-                ->create();
-        $this->assertNotNull($paymentMethod);
+        try {
+            $paymentMethod = $this->newCustomer
+                    ->addPaymentMethod($this->getPaymentId("Credit"), $card)
+                    ->create();
+            $this->assertNotNull($paymentMethod);
+        } catch (GatewayException $exc) {
+            if ($exc->responseCode != '501' && $exc->responseCode != '520') {
+                throw $exc;
+            }
+        }
     }
 
     /* 10. Card Storage Charge Card */
@@ -148,9 +171,16 @@ class RecurringTest extends TestCase
 
     public function testcardStorageDccRateLookup()
     {
-        // will update later
+        $this->dccSetup();
+        
+        $orderId = GenerationUtils::generateOrderId();
+        $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
+        $dccDetails = $paymentMethod->getDccRate(DccRateType::SALE, 1001, 'EUR', DccProcessor::FEXCO, $orderId);
+        
+        $this->assertNotNull($dccDetails);
+        $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
+        $this->assertNotNull($dccDetails->dccResponseResult);
     }
-  
 
     /* 14. CardStorage UpdatePayer */
     /* Request Type: payer-edit */
@@ -314,16 +344,47 @@ class RecurringTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
-     * @expectedExceptionMessage  customerKey cannot be null for this transaction type
-     */
-    public function testcardStorageChargeWithoutCustomerkey()
+    /* Request Type: receipt-in  */
+
+    public function testcardStorageChargeCardDCC()
     {
-        $paymentMethod = new RecurringPaymentMethod();
-        $response = $paymentMethod->charge(10)
+        $this->dccSetup();
+        $this->testcardStorageCreatePayer();
+        $this->testcardStorageStoreCard();
+        
+        $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
+        
+        $orderId = GenerationUtils::generateOrderId();
+        $dccDetails = $paymentMethod->getDccRate(DccRateType::SALE, 1001, 'EUR', DccProcessor::FEXCO, $orderId);
+        
+        $this->assertNotNull($dccDetails);
+        $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
+        $this->assertNotNull($dccDetails->dccResponseResult);
+        
+        $dccValues = new DccRateData();
+        $dccValues->orderId = $dccDetails->transactionReference->orderId;
+        $dccValues->dccProcessor = DccProcessor::FEXCO;
+        $dccValues->dccType = 1;
+        $dccValues->dccRateType = DccRateType::SALE;
+        $dccValues->currency = $dccDetails->dccResponseResult->cardHolderCurrency;
+        $dccValues->dccRate = $dccDetails->dccResponseResult->cardHolderRate;
+        $dccValues->amount = $dccDetails->dccResponseResult->cardHolderAmount;
+        
+        $response = $paymentMethod->charge(1001)
                 ->withCurrency("EUR")
                 ->withCvn("123")
+                ->withDccRateData($dccValues)
+                ->withOrderId($orderId)
                 ->execute();
-    }    
+
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+        // get the reponse details to save to the DB for future transaction management requests
+        $orderId = $response->orderId;
+        $authCode = $response->authorizationCode;
+        $paymentsReference = $response->transactionId; // pasref
+
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->responseCode);
+    }
 }

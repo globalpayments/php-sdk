@@ -2,10 +2,7 @@
 
 namespace GlobalPayments\Api\Test\Integration\Gateways\RealexConnector;
 
-// using GlobalPayments.Api.Entities;
-// using GlobalPayments.Api.Services;
-// using GlobalPayments.Api.Tests.Realex.Hpp;
-// using Microsoft.VisualStudio.TestTools.UnitTesting;
+use GlobalPayments\Api\Entities\Address;
 
 use PHPUnit\Framework\TestCase;
 
