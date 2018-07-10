@@ -22,6 +22,7 @@ use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use PHPUnit\Framework\TestCase;
+use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
 
 class ApiTestCase extends TestCase
 {
@@ -381,33 +382,28 @@ class ApiTestCase extends TestCase
         $shippingAddress->postalCode = "654|123";
         $shippingAddress->country = "GB";
 
-        // fraud filter mode configuration coming soon
+        // create the delayed settle authorization
+        $response = $card->charge(10)
+                ->withCurrency("EUR")
+                ->withAddress($billingAddress, AddressType::BILLING)
+                ->withAddress($shippingAddress, AddressType::SHIPPING)
+                ->withProductId("SID9838383") // prodid
+                ->withClientTransactionId("Car Part HV") // varref
+                ->withCustomerId("E8953893489") // custnum
+                ->withCustomerIpAddress("123.123.123.123")
+                ->withFraudFilter(FraudFilterMode::PASSIVE)
+                ->execute();
+        
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+        // get the reponse details to save to the DB for future transaction management requests
+        $orderId = $response->orderId;
+        $authCode = $response->authorizationCode;
+        $paymentsReference = $response->transactionId; // pasref
 
-        try {
-            // create the delayed settle authorization
-            $response = $card->charge(19.99)
-                    ->withCurrency("EUR")
-                    ->withAddress($billingAddress, AddressType::BILLING)
-                    ->withAddress($shippingAddress, AddressType::SHIPPING)
-                    ->withProductId("SID9838383") // prodid
-                    ->withClientTransactionId("Car Part HV") // varref
-                    ->withCustomerId("E8953893489") // custnum
-                    ->withCustomerIpAddress("123.123.123.123")
-                    ->execute();
-
-            $responseCode = $response->responseCode; // 00 == Success
-            $message = $response->responseMessage; // [ test system ] AUTHORISED
-            // get the reponse details to save to the DB for future transaction management requests
-            $orderId = $response->orderId;
-            $authCode = $response->authorizationCode;
-            $paymentsReference = $response->transactionId; // pasref
-
-            $this->assertNotEquals(null, $response);
-            $this->assertEquals("00", $responseCode);
-        } catch (ApiException $e) {
-            // TODO: add your error handling here
-            // var message = exce.Message; 107 - Fails Fraud Checks
-        }
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $responseCode);
+        $this->assertNotNull($response->fraudFilterResponse);
     }
 
     /* 24. Fraud Management Hold */
@@ -423,26 +419,40 @@ class ApiTestCase extends TestCase
         ServicesContainer::configure($config);
 
         // a hold request requires the original order id
-        $orderId = "xd4JTHE0ZEqudur_q1pB1w";
-        // and the payments reference (pasref) from the authorization response
-        $paymentsReference = "15113583374071921";
+        $card = new CreditCardData();
+        $card->number = '4263970000005262';
+        $card->expMonth = 12;
+        $card->expYear = 2025;
+        $card->cvn = '131';
+        $card->cardHolderName = 'James Mason';
+
+        $response = $card->authorize(19.99)
+                ->withCurrency("EUR")
+                ->execute();
+
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+        // get the reponse details to save to the DB for future transaction management requests
+        $orderId = $response->orderId;
+        $authCode = $response->authorizationCode;
+        $paymentsReference = $response->transactionId; // pasref
+
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $responseCode);
+
         // create the hold transaction object
         $transaction = Transaction::fromId($paymentsReference, $orderId);
 
-        try {
-            // send the hold request, we can choose to specify a reason why we're holding it
-            $response = $transaction->hold()
-                    ->withReasonCode(ReasonCode::FRAUD)
-                    ->execute();
+        // send the hold request, we can choose to specify a reason why we're holding it
+        $response = $transaction->hold()
+                ->withReasonCode(ReasonCode::FRAUD)
+                ->execute();
 
-            $responseCode = $response->responseCode; // 00 == Success
-            $message = $response->responseMessage; // [ test system ] AUTHORISED
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
 
-            $this->assertNotEquals(null, $response);
-            $this->assertEquals("00", $responseCode);
-        } catch (ApiException $e) {
-            // TODO: Add your error handling here
-        }
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $responseCode);
     }
 
     /* 25. Fraud Management Release */
@@ -457,27 +467,52 @@ class ApiTestCase extends TestCase
 
         ServicesContainer::configure($config);
 
-        // a release request requires the original order id
-        $orderId = "xd4JTHE0ZEqudur_q1pB1w";
-        // and the payments reference (pasref) from the authorization response
-        $paymentsReference = "15113583374071921";
-        // create the release transaction object
+        // a hold request requires the original order id
+        $card = new CreditCardData();
+        $card->number = '4263970000005262';
+        $card->expMonth = 12;
+        $card->expYear = 2025;
+        $card->cvn = '131';
+        $card->cardHolderName = 'James Mason';
+
+        $response = $card->authorize(19.99)
+                ->withCurrency("EUR")
+                ->execute();
+
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+        // get the reponse details to save to the DB for future transaction management requests
+        $orderId = $response->orderId;
+        $authCode = $response->authorizationCode;
+        $paymentsReference = $response->transactionId; // pasref
+
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $responseCode);
+
+        // create the hold transaction object
         $transaction = Transaction::fromId($paymentsReference, $orderId);
 
-        try {
-            // send the release request, we can choose to specify a reason why we're releasing it
-            $response = $transaction->release()
-                    ->withReasonCode(ReasonCode::FALSE_POSITIVE)
-                    ->execute();
+        // send the hold request, we can choose to specify a reason why we're holding it
+        $response = $transaction->hold()
+                ->withReasonCode(ReasonCode::FRAUD)
+                ->execute();
+        
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
 
-            $responseCode = $response->responseCode; // 00 == Success
-            $message = $response->responseMessage; // [ test system ] AUTHORISED
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $responseCode);
 
-            $this->assertNotEquals(null, $response);
-            $this->assertEquals("00", $responseCode);
-        } catch (ApiException $e) {
-            // TODO: Add your error handling here
-        }
+        // send the release request, we can choose to specify a reason why we're releasing it
+        $response = $transaction->release()
+                ->withReasonCode(ReasonCode::FALSE_POSITIVE)
+                ->execute();
+
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $responseCode);
     }
 
     /* 26. Dcc Rate Lookup */
@@ -686,4 +721,100 @@ class ApiTestCase extends TestCase
             ->withModifier(TransactionModifier::ENCRYPTED_MOBILE)
             ->execute();
     }
+    
+    public function testfraudManagementAVSMatch()
+    {
+        $config = new ServicesConfig();
+        $config->merchantId = 'heartlandgpsandbox';
+        $config->accountId = 'api';
+        $config->sharedSecret = 'secret';
+        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
+
+        ServicesContainer::configure($config);
+
+        // create the card object
+        $card = new CreditCardData();
+        $card->number = '4263970000005262';
+        $card->expMonth = 12;
+        $card->expYear = 2025;
+        $card->cvn = '131';
+        $card->cardHolderName = 'James Mason';
+
+        // supply the customer's billing country and post code for avs checks
+        $billingAddress = new Address();
+        $billingAddress->postalCode = "50001|Flat 123";
+        $billingAddress->country = "US";
+        
+        // create the delayed settle authorization
+        $response = $card->charge(10)
+                ->withCurrency("EUR")
+                ->withAddress($billingAddress, AddressType::BILLING)
+                ->withVerifyAddress(TRUE)
+                ->execute();
+
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+        // get the reponse details to save to the DB for future transaction management requests
+        $orderId = $response->orderId;
+        $authCode = $response->authorizationCode;
+        $paymentsReference = $response->transactionId; // pasref
+
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $responseCode);        
+        $this->assertEquals("M", $response->avsResponseCode);
+        $this->assertEquals("M", $response->avsAddressResponse);
+    }
+    
+    public function testfraudManagementOffMode()
+    {
+        $config = new ServicesConfig();
+        $config->merchantId = 'heartlandgpsandbox';
+        $config->accountId = 'api';
+        $config->sharedSecret = 'secret';
+        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
+
+        ServicesContainer::configure($config);
+
+        // create the card object
+        $card = new CreditCardData();
+        $card->number = '4263970000005262';
+        $card->expMonth = 12;
+        $card->expYear = 2025;
+        $card->cvn = '131';
+        $card->cardHolderName = 'James Mason';
+
+        // supply the customer's billing country and post code for avs checks
+        $billingAddress = new Address();
+        $billingAddress->postalCode = "50001|Flat 123";
+        $billingAddress->country = "US";
+
+        // supply the customer's shipping country and post code
+        $shippingAddress = new Address();
+        $shippingAddress->postalCode = "654|123";
+        $shippingAddress->country = "GB";
+
+        // create the delayed settle authorization
+        $response = $card->charge(10)
+                ->withCurrency("EUR")
+                ->withAddress($billingAddress, AddressType::BILLING)
+                ->withAddress($shippingAddress, AddressType::SHIPPING)
+                ->withProductId("SID9838383") // prodid
+                ->withClientTransactionId("Car Part HV") // varref
+                ->withCustomerId("E8953893489") // custnum
+                ->withCustomerIpAddress("123.123.123.123")
+                ->withFraudFilter(FraudFilterMode::OFF)
+                ->execute();
+        
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+        // get the reponse details to save to the DB for future transaction management requests
+        $orderId = $response->orderId;
+        $authCode = $response->authorizationCode;
+        $paymentsReference = $response->transactionId; // pasref
+
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $responseCode);
+        $this->assertNull($response->fraudFilterResponse);
+    }
+    
 }

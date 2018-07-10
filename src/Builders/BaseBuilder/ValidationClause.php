@@ -103,6 +103,49 @@ class ValidationClause
     }
     
     /**
+     * Validates the target property is null
+     *
+     * @param string $subProperty Parent of current property
+     * @param string $message Validation message to override the default
+     *
+     * @return ValidationTarget
+     */
+    public function isNull($message = null, $subProperty = null)
+    {
+        $this->callback = function ($builder) use ($subProperty) {
+            $builder = ($subProperty == null && empty($builder->{$subProperty}))
+                        ? $builder->{$subProperty}
+                        : $builder;
+            if (!property_exists($builder, $this->target->property)
+                && !isset($builder->{$this->target->property})
+            ) {
+                throw new BuilderException(
+                    sprintf(
+                        'Property `%s` does not exist on `%s`',
+                        $this->target->property,
+                        get_class($builder)
+                    )
+                );
+            }
+            $value = $builder->{$this->target->property};
+            return null == $value;
+        };
+        $this->message = !empty($message)
+            ? $message
+            // TODO: implement a way to expose property name
+            : sprintf(
+                '%s cannot be set for this transaction type.',
+                $this->target->property
+            );
+
+        if ($this->precondition) {
+            return $this->target;
+        }
+
+        return $this->parent->of($this->target->type, $this->target->modifier);
+    }
+    
+    /**
      * Validates the target property is not null in a sub class
      *
      * @param string $subProperty Parent of current property

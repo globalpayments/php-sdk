@@ -335,6 +335,24 @@ class AuthorizationBuilder extends TransactionBuilder
      */
     public $dccType;
     
+    /**
+     * Fraud Filter
+     *
+     * Typically only applicable with recurring payment methods
+     *
+     * @internal
+     * @var string
+     */
+    public $fraudFilter;
+    
+    /**
+     * For AVS (Address verification System) request
+     *
+     * @internal
+     * @var bool
+     */
+    public $verifyAddress;
+    
 
     /**
      * {@inheritdoc}
@@ -865,6 +883,57 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withDccType($value)
     {
         $this->dccType = $value;
+    }
+
+    /**
+     * Set the request Convenience amount
+     *
+     * @param string|float $convenienceAmt Request Convenience amount
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withConvenienceAmount($convenienceAmount)
+    {
+        $this->convenienceAmount  = $convenienceAmount ;
+        return $this;
+    }
+    
+    /**
+     * Set the request shippingAmount
+     *
+     * @param string|float $shippingAmount Request shippingAmount
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withShippingAmount($shippingAmount)
+    {
+        $this->shippingAmount = $shippingAmount;
+        return $this;
+    }
+    
+    /**
+     * Set the request customer IP address
+     *
+     * @param string|float $customerIpAddress Request customer IP address
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withFraudFilter($fraudFilter)
+    {
+        $this->fraudFilter = $fraudFilter;
+        return $this;
+    }
+    
+    /**
+     * Set whether AVS requested
+     *
+     * @param string|bool $verifyAddress
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withVerifyAddress($verifyAddress)
+    {
+        $this->verifyAddress = $verifyAddress;
         return $this;
     }
 }

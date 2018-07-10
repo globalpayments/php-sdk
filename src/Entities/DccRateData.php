@@ -22,28 +22,29 @@ class DccRateData
     public $currency;
     
     /**
-     * The dccProcessor
+     * The name of the CCP (Currency Conversion Processor) the request is to be sent to
      *
      * @var string
      */
     public $dccProcessor;
     
     /**
-     * The dccRate
+     * Rate Offered for the Exchange
      *
      * @var string
      */
     public $dccRate;
     
     /**
-     * The dccRateType
+     * Rate type, 'S' for authorisation transactions (Sale). 'R' for Refunds.
      *
      * @var string
      */
     public $dccRateType;
     
     /**
-     * The dccType
+     * The type of currency conversion rate obtained. This is usually set to 1 but can contain other values.
+     * Please consult with your Currency Conversion Processor.
      *
      * @var string
      */

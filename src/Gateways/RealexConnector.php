@@ -27,6 +27,7 @@ use GlobalPayments\Api\Entities\Enums\DccProcessor;
 use GlobalPayments\Api\Entities\Enums\DccRateType;
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\DccResponseResult;
+use GlobalPayments\Api\Entities\FraudManagementResponse;
 
 class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringService
 {
@@ -288,7 +289,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $request->appendChild($comments);
         }
 
-        // TODO: fraudfilter
+        
         if ($builder->recurringType !== null || $builder->recurringSequence !== null) {
             $recurring = $xml->createElement("recurring");
             $recurring->setAttribute("type", strtolower($builder->recurringType));
@@ -296,21 +297,9 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $request->appendChild($recurring);
         }
 
-        // tssinfo
-        if ($builder->customerId !== null
-            || $builder->productId !== null
-            || $builder->customerId !== null
-            || $builder->clientTransactionId !== null
-        ) {
-            $tssInfo = $xml->createElement("tssinfo");
-            $tssInfo->appendChild($xml->createElement("custnum", $builder->customerId));
-            $tssInfo->appendChild($xml->createElement("prodid", $builder->productId));
-            $tssInfo->appendChild($xml->createElement("varref", $builder->clientTransactionId));
-            $tssInfo->appendChild($xml->createElement("custipaddress", $builder->customerIpAddress));
-            //$tssInfo->appendChild($xml->createElement("address", ""));
-            $request->appendChild($tssInfo);
-        }
-
+        //fraud filter
+        $this->buildFraudFilter($builder, $xml, $request);
+        
         // TODO: mpi
         if ($builder->ecommerceInfo !== null) {
             $mpi = $xml->createElement("mpi");
@@ -319,6 +308,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $mpi->appendChild($xml->createElement("eci", $builder->ecommerceInfo->eci));
             $request->appendChild($mpi);
         }
+        
         $response = $this->doTransaction($xml->saveXML($request));
         return $this->mapResponse($response);
     }
@@ -690,6 +680,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $result->responseMessage = (string)$root->message;
         $result->cvnResponseCode = (string)$root->cvnresult;
         $result->avsResponseCode = (string)$root->avspostcoderesponse;
+        $result->avsAddressResponse = (string)$root->avsaddressresponse;
         $result->transactionReference = new TransactionReference();
         $result->transactionReference->paymentMethodType = PaymentMethodType::CREDIT;
         $result->transactionReference->transactionId = (string)$root->pasref;
@@ -711,7 +702,30 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $result->dccResponseResult->exchangeRateSourceTimestamp = (string)
                                             $root->dccinfo->exchangeratesourcetimestamp;
         }
+        //fraud filter
+        if (!empty($root->fraudresponse)) {
+            $fraudResponse = $root->fraudresponse;
+            $result->fraudFilterResponse = new FraudManagementResponse();
+            
+            foreach ($fraudResponse->attributes() as $attrName => $attrValue) {
+                $result->fraudFilterResponse->fraudResponseMode = (!empty($attrValue)) ? (string) $attrValue : '';
+            }
 
+            $result->fraudFilterResponse->fraudResponseResult = (!empty($fraudResponse->result)) ?
+                                            (string) $fraudResponse->result : '';
+            
+            if (!empty($fraudResponse->rules)) {
+                foreach ($fraudResponse->rules->rule as $rule) {
+                    $ruleDetails = [
+                        'id' => (string) $rule->attributes()->id,
+                        'name' => (string) $rule->attributes()->name,
+                        'action' => (string) $rule->action
+                    ];
+                    $result->fraudFilterResponse->fraudResponseRules[] = $ruleDetails;
+                }
+            }
+        }
+       
         return $result;
     }
 
@@ -965,5 +979,56 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             }
         }
         return $requestValues;
+    }
+    
+    public function buildFraudFilter($builder, $xml, $request)
+    {
+        // tssinfo fraudfilter
+        // fraudfilter
+        if (!empty($builder->fraudFilter)) {
+            $fraudFilter = $xml->createElement("fraudfilter");
+            $fraudFilter->setAttribute("mode", $builder->fraudFilter);
+            $request->appendChild($fraudFilter);
+        }
+        if ($builder->customerId !== null || $builder->productId !== null ||
+                $builder->clientTransactionId !== null || $builder->verifyAddress !== false
+        ) {
+            $tssInfo = $xml->createElement("tssinfo");
+            
+            if (!empty($builder->customerId)) {
+                $tssInfo->appendChild($xml->createElement("custnum", $builder->customerId));
+            }
+
+            if (!empty($builder->productId)) {
+                $tssInfo->appendChild($xml->createElement("prodid", $builder->productId));
+            }
+
+            if (!empty($builder->clientTransactionId)) {
+                $tssInfo->appendChild($xml->createElement("varref", $builder->clientTransactionId));
+            }
+
+            if (!empty($builder->customerIpAddress)) {
+                $tssInfo->appendChild($xml->createElement("custipaddress", $builder->customerIpAddress));
+            }
+
+            if (!empty($builder->billingAddress)) {
+                $billingAddress = $xml->createElement("address");
+                $billingAddress->setAttribute("type", 'billing');
+                $billingAddress->appendChild($xml->createElement("code", $builder->billingAddress->postalCode));
+                $billingAddress->appendChild($xml->createElement("country", $builder->billingAddress->country));
+                $tssInfo->appendChild($billingAddress);
+            }
+
+            if (!empty($builder->shippingAddress)) {
+                $shippingAddress = $xml->createElement("address");
+                $shippingAddress->setAttribute("type", 'shipping');
+                $shippingAddress->appendChild($xml->createElement("code", $builder->shippingAddress->postalCode));
+                $shippingAddress->appendChild($xml->createElement("country", $builder->shippingAddress->country));
+                $tssInfo->appendChild($shippingAddress);
+            }
+
+            $request->appendChild($tssInfo);
+        }
+        return;
     }
 }

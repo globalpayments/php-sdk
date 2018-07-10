@@ -193,6 +193,21 @@ class Transaction
      * @var dccResponseResult
      */
     public $dccResponseResult;
+    
+    /**
+     * The Dcc Response
+     *
+     * @internal
+     * @var fraudFilterResponse
+     */
+    public $fraudFilterResponse;
+    
+    /**
+     * The address verification service (AVS) address response code.
+     *
+     * @var string
+     */
+    public $avsAddressResponse;
 
     /**
      * Creates a `Transaction` object from a stored transaction ID.

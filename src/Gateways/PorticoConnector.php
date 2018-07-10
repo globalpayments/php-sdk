@@ -8,6 +8,7 @@ use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Builders\ReportBuilder;
+use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use GlobalPayments\Api\Entities\BatchSummary;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Enums\AccountType;
@@ -30,6 +31,11 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\IPinProtected;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITrackData;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
+use GlobalPayments\Api\Entities\Enums\ReportType;
+use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
+use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
+use GlobalPayments\Api\Entities\Reporting\SearchCriteriaBuilder;
+use GlobalPayments\Api\Services\ReportingService;
 
 class PorticoConnector extends XmlGateway implements IPaymentGateway
 {
@@ -566,11 +572,11 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
     {
         $xml = new DOMDocument('1.0', 'utf-8');
 
-        $transaction = $xml->createElement($this->mapReportType($builder->reportType));
+        $transaction = $xml->createElement($this->mapReportType($builder));
         $transaction->appendChild($xml->createElement('TzConversion', $builder->timeZoneConversion));
 
         if ($builder instanceof TransactionReportBuilder) {
-            if ($builder->deviceId !== null) {
+            /*  if ($builder->deviceId !== null) {
                 $transaction->appendChild($xml->createElement('DeviceId', $builder->deviceId));
             }
 
@@ -580,13 +586,231 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
             if ($builder->endDate !== null) {
                 $transaction->appendChild($xml->createElement('RptEndUtcDT', $builder->endDate->format()));
-            }
+            } */
 
             if ($builder->transactionId !== null) {
                 $transaction->appendChild($xml->createElement('TxnId', $builder->transactionId));
+            } else {
+                $criteria = $transaction->appendChild($xml->createElement('Criteria'));
+
+                if ($builder->searchBuilder->startDate !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'StartUtcDT',
+                        $builder->searchBuilder->startDate
+                    ));
+                }
+                if ($builder->searchBuilder->endDate !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'EndUtcDT',
+                        $builder->searchBuilder->endDate
+                    ));
+                }
+                if ($builder->searchBuilder->authCode !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'AuthCode',
+                        $builder->searchBuilder->authCode
+                    ));
+                }
+                if ($builder->searchBuilder->cardHolderLastName !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'CardHolderLastName',
+                        $builder->searchBuilder->cardHolderLastName
+                    ));
+                }
+                if ($builder->searchBuilder->cardHolderFirstName !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'CardHolderFirstName',
+                        $builder->searchBuilder->cardHolderFirstName
+                    ));
+                }
+                if ($builder->searchBuilder->cardNumberFirstSix !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'CardNbrFirstSix',
+                        $builder->searchBuilder->cardNumberFirstSix
+                    ));
+                }
+                if ($builder->searchBuilder->cardNumberLastFour !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'CardNbrLastFour',
+                        $builder->searchBuilder->cardNumberLastFour
+                    ));
+                }
+                if ($builder->searchBuilder->invoiceNumber !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'InvoiceNbr',
+                        $builder->searchBuilder->invoiceNumber
+                    ));
+                }
+                if ($builder->searchBuilder->cardHolderPoNumber !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'CardHolderPONbr',
+                        $builder->searchBuilder->cardHolderPoNumber
+                    ));
+                }
+                if ($builder->searchBuilder->customerId !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'CustomerID',
+                        $builder->searchBuilder->customerId
+                    ));
+                }
+                if ($builder->searchBuilder->issuerResult !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'IssuerResult',
+                        $builder->searchBuilder->issuerResult
+                    ));
+                }
+                if ($builder->searchBuilder->settlementAmount !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'SettlementAmount',
+                        $builder->searchBuilder->settlementAmount
+                    ));
+                }
+                if ($builder->searchBuilder->issuerTransactionId !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'IssTxnId',
+                        $builder->searchBuilder->issuerTransactionId
+                    ));
+                }
+                if ($builder->searchBuilder->referenceNumber !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'RefNbr',
+                        $builder->searchBuilder->referenceNumber
+                    ));
+                }
+                if ($builder->searchBuilder->username !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'UserName',
+                        $builder->searchBuilder->username
+                    ));
+                }
+                if ($builder->searchBuilder->clerkId !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'ClerkID',
+                        $builder->searchBuilder->clerkId
+                    ));
+                }
+                if ($builder->searchBuilder->batchSequenceNumber !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'BatchSeqNbr',
+                        $builder->searchBuilder->batchSequenceNumber
+                    ));
+                }
+                if ($builder->searchBuilder->batchId !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'BatchId',
+                        $builder->searchBuilder->batchId
+                    ));
+                }
+                if ($builder->searchBuilder->siteTrace !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'SiteTrace',
+                        $builder->searchBuilder->siteTrace
+                    ));
+                }
+                if ($builder->searchBuilder->displayName !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'DisplayName',
+                        $builder->searchBuilder->displayName
+                    ));
+                }
+                if ($builder->searchBuilder->clientTransactionId !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'ClientTxnId',
+                        $builder->searchBuilder->clientTransactionId
+                    ));
+                }
+                if ($builder->searchBuilder->uniqueDeviceId !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'UniqueDeviceId',
+                        $builder->searchBuilder->uniqueDeviceId
+                    ));
+                }
+                if ($builder->searchBuilder->accountNumberLastFour !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'AcctNbrLastFour',
+                        $builder->searchBuilder->accountNumberLastFour
+                    ));
+                }
+                if ($builder->searchBuilder->bankRoutingNumber !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'BankRountingNbr',
+                        $builder->searchBuilder->bankRoutingNumber
+                    ));
+                }
+                if ($builder->searchBuilder->checkNumber !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'CheckNbr',
+                        $builder->searchBuilder->checkNumber
+                    ));
+                }
+                if ($builder->searchBuilder->checkFirstName !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'CheckFirstName',
+                        $builder->searchBuilder->checkFirstName
+                    ));
+                }
+                if ($builder->searchBuilder->checkLastName !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'CheckLastName',
+                        $builder->searchBuilder->checkLastName
+                    ));
+                }
+                if ($builder->searchBuilder->checkName !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'CheckName',
+                        $builder->searchBuilder->checkName
+                    ));
+                }
+                if ($builder->searchBuilder->giftCurrency !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'GiftCurrency',
+                        $builder->searchBuilder->giftCurrency
+                    ));
+                }
+                if ($builder->searchBuilder->giftMaskedAlias !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'GiftMaskedAlias',
+                        $builder->searchBuilder->giftMaskedAlias
+                    ));
+                }
+                if ($builder->searchBuilder->oneTime !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'OneTime',
+                        $builder->searchBuilder->oneTime
+                    ));
+                }
+                if ($builder->searchBuilder->paymentMethodKey !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'PaymentMethodKey',
+                        $builder->searchBuilder->paymentMethodKey
+                    ));
+                }
+                if ($builder->searchBuilder->scheduleId !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'ScheduleID',
+                        $builder->searchBuilder->scheduleId
+                    ));
+                }
+                if ($builder->searchBuilder->buyerEmailAddress !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'BuyerEmailAddress',
+                        $builder->searchBuilder->buyerEmailAddress
+                    ));
+                }
+                if ($builder->searchBuilder->altPaymentStatus !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'AltPaymentStatus',
+                        $builder->searchBuilder->altPaymentStatus
+                    ));
+                }
+                if ($builder->searchBuilder->fullyCaptured !== null) {
+                    $criteria->appendChild($xml->createElement(
+                        'FullyCapturedInd',
+                        $builder->searchBuilder->fullyCaptured
+                    ));
+                }
             }
         }
-
         $response = $this->doTransaction($this->buildEnvelope($xml, $transaction));
         return $this->mapReportResponse($response, $builder);
     }
@@ -809,16 +1033,18 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         $root = $this->xml2object($rawResponse)->{'Ver1.0'};
         $doc = $root->Transaction->{$this->mapReportType($builder)};
 
-        if ($builder->reportType === ReportType::ACTIVITY && isset($doc->Details)) {
+        if ((($builder->reportType === ReportType::ACTIVITY)
+            || ($builder->reportType === ReportType::FIND_TRANSACTIONS))
+            && isset($doc->Transactions)) {
             $response = [];
-            foreach ($doc->Details as $item) {
+            foreach ($doc->Transactions as $item) {
                 $response[] = $this->hydrateTransactionSummary($item);
             }
             return $response;
         }
 
         if ($builder->reportType === ReportType::TRANSACTION_DETAIL) {
-            return $this->hydrateTransactionSummary($doc);
+            return $this->hydrateTransactionSummary($doc->Transactions);
         }
 
         return null;
@@ -827,6 +1053,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
     protected function hydrateTransactionSummary($item)
     {
         $summary = new TransactionSummary();
+
+        if (isset($item) && isset($item->AcctDataSrc)) {
+            $summary->accountDataSource = $item->AcctDataSrc;
+        }
 
         if (isset($item) && isset($item->Amt)) {
             $summary->amount = $item->Amt;
@@ -840,12 +1070,40 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $summary->authCode = $item->AuthCode;
         }
 
+        if (isset($item) && isset($item->BatchCloseDT)) {
+            $summary->batchCloseDate = $item->BatchCloseDT;
+        }
+
+        if (isset($item) && isset($item->BatchSeqNbr)) {
+            $summary->batchSequenceNumber = $item->BatchSeqNbr;
+        }
+
+        if (isset($item) && isset($item->CardSwiped)) {
+            $summary->cardSwiped = $item->CardSwiped;
+        }
+
+        if (isset($item) && isset($item->CardType)) {
+            $summary->cardType = $item->CardType;
+        }
+
+        if (isset($item) && isset($item->ClerkId)) {
+            $summary->clerkId = $item->ClerkId;
+        }
+
         if (isset($item) && isset($item->ClientTxnId)) {
             $summary->clientTransactionId = $item->ClientTxnId;
         }
 
+        if (isset($item) && isset($item->ConvenienceAmtInfo)) {
+            $summary->convenienceAmount = $item->ConvenienceAmtInfo;
+        }
+
         if (isset($item) && isset($item->DeviceId)) {
             $summary->deviceId = $item->DeviceId;
+        }
+
+        if (isset($item) && isset($item->GratuityAmtInfo)) {
+            $summary->gratuityAmount = $item->GratuityAmtInfo;
         }
 
         if (isset($item) && (isset($item->RspCode) || isset($item->IssuerRspCode))) {
@@ -854,6 +1112,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         if (isset($item) && (isset($item->RspText) || isset($item->IssuerRspText))) {
             $summary->issuerResponseMessage = isset($item->RspText) ? $item->RspText : $item->IsserRspText;
+        }
+
+        if (isset($item) && isset($item->IssTxnId)) {
+            $summary->issuerTransactionId = $item->IssTxnId;
         }
 
         if (isset($item) && isset($item->MaskedCardNbr)) {
@@ -872,8 +1134,20 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $summary->gatewayResponseMessage = $item->GatewayResponseMsg;
         }
 
+        if (isset($item) && isset($item->PaymentType)) {
+            $summary->paymentType = $item->PaymentType;
+        }
+
+        if (isset($item) && isset($item->CardHolderPONbr)) {
+            $summary->poNumber = $item->CardHolderPONbr;
+        }
+
         if (isset($item) && isset($item->RefNbr)) {
             $summary->referenceNumber = $item->RefNbr;
+        }
+
+        if (isset($item) && isset($item->RspDT)) {
+            $summary->responseDate = $item->RspDT;
         }
 
         if (isset($item) && isset($item->ServiceName)) {
@@ -884,8 +1158,24 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $summary->settlementAmount = $item->SettlementAmt;
         }
 
+        if (isset($item) && isset($item->ShippingAmtInfo)) {
+            $summary->shippingAmount = $item->ShippingAmtInfo;
+        }
+
+        if (isset($item) && isset($item->SiteTrace)) {
+            $summary->siteTrace = $item->SiteTrace;
+        }
+
         if (isset($item) && (isset($item->TxnStatus) || isset($item->Status))) {
             $summary->status = isset($item->TxnStatus) ? $item->TxnStatus : $item->Status;
+        }
+
+        if (isset($item) && (isset($item->TaxAmtInfo) || isset($item->TaxAmt))) {
+            $summary->taxAmount = isset($item->TaxAmtInfo) ? $item->TaxAmtInfo : $item->TaxAmt;
+        }
+
+        if (isset($item) && isset($item->TaxType)) {
+            $summary->taxType = $item->TaxType;
         }
 
         if (isset($item) && (isset($item->TxnUtcDT) || isset($item->ReqUtcDT))) {
@@ -896,14 +1186,152 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $summary->transactionId = $item->GatewayTxnId;
         }
 
-        if (isset($item) && isset($item->ConvenienceAmtInfo)) {
-            $summary->convenienceAmount = $item->ConvenienceAmtInfo;
+        if (isset($item) && isset($item->TxnStatus)) {
+            $summary->transactionStatus = $item->TxnStatus;
         }
 
-        if (isset($item) && isset($item->ShippingAmtInfo)) {
-            $summary->shippingAmount = $item->ShippingAmtInfo;
+        if (isset($item) && isset($item->UserName)) {
+            $summary->userName = $item->UserName;
         }
 
+        if (isset($item) && isset($item->Description)) {
+            $summary->description = $item->Description;
+        }
+
+        if (isset($item) && isset($item->InvoiceNbr)) {
+            $summary->invoiceNumber = $item->InvoiceNbr;
+        }
+
+        if (isset($item) && isset($item->CustomerID)) {
+            $summary->customerId = $item->CustomerID;
+        }
+
+        if (isset($item) && isset($item->UniqueDeviceId)) {
+            $summary->uniqueDeviceId = $item->UniqueDeviceId;
+        }
+
+        if (isset($item) && isset($item->AdditionalTxnFields->TxnDescriptor)) {
+            $summary->transactionDescriptor = $item->AdditionalTxnFields->TxnDescriptor;
+        }
+
+        if (isset($item) && isset($item->GiftCurrency)) {
+            $summary->giftCurrency = $item->GiftCurrency;
+        }
+
+        if (isset($item) && isset($item->GiftMaskedAlias)) {
+            $summary->maskedAlias = $item->GiftMaskedAlias;
+        }
+
+        if (isset($item) && isset($item->PaymentMethodKey)) {
+            $summary->paymentMethodKey = $item->PaymentMethodKey;
+        }
+
+        if (isset($item) && isset($item->ScheduleID)) {
+            $summary->scheduleId = $item->ScheduleID;
+        }
+
+        if (isset($item) && isset($item->OneTime)) {
+            $summary->oneTimePayment = $item->OneTime;
+        }
+
+        if (isset($item) && isset($item->RecurringDataCode)) {
+            $summary->recurringDataCode = $item->RecurringDataCode;
+        }
+
+        if (isset($item) && isset($item->SurchargeAmtInfo)) {
+            $summary->surchargeAmount = $item->SurchargeAmtInfo;
+        }
+
+        if (isset($item) && isset($item->FraudInfoRule)) {
+            $summary->fraudRuleInfo = $item->UserNFraudInfoRuleame;
+        }
+
+        if (isset($item) && isset($item->RepeatCount)) {
+            $summary->repeatCount = $item->RepeatCount;
+        }
+
+        if (isset($item) && isset($item->EMVChipCondition)) {
+            $summary->emvChipCondition = $item->EMVChipCondition;
+        }
+
+        if (isset($item) && isset($item->HasEMVTag)) {
+            $summary->hasEmvTags = $item->HasEMVTag;
+        }
+
+        if (isset($item) && isset($item->HasEcomPaymentData)) {
+            $summary->hasEcomPaymentData = $item->HasEcomPaymentData;
+        }
+
+        if (isset($item) && isset($item->CAVVResultCode)) {
+            $summary->cavvResponseCode = $item->CAVVResultCode;
+        }
+
+        if (isset($item) && isset($item->TokenPANLast4)) {
+            $summary->tokenPanLastFour = $item->TokenPANLast4;
+        }
+
+        if (isset($item) && isset($item->Company)) {
+            $summary->companyName = $item->Company;
+        }
+
+        if (isset($item) && isset($item->CustomerFirstname)) {
+            $summary->customerFirstName = $item->CustomerFirstname;
+        }
+
+        if (isset($item) && isset($item->CustomerLastName)) {
+            $summary->customerLastName = $item->CustomerLastName;
+        }
+
+        if (isset($item) && isset($item->DebtRepaymentIndicator)) {
+            $summary->debtRepaymentIndicator = $item->DebtRepaymentIndicator;
+        }
+
+        if (isset($item) && isset($item->CaptureAmtInfo)) {
+            $summary->captureAmount = $item->CaptureAmtInfo;
+        }
+
+        if (isset($item) && isset($item->FullyCapturedInd)) {
+            $summary->fullyCaptured = $item->FullyCapturedInd;
+        }
+
+         // lodging data
+        if (isset($item) && isset($item->LodgingData)) {
+            $summary->lodgingData = new LodgingData();
+            $summary->lodgingData->prestigiousPropertyLimit = $item->LodgingData->PrestigiousPropertyLimit;
+            $summary->lodgingData->noShow = $item->LodgingData->NoShow;
+            $summary->lodgingData->advancedDepositType = $item->LodgingData->AdvancedDepositType;
+            $summary->lodgingData->lodgingDataEdit = $item->LodgingData->LodgingDataEdit;
+            $summary->lodgingData->preferredCustomer = $item->LodgingData->PreferredCustomer;
+        }
+
+        // check data
+        if (isset($item) && isset($item->CheckData)) {
+            $summary->checkData = new CheckData();
+            $summary->checkData->accountInfo = $item->CheckData->AccountInfo;
+            $summary->checkData->consumerInfo = $item->CheckData->ConsumerInfo;
+            $summary->checkData->dataEntryMode = $item->CheckData->DataEntryMode;
+            $summary->checkData->checkType = $item->CheckData->CheckType;
+            $summary->checkData->sECCode = $item->CheckData->SECCode;
+            $summary->checkData->checkAction = $item->CheckData->CheckAction;
+        }
+
+        // alt payment data
+        if (isset($item) && isset($item->AltPaymentData)) {
+            $summary->altPaymentData = new AltPaymentData();
+            $summary->altPaymentData->buyerEmailAddress = $item->AltPaymentData->BuyerEmailAddress;
+            $summary->altPaymentData->stateDate = $item->AltPaymentData->StatusDT;
+            $summary->altPaymentData->status = $item->AltPaymentData->Status;
+            $summary->altPaymentData->statusMessage = $item->AltPaymentData->StatusMsg;
+
+            $summary->altPaymentData->processorResponseInfo = new AltPaymentProcessorInfo();
+            foreach ($summary->altPaymentData->processorResponseInfo as $info) {
+                $pri = new AltPaymentProcessorInfo();
+                $pri->code = $info->Code;
+                $pri->message = $info->Message;
+                $pri->type = $info->Type;
+            }
+                $summary->altPaymentData->processorResponseInfo->add($pri);
+        }
         return $summary;
     }
 
@@ -1052,9 +1480,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
     {
         switch ($builder->reportType) {
             case ReportType::ACTIVITY:
-                return 'ReportActivity';
             case ReportType::TRANSACTION_DETAIL:
-                return 'ReportTxnDetail';
+            case ReportType::FIND_TRANSACTIONS:
+                return 'FindTransactions';
             default:
                 throw new UnsupportedTransactionException();
         }
@@ -1301,9 +1729,13 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
      */
     protected function hydrateManualEntry(DOMDocument $xml, BaseBuilder $builder, $hasToken = false, $tokenValue = null)
     {
-        $me = $xml->createElement('ManualEntry');
+        if ($hasToken) {
+            $me = $xml->createElement('TokenData');
+        } else {
+            $me = $xml->createElement('ManualEntry');
+        }
 
-        if (isset($builder->paymentMethod->number)) {
+        if ($hasToken || isset($builder->paymentMethod->number)) {
             $me->appendChild(
                 $xml->createElement(
                     $hasToken ? 'TokenValue' : 'CardNbr',

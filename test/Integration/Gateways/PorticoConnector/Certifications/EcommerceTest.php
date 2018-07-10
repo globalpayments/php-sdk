@@ -26,7 +26,7 @@ class EcommerceTest extends TestCase
     const BATCH_NOT_OPEN = 'Transaction was rejected because it requires a batch to be open.';
 
     /** @var bool */
-    private $useTokens = false;
+    private $useTokens = true;
 
     /** @var bool */
     private $usePrepaid = false;
@@ -48,7 +48,7 @@ class EcommerceTest extends TestCase
 
     /** @var string|null */
     public static $amexToken = null;
-    
+
     private $enableCryptoUrl = true;
 
     private function config()

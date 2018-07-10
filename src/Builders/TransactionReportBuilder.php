@@ -3,6 +3,9 @@
 namespace GlobalPayments\Api\Builders;
 
 use GlobalPayments\Api\Entities\Enums\ReportType;
+use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
+use GlobalPayments\Api\Entities\Reporting\SearchCriteriaBuilder;
 
 class TransactionReportBuilder extends ReportBuilder
 {
@@ -29,7 +32,38 @@ class TransactionReportBuilder extends ReportBuilder
      * @var string
      */
     public $transactionId;
+    
+    /**
+     * @internal
+     * @var string
+     */
+    public $transactionType;
+    
+    /**
+     * @internal
+     * @var SearchCriteriaBuilder
+     */
+    public $searchBuilder;
+    
+    /**
+     * @internal
+     * @var ReportType
+     */
+    public $reportType;
 
+    /**
+     * @internal
+     * @var TimeZoneConversion
+     */
+    public $timeZoneConversion;
+    
+    public function __construct($activity)
+    {
+        parent::__construct($activity);
+        
+        $this->searchBuilder = new SearchCriteriaBuilder($this);
+    }
+    
     /**
      * Sets the device ID as criteria for the report.
      *
@@ -39,7 +73,7 @@ class TransactionReportBuilder extends ReportBuilder
      */
     public function withDeviceId($value)
     {
-        $this->deviceId = $value;
+        $this->searchBuilder->deviceId = $value;
         return $this;
     }
 
@@ -52,7 +86,7 @@ class TransactionReportBuilder extends ReportBuilder
      */
     public function withEndDate($value)
     {
-        $this->endDate = $value;
+        $this->searchBuilder->endDate = $value;
         return $this;
     }
 
@@ -65,7 +99,7 @@ class TransactionReportBuilder extends ReportBuilder
      */
     public function withStartDate($value)
     {
-        $this->startDate = $value;
+        $this->searchBuilder->startDate = $value;
         return $this;
     }
 
@@ -81,15 +115,20 @@ class TransactionReportBuilder extends ReportBuilder
         $this->transactionId = $value;
         return $this;
     }
-
+    
+    /**
+     * @return SearchCriteriaBuilder
+     */
+    public function where($criteria, $value)
+    {
+        return $this->searchBuilder->and($criteria, $value);
+    }
+        
     protected function setupValidations()
     {
         $this->validations->of(ReportType::TRANSACTION_DETAIL)
-            ->check('transactionId')->isNotNull()
-            ->check('deviceId')->isNotNull()
-            ->check('startDate')->isNotNull()
-            ->check('endDate')->isNotNull();
-
+            ->check('transactionId')->isNotNull();
+            
         $this->validations->of(ReportType::ACTIVITY)
             ->check('transactionId')->isNull();
     }
