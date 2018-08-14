@@ -208,6 +208,8 @@ class Transaction
      * @var string
      */
     public $avsAddressResponse;
+    
+    public $responseValues;
 
     /**
      * Creates a `Transaction` object from a stored transaction ID.

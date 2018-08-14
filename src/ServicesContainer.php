@@ -65,6 +65,7 @@ class ServicesContainer
             $gateway->refundPassword = $config->refundPassword;
             $gateway->timeout = $config->timeout;
             $gateway->serviceUrl = $config->serviceUrl;
+            $gateway->hostedPaymentConfig = $config->hostedPaymentConfig;
             static::$instance = new static($gateway, $gateway);
         } else {
             $gateway = new PorticoConnector();

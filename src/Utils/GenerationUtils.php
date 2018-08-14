@@ -1,15 +1,16 @@
 <?php
 
-
 namespace GlobalPayments\Api\Utils;
 
 use DateTime;
+use GlobalPayments\Api\Entities\Enums\HppVersion;
 
 /**
  * Utils for the auto-generation of fields, for example the SHA1 hash.
  */
 class GenerationUtils
 {
+
     /**
      * Generate a hash, required for all messages sent to Realex to prove it
      * was not tampered with.
@@ -117,13 +118,13 @@ class GenerationUtils
             22
         );
     }
-    
+
     public static function generateRecurringKey($key = null)
     {
         if ($key !== null) {
             return $key;
         }
-        
+
         $uuid = self::getGuid();
         return strtolower($uuid);
     }
@@ -138,5 +139,22 @@ class GenerationUtils
         $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 0100
         $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
         return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+    }
+
+    public static function convertArrayToJson($request, $hppVersion = '')
+    {
+        
+        if ($hppVersion != HppVersion::VERSION_2) {
+            $request = array_map('base64_encode', $request);
+        }
+        return json_encode($request);
+    }
+
+    public static function decodeJson($json, $returnArray = true, $hppVersion = '')
+    {
+        if ($hppVersion != HppVersion::VERSION_2) {
+            return array_map('base64_decode', json_decode($json, true));
+        }
+        return json_decode($json, $returnArray);
     }
 }

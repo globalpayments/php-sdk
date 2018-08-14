@@ -23,6 +23,7 @@ class ServicesConfig
     public $rebatePassword;
     public $refundPassword;
     public $channel;
+    public $hostedPaymentConfig;
 
     // Common
     public $serviceUrl;

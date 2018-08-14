@@ -14,6 +14,7 @@ use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
+use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
@@ -28,6 +29,8 @@ use GlobalPayments\Api\Entities\Enums\DccRateType;
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\DccResponseResult;
 use GlobalPayments\Api\Entities\FraudManagementResponse;
+use GlobalPayments\Api\Entities\Enums\HppVersion;
+use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
 
 class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringService
 {
@@ -308,7 +311,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $mpi->appendChild($xml->createElement("eci", $builder->ecommerceInfo->eci));
             $request->appendChild($mpi);
         }
-        
+
         $response = $this->doTransaction($xml->saveXML($request));
         return $this->mapResponse($response);
     }
@@ -320,7 +323,6 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             throw new ApiException("Hosted configuration missing, Please check you configuration.");
         }
 
-        $encoder = ($this->hostedPaymentConfig->version === HppVersion::VERSION_2) ? null : JsonEncoders::Base64Encoder;
         $request = [];
 
         $orderId = isset($builder->orderId) ? $builder->orderId : GenerationUtils::generateOrderId();
@@ -334,6 +336,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             throw new UnsupportedTransactionException("Only Charge and Authorize are supported through HPP.");
         }
         
+        //$request['request-type'] = $this->mapAuthRequestType($builder);
         $request["MERCHANT_ID"] = $this->merchantId;
         $request["ACCOUNT"] = $this->accountId;
         $request["CHANNEL"] = $this->channel;
@@ -342,51 +345,82 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $request["AMOUNT"] = preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount));
         }
         $request["CURRENCY"] = $builder->currency;
-        $request["TIMESTAMP"] = timestamp;
-        $request["AUTO_SETTLE_FLAG"] = ($builder->transactionType == TransactionType::Sale) ? "1" : "0";
+        $request["TIMESTAMP"] = $timestamp;
+        $request["AUTO_SETTLE_FLAG"] = ($builder->transactionType == TransactionType::SALE) ? "1" : "0";
         $request["COMMENT1"] = $builder->description;
         // $request["COMMENT2"] = ;
-        if ($this->hostedPaymentConfig->requestTransactionStabilityScore) {
+        if (!empty($this->hostedPaymentConfig->requestTransactionStabilityScore)) {
             $request["RETURN_TSS"] = $this->hostedPaymentConfig->requestTransactionStabilityScore ? "1" : "0";
         }
-        if ($this->hostedPaymentConfig->directCurrencyConversionEnabled) {
+        if (!empty($this->hostedPaymentConfig->directCurrencyConversionEnabled)) {
             $request["DCC_ENABLE"] = $this->hostedPaymentConfig->directCurrencyConversionEnabled ? "1" : "0";
+            $request["DCC_INFO"] = [
+                'CCP' => $builder->dccRateData->dccProcessor,
+                'TYPE' => $builder->dccRateData->dccType,
+                'RATE' => $builder->dccRateData->dccRate,
+                'RATE_TYPE' => $builder->dccRateData->dccRateType,
+                'AMOUNT' => preg_replace('/[^0-9]/', '', $builder->dccRateData->amount),
+                'CURRENCY' => $builder->dccRateData->currency,
+            ];
         }
-        if ($builder->hostedPaymentData !== null) {
+        if (!empty($builder->hostedPaymentData)) {
             $request["CUST_NUM"] = $builder->hostedPaymentData->customerNumber;
-            if ($this->hostedPaymentConfig->displaySavedCards && $builder->hostedPaymentData->customerKey !== null) {
+            if (!empty($this->hostedPaymentConfig->displaySavedCards) &&
+                    !empty($builder->hostedPaymentData->customerKey)) {
                 $request["HPP_SELECT_STORED_CARD"] = $builder->hostedPaymentData->customerKey;
             }
-            if ($builder->hostedPaymentData->offerToSaveCard) {
+            if (!empty($builder->hostedPaymentData->offerToSaveCard)) {
                 $request["OFFER_SAVE_CARD"] = $builder->hostedPaymentData->offerToSaveCard ? "1" : "0";
             }
-            if ($builder->hostedPaymentData->customerExists) {
+            if (!empty($builder->hostedPaymentData->customerExists)) {
                 $request["PAYER_EXIST"] = $builder->hostedPaymentData->customerExists ? "1" : "0";
             }
             $request["PAYER_REF"] = $builder->hostedPaymentData->customerKey;
             $request["PMT_REF"] = $builder->hostedPaymentData->paymentKey;
             $request["PROD_ID"] = $builder->hostedPaymentData->productId;
+        } else {
+            $request["CUST_NUM"] = $builder->customerId;
         }
-        if ($builder->shippingAddress !== null) {
+        if (!empty($builder->shippingAddress)) {
             $request["SHIPPING_CODE"] = $builder->shippingAddress->postalCode;
             $request["SHIPPING_CO"] = $builder->shippingAddress->country;
         }
-        if ($builder->billingAddress !== null) {
+        if (!empty($builder->billingAddress)) {
             $request["BILLING_CODE"] = $builder->billingAddress->postalCode;
             $request["BILLING_CO"] = $builder->billingAddress->country;
         }
-        $request["CUST_NUM"] = $builder->customerId;
         $request["VAR_REF"] = $builder->clientTransactionId;
-        $request["HPP_LANG"] = $this->hostedPaymentConfig->Language;
+        $request["HPP_LANG"] = $this->hostedPaymentConfig->language;
         $request["MERCHANT_RESPONSE_URL"] = $this->hostedPaymentConfig->responseUrl;
         $request["CARD_PAYMENT_BUTTON"] = $this->hostedPaymentConfig->paymentButtonText;
-        if ($this->hostedPaymentConfig->cardStorageEnabled) {
+        if (!empty($this->hostedPaymentConfig->cardStorageEnabled)) {
             $request["CARD_STORAGE_ENABLE"] = $this->hostedPaymentConfig->cardStorageEnabled ? "1" : "0";
         }
         if ($builder->transactionType === TransactionType::VERIFY) {
             $request["VALIDATE_CARD_ONLY"] = $builder->transactionType === TransactionType::VERIFY ? "1" : "0";
         }
-        $request["HPP_FRAUD_FILTER_MODE"] = $this->hostedPaymentConfig->FraudFilterMode.ToString();
+        if (!empty($builder->fraudFilter)) {
+            $request["HPP_FRAUD_FILTER_MODE"] = $builder->fraudFilter;
+            $request["TSS_INFO"] = [
+                'CUSTNUM' => (!empty($builder->customerId)) ? $builder->customerId : null,
+                'PRODID' => (!empty($builder->productId)) ? $builder->productId : null,
+                'VARREF' => (!empty($builder->clientTransactionId)) ? $builder->clientTransactionId : null,
+                'CUSTIPADDRESS' => (!empty($builder->customerIpAddress)) ? $builder->customerIpAddress : null,
+                'BILLING_ADDRESS' => [
+                    'CODE' => (!empty($builder->billingAddress->postalCode)) ?
+                                $builder->billingAddress->postalCode : null,
+                    'COUNTRY' => (!empty($builder->billingAddress->country)) ?
+                                $builder->billingAddress->country : null,
+                ],
+                'SHIPPING_ADDRESS' => [
+                    'CODE' => (!empty($builder->shippingAddress->postalCode)) ?
+                                $builder->shippingAddress->postalCode : null,
+                    'COUNTRY' => (!empty($builder->shippingAddress->country)) ?
+                                $builder->shippingAddress->country : null,
+                ]
+            ];
+        }
+        
         if ($builder->recurringType !== null || $builder->recurringSequence !== null) {
             $request["RECURRING_TYPE"] = strtolower($builder->recurringType);
             $request["RECURRING_SEQUENCE"] = strtolower($builder->recurringSequence);
@@ -417,9 +451,8 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         if ($this->hostedPaymentConfig->fraudFilterMode !== FraudFilterMode::NONE) {
             $toHash[] = $this->hostedPaymentConfig->fraudFilterMode;
         }
-
         $request["SHA1HASH"] = GenerationUtils::generateHash($this->sharedSecret, implode('.', $toHash));
-        return json_encode($request);
+        return GenerationUtils::convertArrayToJson($request, $this->hostedPaymentConfig->version);
     }
 
     /**
@@ -686,6 +719,9 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $result->transactionReference->transactionId = (string)$root->pasref;
         $result->transactionReference->authCode = (string)$root->authcode;
         $result->transactionReference->orderId = (string)$root->orderid;
+        $result->timestamp = (!empty($root->attributes()->timestamp)) ?
+                                    (string) $root->attributes()->timestamp :
+                                    '';
         
         // dccinfo
         if (!empty($root->dccinfo)) {
@@ -1030,5 +1066,10 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $request->appendChild($tssInfo);
         }
         return;
+    }
+    
+    public function supportsHostedPayments()
+    {
+        return $this->supportsHostedPayments;
     }
 }

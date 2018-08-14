@@ -11,6 +11,7 @@ use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\Transaction;
 
 class HostedService
 {
@@ -32,6 +33,7 @@ class HostedService
     public function __construct(ServicesConfig $config)
     {
         ServicesContainer::configure($config);
+        $this->sharedSecret = $config->sharedSecret;
     }
 
     /**
@@ -87,6 +89,8 @@ class HostedService
 
     public function parseResponse($response, $encoded = false)
     {
+        $response = json_decode($response, true);
+        
         $timestamp = $response["TIMESTAMP"];
         $merchantId = $response["MERCHANT_ID"];
         $orderId = $response["ORDER_ID"];
@@ -104,23 +108,15 @@ class HostedService
                     $transactionId,
                     $authCode
         ]));
+        
         if ($hash != $sha1Hash) {
             throw new ApiException("Incorrect hash. Please check your code and the Developers Documentation.");
-        }
-
-        // remainder of the values
-        $rvalues = $dictionary;
-        foreach ($key as $response->Keys) {
-            $value = $response->key;
-            if ($value != null) {
-                $rvalues->add(key, $value);
-            }
         }
 
         $ref = new TransactionReference();
         $ref->authCode = $authCode;
         $ref->orderId = $orderId;
-        $ref->paymentMethodType = $PaymentMethodType::CREDIT;
+        $ref->paymentMethodType = PaymentMethodType::CREDIT;
         $ref->transactionId = $transactionId;
 
         $trans = new Transaction();
@@ -130,7 +126,8 @@ class HostedService
         $trans->responseMessage = $message;
         $trans->avsResponseCode = $response["AVSPOSTCODERESULT"];
         $trans->transactionReference = $ref;
-        $trans->responseValues = $rvalues;
+        
+        $trans->responseValues = $response;
 
         return $trans;
     }

@@ -1798,4 +1798,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         return $trackData;
     }
+    
+    public function supportsHostedPayments()
+    {
+        return $this->supportsHostedPayments;
+    }
 }

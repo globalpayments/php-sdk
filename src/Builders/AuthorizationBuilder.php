@@ -302,7 +302,7 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var string|float
      */
     public $timestamp;
-    
+
     /**
      * DCC rate Data
      *
@@ -310,7 +310,7 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var dccRateData
      */
     public $dccRateData;
-    
+
     /**
      * DCC processor
      *
@@ -318,7 +318,7 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var dccProcessor
      */
     public $dccProcessor;
-    
+
     /**
      * DCC Rate Type
      *
@@ -326,7 +326,7 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var dccRateType
      */
     public $dccRateType;
-    
+
     /**
      * DCC Type
      *
@@ -334,7 +334,7 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var dccType
      */
     public $dccType;
-    
+
     /**
      * Fraud Filter
      *
@@ -344,7 +344,7 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var string
      */
     public $fraudFilter;
-    
+
     /**
      * For AVS (Address verification System) request
      *
@@ -352,7 +352,6 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var bool
      */
     public $verifyAddress;
-    
 
     /**
      * {@inheritdoc}
@@ -389,7 +388,7 @@ class AuthorizationBuilder extends TransactionBuilder
      */
     public function serialize()
     {
-        $transactionModifier = TransactionModifier::HOSTEDREQUEST;
+        $this->transactionModifier = TransactionModifier::HOSTEDREQUEST;
         parent::execute();
 
         $client = ServicesContainer::instance()->getClient();
@@ -413,9 +412,18 @@ class AuthorizationBuilder extends TransactionBuilder
                         TransactionType::REFUND |
                         TransactionType::ADD_VALUE
         )
+                ->with(TransactionModifier::NONE)
                 ->check('amount')->isNotNull()
                 ->check('currency')->isNotNull()
                 ->check('paymentMethod')->isNotNull();
+        
+        $this->validations->of(
+            TransactionType::AUTH |
+                        TransactionType::SALE
+        )
+                ->with(TransactionModifier::HOSTEDREQUEST)
+                ->check('amount')->isNotNull()
+                ->check('currency')->isNotNull();
 
         $this->validations->of(
             TransactionType::AUTH |
@@ -435,7 +443,7 @@ class AuthorizationBuilder extends TransactionBuilder
 
         $this->validations->of(TransactionType::REPLACE)
                 ->check('replacementCard')->isNotNull();
-        
+
         $this->validations->of(
             TransactionType::AUTH |
                         TransactionType::SALE
@@ -444,6 +452,12 @@ class AuthorizationBuilder extends TransactionBuilder
                 ->check('paymentMethod')->isNotNull()
                 ->check('token')->isNotNullInSubProperty('paymentMethod')
                 ->check('mobileType')->isNotNullInSubProperty('paymentMethod');
+        
+        $this->validations->of(
+            TransactionType::VERIFY
+        )
+                ->with(TransactionModifier::HOSTEDREQUEST)
+                ->check('currency')->isNotNull();
     }
 
     /**
@@ -833,7 +847,7 @@ class AuthorizationBuilder extends TransactionBuilder
         $this->recurringSequence = $recurringSequence;
         return $this;
     }
-    
+
     /**
      * Set the request dccRateData
      *
@@ -846,7 +860,7 @@ class AuthorizationBuilder extends TransactionBuilder
         $this->dccRateData = $value;
         return $this;
     }
-    
+
     /**
      * Set the request dccProcessor
      *
@@ -859,7 +873,7 @@ class AuthorizationBuilder extends TransactionBuilder
         $this->dccProcessor = $value;
         return $this;
     }
-    
+
     /**
      * Set the request dccRateType
      *
@@ -872,7 +886,7 @@ class AuthorizationBuilder extends TransactionBuilder
         $this->dccRateType = $value;
         return $this;
     }
-    
+
     /**
      * Set the request dccType
      *
@@ -883,6 +897,7 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withDccType($value)
     {
         $this->dccType = $value;
+		return $this;
     }
 
     /**
@@ -910,7 +925,7 @@ class AuthorizationBuilder extends TransactionBuilder
         $this->shippingAmount = $shippingAmount;
         return $this;
     }
-    
+
     /**
      * Set the request customer IP address
      *
@@ -923,7 +938,7 @@ class AuthorizationBuilder extends TransactionBuilder
         $this->fraudFilter = $fraudFilter;
         return $this;
     }
-    
+
     /**
      * Set whether AVS requested
      *
@@ -934,6 +949,32 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withVerifyAddress($verifyAddress)
     {
         $this->verifyAddress = $verifyAddress;
+        return $this;
+    }
+
+    /**
+     * Set the timestamp
+     *
+     * @param string $timestamp
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withTimeStamp($timestamp)
+    {
+        $this->timestamp = $timestamp;
+        return $this;
+    }
+
+    /**
+     * Set the hostedPaymentData
+     *
+     * @param string $hostedPaymentData
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withHostedPaymentData($hostedPaymentData)
+    {
+        $this->hostedPaymentData = $hostedPaymentData;
         return $this;
     }
 }

@@ -749,7 +749,7 @@ class ApiTestCase extends TestCase
         $response = $card->charge(10)
                 ->withCurrency("EUR")
                 ->withAddress($billingAddress, AddressType::BILLING)
-                ->withVerifyAddress(TRUE)
+                ->withVerifyAddress(true)
                 ->execute();
 
         $responseCode = $response->responseCode; // 00 == Success
@@ -760,7 +760,7 @@ class ApiTestCase extends TestCase
         $paymentsReference = $response->transactionId; // pasref
 
         $this->assertNotNull($response);
-        $this->assertEquals("00", $responseCode);        
+        $this->assertEquals("00", $responseCode);
         $this->assertEquals("M", $response->avsResponseCode);
         $this->assertEquals("M", $response->avsAddressResponse);
     }
@@ -816,5 +816,4 @@ class ApiTestCase extends TestCase
         $this->assertEquals("00", $responseCode);
         $this->assertNull($response->fraudFilterResponse);
     }
-    
 }
