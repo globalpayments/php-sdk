@@ -23,6 +23,8 @@ use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
+use GlobalPayments\Api\Entities\DecisionManager;
+use GlobalPayments\Api\Entities\Enums\Risk;
 
 class ApiTestCase extends TestCase
 {
@@ -577,7 +579,7 @@ class ApiTestCase extends TestCase
         }
     }
     
-    /* 29. Apple pay */
+    /* 30. Apple pay */
     
     public function testauthMobileApplePay()
     {
@@ -815,5 +817,124 @@ class ApiTestCase extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals("00", $responseCode);
         $this->assertNull($response->fraudFilterResponse);
+    }
+
+    /* 35. Fraud Management Decision Manager */
+
+    public function testfraudManagementDecisionManager()
+    {
+        $config = new ServicesConfig();
+        $config->merchantId = 'heartlandgpsandbox';
+        $config->accountId = 'api';
+        $config->sharedSecret = 'secret';
+        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
+
+        ServicesContainer::configure($config);
+
+        // create the card object
+        $card = new CreditCardData();
+        $card->number = '4263970000005262';
+        $card->expMonth = 12;
+        $card->expYear = 2025;
+        $card->cvn = '131';
+        $card->cardHolderName = 'James Mason';
+
+        // supply the customer's billing data for avs checks
+        $billingAddress = new Address();
+        $billingAddress->streetAddress1 = "Flat 123";
+        $billingAddress->streetAddress2 = "House 456";
+        $billingAddress->streetAddress3 = "Cul-De-Sac";
+        $billingAddress->city = "Halifax";
+        $billingAddress->province = "West Yorkshire";
+        $billingAddress->state = "Yorkshire and the Humber";
+        $billingAddress->postalCode = "E77 4QJ";
+        $billingAddress->country = "GB";
+
+        // supply the customer's shipping data
+        $shippingAddress = new Address();
+        $shippingAddress->streetAddress1 = "House 456";
+        $shippingAddress->streetAddress2 = "987 The Street";
+        $shippingAddress->streetAddress3 = "Basement Flat";
+        $shippingAddress->city = "Chicago";
+        $shippingAddress->province = "Illinois";
+        $shippingAddress->state = "Mid West";
+        $shippingAddress->postalCode = "50001";
+        $shippingAddress->country = "US";
+
+        // supply the customer's data
+        $customer = new Customer();
+        $customer->id = "e193c21a-ce64-4820-b5b6-8f46715de931";
+        $customer->firstName = "James";
+        $customer->lastName = "Mason";
+        $customer->dateOfBirth = "01011980";
+        $customer->customerPassword = "VerySecurePassword";
+        $customer->email = "text@example.com";
+        $customer->domainName = "example.com";
+        $customer->homePhone = "+35312345678";
+        $customer->deviceFingerPrint = "devicefingerprint";
+
+        // supply the decisionManager data
+        $decisionManager = new DecisionManager();
+        $decisionManager->billToHostName = "example.com";
+        $decisionManager->billToHttpBrowserCookiesAccepted = true;
+        $decisionManager->billToHttpBrowserEmail = "jamesmason@example.com";
+        $decisionManager->billToHttpBrowserType = "Mozilla";
+        $decisionManager->billToIpNetworkAddress = "123.123.123.123";
+        $decisionManager->businessRulessCoreThresHold = "40";
+        $decisionManager->billToPersonalId = "741258963";
+        $decisionManager->decisionManagerProfile = "DemoProfile";
+        $decisionManager->invoiceHeaderTenderType = "consumer";
+        $decisionManager->itemHostHedge = Risk::HIGH;
+        $decisionManager->itemNonsensicalHedge = Risk::HIGH;
+        $decisionManager->itemObscenitiesHedge = Risk::HIGH;
+        $decisionManager->itemPhoneHedge = Risk::HIGH;
+        $decisionManager->itemTimeHedge = Risk::HIGH;
+        $decisionManager->itemVelocityHedge = Risk::HIGH;
+        $decisionManager->invoiceHeaderIsGift = true;
+        $decisionManager->invoiceHeaderReturnsAccepted = true;
+
+        $products = [];
+        $products[] = array(
+                    'product_id' => 'SKU251584', 
+                    'productname' => 'Magazine Subscription', 
+                    'quantity' => '12', 
+                    'unitprice' => '1200', 
+                    'gift' => 'true', 
+                    'type' => 'subscription', 
+                    'risk' => 'Low'
+                );
+        $products[] = array(
+                    'product_id' => 'SKU8884784', 
+                    'productname' => 'Charger', 
+                    'quantity' => '10', 
+                    'unitprice' => '1200', 
+                    'gift' => 'false', 
+                    'type' => 'subscription', 
+                    'risk' => 'High'
+                );
+
+        $custom = [];
+        $custom[] = array(
+                    'field01' => 'fieldValue01', 
+                    'field02' => 'fieldValue02', 
+                    'field03' => 'fieldValue03', 
+                    'field04' => 'fieldValue04'
+                );
+
+        $response = $card->charge(199.99)
+                ->withCurrency("EUR")
+                ->withAddress($billingAddress, AddressType::BILLING)
+                ->withAddress($shippingAddress, AddressType::SHIPPING)
+                ->withDecisionManager($decisionManager)
+                ->withCustomerData($customer)
+                ->withProductData($products)
+                ->withCustomData($custom)
+                ->execute();
+
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $responseCode);
     }
 }

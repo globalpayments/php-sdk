@@ -27,6 +27,13 @@
             <directory>./test/Integration/Gateways/PorticoConnector/Certifications/</directory>
             <directory>./test/Integration/Gateways/RealexConnector/Certifications/</directory>
         </testsuite>
+		<testsuite name="portico">
+            <directory>./test/Integration/Gateways/PorticoConnector/</directory>
+        </testsuite>
+		<testsuite name="realex">
+            <directory>./test/Integration/Gateways/RealexConnector/</directory>
+        </testsuite>
+		
     </testsuites>
 
     <filter>

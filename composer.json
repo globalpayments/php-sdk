@@ -37,5 +37,8 @@
     "pretest": "@composer test:lint",
     "test": "@composer pretest && paratest --coverage-html=coverage.html --colors -f --stop-on-failure",
     "test:lint": "phpcs"
+  },
+  "config": {
+    "process-timeout":0
   }
 }

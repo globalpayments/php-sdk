@@ -21,6 +21,8 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Enums\DccProcessor;
 use GlobalPayments\Api\Entities\Enums\DccRateType;
 use GlobalPayments\Api\Entities\DccRateData;
+use GlobalPayments\Api\Entities\Customer;
+use GlobalPayments\Api\Entities\DecisionManager;
 
 class AuthorizationBuilder extends TransactionBuilder
 {
@@ -130,6 +132,22 @@ class AuthorizationBuilder extends TransactionBuilder
     public $customerIpAddress;
 
     /**
+     * Request customer Data
+     *
+     * @internal
+     * @var Customer
+     */
+    public $customerData;
+
+    /**
+     * Request customData
+     *
+     * @internal
+     * @var array<string>
+     */
+    public $customData;
+
+    /**
      * Payment method CVN
      *
      * Only applicable for recurring payments
@@ -146,6 +164,14 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var string
      */
     public $description;
+
+    /**
+     * Request decisionManager
+     *
+     * @internal
+     * @var DecisionManager
+     */
+    public $decisionManager;
 
     /**
      * Request dynamic descriptor
@@ -236,6 +262,14 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var string|float
      */
     public $orderId;
+
+    /**
+     * Request product Data
+     *
+     * @internal
+     * @var array<string>
+     */
+    public $productData;
 
     /**
      * Request product ID
@@ -632,6 +666,32 @@ class AuthorizationBuilder extends TransactionBuilder
     }
 
     /**
+     * Set the request customer Data
+     *
+     * @param Customer $customerData Request customer Data
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withCustomerData(Customer $customerData)
+    {
+        $this->customerData = $customerData;
+        return $this;
+    }
+
+    /**
+     * Set the request customData
+     *
+     * @param string $customData Request customData
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withCustomData($customData)
+    {
+        $this->customData = $customData;
+        return $this;
+    }
+
+    /**
      * Set the request description
      *
      * @param string $description Request description
@@ -641,6 +701,19 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withDescription($description)
     {
         $this->description = $description;
+        return $this;
+    }
+
+    /**
+     * Set the request decisionManager
+     *
+     * @param DecisionManager $decisionManager Request decisionManager
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withDecisionManager(DecisionManager $decisionManager)
+    {
+        $this->decisionManager = $decisionManager;
         return $this;
     }
 
@@ -753,6 +826,19 @@ class AuthorizationBuilder extends TransactionBuilder
         if ($paymentMethod instanceof EBTCardData && $paymentMethod->serialNumber !== null) {
             $this->transactionModifier = TransactionModifier::VOUCHER;
         }
+        return $this;
+    }
+
+    /**
+     * Set the request productData
+     *
+     * @param string $productData Request productData
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withProductData($productData)
+    {
+        $this->productData = $productData;
         return $this;
     }
 
@@ -897,7 +983,6 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withDccType($value)
     {
         $this->dccType = $value;
-		return $this;
     }
 
     /**

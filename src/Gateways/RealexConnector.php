@@ -132,6 +132,91 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $request->appendChild($amount);
         }
 
+        // For Fraud Decision Manager
+        if (!empty($builder->customerData)) {
+            $customerValue = $builder->customerData;
+            $customer = $xml->createElement("customer");
+            $customer->appendChild($xml->createElement("customerid", $customerValue->id));
+            $customer->appendChild($xml->createElement("firstname", $customerValue->firstName));
+            $customer->appendChild($xml->createElement("lastname", $customerValue->lastName));
+            $customer->appendChild($xml->createElement("dateofbirth", $customerValue->dateOfBirth));
+            $customer->appendChild($xml->createElement("customerpassword", $customerValue->customerPassword));
+            $customer->appendChild($xml->createElement("email", $customerValue->email));
+            $customer->appendChild($xml->createElement("domainname", $customerValue->domainName));
+            $customer->appendChild($xml->createElement("devicefingerprint", $customerValue->deviceFingerPrint));
+            $customer->appendChild($xml->createElement("phonenumber", $customerValue->homePhone));
+            $request->appendChild($customer);
+        }
+
+        if (!empty($builder->productData)) {
+            $prod = [];
+            $productValues = $builder->productData;
+            $products = $xml->createElement("products");
+
+            foreach ($productValues as $prod) {
+                $product = $xml->createElement("product");
+                $product->appendChild($xml->createElement('product_id', $prod['product_id']));
+                $product->appendChild($xml->createElement('productname', $prod['productname']));
+                $product->appendChild($xml->createElement('quantity', $prod['quantity']));
+                $product->appendChild($xml->createElement('unitprice', $prod['unitprice']));
+                $product->appendChild($xml->createElement('gift', $prod['gift']));
+                $product->appendChild($xml->createElement('type', $prod['type']));
+                $product->appendChild($xml->createElement('risk', $prod['risk']));
+                $product->appendChild($products);
+                $request->appendChild($product);
+            }
+        }
+
+        if ($builder->decisionManager !== null) {
+            $dmValues = $builder->decisionManager;
+            $fraud = $xml->createElement("fraud");
+            $dm = $fraud->appendChild($xml->createElement('dm'));
+            $dm->appendChild($xml->createElement('billtohostname', $dmValues->billToHostName));
+            $dm->appendChild($xml->createElement(
+                'billtohttpbrowsercookiesaccepted',
+                ($dmValues->billToHttpBrowserCookiesAccepted) != true ? 'false' : 'true'
+            ));
+            $dm->appendChild($xml->createElement('billtohttpbrowseremail', $dmValues->billToHttpBrowserEmail));
+            $dm->appendChild($xml->createElement('billtohttpbrowsertype', $dmValues->billToHttpBrowserType));
+            $dm->appendChild($xml->createElement('billtoipnetworkaddress', $dmValues->billToIpNetworkAddress));
+            $dm->appendChild($xml->createElement(
+                'businessrulesscorethreshold',
+                $dmValues->businessRulessCoreThresHold
+            ));
+            $dm->appendChild($xml->createElement('billtopersonalid', $dmValues->billToPersonalId));
+            $dm->appendChild($xml->createElement('invoiceheadertendertype', $dmValues->invoiceHeaderTenderType));
+            $dm->appendChild($xml->createElement(
+                'invoiceheaderisgift',
+                ($dmValues->invoiceHeaderIsGift) != true ? 'false' : 'true'
+            ));
+            $dm->appendChild($xml->createElement('decisionmanagerprofile', $dmValues->decisionManagerProfile));
+            $dm->appendChild($xml->createElement(
+                'invoiceheaderreturnsaccepted',
+                ($dmValues->invoiceHeaderReturnsAccepted) != true ? 'false' : 'true'
+            ));
+            $dm->appendChild($xml->createElement('itemhosthedge', $dmValues->itemHostHedge));
+            $dm->appendChild($xml->createElement('itemnonsensicalhedge', $dmValues->itemNonsensicalHedge));
+            $dm->appendChild($xml->createElement('itemobscenitieshedge', $dmValues->itemObscenitiesHedge));
+            $dm->appendChild($xml->createElement('itemphonehedge', $dmValues->itemPhoneHedge));
+            $dm->appendChild($xml->createElement('itemtimehedge', $dmValues->itemTimeHedge));
+            $dm->appendChild($xml->createElement('itemvelocityhedge', $dmValues->itemVelocityHedge));
+            $request->appendChild($dm);
+        }
+
+        if (!empty($builder->customData)) {
+            $cust = [];
+            $customValues = $builder->customData;
+            $custom = $xml->createElement("custom");
+
+            foreach ($customValues as $cust) {
+                $custom->appendChild($xml->createElement('field01', $cust['field01']));
+                $custom->appendChild($xml->createElement('field02', $cust['field02']));
+                $custom->appendChild($xml->createElement('field03', $cust['field03']));
+                $custom->appendChild($xml->createElement('field04', $cust['field04']));
+                $request->appendChild($custom);
+            }
+        }
+
         // For DCC rate lookup
         if ($builder->transactionType === TransactionType::DCC_RATE_LOOKUP) {
             $dccinfo = $xml->createElement("dccinfo");
