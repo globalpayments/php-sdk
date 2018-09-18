@@ -1979,8 +1979,11 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     */
     public function testAuth031c1()
-    {
+    {        
         $config = $this->getBaseConfig();
         ServicesContainer::configure($config);
 
@@ -1997,6 +2000,9 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     */
     public function testAuth031c2()
     {
         $config = $this->getBaseConfig();
@@ -2114,7 +2120,10 @@ class RealexSdkCertification extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->responseCode);
     }
-
+    
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     */
     public function testAuth033c1()
     {
         $config = $this->getBaseConfig();
@@ -2137,6 +2146,9 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     */
     public function testAuth033c2()
     {
         $config = $this->getBaseConfig();
@@ -2230,6 +2242,9 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     */
     public function testAuth034c1()
     {
         $config = $this->getBaseConfig();
@@ -2252,6 +2267,9 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     */
     public function testAuth034c2()
     {
         $config = $this->getBaseConfig();
@@ -9684,9 +9702,6 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testOTB013b()
     {
         $config = $this->getBaseConfig();
@@ -10815,10 +10830,7 @@ class RealexSdkCertification extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->responseCode);
     }
-
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
+    
     public function testCredit013b()
     {
         $config = $this->getBaseConfig();
@@ -10931,9 +10943,6 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testCredit014d()
     {
         $config = $this->getBaseConfig();
@@ -14713,9 +14722,6 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual014b()
     {
         $config = $this->getBaseConfig();
@@ -15295,10 +15301,7 @@ class RealexSdkCertification extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->responseCode);
     }
-
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
+    
     public function testManual020b()
     {
         $config = $this->getBaseConfig();
@@ -16835,7 +16838,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled014a()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -16858,7 +16861,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled014b()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -16881,7 +16884,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled014c()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -16904,7 +16907,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled014d()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -16927,7 +16930,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled014e()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -16950,7 +16953,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled014f()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -16973,7 +16976,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled014g()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -16996,7 +16999,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled014h()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17019,7 +17022,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled014i()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17045,7 +17048,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled015a()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17070,7 +17073,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17095,7 +17098,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17120,7 +17123,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17145,7 +17148,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17170,7 +17173,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17195,7 +17198,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17220,7 +17223,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17245,7 +17248,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17271,7 +17274,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled016a()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17296,7 +17299,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17321,7 +17324,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17346,7 +17349,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17371,7 +17374,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17396,7 +17399,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17421,7 +17424,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17446,7 +17449,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17471,7 +17474,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17494,7 +17497,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled017a()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17517,7 +17520,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled017b()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17540,7 +17543,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled017c()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17563,7 +17566,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled017d()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17586,7 +17589,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled017e()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17609,7 +17612,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled017f()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17632,7 +17635,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled017g()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17655,7 +17658,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled017h()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17678,7 +17681,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled017i()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17701,7 +17704,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled017j()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17724,7 +17727,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled017k()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17747,7 +17750,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled018a()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17770,7 +17773,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled018b()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17793,7 +17796,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled018c()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17816,7 +17819,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled018d()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17839,7 +17842,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled018e()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17862,7 +17865,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled019a()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17885,7 +17888,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled019b()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17908,7 +17911,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled019c()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17931,7 +17934,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled019d()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17954,7 +17957,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled019e()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -17977,7 +17980,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled020b()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18000,7 +18003,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled020c()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18023,7 +18026,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled020d()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18046,7 +18049,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled020e()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18069,7 +18072,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled021a()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18092,7 +18095,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled021b()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18115,7 +18118,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled021c()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18138,7 +18141,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled021d()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18161,7 +18164,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled022a()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18184,7 +18187,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled022b()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18207,7 +18210,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled022c()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18230,7 +18233,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled022d()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18252,7 +18255,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled023a()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18275,7 +18278,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled023b1()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18301,7 +18304,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled023b2()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18327,7 +18330,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled023c()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18350,7 +18353,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled024a()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18376,7 +18379,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled024b()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18402,7 +18405,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled024c()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18426,7 +18429,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled024d()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18450,7 +18453,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled025a()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18473,7 +18476,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled025b()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18499,7 +18502,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled025c()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18525,7 +18528,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled025d()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18546,7 +18549,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled026a()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18569,7 +18572,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled026b()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18592,7 +18595,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled026c()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18615,7 +18618,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled027a()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18638,7 +18641,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled028a()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18661,7 +18664,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled029a()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18687,7 +18690,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled029b1()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18713,7 +18716,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled029b2()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18739,7 +18742,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled029c()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18764,7 +18767,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped();
 
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18787,7 +18790,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled030a1()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18810,7 +18813,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled030a2()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18833,7 +18836,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled030a3()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18856,7 +18859,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled030a4()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card
@@ -18882,7 +18885,7 @@ class RealexSdkCertification extends TestCase
     public function testverifyenrolled030b()
     {
         $config = $this->getBaseConfig();
-        $config->imeout = 60000;
+        $config->timeout = 60000;
         ServicesContainer::configure($config);
 
         // create card

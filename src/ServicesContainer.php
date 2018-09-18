@@ -80,6 +80,10 @@ class ServicesContainer
             $gateway->timeout = $config->timeout;
             $gateway->serviceUrl = $config->serviceUrl . '/Hps.Exchange.PosGateway/PosGatewayService.asmx';
 
+            $payplanEndPoint = (strpos(strtolower($config->secretApiKey), '_cert_') > 0) ?
+                                '/Portico.PayPlan.v2/':
+                                '/PayPlan.v2/';
+            
             $recurring = new PayPlanConnector();
             $recurring->siteId = $config->siteId;
             $recurring->licenseId = $config->licenseId;
@@ -90,7 +94,7 @@ class ServicesContainer
             $recurring->developerId = $config->developerId;
             $recurring->versionNumber = $config->versionNumber;
             $recurring->timeout = $config->timeout;
-            $recurring->serviceUrl = $config->serviceUrl . '/Portico.PayPlan.v2/';
+            $recurring->serviceUrl = $config->serviceUrl . $payplanEndPoint;
 
             static::$instance = new static($gateway, $recurring);
         }

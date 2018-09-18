@@ -14,4 +14,5 @@ class PaymentMethodType extends Enum
     const ACH = 5;
     const GIFT = 6;
     const RECURRING = 7;
+    const APM = 8;
 }

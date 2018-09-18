@@ -492,6 +492,20 @@ class AuthorizationBuilder extends TransactionBuilder
         )
                 ->with(TransactionModifier::HOSTEDREQUEST)
                 ->check('currency')->isNotNull();
+        
+        $this->validations->of(
+            TransactionType::AUTH |
+                        TransactionType::SALE
+        )
+                ->with(TransactionModifier::ALTERNATIVE_PAYMENT_METHOD)
+                ->check('amount')->isNotNull()
+                ->check('currency')->isNotNull()
+                ->check('paymentMethod')->isNotNull()
+                ->check('alternativePaymentMethodType')->isNotNullInSubProperty('paymentMethod')
+                ->check('returnUrl')->isNotNullInSubProperty('paymentMethod')
+                ->check('statusUpdateUrl')->isNotNullInSubProperty('paymentMethod')
+                ->check('country')->isNotNullInSubProperty('paymentMethod')
+                ->check('accountHolderName')->isNotNullInSubProperty('paymentMethod');
     }
 
     /**
@@ -983,6 +997,7 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withDccType($value)
     {
         $this->dccType = $value;
+        return $this;
     }
 
     /**

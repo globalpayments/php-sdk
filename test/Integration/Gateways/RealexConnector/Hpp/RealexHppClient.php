@@ -77,7 +77,7 @@ class RealexHppClient
             $hashParam[] = (!empty($this->paymentData['PMT_REF'])) ?
                     $this->paymentData['PMT_REF'] : null;
         }
-
+        
         $newHash = GenerationUtils::generateHash(
             $this->sharedSecret,
             implode('.', $hashParam)

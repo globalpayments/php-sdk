@@ -491,7 +491,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
         return $request;
     }
 
-    protected function buildDate($request, $name, DateTime $date = null, $force = false)
+    protected function buildDate($request, $name, \DateTime $date = null, $force = false)
     {
         if ($date !== null || $force) {
             $value = $date !== null ? $date->format('MMddyyyy') : null;

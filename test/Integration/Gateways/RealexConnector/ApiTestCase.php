@@ -90,21 +90,17 @@ class ApiTestCase extends TestCase
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 
-        try {
-            // process a refund to the card
-            $response = $card->refund(16)
-                    ->withCurrency("EUR")
-                    ->execute();
+        // process a refund to the card
+        $response = $card->refund(16)
+                ->withCurrency("EUR")
+                ->execute();
 
-            // get the response details to update the DB
-            $responseCode = $response->responseCode; // 00 == Success
-            $message = $response->responseMessage; // [ test system ] AUTHORISED
+        // get the response details to update the DB
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
 
-            $this->assertNotEquals(null, $response);
-            $this->assertEquals("00", $responseCode);
-        } catch (ApiException $e) {
-            // TODO: add your error handling here
-        }
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $responseCode);        
     }
 
     /* 03. Process Payment OTB */
@@ -282,7 +278,7 @@ class ApiTestCase extends TestCase
 
     /* 21. Transaction Management Rebate */
 
-    public function testtransactionManagementRebate()
+    public function testTransactionManagementRebate()
     {
         $config = new ServicesConfig();
         $config->merchantId = 'heartlandgpsandbox';
@@ -292,32 +288,42 @@ class ApiTestCase extends TestCase
         $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
 
         ServicesContainer::configure($config);
+        
+        // create the card object
+        $card = new CreditCardData();
+        $card->number = '4263970000005262';
+        $card->expMonth = 12;
+        $card->expYear = 2025;
+        $card->cvn = '131';
+        $card->cardHolderName = 'James Mason';
+        
+        $response = $card->charge(19.99)
+                ->withCurrency("EUR")
+                ->execute();
 
-        // a settle request requires the original order id
-        $orderId = "QAhN4YFrJEWP6Vc-N68u-w";
-        // and the payments reference (pasref) from the authorization response
-        $paymentsReference = "15113583374071921";
-        // and the auth code transaction response
-        $authCode = "12345";
+        $this->assertNotNull($response);
 
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+        // get the reponse details to save to the DB for future transaction management requests
+        $orderId = $response->orderId;
+        $authCode = $response->authorizationCode;
+        $paymentsReference = $response->transactionId; // pasref
+        
         // create the rebate transaction object
         $transaction = Transaction::fromId($paymentsReference, $orderId);
         $transaction->authorizationCode = $authCode;
 
-        try {
-            // send the settle request, we must specify the amount and currency
-            $response = $transaction->refund(99.99)
-                    ->withCurrency("EUR")
-                    ->execute();
+        // send the settle request, we must specify the amount and currency
+        $response = $transaction->refund(19.99)
+                ->withCurrency("EUR")
+                ->execute();
 
-            $responseCode = $response->responseCode; // 00 == Success
-            $message = $response->responseMessage; // [ test system ] AUTHORISED
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
 
-            $this->assertNotEquals(null, $response);
-            $this->assertEquals("00", $responseCode);
-        } catch (ApiException $e) {
-            // TODO: Add your error handling here
-        }
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $responseCode);
     }
 
     /* 22. Transaction Management Void */
@@ -937,4 +943,57 @@ class ApiTestCase extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals("00", $responseCode);
     }
+    
+    public function testAuthorisationWithoutAccountId() {
+        $config = new ServicesConfig();
+        $config->merchantId = 'heartlandgpsandbox';
+        $config->sharedSecret = 'secret';
+        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
+
+        ServicesContainer::configure($config);
+
+        // create the card object
+        $card = new CreditCardData();
+        $card->number = '4263970000005262';
+        $card->expMonth = 12;
+        $card->expYear = 2025;
+        $card->cvn = '131';
+        $card->cardHolderName = 'James Mason';
+
+        // process an auto-settle authorization
+        $response = $card->charge(15)
+                ->withCurrency("EUR")
+                ->execute();
+
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $response->responseCode);
+    }
+    
+    public function testRefundWithoutAccountId()
+    {
+        $config = new ServicesConfig();
+        $config->merchantId = 'heartlandgpsandbox';        
+        $config->sharedSecret = 'secret';
+        $config->refundPassword = 'refund';
+        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
+
+        ServicesContainer::configure($config);
+
+        // create the card object
+        $card = new CreditCardData();
+        $card->number = '4263970000005262';
+        $card->expMonth = 12;
+        $card->expYear = 2025;
+        $card->cvn = '131';
+        $card->cardHolderName = 'James Mason';
+
+        // process a refund to the card
+        $response = $card->refund(16)
+                ->withCurrency("EUR")
+                ->execute();
+
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("00", $response->responseCode);        
+    }
+
 }

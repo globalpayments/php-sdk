@@ -71,7 +71,7 @@ class HppTest extends TestCase
                     ->withCustomerId("123456")
                     ->withAddress($address)
                     ->serialize();
-
+            
             $this->assertNotNull($json);
 
             $response = $client->sendRequest($json, $hppVersion);
@@ -124,7 +124,7 @@ class HppTest extends TestCase
     /* 03. ProcessPaymentOtbRequest */
 
     public function testCreditVerify()
-    {
+    {        
         $config = new ServicesConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "hpp";
@@ -149,7 +149,7 @@ class HppTest extends TestCase
                     ->withCurrency("EUR")
                     ->withCustomerId("123456")
                     ->withAddress($address)
-                    ->serialize();
+                    ->serialize();            
             $this->assertNotNull($json);
 
             $response = $client->sendRequest($json, $hppVersion);
@@ -338,12 +338,12 @@ class HppTest extends TestCase
 
     /* 13. DynamicCurrencyConversionRequest */
 
-    public function testDynamicCurrencyConversionRequest()
+    public function testEnableDynamicCurrencyConversionRequest()
     {
         //set config for DCC
         $config = new ServicesConfig();
-        $config->merchantId = "heartlandgpsandbox";
-        $config->accountId = "apidcc";
+        $config->merchantId = "MerchantId";
+        $config->accountId = "internet";
         $config->refundPassword = "refund";
         $config->sharedSecret = "secret";
         $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
@@ -357,45 +357,45 @@ class HppTest extends TestCase
         $service = new HostedService($config);
         $client = new RealexHppClient("secret");
 
-        $card = new CreditCardData();
-        $card->number = '4006097467207025';
-        $card->expMonth = 12;
-        $card->expYear = 2025;
-        $card->cvn = '123';
-        $card->cardHolderName = 'Joe Smith';
+        //serialize the request
+        $json = $service->Charge(19)
+                ->withCurrency("EUR")                
+                ->withTimestamp("20170725154824")
+                ->withOrderId('GTI5Yxb0SumL_TkDMCAxQA')
+                ->serialize();
+        
+        $this->assertNotNull($json);
+        $this->assertEquals($json, '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1900","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","DCC_ENABLE":"1","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","HPP_VERSION":"2","SHA1HASH":"448d742db89b05ce97152beb55157c904f3839cc"}');
+    }
+    
+    public function testDisableDynamicCurrencyConversionRequest()
+    {
+        //set config for DCC
+        $config = new ServicesConfig();
+        $config->merchantId = "MerchantId";
+        $config->accountId = "internet";
+        $config->refundPassword = "refund";
+        $config->sharedSecret = "secret";
+        $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
 
-        //get DCC rate lookup
-        $orderId = GenerationUtils::generateOrderId();
-        $dccDetails = $card->getDccRate(DccRateType::SALE, 1001, 'EUR', DccProcessor::FEXCO, $orderId);
+        $config->hostedPaymentConfig = new HostedPaymentConfig();
+        $config->hostedPaymentConfig->language = "GB";
+        $config->hostedPaymentConfig->responseUrl = "http://requestb.in/10q2bjb1";
+        $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
+        $config->hostedPaymentConfig->directCurrencyConversionEnabled = "0";
 
-        $this->assertNotNull($dccDetails);
-        $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
-        $this->assertNotNull($dccDetails->dccResponseResult);
-
-        //set Currency conversion rates
-        $dccValues = new DccRateData();
-        $dccValues->orderId = $dccDetails->transactionReference->orderId;
-        $dccValues->dccProcessor = DccProcessor::FEXCO;
-        $dccValues->dccType = 1;
-        $dccValues->dccRateType = DccRateType::SALE;
-        $dccValues->currency = $dccDetails->dccResponseResult->cardHolderCurrency;
-        $dccValues->dccRate = $dccDetails->dccResponseResult->cardHolderRate;
-        $dccValues->amount = $dccDetails->dccResponseResult->cardHolderAmount;
+        $service = new HostedService($config);
+        $client = new RealexHppClient("secret");
 
         //serialize the request
-        $json = $service->authorize(1001)
-                ->withCurrency("EUR")
-                ->withDccRateData($dccValues)
-                ->withOrderId($orderId)
+        $json = $service->Charge(19)
+                ->withCurrency("EUR")                
+                ->withTimestamp("20170725154824")
+                ->withOrderId('GTI5Yxb0SumL_TkDMCAxQA')
                 ->serialize();
+        
         $this->assertNotNull($json);
-        //make API call
-        $response = $client->sendRequest($json, $config->hostedPaymentConfig->version);
-        $this->assertNotNull($response);
-
-        $parsedResponse = $service->parseResponse($response);
-        $this->assertNotNull($parsedResponse);
-        $this->assertEquals("00", $parsedResponse->responseCode);
+        $this->assertEquals($json, '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1900","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","DCC_ENABLE":"0","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","HPP_VERSION":"2","SHA1HASH":"448d742db89b05ce97152beb55157c904f3839cc"}');
     }
 
     /* 11. FraudManagementRequest */
@@ -412,6 +412,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->language = "GB";
         $config->hostedPaymentConfig->responseUrl = "http://requestb.in/10q2bjb1";
         $config->hostedPaymentConfig->version = 2;
+        $config->hostedPaymentConfig->FraudFilterMode = FraudFilterMode::PASSIVE;
 
         $service = new HostedService($config);
         $client = new RealexHppClient("secret");
@@ -425,17 +426,23 @@ class HppTest extends TestCase
         $shippingAddress = new Address();
         $shippingAddress->postalCode = "654|123";
         $shippingAddress->country = "GB";
+        
+        // data to be passed to the HPP along with transaction level settings
+        $hostedPaymentData = new HostedPaymentData();
+        $hostedPaymentData->customerNumber = "E8953893489"; // display the save card tick box
+        $hostedPaymentData->productId = "SID9838383"; // new customer
 
         //serialize the request
         $json = $service->charge(19)
                 ->withCurrency("EUR")
                 ->withAddress($billingAddress, AddressType::BILLING)
                 ->withAddress($shippingAddress, AddressType::SHIPPING)
-                ->withProductId("SID9838383") // prodid
+                //->withProductId("SID9838383") // prodid
                 ->withClientTransactionId("Car Part HV") // varref
-                ->withCustomerId("E8953893489") // custnum
+                //->withCustomerId("E8953893489") // custnum
                 ->withCustomerIpAddress("123.123.123.123")
-                ->withFraudFilter(FraudFilterMode::PASSIVE)
+                //->withFraudFilter(FraudFilterMode::PASSIVE)
+                ->withHostedPaymentData($hostedPaymentData)
                 ->serialize();
 
         $this->assertNotNull($json);
@@ -473,7 +480,7 @@ class HppTest extends TestCase
                 ->WithOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 ->serialize();
 
-        $expectedJson = '{"MERCHANT_ID":"TWVyY2hhbnRJZA==","ACCOUNT":"aW50ZXJuZXQ=","CHANNEL":"","ORDER_ID":"R1RJNVl4YjBTdW1MX1RrRE1DQXhRQQ==","AMOUNT":"MTk5OQ==","CURRENCY":"RVVS","TIMESTAMP":"MjAxNzA3MjUxNTQ4MjQ=","AUTO_SETTLE_FLAG":"MA==","COMMENT1":"","CUST_NUM":"","VAR_REF":"","HPP_LANG":"R0I=","MERCHANT_RESPONSE_URL":"aHR0cHM6Ly93d3cuZXhhbXBsZS5jb20vcmVzcG9uc2U=","CARD_PAYMENT_BUTTON":"","HPP_VERSION":"MQ==","SHA1HASH":"MDYxNjA5Zjg1YThlMDE5MWRjN2Y0ODdmODI3OGU3MTg5OGEyZWUyZA=="}';
+        $expectedJson = '{"MERCHANT_ID":"TWVyY2hhbnRJZA==","ACCOUNT":"aW50ZXJuZXQ=","ORDER_ID":"R1RJNVl4YjBTdW1MX1RrRE1DQXhRQQ==","AMOUNT":"MTk5OQ==","CURRENCY":"RVVS","TIMESTAMP":"MjAxNzA3MjUxNTQ4MjQ=","AUTO_SETTLE_FLAG":"MA==","HPP_LANG":"R0I=","MERCHANT_RESPONSE_URL":"aHR0cHM6Ly93d3cuZXhhbXBsZS5jb20vcmVzcG9uc2U=","HPP_VERSION":"MQ==","SHA1HASH":"MDYxNjA5Zjg1YThlMDE5MWRjN2Y0ODdmODI3OGU3MTg5OGEyZWUyZA=="}';
         $this->assertEquals($json, $expectedJson);
     }
 
@@ -499,7 +506,7 @@ class HppTest extends TestCase
                 ->WithOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 ->serialize();
 
-        $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","CHANNEL":null,"ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"0","COMMENT1":null,"CUST_NUM":null,"VAR_REF":null,"HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","CARD_PAYMENT_BUTTON":null,"HPP_VERSION":"2","SHA1HASH":"061609f85a8e0191dc7f487f8278e71898a2ee2d"}';
+        $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"0","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","HPP_VERSION":"2","SHA1HASH":"061609f85a8e0191dc7f487f8278e71898a2ee2d"}';
         $this->assertEquals($json, $expectedJson);
     }
 
@@ -525,7 +532,7 @@ class HppTest extends TestCase
                 ->WithOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 ->serialize();
 
-        $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","CHANNEL":null,"ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","COMMENT1":null,"CUST_NUM":null,"VAR_REF":null,"HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","CARD_PAYMENT_BUTTON":null,"HPP_VERSION":"2","SHA1HASH":"061609f85a8e0191dc7f487f8278e71898a2ee2d"}';
+        $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","HPP_VERSION":"2","SHA1HASH":"061609f85a8e0191dc7f487f8278e71898a2ee2d"}';
         $this->assertEquals($json, $expectedJson);
     }
 
@@ -560,7 +567,7 @@ class HppTest extends TestCase
                 ->WithClientTransactionId("My Legal Entity")
                 ->serialize();
 
-        $expectedJson = '{"MERCHANT_ID":"TWVyY2hhbnRJZA==","ACCOUNT":"aW50ZXJuZXQ=","CHANNEL":"","ORDER_ID":"R1RJNVl4YjBTdW1MX1RrRE1DQXhRQQ==","AMOUNT":"MTk5OQ==","CURRENCY":"RVVS","TIMESTAMP":"MjAxNzA3MjUxNTQ4MjQ=","AUTO_SETTLE_FLAG":"MQ==","COMMENT1":"TW9iaWxlIENoYW5uZWw=","CUST_NUM":"YTAyODc3NGYtYmVmZi00N2JjLWJkNmUtZWQ3ZTA0ZjVkNzU4YTAyODc3NGYtYnRlZmE=","OFFER_SAVE_CARD":"MQ==","PAYER_REF":"","PMT_REF":"","PROD_ID":"YTBiMzhkZjUtYjIzYy00ZDgyLTg4ZmUtMmU5YzQ3NDM4OTcyLWIyM2MtNGQ4Mi04OGY=","VAR_REF":"TXkgTGVnYWwgRW50aXR5","HPP_LANG":"R0I=","MERCHANT_RESPONSE_URL":"aHR0cHM6Ly93d3cuZXhhbXBsZS5jb20vcmVzcG9uc2U=","CARD_PAYMENT_BUTTON":"","HPP_VERSION":"MQ==","SHA1HASH":"NzExNmM0OTgyNjM2N2M2NTEzZWZkYzBjYzgxZTI0M2I4MDk1ZDc4Zg=="}';
+        $expectedJson = '{"MERCHANT_ID":"TWVyY2hhbnRJZA==","ACCOUNT":"aW50ZXJuZXQ=","ORDER_ID":"R1RJNVl4YjBTdW1MX1RrRE1DQXhRQQ==","AMOUNT":"MTk5OQ==","CURRENCY":"RVVS","TIMESTAMP":"MjAxNzA3MjUxNTQ4MjQ=","AUTO_SETTLE_FLAG":"MQ==","COMMENT1":"TW9iaWxlIENoYW5uZWw=","CUST_NUM":"YTAyODc3NGYtYmVmZi00N2JjLWJkNmUtZWQ3ZTA0ZjVkNzU4YTAyODc3NGYtYnRlZmE=","OFFER_SAVE_CARD":"MQ==","PAYER_EXIST":"MA==","PROD_ID":"YTBiMzhkZjUtYjIzYy00ZDgyLTg4ZmUtMmU5YzQ3NDM4OTcyLWIyM2MtNGQ4Mi04OGY=","VAR_REF":"TXkgTGVnYWwgRW50aXR5","HPP_LANG":"R0I=","MERCHANT_RESPONSE_URL":"aHR0cHM6Ly93d3cuZXhhbXBsZS5jb20vcmVzcG9uc2U=","HPP_VERSION":"MQ==","SHA1HASH":"NzExNmM0OTgyNjM2N2M2NTEzZWZkYzBjYzgxZTI0M2I4MDk1ZDc4Zg=="}';
         $this->assertEquals($json, $expectedJson);
     }
 
@@ -595,7 +602,7 @@ class HppTest extends TestCase
                 ->WithClientTransactionId("My Legal Entity")
                 ->serialize();
 
-        $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","CHANNEL":null,"ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","COMMENT1":"Mobile Channel","CUST_NUM":"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa","OFFER_SAVE_CARD":"1","PAYER_REF":null,"PMT_REF":null,"PROD_ID":"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f","VAR_REF":"My Legal Entity","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","CARD_PAYMENT_BUTTON":null,"HPP_VERSION":"2","SHA1HASH":"7116c49826367c6513efdc0cc81e243b8095d78f"}';
+        $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","COMMENT1":"Mobile Channel","CUST_NUM":"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa","OFFER_SAVE_CARD":"1","PAYER_EXIST":"0","PROD_ID":"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f","VAR_REF":"My Legal Entity","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","HPP_VERSION":"2","SHA1HASH":"7116c49826367c6513efdc0cc81e243b8095d78f"}';
         $this->assertEquals($json, $expectedJson);
     }
 }

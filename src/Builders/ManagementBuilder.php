@@ -96,6 +96,14 @@ class ManagementBuilder extends TransactionBuilder
      * @var IPaymentMethod
      */
     public $paymentMethod;
+    
+    /**
+     * Previous request's transaction reference
+     *
+     * @internal
+     * @var string
+     */
+    public $alternativePaymentType;
 
     /**
      * {@inheritdoc}
@@ -327,6 +335,12 @@ class ManagementBuilder extends TransactionBuilder
     public function withTaxType($taxType)
     {
         $this->taxType = $taxType;
+        return $this;
+    }
+    
+    public function withAlternativePaymentType($alternativePaymentType)
+    {
+        $this->alternativePaymentType = $alternativePaymentType;
         return $this;
     }
 }

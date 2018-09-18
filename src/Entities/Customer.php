@@ -142,7 +142,7 @@ class Customer extends RecurringEntity
     public function addPaymentMethod($paymentId, IPaymentMethod $paymentMethod)
     {
         $nameOnAccount = sprintf('%s %s', $this->firstName, $this->lastName);
-        if (empty(str_replace($nameOnAccount, ' ', ''))) {
+        if (empty(str_replace(' ', '', $nameOnAccount))) {
             $nameOnAccount = $this->company;
         }
 

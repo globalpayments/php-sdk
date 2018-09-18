@@ -70,11 +70,17 @@ class ServicesConfig
         }
 
         // Realex
-        if ((!empty($this->accountId) || !empty($this->merchantId))
-            && (empty($this->accountId) || empty($this->merchantId))
+        if ((empty($this->secretApiKey)
+            && (empty($this->siteId)
+                && empty($this->licenseId)
+                && empty($this->deviceId)
+                && empty($this->username)
+                && empty($this->password)
+            ))
+            && empty($this->merchantId)
         ) {
             throw new ConfigurationException(
-                "AccountId and MerchantId should both have values for this configuration."
+                "MerchantId should not be empty for this configuration."
             );
         }
 

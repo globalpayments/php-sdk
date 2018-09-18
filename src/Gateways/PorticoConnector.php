@@ -916,7 +916,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         if (!in_array($gatewayRspCode, $acceptedCodes)) {
             throw new GatewayException(
                 sprintf(
-                    'Unexpected Gateway Response: %s - %s. ' . $request . $rawResponse,
+                    'Unexpected Gateway Response: %s - %s. ',
                     $gatewayRspCode,
                     $gatewayRspText
                 )
@@ -1019,10 +1019,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         if (isset($item) && isset($item->BatchId)) {
             $result->batchSummary = new BatchSummary();
-            $result->batchSummary->id = $item->BatchId;
-            $result->batchSummary->transactionCount = $item->TxnCnt;
-            $result->batchSummary->totalAmount = $item->TotalAmt;
-            $result->batchSummary->sequenceNumber = $item->BatchSeqNbr;
+            $result->batchSummary->id = (string)$item->BatchId;
+            $result->batchSummary->transactionCount = (string)$item->TxnCnt;
+            $result->batchSummary->totalAmount = (string)$item->TotalAmt;
+            $result->batchSummary->sequenceNumber = (string)$item->BatchSeqNbr;
         }
 
         return $result;
@@ -1055,253 +1055,259 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         $summary = new TransactionSummary();
 
         if (isset($item) && isset($item->AcctDataSrc)) {
-            $summary->accountDataSource = $item->AcctDataSrc;
+            $summary->accountDataSource = (string)$item->AcctDataSrc;
         }
 
         if (isset($item) && isset($item->Amt)) {
-            $summary->amount = $item->Amt;
+            $summary->amount = (string)$item->Amt;
         }
 
         if (isset($item) && isset($item->AuthAmt)) {
-            $summary->authorizatedAmount = $item->AuthAmt;
+            $summary->authorizatedAmount = (string)$item->AuthAmt;
         }
 
         if (isset($item) && isset($item->AuthCode)) {
-            $summary->authCode = $item->AuthCode;
+            $summary->authCode = (string)$item->AuthCode;
         }
 
         if (isset($item) && isset($item->BatchCloseDT)) {
-            $summary->batchCloseDate = $item->BatchCloseDT;
+            $summary->batchCloseDate = (string)$item->BatchCloseDT;
         }
 
         if (isset($item) && isset($item->BatchSeqNbr)) {
-            $summary->batchSequenceNumber = $item->BatchSeqNbr;
+            $summary->batchSequenceNumber = (string)$item->BatchSeqNbr;
         }
 
         if (isset($item) && isset($item->CardSwiped)) {
-            $summary->cardSwiped = $item->CardSwiped;
+            $summary->cardSwiped = (string)$item->CardSwiped;
         }
 
         if (isset($item) && isset($item->CardType)) {
-            $summary->cardType = $item->CardType;
+            $summary->cardType = (string)$item->CardType;
         }
 
         if (isset($item) && isset($item->ClerkId)) {
-            $summary->clerkId = $item->ClerkId;
+            $summary->clerkId = (string)$item->ClerkId;
         }
 
         if (isset($item) && isset($item->ClientTxnId)) {
-            $summary->clientTransactionId = $item->ClientTxnId;
+            $summary->clientTransactionId = (string)$item->ClientTxnId;
         }
 
         if (isset($item) && isset($item->ConvenienceAmtInfo)) {
-            $summary->convenienceAmount = $item->ConvenienceAmtInfo;
+            $summary->convenienceAmount = (string)$item->ConvenienceAmtInfo;
         }
 
         if (isset($item) && isset($item->DeviceId)) {
-            $summary->deviceId = $item->DeviceId;
+            $summary->deviceId = (string)$item->DeviceId;
         }
 
         if (isset($item) && isset($item->GratuityAmtInfo)) {
-            $summary->gratuityAmount = $item->GratuityAmtInfo;
+            $summary->gratuityAmount = (string)$item->GratuityAmtInfo;
         }
 
         if (isset($item) && (isset($item->RspCode) || isset($item->IssuerRspCode))) {
-            $summary->issuerResponseCode = isset($item->RspCode) ? $item->RspCode : $item->IsserRspCode;
+            $summary->issuerResponseCode =
+                isset($item->RspCode)
+                ? (string)$item->RspCode
+                : (string)$item->IssuerRspCode;
         }
 
         if (isset($item) && (isset($item->RspText) || isset($item->IssuerRspText))) {
-            $summary->issuerResponseMessage = isset($item->RspText) ? $item->RspText : $item->IsserRspText;
+            $summary->issuerResponseMessage =
+                isset($item->RspText)
+                ? (string)$item->RspText
+                : (string)$item->IssuerRspText;
         }
 
         if (isset($item) && isset($item->IssTxnId)) {
-            $summary->issuerTransactionId = $item->IssTxnId;
+            $summary->issuerTransactionId = (string)$item->IssTxnId;
         }
 
         if (isset($item) && isset($item->MaskedCardNbr)) {
-            $summary->maskedCardNumber = $item->MaskedCardNbr;
+            $summary->maskedCardNumber = (string)$item->MaskedCardNbr;
         }
 
         if (isset($item) && isset($item->OriginalGatewayTxnId)) {
-            $summary->originalTransactionId = $item->OriginalGatewayTxnId;
+            $summary->originalTransactionId = (string)$item->OriginalGatewayTxnId;
         }
 
         if (isset($item) && isset($item->GatewayRspCode)) {
-            $summary->gatewayResponseCode = $this->normalizeResponse($item->GatewayRspCode);
+            $summary->gatewayResponseCode = $this->normalizeResponse((string)$item->GatewayRspCode);
         }
 
         if (isset($item) && isset($item->GatewayResponseMsg)) {
-            $summary->gatewayResponseMessage = $item->GatewayResponseMsg;
+            $summary->gatewayResponseMessage = (string)$item->GatewayResponseMsg;
         }
 
         if (isset($item) && isset($item->PaymentType)) {
-            $summary->paymentType = $item->PaymentType;
+            $summary->paymentType = (string)$item->PaymentType;
         }
 
         if (isset($item) && isset($item->CardHolderPONbr)) {
-            $summary->poNumber = $item->CardHolderPONbr;
+            $summary->poNumber = (string)$item->CardHolderPONbr;
         }
 
         if (isset($item) && isset($item->RefNbr)) {
-            $summary->referenceNumber = $item->RefNbr;
+            $summary->referenceNumber = (string)$item->RefNbr;
         }
 
         if (isset($item) && isset($item->RspDT)) {
-            $summary->responseDate = $item->RspDT;
+            $summary->responseDate = (string)$item->RspDT;
         }
 
         if (isset($item) && isset($item->ServiceName)) {
-            $summary->serviceName = $item->ServiceName;
+            $summary->serviceName = (string)$item->ServiceName;
         }
 
         if (isset($item) && isset($item->SettlementAmt)) {
-            $summary->settlementAmount = $item->SettlementAmt;
+            $summary->settlementAmount = (string)$item->SettlementAmt;
         }
 
         if (isset($item) && isset($item->ShippingAmtInfo)) {
-            $summary->shippingAmount = $item->ShippingAmtInfo;
+            $summary->shippingAmount = (string)$item->ShippingAmtInfo;
         }
 
         if (isset($item) && isset($item->SiteTrace)) {
-            $summary->siteTrace = $item->SiteTrace;
+            $summary->siteTrace = (string)$item->SiteTrace;
         }
 
         if (isset($item) && (isset($item->TxnStatus) || isset($item->Status))) {
-            $summary->status = isset($item->TxnStatus) ? $item->TxnStatus : $item->Status;
+            $summary->status = isset($item->TxnStatus) ? (string)$item->TxnStatus : (string)$item->Status;
         }
 
         if (isset($item) && (isset($item->TaxAmtInfo) || isset($item->TaxAmt))) {
-            $summary->taxAmount = isset($item->TaxAmtInfo) ? $item->TaxAmtInfo : $item->TaxAmt;
+            $summary->taxAmount = isset($item->TaxAmtInfo) ? (string)$item->TaxAmtInfo : (string)$item->TaxAmt;
         }
 
         if (isset($item) && isset($item->TaxType)) {
-            $summary->taxType = $item->TaxType;
+            $summary->taxType = (string)$item->TaxType;
         }
 
         if (isset($item) && (isset($item->TxnUtcDT) || isset($item->ReqUtcDT))) {
-            $summary->transactionDate = isset($item->TxnUtcDT) ? $item->TxnUtcDT : $item->ReqUtcDT;
+            $summary->transactionDate = isset($item->TxnUtcDT) ? (string)$item->TxnUtcDT : (string)$item->ReqUtcDT;
         }
 
         if (isset($item) && isset($item->GatewayTxnId)) {
-            $summary->transactionId = $item->GatewayTxnId;
+            $summary->transactionId = (string)$item->GatewayTxnId;
         }
 
         if (isset($item) && isset($item->TxnStatus)) {
-            $summary->transactionStatus = $item->TxnStatus;
+            $summary->transactionStatus = (string)$item->TxnStatus;
         }
 
         if (isset($item) && isset($item->UserName)) {
-            $summary->userName = $item->UserName;
+            $summary->userName = (string)$item->UserName;
         }
 
         if (isset($item) && isset($item->Description)) {
-            $summary->description = $item->Description;
+            $summary->description = (string)$item->Description;
         }
 
         if (isset($item) && isset($item->InvoiceNbr)) {
-            $summary->invoiceNumber = $item->InvoiceNbr;
+            $summary->invoiceNumber = (string)$item->InvoiceNbr;
         }
 
         if (isset($item) && isset($item->CustomerID)) {
-            $summary->customerId = $item->CustomerID;
+            $summary->customerId = (string)$item->CustomerID;
         }
 
         if (isset($item) && isset($item->UniqueDeviceId)) {
-            $summary->uniqueDeviceId = $item->UniqueDeviceId;
+            $summary->uniqueDeviceId = (string)$item->UniqueDeviceId;
         }
 
         if (isset($item) && isset($item->AdditionalTxnFields->TxnDescriptor)) {
-            $summary->transactionDescriptor = $item->AdditionalTxnFields->TxnDescriptor;
+            $summary->transactionDescriptor = (string)$item->AdditionalTxnFields->TxnDescriptor;
         }
 
         if (isset($item) && isset($item->GiftCurrency)) {
-            $summary->giftCurrency = $item->GiftCurrency;
+            $summary->giftCurrency = (string)$item->GiftCurrency;
         }
 
         if (isset($item) && isset($item->GiftMaskedAlias)) {
-            $summary->maskedAlias = $item->GiftMaskedAlias;
+            $summary->maskedAlias = (string)$item->GiftMaskedAlias;
         }
 
         if (isset($item) && isset($item->PaymentMethodKey)) {
-            $summary->paymentMethodKey = $item->PaymentMethodKey;
+            $summary->paymentMethodKey = (string)$item->PaymentMethodKey;
         }
 
         if (isset($item) && isset($item->ScheduleID)) {
-            $summary->scheduleId = $item->ScheduleID;
+            $summary->scheduleId = (string)$item->ScheduleID;
         }
 
         if (isset($item) && isset($item->OneTime)) {
-            $summary->oneTimePayment = $item->OneTime;
+            $summary->oneTimePayment = (string)$item->OneTime;
         }
 
         if (isset($item) && isset($item->RecurringDataCode)) {
-            $summary->recurringDataCode = $item->RecurringDataCode;
+            $summary->recurringDataCode = (string)$item->RecurringDataCode;
         }
 
         if (isset($item) && isset($item->SurchargeAmtInfo)) {
-            $summary->surchargeAmount = $item->SurchargeAmtInfo;
+            $summary->surchargeAmount = (string)$item->SurchargeAmtInfo;
         }
 
         if (isset($item) && isset($item->FraudInfoRule)) {
-            $summary->fraudRuleInfo = $item->UserNFraudInfoRuleame;
+            $summary->fraudRuleInfo = (string)$item->UserNFraudInfoRuleame;
         }
 
         if (isset($item) && isset($item->RepeatCount)) {
-            $summary->repeatCount = $item->RepeatCount;
+            $summary->repeatCount = (string)$item->RepeatCount;
         }
 
         if (isset($item) && isset($item->EMVChipCondition)) {
-            $summary->emvChipCondition = $item->EMVChipCondition;
+            $summary->emvChipCondition = (string)$item->EMVChipCondition;
         }
 
         if (isset($item) && isset($item->HasEMVTag)) {
-            $summary->hasEmvTags = $item->HasEMVTag;
+            $summary->hasEmvTags = (string)$item->HasEMVTag;
         }
 
         if (isset($item) && isset($item->HasEcomPaymentData)) {
-            $summary->hasEcomPaymentData = $item->HasEcomPaymentData;
+            $summary->hasEcomPaymentData = (string)$item->HasEcomPaymentData;
         }
 
         if (isset($item) && isset($item->CAVVResultCode)) {
-            $summary->cavvResponseCode = $item->CAVVResultCode;
+            $summary->cavvResponseCode = (string)$item->CAVVResultCode;
         }
 
         if (isset($item) && isset($item->TokenPANLast4)) {
-            $summary->tokenPanLastFour = $item->TokenPANLast4;
+            $summary->tokenPanLastFour = (string)$item->TokenPANLast4;
         }
 
         if (isset($item) && isset($item->Company)) {
-            $summary->companyName = $item->Company;
+            $summary->companyName = (string)$item->Company;
         }
 
         if (isset($item) && isset($item->CustomerFirstname)) {
-            $summary->customerFirstName = $item->CustomerFirstname;
+            $summary->customerFirstName = (string)$item->CustomerFirstname;
         }
 
         if (isset($item) && isset($item->CustomerLastName)) {
-            $summary->customerLastName = $item->CustomerLastName;
+            $summary->customerLastName = (string)$item->CustomerLastName;
         }
 
         if (isset($item) && isset($item->DebtRepaymentIndicator)) {
-            $summary->debtRepaymentIndicator = $item->DebtRepaymentIndicator;
+            $summary->debtRepaymentIndicator = (string)$item->DebtRepaymentIndicator;
         }
 
         if (isset($item) && isset($item->CaptureAmtInfo)) {
-            $summary->captureAmount = $item->CaptureAmtInfo;
+            $summary->captureAmount = (string)$item->CaptureAmtInfo;
         }
 
         if (isset($item) && isset($item->FullyCapturedInd)) {
-            $summary->fullyCaptured = $item->FullyCapturedInd;
+            $summary->fullyCaptured = (string)$item->FullyCapturedInd;
         }
 
          // lodging data
         if (isset($item) && isset($item->LodgingData)) {
             $summary->lodgingData = new LodgingData();
-            $summary->lodgingData->prestigiousPropertyLimit = $item->LodgingData->PrestigiousPropertyLimit;
-            $summary->lodgingData->noShow = $item->LodgingData->NoShow;
-            $summary->lodgingData->advancedDepositType = $item->LodgingData->AdvancedDepositType;
-            $summary->lodgingData->lodgingDataEdit = $item->LodgingData->LodgingDataEdit;
-            $summary->lodgingData->preferredCustomer = $item->LodgingData->PreferredCustomer;
+            $summary->lodgingData->prestigiousPropertyLimit = (string)$item->LodgingData->PrestigiousPropertyLimit;
+            $summary->lodgingData->noShow = (string)$item->LodgingData->NoShow;
+            $summary->lodgingData->advancedDepositType = (string)$item->LodgingData->AdvancedDepositType;
+            $summary->lodgingData->lodgingDataEdit = (string)$item->LodgingData->LodgingDataEdit;
+            $summary->lodgingData->preferredCustomer = (string)$item->LodgingData->PreferredCustomer;
         }
 
         // check data
@@ -1309,29 +1315,30 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $summary->checkData = new CheckData();
             $summary->checkData->accountInfo = $item->CheckData->AccountInfo;
             $summary->checkData->consumerInfo = $item->CheckData->ConsumerInfo;
-            $summary->checkData->dataEntryMode = $item->CheckData->DataEntryMode;
-            $summary->checkData->checkType = $item->CheckData->CheckType;
-            $summary->checkData->sECCode = $item->CheckData->SECCode;
-            $summary->checkData->checkAction = $item->CheckData->CheckAction;
+            $summary->checkData->dataEntryMode = (string)$item->CheckData->DataEntryMode;
+            $summary->checkData->checkType = (string)$item->CheckData->CheckType;
+            $summary->checkData->secCode = (string)$item->CheckData->SECCode;
+            $summary->checkData->checkAction = (string)$item->CheckData->CheckAction;
         }
 
         // alt payment data
         if (isset($item) && isset($item->AltPaymentData)) {
             $summary->altPaymentData = new AltPaymentData();
-            $summary->altPaymentData->buyerEmailAddress = $item->AltPaymentData->BuyerEmailAddress;
-            $summary->altPaymentData->stateDate = $item->AltPaymentData->StatusDT;
-            $summary->altPaymentData->status = $item->AltPaymentData->Status;
-            $summary->altPaymentData->statusMessage = $item->AltPaymentData->StatusMsg;
+            $summary->altPaymentData->buyerEmailAddress = (string)$item->AltPaymentData->BuyerEmailAddress;
+            $summary->altPaymentData->stateDate = (string)$item->AltPaymentData->StatusDT;
+            $summary->altPaymentData->status = (string)$item->AltPaymentData->Status;
+            $summary->altPaymentData->statusMessage = (string)$item->AltPaymentData->StatusMsg;
 
             $summary->altPaymentData->processorResponseInfo = new AltPaymentProcessorInfo();
             foreach ($summary->altPaymentData->processorResponseInfo as $info) {
                 $pri = new AltPaymentProcessorInfo();
-                $pri->code = $info->Code;
-                $pri->message = $info->Message;
-                $pri->type = $info->Type;
-            }
+                $pri->code = (string)$info->Code;
+                $pri->message = (string)$info->Message;
+                $pri->type = (string)$info->Type;
                 $summary->altPaymentData->processorResponseInfo->add($pri);
+            }
         }
+
         return $summary;
     }
 

@@ -20,4 +20,5 @@ class TransactionModifier extends Enum
     const HOSTEDREQUEST = 10;
     const ENCRYPTED_MOBILE = 11;
     const SECURE3D = 12;
+    const ALTERNATIVE_PAYMENT_METHOD = 12;
 }

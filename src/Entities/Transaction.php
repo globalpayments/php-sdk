@@ -210,6 +210,8 @@ class Transaction
     public $avsAddressResponse;
     
     public $responseValues;
+    
+    public $alternativePaymentResponse;
 
     /**
      * Creates a `Transaction` object from a stored transaction ID.
@@ -230,9 +232,11 @@ class Transaction
         try {
             $paymentMethodType = PaymentMethodType::validate($orderId);
         } catch (ArgumentException $ex) {
-            if ($orderId !== null && $paymentMethodType === null) {
-                $paymentMethodType = PaymentMethodType::CREDIT;
-            }
+            /** */
+        }
+
+        if ($orderId === null && $paymentMethodType === null) {
+            $paymentMethodType = PaymentMethodType::CREDIT;
         }
 
         $txn = new Transaction();
@@ -403,31 +407,31 @@ class Transaction
     {
         switch ($name) {
             case 'authorizationCode':
-                if ($this->transactionReference !== null) {
+                if (!$this->transactionReference instanceof TransactionReference) {
                     $this->transactionReference = new TransactionReference();
                 }
-                $this->transactionReference->authorizationCode = $value;
+                $this->transactionReference->authCode = $value;
                 return;
             case 'clientTransactionId':
-                if ($this->transactionReference !== null) {
+                if (!$this->transactionReference instanceof TransactionReference) {
                     $this->transactionReference = new TransactionReference();
                 }
                 $this->transactionReference->clientTransactionId = $value;
                 return;
             case 'orderId':
-                if ($this->transactionReference !== null) {
+                if (!$this->transactionReference instanceof TransactionReference) {
                     $this->transactionReference = new TransactionReference();
                 }
                 $this->transactionReference->orderId = $value;
                 return;
             case 'paymentMethodType':
-                if ($this->transactionReference !== null) {
+                if (!$this->transactionReference instanceof TransactionReference) {
                     $this->transactionReference = new TransactionReference();
                 }
                 $this->transactionReference->paymentMethodType = $value;
                 return;
             case 'transactionId':
-                if ($this->transactionReference !== null) {
+                if (!$this->transactionReference instanceof TransactionReference) {
                     $this->transactionReference = new TransactionReference();
                 }
                 $this->transactionReference->transactionId = $value;
