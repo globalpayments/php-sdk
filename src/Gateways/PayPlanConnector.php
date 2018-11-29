@@ -163,7 +163,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
                 unset($request[$key]);
             }
         }
-
+        
         $response = $this->doTransaction(
             $this->mapMethod($builder->transactionType),
             $this->mapUrl($builder),
@@ -474,12 +474,12 @@ class PayPlanConnector extends RestGateway implements IRecurringService
 
         if ($type === TransactionType::CREATE) {
             $request['customerKey'] = $schedule->customerKey;
-            $request = $this->buildDate($request, 'startDate', $schedule->startDate);
+            $request['startDate'] = $schedule->startDate;
             $request['frequency'] = $schedule->frequency;
             $request['duration'] = $mapDuration();
         } else { // Edit Fields
             if (!$schedule->hasStarted) {
-                $request = $this->buildDate($request, 'startDate', $schedule->startDate);
+                $request['startDate'] = $schedule->startDate;
                 $request['frequency'] = $schedule->frequency;
                 $request['duration'] = $mapDuration();
             } else {
@@ -487,7 +487,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
                 $request = $this->buildDate($request, 'nextProcressingDate', $schedule->nextProcessingDate);
             }
         }
-
+        
         return $request;
     }
 
@@ -658,7 +658,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
     {
         $tokenValue = null;
 
-        if ($paymentMethod instanceof ITokenizable && !empty($paymentMethod->token)) {
+        if (!empty($paymentMethod->token)) {
             $tokenValue = $paymentMethod->token;
             return [true, $tokenValue];
         }

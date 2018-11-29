@@ -65,7 +65,7 @@ abstract class RecurringEntity implements IRecurringEntity
         $entity = isset($response[0]) ? $response[0] : null;
 
         if ($entity !== null) {
-            return RecurringService::get($entity->key);
+            return RecurringService::get($entity);
         }
 
         return null;

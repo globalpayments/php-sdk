@@ -26,7 +26,7 @@ class CheckData
     /**
      * @var string
      */
-    public $sECCode;
+    public $secCode;
     
     /**
      * @var string

@@ -1,0 +1,130 @@
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="SecureSubmit PHP end-to-end payment example using tokenization.">
+        <meta name="author" content="Mark Hagan">
+        <title>Simple Payment Form Demo</title>
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="assets/secure.submit-1.1.0.js"></script>
+
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>PHP POS SecureSubmit Example</h1>
+            <table class="table table-striped">
+                <tr>
+                    <th>&nbsp;</th>
+                    <th>SKU</th>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                </tr>
+                <tr>
+                    <td><img src="assets/bananas.png" /></td>
+                    <td><i>BA0001</i></td>
+                    <td><strong>Very Tasty Banana Bundle</strong>
+                    <td>2</td>
+                    <td>$4.99</td>
+                </tr>
+                <tr>
+                    <td><img src="assets/oranges.png" /></td>
+                    <td><i>OR1021</i></td>
+                    <td><strong>High Vitamin C, Certified Organic, Sun-Grown Oranges</strong>
+                    <td>5</td>
+                    <td>$12.99</td>
+                </tr>
+                <tr>
+                    <td><img src="assets/apples.png" /></td>
+                    <td><i>AP1973</i></td>
+                    <td><strong>Certified Organic Granny Smith Green Apples</strong>
+                    <td>10</td>
+                    <td>$10.99</td>
+                </tr>
+                <tr>
+                    <td colspan="3">&nbsp;</td>
+                    <td><strong>Total:</strong></td>
+                    <td>$28.97</td>
+                </tr>
+                <tr>
+                    <td colspan="3">&nbsp;</td>
+                    <td><button class="btn btn-lg"><span class="glyphicon glyphicon-remove"></span>&nbsp;Cancel</button></td>
+                    <td><button id="chargeButton" class="btn btn-lg btn-primary" data-toggle="modal" data-target="#payModal"><span class="glyphicon glyphicon-credit-card"></span>&nbsp;Charge Card</button></td>
+                </tr>
+            </table>
+
+
+            <div class="modal fade" id="payModal" tabindex="-1" role="dialog" aria-labelledby="payTitle" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                            <h4 class="modal-title" id="payTitle">Charge Card $28.97</h4>
+                        </div>
+                        <div class="modal-body" style="text-align: center;">
+                            <h1><span class="glyphicon glyphicon-credit-card"></span>&nbsp;Swipe Credit Card</h1>
+                            <form class="payment_form form-horizontal" id="payment_form" action="charge.php">
+                                <input type="text" id="encryptedTrack" style="position: absolute; top: -9999px; left: -9999px;" />
+                            </form>
+                            <h1 style="display: none" id="processingText">Processing Swipe...</h1>
+                            <h1 style="display: none" id="tokenizingText">Tokenizing Encrypted Card...</h1>
+                            <h1 style="display: none" id="chargingText">Charging Card...</h1>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>	
+        </div>
+        <script>
+            jQuery('#payModal').on('shown.bs.modal', function () {
+                jQuery('#encryptedTrack').focus();
+            });
+
+            jQuery('#encryptedTrack').keypress(function (e) {
+                jQuery('#processingText').show();
+
+                if (e.which == 13) {
+                    jQuery('#processingText').hide();
+                    jQuery('#tokenizingText').show();
+
+                    hps.tokenize_swipe({
+                        data: {
+                            public_key: 'pkapi_cert_P6dRqs1LzfWJ6HgGVZ',
+                            track: jQuery('#encryptedTrack').val()
+                        },
+                        success: function (response) {
+                            secureSubmitResponseHandler(response);
+                        },
+                        error: function (response) {
+                            secureSubmitResponseHandler(response);
+                        }
+                    });
+
+                    return false;
+                }
+            });
+
+            function secureSubmitResponseHandler(response) {
+                if (response.message) {
+                    jQuery('#tokenizingText').hide();
+                    jQuery('#chargingText').hide();
+                    jQuery('#encryptedTrack').val('');
+                    jQuery('#encryptedTrack').focus();
+                    alert(response.message);
+                } else {
+                    jQuery('#tokenizingText').hide();
+                    jQuery('#chargingText').show();
+                    jQuery('#encryptedTrack').val('');
+                    jQuery('#payment_form').append("<input type='hidden' name='securesubmit_token' id='securesubmit_token' value='" + response.token_value + "'/>");
+                    jQuery('#payment_form').submit();
+                }
+            }
+        </script>
+    </body>
+</html>
