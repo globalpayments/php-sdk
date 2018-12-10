@@ -4,7 +4,7 @@
 
 # Heartland & Global Payments PHP SDK
 
-This SDK makes it easy to integrate your .NET application with our Card Not Present and Card Present APIs. 
+This SDK makes it easy to integrate your PHP application with our Card Not Present and Card Present APIs. 
 
 ## Solutions
 
