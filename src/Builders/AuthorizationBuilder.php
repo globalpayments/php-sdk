@@ -1077,4 +1077,17 @@ class AuthorizationBuilder extends TransactionBuilder
         $this->hostedPaymentData = $hostedPaymentData;
         return $this;
     }
+
+    /**
+     * Set the associated schedule ID
+     *
+     * @param string $scheduleId
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withScheduleId($scheduleId)
+    {
+        $this->scheduleId = $scheduleId;
+        return $this;
+    }
 }

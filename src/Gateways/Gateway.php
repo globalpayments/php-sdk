@@ -104,9 +104,7 @@ abstract class Gateway
             curl_setopt($request, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
             curl_setopt($request, CURLOPT_SSL_CIPHER_LIST, implode(':', $supportedCiphers));
 
-            // error_log($data);
             $curlResponse = curl_exec($request);
-            // error_log($curlResponse);
             $curlInfo = curl_getinfo($request);
             $curlError = curl_errno($request);
 
