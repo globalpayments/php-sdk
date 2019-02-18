@@ -58,32 +58,43 @@ abstract class Gateway
         $verb,
         $endpoint,
         $data = null,
-        array $queryStringParams = null
+        array $queryStringParams = null,
+        $type = null
     ) {
         try {
             $queryString = $this->buildQueryString($queryStringParams);
-            $request = curl_init($this->serviceUrl . $endpoint . $queryString);
+            $request = curl_init(trim($this->serviceUrl) . trim($endpoint) . $queryString);
 
             $this->headers = array_merge($this->headers, [
-                'Content-Type' => sprintf('%s', $this->contentType),
-                'Content-Length' => $data === null ? 0 : strlen($data),
+                'Content-Type' => sprintf('%s', $type ?? $this->contentType)
             ]);
+
+            if (empty($data) || $data == '[]') {
+                $data = 'undefined='; // This affects whether I get a 200 or 302 (online boarding)
+            } else {
+                $this->headers = array_merge($this->headers, [
+                    // Even when set to 0, sending this with null data seems to be an issue
+                    'Content-Length' => $data === null ? 0 : strlen($data)
+                ]);
+            }
 
             $headers = [];
             foreach ($this->headers as $key => $value) {
                 $headers[] = $key . ': '. $value;
             }
-
+                        
             curl_setopt($request, CURLOPT_CONNECTTIMEOUT, $this->timeout);
             curl_setopt($request, CURLOPT_TIMEOUT, $this->timeout);
             curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($request, CURLOPT_ENCODING, '');
+            curl_setopt($request, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
             curl_setopt($request, CURLOPT_SSL_VERIFYPEER, false); //true,);
             curl_setopt($request, CURLOPT_SSL_VERIFYHOST, false); //2,);
             curl_setopt($request, CURLOPT_CUSTOMREQUEST, strtoupper($verb));
             curl_setopt($request, CURLOPT_POSTFIELDS, $data);
             curl_setopt($request, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($request, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
-            // curl_setopt($request, CURLOPT_VERBOSE, true);
+            curl_setopt($request, CURLOPT_VERBOSE, true);
             //For TLS 1.2
             $supportedCiphers = [
                 'ECDHE-ECDSA-AES256-GCM-SHA384',
@@ -101,18 +112,26 @@ abstract class Gateway
                 'DHE-RSA-AES128-GCM-SHA256',
                 'DHE-RSA-AES128-SHA256'
             ];
-            curl_setopt($request, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
-            curl_setopt($request, CURLOPT_SSL_CIPHER_LIST, implode(':', $supportedCiphers));
 
-            // error_log($data);
+            // Commented out for online boarding testing
+            // curl_setopt($request, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
+            // curl_setopt($request, CURLOPT_SSL_CIPHER_LIST, implode(':', $supportedCiphers));
+
             $curlResponse = curl_exec($request);
-            // error_log($curlResponse);
             $curlInfo = curl_getinfo($request);
             $curlError = curl_errno($request);
+            // echo '<pre>';
+            // print_r($curlError.'<br/>');
+            // print_r($curlInfo);
+            // echo '</pre>';
 
             $response = new GatewayResponse();
             $response->statusCode = $curlInfo['http_code'];
+            $response->requestUrl = $endpoint;
             $response->rawResponse = $curlResponse;
+            if (302 == $response->statusCode) {
+                $response->redirectUrl = $curlInfo['redirect_url'];
+            }
             return $response;
         } catch (\Exception $e) {
             throw new \Exception(

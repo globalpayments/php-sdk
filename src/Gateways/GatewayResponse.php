@@ -13,4 +13,14 @@ class GatewayResponse
      * @var string
      */
     public $rawResponse;
+
+    /**
+     * @var string
+     */
+    public $requestUrl;
+
+    /**
+     * @var string
+     */
+    public $redirectUrl;
 }

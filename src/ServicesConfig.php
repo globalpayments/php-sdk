@@ -38,7 +38,8 @@ class ServicesConfig
     {
         // Portico API key
         if (!empty($this->secretApiKey)
-            && (!empty($this->siteId)
+            && (
+                !empty($this->siteId)
                 || !empty($this->licenseId)
                 || !empty($this->deviceId)
                 || !empty($this->username)
@@ -51,13 +52,15 @@ class ServicesConfig
         }
 
         // Portico legacy
-        if ((!empty($this->siteId)
+        if ((
+            !empty($this->siteId)
                 || !empty($this->licenseId)
                 || !empty($this->deviceId)
                 || !empty($this->username)
                 || !empty($this->password)
             )
-            && (empty($this->siteId)
+            && (
+                empty($this->siteId)
                 || empty($this->licenseId)
                 || empty($this->deviceId)
                 || empty($this->username)
@@ -71,7 +74,8 @@ class ServicesConfig
 
         // Realex
         if ((empty($this->secretApiKey)
-            && (empty($this->siteId)
+            && (
+                empty($this->siteId)
                 && empty($this->licenseId)
                 && empty($this->deviceId)
                 && empty($this->username)

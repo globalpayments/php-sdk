@@ -7,6 +7,7 @@ use GlobalPayments\Api\Gateways\IRecurringService;
 use GlobalPayments\Api\Gateways\PayPlanConnector;
 use GlobalPayments\Api\Gateways\PorticoConnector;
 use GlobalPayments\Api\Gateways\RealexConnector;
+use GlobalPayments\Api\Gateways\OnlineBoardingConnector;
 
 class ServicesContainer
 {
@@ -16,6 +17,8 @@ class ServicesContainer
     private $recurring;
     /** @var ServicesContainer */
     private static $instance;
+    /** @var OnlineBoardingConnector */
+    private $boarding;
 
     /**
      * ServicesContainer constructor.
@@ -24,10 +27,14 @@ class ServicesContainer
      *
      * @return
      */
-    public function __construct(IPaymentGateway $gateway, IRecurringService $recurring = null)
-    {
+    public function __construct(
+        IPaymentGateway $gateway = null,
+        IRecurringService $recurring = null,
+        OnlineBoardingConnector $boarding = null
+    ) {
         $this->gateway = $gateway;
         $this->recurring = $recurring;
+        $this->boarding = $boarding;
     }
 
     /**
@@ -98,6 +105,23 @@ class ServicesContainer
 
             static::$instance = new static($gateway, $recurring);
         }
+    }
+    
+    public static function configureService($config, $configName = "default")
+    {
+        $boarding = new OnlineBoardingConnector();
+        $boarding->portal = $config->portal;
+        static::$instance = new static(null, null, $boarding);
+    }
+    
+    /**
+     * Gets the configured gateway connector
+     *
+     * @return BoardingConnector
+     */
+    public function getBoardingConnector()
+    {
+        return $this->boarding;
     }
 
     /**

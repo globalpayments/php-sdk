@@ -6,7 +6,6 @@ use GlobalPayments\Api\Entities\Enum;
 
 class TransactionModifier extends Enum
 {
-
     const NONE = 0;
     const INCREMENTAL = 1;
     const ADDITIONAL = 2;

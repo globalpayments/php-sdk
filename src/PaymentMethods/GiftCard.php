@@ -103,7 +103,6 @@ class GiftCard implements
      */
     public function addValue($amount = null)
     {
-
         return (new AuthorizationBuilder(TransactionType::ADD_VALUE, $this))
             ->withAmount($amount);
     }

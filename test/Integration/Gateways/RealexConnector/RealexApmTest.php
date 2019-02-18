@@ -16,8 +16,8 @@ class RealexApmTest extends TestCase {
 
     protected function config() {
         $config = new ServicesConfig();
-        $config->merchantId = "realexprepro3";
-        $config->accountId = "apmtesttest";
+        $config->merchantId = "heartlandgpsandbox";
+        $config->accountId = "hpp";
         $config->rebatePassword = 'refund';
         $config->refundPassword = 'refund';
         $config->sharedSecret = "secret";

@@ -143,7 +143,6 @@ class GenerationUtils
 
     public static function convertArrayToJson($request, $hppVersion = '')
     {
-        
         if ($hppVersion != HppVersion::VERSION_2) {
             $request = array_map('base64_encode', $request);
         }

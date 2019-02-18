@@ -474,12 +474,12 @@ class PayPlanConnector extends RestGateway implements IRecurringService
 
         if ($type === TransactionType::CREATE) {
             $request['customerKey'] = $schedule->customerKey;
-            $request['startDate'] = $schedule->startDate;
+            $request = $this->buildDate($request, 'startDate', $schedule->startDate);
             $request['frequency'] = $schedule->frequency;
             $request['duration'] = $mapDuration();
         } else { // Edit Fields
             if (!$schedule->hasStarted) {
-                $request['startDate'] = $schedule->startDate;
+                $request = $this->buildDate($request, 'startDate', $schedule->startDate);
                 $request['frequency'] = $schedule->frequency;
                 $request['duration'] = $mapDuration();
             } else {
@@ -494,7 +494,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
     protected function buildDate($request, $name, \DateTime $date = null, $force = false)
     {
         if ($date !== null || $force) {
-            $value = $date !== null ? $date->format('MMddyyyy') : null;
+            $value = $date !== null ? $date->format('mdY') : null;
             $request[$name] = $value;
         }
         return $request;
@@ -504,7 +504,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
     {
         if ($amount !== null) {
             $node = [
-                'value' => $amount,
+                'value' => $amount * 100,
             ];
 
             if ($type === TransactionType::CREATE) {

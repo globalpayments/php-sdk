@@ -87,10 +87,26 @@ class PorticoReportingTests extends TestCase
 		$response = $this->reportingService->transactionDetail("1088532284")->execute();
 		$this->assertNotNull($response);        
 	}
+
+	public function testReportCardHolderName()
+	{
+		$gateway_response = $this->card->charge(10)
+		->withCurrency('USD')
+		->execute();
+		
+		$response = $this->reportingService->transactionDetail($gateway_response->transactionId)->execute();
+		
+		$this->assertEquals('Joe', $response->cardHolderFirstName);
+		$this->assertEquals('Smith', $response->cardHolderLastName);   
+	}
 	
 	public function testReportFindTransactionWithTransactionId()
 	{
-		$response = $this->reportingService->findTransactions("1088526532")->execute();
+		$gateway_response = $this->card->charge(10)
+		->withCurrency('USD')
+		->execute();
+
+		$response = $this->reportingService->findTransactions($gateway_response->transactionId)->execute();
 		$this->assertNotNull($response);
 	}
 	
