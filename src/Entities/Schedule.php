@@ -63,7 +63,7 @@ class Schedule extends RecurringEntity
      *
      * @var EmailReceipt
      */
-    public $emailReceipt;
+    public $emailReceipt = 'Never';
 
     /**
      * The end date of a schedule, if any.

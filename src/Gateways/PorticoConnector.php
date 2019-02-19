@@ -31,6 +31,7 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPinProtected;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITrackData;
+use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
@@ -196,8 +197,14 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $block1->appendChild($xml->createElement('Alias', $builder->alias));
         }
 
-        $isCheck = $builder->paymentMethod->paymentMethodType === PaymentMethodType::ACH;
-        if ($isCheck || $builder->billingAddress !== null) {
+        $isCheck = ($builder->paymentMethod->paymentMethodType === PaymentMethodType::ACH)
+            || ($builder->paymentMethod instanceof RecurringPaymentMethod
+                && $builder->paymentMethod->paymentType === 'ACH');
+        $propertyName = $isCheck ? 'checkHolderName' : 'cardHolderName';
+        if ($isCheck
+            || $builder->billingAddress !== null
+            || $builder->paymentMethod->{$propertyName} !== null
+        ) {
             $address = $this->hydrateHolder($xml, $builder, $isCheck);
 
             if (!empty($address)) {
@@ -1079,6 +1086,15 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $summary->batchSequenceNumber = (string)$item->BatchSeqNbr;
         }
 
+        if (isset($item) && isset($item->CardHolderData)) {
+            if (isset($item->CardHolderData->CardHolderFirstName)) {
+                $summary->cardHolderFirstName = $item->CardHolderData->CardHolderFirstName;
+            }
+            if (isset($item->CardHolderData->CardHolderLastName)) {
+                $summary->cardHolderLastName = $item->CardHolderData->CardHolderLastName;
+            }
+        }
+
         if (isset($item) && isset($item->CardSwiped)) {
             $summary->cardSwiped = (string)$item->CardSwiped;
         }
@@ -1301,7 +1317,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $summary->fullyCaptured = (string)$item->FullyCapturedInd;
         }
 
-         // lodging data
+        // lodging data
         if (isset($item) && isset($item->LodgingData)) {
             $summary->lodgingData = new LodgingData();
             $summary->lodgingData->prestigiousPropertyLimit = (string)$item->LodgingData->PrestigiousPropertyLimit;
@@ -1379,6 +1395,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                         return 'CreditIncrementalAuth';
                     } elseif ($builder->transactionModifier === TransactionModifier::OFFLINE) {
                         return 'CreditOfflineAuth';
+                    } elseif ($builder->transactionModifier == TransactionModifier::RECURRING) {
+                        return 'RecurringBillingAuth';
                     } elseif ($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE) {
                         throw new UnsupportedTransactionException('Transaction not supported for this payment method.');
                     }
@@ -1394,9 +1412,16 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                         return 'CreditOfflineSale';
                     } elseif ($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE) {
                         throw new UnsupportedTransactionException('Transaction not supported for this payment method.');
+                    } elseif ($builder->transactionModifier == TransactionModifier::RECURRING) {
+                        return 'RecurringBilling';
                     } else {
                         return 'CreditSale';
                     }
+                } elseif ($builder->paymentMethod->paymentMethodType == PaymentMethodType::RECURRING) {
+                    if ($builder->paymentMethod->paymentType == 'ACH') {
+                        return 'CheckSale';
+                    }
+                    return 'RecurringBilling';
                 } elseif ($builder->paymentMethod->paymentMethodType === PaymentMethodType::DEBIT) {
                     return 'DebitSale';
                 } elseif ($builder->paymentMethod->paymentMethodType === PaymentMethodType::CASH) {
@@ -1571,33 +1596,41 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
     protected function hydrateHolder(DOMDocument $xml, BaseBuilder $builder, $isCheck = false)
     {
         $holder = $xml->createElement($isCheck ? 'ConsumerInfo' : 'CardHolderData');
-        $holder->appendChild(
-            $xml->createElement($isCheck ? 'Address1' : 'CardHolderAddr', $builder->billingAddress->streetAddress1)
-        );
-        $holder->appendChild(
-            $xml->createElement($isCheck ? 'City' : 'CardHolderCity', $builder->billingAddress->city)
-        );
-        $holder->appendChild(
-            $xml->createElement($isCheck ? 'State' : 'CardHolderState', $builder->billingAddress->getProvince())
-        );
-        $holder->appendChild(
-            $xml->createElement($isCheck ? 'Zip' : 'CardHolderZip', $builder->billingAddress->postalCode)
-        );
+
+        if ($isCheck && $builder->paymentMethod instanceof RecurringPaymentMethod) {
+            return null;
+        }
+        
+        if ($builder->billingAddress !== null) {
+            $holder->appendChild(
+                $xml->createElement($isCheck ? 'Address1' : 'CardHolderAddr', $builder->billingAddress->streetAddress1)
+            );
+            $holder->appendChild(
+                $xml->createElement($isCheck ? 'City' : 'CardHolderCity', $builder->billingAddress->city)
+            );
+            $holder->appendChild(
+                $xml->createElement($isCheck ? 'State' : 'CardHolderState', $builder->billingAddress->getProvince())
+            );
+            $holder->appendChild(
+                $xml->createElement($isCheck ? 'Zip' : 'CardHolderZip', $builder->billingAddress->postalCode)
+            );
+        }
+
+        $propertyName = $isCheck ? 'checkHolderName' : 'cardHolderName';
+        if (!empty($builder->paymentMethod->{$propertyName})) {
+            $names = explode(' ', $builder->paymentMethod->{$propertyName}, 2);
+            $holder->appendChild(
+                $xml->createElement($isCheck ? 'FirstName' : 'CardHolderFirstName', $names[0])
+            );
+
+            if (isset($names[1])) {
+                $holder->appendChild(
+                    $xml->createElement($isCheck ? 'LastName' : 'CardHolderLastName', $names[1])
+                );
+            }
+        }
 
         if ($isCheck) {
-            if (!empty($builder->paymentMethod->checkHolderName)) {
-                $names = explode(' ', $builder->paymentMethod->checkHolderName, 2);
-                $holder->appendChild(
-                    $xml->createElement('FirstName', $names[0])
-                );
-
-                if (isset($names[1])) {
-                    $holder->appendChild(
-                        $xml->createElement('LastName', $names[1])
-                    );
-                }
-            }
-
             if ($builder->paymentMethod->checkHolderName !== null) {
                 $holder->appendChild($xml->createElement('CheckName', $builder->paymentMethod->checkHolderName));
             }

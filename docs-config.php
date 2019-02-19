@@ -13,5 +13,5 @@ return new Sami($iterator, [
     'title' => 'GlobalPayments\Api',
     'build_dir' => dirname($dir) . '/docs',
     'cache_dir' => dirname($dir) . '/docs-cache',
-    'remote_repository' => new GitHubRemoteRepository('GlobalPayments/php-sdk', dirname($dir)),
+    'remote_repository' => new GitHubRemoteRepository('globalpayments/php-sdk', dirname($dir)),
 ]);

@@ -6,6 +6,7 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Entities\RecurringEntity;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\Schedule;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IAuthable;
@@ -196,6 +197,10 @@ class RecurringPaymentMethod extends RecurringEntity implements
         switch ($name) {
             case 'paymentMethod':
                 return $this->paymentMethod;
+            case 'cardHolderName':
+                return $this->nameOnAccount;
+            case 'checkHolderName':
+                return $this->nameOnAccount;
             default:
                 break;
         }
@@ -204,14 +209,22 @@ class RecurringPaymentMethod extends RecurringEntity implements
             return $this->{$name};
         }
 
-        throw new ArgumentException(sprintf('Property `%s` does not exist on Transaction', $name));
+        if ($this->paymentMethod && property_exists($this->paymentMethod, $name)) {
+            return $this->paymentMethod->{$name};
+        }
+
+        throw new ArgumentException(sprintf('Property `%s` does not exist on RecurringPaymentMethod', $name));
     }
 
     public function __isset($name)
     {
         return in_array($name, [
-                    'paymentMethod',
-                ]) || isset($this->{$name});
+            'paymentMethod',
+            'cardHolderName',
+            'checkHolderName',
+        ])
+            || isset($this->{$name})
+            || ($this->paymentMethod && isset($this->paymentMethod->{$name}));
     }
 
     public function __set($name, $value)

@@ -1,0 +1,25 @@
+language: php
+
+sudo: false
+branches:
+  only:
+    - master
+
+php:
+  - '7.0'
+
+install:
+  - composer install
+
+script:
+  # Build docs
+  - composer docs
+
+deploy:
+  local-dir: docs
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+  keep-history: true
+  on:
+    branch: master
