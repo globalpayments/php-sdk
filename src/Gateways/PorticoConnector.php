@@ -1217,16 +1217,18 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $summary->userName = (string)$item->UserName;
         }
 
-        if (isset($item) && isset($item->Description)) {
-            $summary->description = (string)$item->Description;
-        }
+        if (isset($item) && isset($item->AdditionalTxnFields)) {
+            if (isset($item->AdditionalTxnFields->Description)) {
+                $summary->description = (string)$item->AdditionalTxnFields->Description;
+            }
 
-        if (isset($item) && isset($item->InvoiceNbr)) {
-            $summary->invoiceNumber = (string)$item->InvoiceNbr;
-        }
+            if (isset($item->AdditionalTxnFields->InvoiceNbr)) {
+                $summary->invoiceNumber = (string)$item->AdditionalTxnFields->InvoiceNbr;
+            }
 
-        if (isset($item) && isset($item->CustomerID)) {
-            $summary->customerId = (string)$item->CustomerID;
+            if (isset($item->AdditionalTxnFields->CustomerID)) {
+                $summary->customerId = (string)$item->AdditionalTxnFields->CustomerID;
+            }
         }
 
         if (isset($item) && isset($item->UniqueDeviceId)) {
