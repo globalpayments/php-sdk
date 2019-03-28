@@ -212,7 +212,7 @@ class SearchCriteriaBuilder
         $this->reportBuilder = $reportBuilder;
     }
     
-    public function and($criteria, $value)
+    public function andWhere($criteria, $value)
     {
         if (property_exists($this, $criteria)) {
             $this->{$criteria} = $value;
