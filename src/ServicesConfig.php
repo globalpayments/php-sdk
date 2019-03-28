@@ -26,6 +26,7 @@ class ServicesConfig
     public $hostedPaymentConfig;
 
     // Common
+    public $curlOptions;
     public $serviceUrl;
     public $timeout;
 

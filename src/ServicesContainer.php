@@ -66,6 +66,7 @@ class ServicesContainer
             $gateway->timeout = $config->timeout;
             $gateway->serviceUrl = $config->serviceUrl;
             $gateway->hostedPaymentConfig = $config->hostedPaymentConfig;
+            $gateway->curlOptions = $config->curlOptions;
             static::$instance = new static($gateway, $gateway);
         } else {
             $gateway = new PorticoConnector();
@@ -79,8 +80,9 @@ class ServicesContainer
             $gateway->versionNumber = $config->versionNumber;
             $gateway->timeout = $config->timeout;
             $gateway->serviceUrl = $config->serviceUrl . '/Hps.Exchange.PosGateway/PosGatewayService.asmx';
+            $gateway->curlOptions = $config->curlOptions;
 
-            $payplanEndPoint = (strpos(strtolower($config->secretApiKey), '_cert_') > 0) ?
+            $payplanEndPoint = (strpos(strtolower($config->serviceUrl), 'cert.') > 0) ?
                                 '/Portico.PayPlan.v2/':
                                 '/PayPlan.v2/';
             
@@ -95,6 +97,7 @@ class ServicesContainer
             $recurring->versionNumber = $config->versionNumber;
             $recurring->timeout = $config->timeout;
             $recurring->serviceUrl = $config->serviceUrl . $payplanEndPoint;
+            $recurring->curlOptions = $config->curlOptions;
 
             static::$instance = new static($gateway, $recurring);
         }

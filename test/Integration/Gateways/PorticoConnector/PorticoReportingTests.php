@@ -153,7 +153,7 @@ class PorticoReportingTests extends TestCase
         
         $response = $this->reportingService->findTransactions()
             ->where('startDate', $dateMinus5Utc)
-            ->and('endDate', $nowUtc)
+            ->andWhere('endDate', $nowUtc)
             ->execute();
             
         $this->assertNotNull($response);
@@ -264,7 +264,7 @@ class PorticoReportingTests extends TestCase
             ->withCurrency('USD')
             ->withOfflineAuthCode('12345')
             ->withAllowDuplicates(true)
-            ->WithConvenienceAmount(2)
+            ->withConvenienceAmount(2)
             ->execute();
         
         $this->assertNotNull($response);

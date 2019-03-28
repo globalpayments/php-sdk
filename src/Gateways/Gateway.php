@@ -25,6 +25,11 @@ abstract class Gateway
     public $serviceUrl;
 
     /**
+     * @var array<integer,string>
+     */
+    public $curlOptions;
+
+    /**
      * @param string $contentType
      *
      * @return
@@ -82,25 +87,14 @@ abstract class Gateway
             curl_setopt($request, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($request, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
             // curl_setopt($request, CURLOPT_VERBOSE, true);
-            //For TLS 1.2
-            $supportedCiphers = [
-                'ECDHE-ECDSA-AES256-GCM-SHA384',
-                'ECDHE-RSA-AES256-GCM-SHA384',
-                'ECDHE-ECDSA-AES256-SHA384',
-                'ECDHE-RSA-AES256-SHA384',
-                'ECDHE-ECDSA-CHACHA20-POLY1305',
-                'ECDHE-RSA-CHACHA20-POLY1305',
-                'DHE-RSA-AES256-GCM-SHA384',
-                'DHE-RSA-AES256-SHA256',
-                'ECDHE-ECDSA-AES128-GCM-SHA256',
-                'ECDHE-RSA-AES128-GCM-SHA256',
-                'ECDHE-ECDSA-AES128-SHA256',
-                'ECDHE-RSA-AES128-SHA256',
-                'DHE-RSA-AES128-GCM-SHA256',
-                'DHE-RSA-AES128-SHA256'
-            ];
             curl_setopt($request, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
-            curl_setopt($request, CURLOPT_SSL_CIPHER_LIST, implode(':', $supportedCiphers));
+
+            if (
+                $this->curlOptions != null
+                && !empty($this->curlOptions)
+            ) {
+                curl_setopt_array($request, $this->curlOptions);
+            }
 
             $curlResponse = curl_exec($request);
             $curlInfo = curl_getinfo($request);
