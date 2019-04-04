@@ -28,6 +28,16 @@ abstract class Gateway
      * @var array<integer,string>
      */
     public $curlOptions;
+    
+    /**
+     * @var ICommsTracer|null
+     */
+    public $requestTracer;
+
+    /**
+     * @var IcommsTracer|null
+     */
+    public $responseTracer;
 
     /**
      * @param string $contentType
@@ -105,6 +115,14 @@ abstract class Gateway
             $response = new GatewayResponse();
             $response->statusCode = $curlInfo['http_code'];
             $response->rawResponse = $curlResponse;
+
+            if ($this->requestTracer instanceof ICommsTracer){
+                $this->requestTracer->captureTrace($data);
+            }
+            if ($this->responseTracer instanceof ICommsTracer){
+                $this->responseTracer->captureTrace($curlResponse);
+            }
+
             return $response;
         } catch (\Exception $e) {
             throw new \Exception(
