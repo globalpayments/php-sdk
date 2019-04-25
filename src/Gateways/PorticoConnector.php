@@ -433,36 +433,32 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                     $direct->appendChild($xml->createElement('DirectMktShipMonth', $builder->ecommerceInfo->shipMonth));
                 }
             }
-
-            if (!empty($builder->ecommerceInfo->cavv)
-                || !empty($builder->ecommerceInfo->eci)
-                || !empty($builder->ecommerceInfo->xid)
-            ) {
+            if (!empty($builder->paymentMethod->threeDSecure)) {
                 $secure = $xml->createElement('SecureECommerce');
-                if (!empty($builder->ecommerceInfo->paymentDataSource)) {
+                if (!empty($builder->paymentMethod->threeDSecure->paymentDataSource)) {
                     $direct->appendChild(
-                        $xml->createElement(
-                            'PaymentDataSource',
-                            $builder->ecommerceInfo->paymentDataSource
-                        )
-                    );
+                    $xml->createElement(
+                        'PaymentDataSource',
+                        $builder->paymentMethod->threeDSecure->paymentDataSource
+                    )
+                );
                 }
-                if (!empty($builder->ecommerceInfo->paymentDataType)) {
+                if (!empty($builder->paymentMethod->threeDSecure->paymentDataType)) {
                     $direct->appendChild(
-                        $xml->createElement(
-                            'TypeOfPaymentData',
-                            $builder->ecommerceInfo->paymentDataType
-                        )
-                    );
+                    $xml->createElement(
+                        'TypeOfPaymentData',
+                        $builder->paymentMethod->threeDSecure->paymentDataType
+                    )
+                );
                 }
-                if (!empty($builder->ecommerceInfo->cavv)) {
-                    $direct->appendChild($xml->createElement('PaymentData', $builder->ecommerceInfo->cavv));
+                if (!empty($builder->paymentMethod->threeDSecure->cavv)) {
+                    $direct->appendChild($xml->createElement('PaymentData', $builder->paymentMethod->threeDSecure->cavv));
                 }
-                if (!empty($builder->ecommerceInfo->eci)) {
-                    $direct->appendChild($xml->createElement('ECommerceIndicator', $builder->ecommerceInfo->eci));
+                if (!empty($builder->paymentMethod->threeDSecure->eci)) {
+                    $direct->appendChild($xml->createElement('ECommerceIndicator', $builder->paymentMethod->threeDSecure->eci));
                 }
-                if (!empty($builder->ecommerceInfo->xid)) {
-                    $direct->appendChild($xml->createElement('XID', $builder->ecommerceInfo->xid));
+                if (!empty($builder->paymentMethod->threeDSecure->xid)) {
+                    $direct->appendChild($xml->createElement('XID', $builder->paymentMethod->threeDSecure->xid));
                 }
             }
         }

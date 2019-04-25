@@ -106,6 +106,12 @@ class ManagementBuilder extends TransactionBuilder
     public $alternativePaymentType;
 
     /**
+     * @internal
+     * @var string
+     */
+    public $payerAuthenticationResponse;
+
+    /**
      * {@inheritdoc}
      *
      * @param TransactionType $type Request transaction type
@@ -192,6 +198,12 @@ class ManagementBuilder extends TransactionBuilder
         $this->validations->of(TransactionType::REFUND)
             ->when('amount')->isNotNull()
             ->check('currency')->isNotNull();
+
+        $this->validations->of(TransactionType::VERIFY_SIGNATURE)
+            ->check('payerAuthenticationResponse')->isNotNull()
+            ->check('amount')->isNotNull()
+            ->check('currency')->isNotNull()
+            ->check('orderId')->isNotNull();
     }
 
     /**
@@ -341,6 +353,11 @@ class ManagementBuilder extends TransactionBuilder
     public function withAlternativePaymentType($alternativePaymentType)
     {
         $this->alternativePaymentType = $alternativePaymentType;
+        return $this;
+    }
+
+    public function withPayerAuthenticationResponse($payerAuthenticationResponse){
+        $this->payerAuthenticationResponse = $payerAuthenticationResponse;
         return $this;
     }
 }

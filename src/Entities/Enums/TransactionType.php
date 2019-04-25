@@ -30,4 +30,6 @@ class TransactionType extends Enum
     const HOLD = 1 << 21;
     const RELEASE = 1 << 22;
     const DCC_RATE_LOOKUP = 1 << 23;
+    const VERIFY_ENROLLED = 1 << 24;
+    const VERIFY_SIGNATURE = 1 << 25;
 }

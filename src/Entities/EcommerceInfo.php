@@ -10,13 +10,6 @@ use GlobalPayments\Api\Entities\Enums\EcommerceChannel;
 class EcommerceInfo
 {
     /**
-     * Consumer authentication (3DSecure) verification value.
-     *
-     * @var string
-     */
-    public $cavv;
-
-    /**
      * Identifies eCommerce vs mail order / telephone order (MOTO) transactions.
      *
      * Default value is `EcommerceChannel.ECOM`.
@@ -24,29 +17,6 @@ class EcommerceInfo
      * @var EcommerceChannel
      */
     public $channel;
-
-    /**
-     * Consumer authentication (3DSecure) electronic commerce indicator.
-     *
-     * @var string
-     */
-    public $eci;
-
-    /**
-     * Consumer authentication (3DSecure) source.
-     *
-     * @var string
-     */
-    public $paymentDataSource;
-
-    /**
-     * Consumer authentication (3DSecure) type.
-     *
-     * Default value is `"3DSecure"`.
-     *
-     * @var string
-     */
-    public $paymentDataType;
 
     /**
      * The expected shipping month.
@@ -65,13 +35,6 @@ class EcommerceInfo
      * @var integer
      */
     public $shipMonth;
-
-    /**
-     * Consumer authentication (3DSecure) transaction ID.
-     *
-     * @var string
-     */
-    public $xid;
 
     /**
      * Instantiates a new `EcommerceInfo` object.

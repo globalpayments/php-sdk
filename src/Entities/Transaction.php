@@ -150,6 +150,14 @@ class Transaction
     public $responseMessage;
 
     /**
+     * The response from ThreeDSecure
+     * 
+     * @internal
+     * @var ThreeDSecure
+     */
+    public $threeDSecure;
+
+    /**
      * The timestamp of the transaction.
      *
      * @var string

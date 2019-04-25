@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
+use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IAuthable;
@@ -44,6 +45,17 @@ abstract class Credit implements
      * transactions.
      */
     public $mobileType;
+
+    /**
+     * Secure 3d Data attached to the card
+     * @var ThreeDSecure
+     */
+    public $threeDSecure;
+
+    /**
+     * The card type of the manual entry data.
+     */
+    public $cardType;
 
     /**
      * Authorizes the payment method

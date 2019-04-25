@@ -33,6 +33,7 @@ use GlobalPayments\Api\Entities\FraudManagementResponse;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\Enums\HppVersion;
 use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
+use GlobalPayments\Api\Entities\ThreeDSecure;
 
 class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringService
 {
@@ -120,11 +121,12 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $xml = new DOMDocument();
         $timestamp = isset($builder->timestamp) ? $builder->timestamp : GenerationUtils::generateTimestamp();
         $orderId = isset($builder->orderId) ? $builder->orderId : GenerationUtils::generateOrderId();
+        $transactionType = $this->mapAuthRequestType($builder);
 
         // Build Request
         $request = $xml->createElement("request");
         $request->setAttribute("timestamp", $timestamp);
-        $request->setAttribute("type", $this->mapAuthRequestType($builder));
+        $request->setAttribute("type", $transactionType);
 
         $request->appendChild($xml->createElement("merchantid", $this->merchantId));
         
@@ -421,15 +423,15 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $this->buildFraudFilter($builder, $xml, $request);
         
         // TODO: mpi
-        if ($builder->ecommerceInfo !== null) {
+        if (!empty($builder->paymentMethod->threeDSecure)) {
             $mpi = $xml->createElement("mpi");
-            $mpi->appendChild($xml->createElement("cavv", $builder->ecommerceInfo->cavv));
-            $mpi->appendChild($xml->createElement("xid", $builder->ecommerceInfo->xid));
-            $mpi->appendChild($xml->createElement("eci", $builder->ecommerceInfo->eci));
+            $mpi->appendChild($xml->createElement("cavv", $builder->paymentMethod->threeDSecure->cavv));
+            $mpi->appendChild($xml->createElement("xid", $builder->paymentMethod->threeDSecure->xid));
+            $mpi->appendChild($xml->createElement("eci", $builder->paymentMethod->threeDSecure->eci));
             $request->appendChild($mpi);
         }
         
-        $acceptedResponseCodes = $this->mapAcceptedCodes($builder->paymentMethod->paymentMethodType);
+        $acceptedResponseCodes = $this->mapAcceptedCodes($transactionType);
 
         $response = $this->doTransaction($xml->saveXML($request));
         return $this->mapResponse($response, $acceptedResponseCodes);
@@ -584,11 +586,11 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $xml = new DOMDocument();
         $timestamp = GenerationUtils::generateTimestamp();
         $orderId = $builder->orderId ?: GenerationUtils::generateOrderId();
-
+        $transactionType = $this->mapManageRequestType($builder);
         // Build Request
         $request = $xml->createElement("request");
         $request->setAttribute("timestamp", $timestamp);
-        $request->setAttribute("type", $this->mapManageRequestType($builder));
+        $request->setAttribute("type", $transactionType);
 
         $request->appendChild($xml->createElement("merchantid", $this->merchantId));
         
@@ -623,6 +625,10 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         
         if ($builder->alternativePaymentType !== null) {
             $request->appendChild($xml->createElement("paymentmethod", $builder->alternativePaymentType));
+        }
+
+        if($builder->transactionType === TransactionType::VERIFY_SIGNATURE){
+            $request->appendChild($xml->createElement("pares", $builder->payerAuthenticationResponse));
         }
 
         // comments needs to be multiple
@@ -661,7 +667,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         }
         
         $response = $this->doTransaction($xml->saveXML($request));
-        return $this->mapResponse($response);
+        return $this->mapResponse($response, $this->mapAcceptedCodes($transactionType));
     }
 
     public function processReport(ReportBuilder $builder)
@@ -859,6 +865,26 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $result->timestamp = (!empty($root->attributes()->timestamp)) ?
                                     (string) $root->attributes()->timestamp :
                                     '';
+
+        // 3d secure enrolled
+        if (!empty($root->enrolled)) {
+            $result->threeDSecure = new ThreeDSecure();
+            $result->threeDSecure->enrolled = (string)$root->enrolled;
+            $result->threeDSecure->xid = (string)$root->xid;
+            $result->threeDSecure->issuerAcsUrl = (string)$root->url;
+            $result->threeDSecure->payerAuthenticationRequest = (string)$root->pareq;
+        }
+
+        // 3d secure signature
+        if (!empty($root->threedsecure)) {
+            $secureEcom = new ThreeDSecure();
+            $secureEcom->status = (string)$root->threedsecure->status;
+            $secureEcom->eci = (string)$root->threedsecure->eci;
+            $secureEcom->cavv = (string)$root->threedsecure->cavv;
+            $secureEcom->xid = (string)$root->threedsecure->xid;
+            $secureEcom->algorithm = (int)$root->threedsecure->algorithm;
+            $result->threeDSecure = $secureEcom;
+        }
         
         // dccinfo
         if (!empty($root->dccinfo)) {
@@ -1031,6 +1057,8 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                 throw new UnsupportedTransactionException(
                     'The selected gateway does not support this transaction type.'
                 );
+            case TransactionType::VERIFY_ENROLLED:
+                return '3ds-verifyenrolled';
             default:
                 return 'unknown';
         }
@@ -1060,6 +1088,8 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             case TransactionType::VOID:
             case TransactionType::REVERSAL:
                 return 'void';
+            case TransactionType::VERIFY_SIGNATURE:
+                return '3ds-verifysig';
             default:
                 return 'unknown';
         }
