@@ -104,6 +104,19 @@ class TransactionReportBuilder extends ReportBuilder
     }
 
     /**
+     * Sets the timezone conversion method for the report.
+     * 
+     * @param TimeZoneConversion $value The timezone conversion method
+     * 
+     * @return TransactionReportBuilder
+     */
+    public function withTimeZoneConversion($value)
+    {
+        $this->timeZoneConversion = $value;
+        return $this;
+    }
+
+    /**
      * Sets the transaction ID as criteria for the report.
      *
      * @param string $value The transaction ID

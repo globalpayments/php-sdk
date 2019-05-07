@@ -11,6 +11,7 @@ use GlobalPayments\Api\Entities;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\Entities\Enums\ReportType;
+use GlobalPayments\Api\Entities\Enums\TimeZoneConversion;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteriaBuilder;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
@@ -152,6 +153,7 @@ class PorticoReportingTests extends TestCase
         $nowUtc = gmdate($dateFormat);
         
         $response = $this->reportingService->findTransactions()
+            ->withTimeZoneConversion(TimeZoneConversion::MERCHANT)
             ->where('startDate', $dateMinus5Utc)
             ->and('endDate', $nowUtc)
             ->execute();

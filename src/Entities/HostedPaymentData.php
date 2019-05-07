@@ -8,6 +8,29 @@ namespace GlobalPayments\Api\Entities;
 class HostedPaymentData
 {
     /**
+     * Indicates to the issuer that the shipping and billing
+     * addresses are expected to be the same. Used as a fraud
+     * prevention mechanism.
+     * 
+     * @var boolean
+     */
+    public $addressesMatch;
+
+    /**
+     * Determines the challenge request preference for 3DS 2.0.
+     * 
+     * @var ChallengeRequest
+     */
+    public $challengeRequest;
+
+    /**
+     * The customer's email address.
+     * 
+     * @var string
+     */
+    public $customerEmail;
+
+    /**
      * Indicates if the customer is known and has an account.
      *
      * @var boolean
@@ -27,6 +50,13 @@ class HostedPaymentData
      * @var string
      */
     public $customerNumber;
+
+    /**
+     * The customer's mobile phone number.
+     * 
+     * @var string
+     */
+    public $customerPhoneMobile;
 
     /**
      * Indicates if the customer should be prompted to store their card.

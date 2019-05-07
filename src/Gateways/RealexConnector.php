@@ -511,26 +511,52 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $this->setSerializeData('CUST_NUM', $builder->customerId);
         }
         if (!empty($builder->shippingAddress)) {
+            // Fraud values
             $this->setSerializeData('SHIPPING_CODE', $builder->shippingAddress->postalCode);
             $this->setSerializeData('SHIPPING_CO', $builder->shippingAddress->country);
+
+            // 3DS 2.0 values
+            $this->setSerializeData('HPP_SHIPPING_STREET1', $builder->shippingAddress->streetAddress1);
+            $this->setSerializeData('HPP_SHIPPING_STREET2', $builder->shippingAddress->streetAddress2);
+            $this->setSerializeData('HPP_SHIPPING_STREET3', $builder->shippingAddress->streetAddress3);
+            $this->setSerializeData('HPP_SHIPPING_CITY', $builder->shippingAddress->city);
+            $this->setSerializeData('HPP_SHIPPING_STATE', $builder->shippingAddress->state);
+            $this->setSerializeData('HPP_SHIPPING_POSTALCODE', $builder->shippingAddress->postalCode);
+            $this->setSerializeData('HPP_SHIPPING_COUNTRY', $builder->shippingAddress->country);
         }
         if (!empty($builder->billingAddress)) {
+            // Fraud values
             $this->setSerializeData('BILLING_CODE', $builder->billingAddress->postalCode);
             $this->setSerializeData('BILLING_CO', $builder->billingAddress->country);
+
+            // 3DS 2.0 values
+            $this->setSerializeData('HPP_BILLING_STREET1', $builder->billingAddress->streetAddress1);
+            $this->setSerializeData('HPP_BILLING_STREET2', $builder->billingAddress->streetAddress2);
+            $this->setSerializeData('HPP_BILLING_STREET3', $builder->billingAddress->streetAddress3);
+            $this->setSerializeData('HPP_BILLING_CITY', $builder->billingAddress->city);
+            $this->setSerializeData('HPP_BILLING_STATE', $builder->billingAddress->state);
+            $this->setSerializeData('HPP_BILLING_POSTALCODE', $builder->billingAddress->postalCode);
+            $this->setSerializeData('HPP_BILLING_COUNTRY', $builder->billingAddress->country);
         }
         
         $this->setSerializeData('VAR_REF', $builder->clientTransactionId);
         $this->setSerializeData('HPP_LANG', $this->hostedPaymentConfig->language);
         $this->setSerializeData('MERCHANT_RESPONSE_URL', $this->hostedPaymentConfig->responseUrl);
         $this->setSerializeData('CARD_PAYMENT_BUTTON', $this->hostedPaymentConfig->paymentButtonText);
+        $this->setSerializeData('HPP_CUSTOMER_EMAIL', $builder->hostedPaymentData->customerEmail);
+        $this->setSerializeData('HPP_CUSTOMER_PHONENUMBER_MOBILE', $builder->hostedPaymentData->customerPhoneMobile);
+        $this->setSerializeData('HPP_CHALLENGE_REQUEST_INDICATOR', $builder->hostedPaymentData->challengeRequest);
+        if (isset($builder->hostedPaymentData->addressesMatch)) {
+            $this->setSerializeData('HPP_ADDRESS_MATCH_INDICATOR', $builder->hostedPaymentData->addressesMatch ? 'TRUE' : 'FALSE');
+        }
         
         if (isset($this->hostedPaymentConfig->cardStorageEnabled)) {
-            $this->setSerializeData('CARD_STORAGE_ENABLE', $this->hostedPaymentConfig->cardStorageEnabled ? "1" : "0");
+            $this->setSerializeData('CARD_STORAGE_ENABLE', $this->hostedPaymentConfig->cardStorageEnabled ? '1' : '0');
         }
         if ($builder->transactionType === TransactionType::VERIFY) {
             $this->setSerializeData(
                 'VALIDATE_CARD_ONLY',
-                $builder->transactionType === TransactionType::VERIFY ? "1" : "0"
+                $builder->transactionType === TransactionType::VERIFY ? '1' : '0'
             );
         }
         if (!empty($this->hostedPaymentConfig->FraudFilterMode)) {
@@ -998,8 +1024,8 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $data[] = $paymentData;
 
         return GenerationUtils::generateHash(
-            implode('.', $data),
-            $this->sharedSecret
+            $this->sharedSecret,
+            implode('.', $data)
         );
     }
 
