@@ -200,10 +200,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         $isCheck = ($builder->paymentMethod->paymentMethodType === PaymentMethodType::ACH)
             || ($builder->paymentMethod instanceof RecurringPaymentMethod
                 && $builder->paymentMethod->paymentType === 'ACH');
-        $propertyName = $isCheck ? 'checkHolderName' : 'cardHolderName';
         if ($isCheck
-            || $builder->billingAddress !== null
-            || $builder->paymentMethod->{$propertyName} !== null
+            && $builder->billingAddress !== null
+            && $builder->paymentMethod->{'checkHolderName'} !== null
         ) {
             $address = $this->hydrateHolder($xml, $builder, $isCheck);
 
