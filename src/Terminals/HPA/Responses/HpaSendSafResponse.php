@@ -3,10 +3,10 @@
 namespace GlobalPayments\Api\Terminals\HPA\Responses;
 
 use GlobalPayments\Api\Terminals\HPA\Entities\HpaResponse;
-use GlobalPayments\Api\Terminals\TerminalUtils;
 use GlobalPayments\Api\Terminals\Interfaces\IDeviceResponseHandler;
+use GlobalPayments\Api\Terminals\TerminalUtils;
 
-class HpaEodResponse implements IDeviceResponseHandler
+class HpaSendSafResponse implements IDeviceResponseHandler
 {
 
     private $deviceResponse;
@@ -15,19 +15,18 @@ class HpaEodResponse implements IDeviceResponseHandler
     {
         $this->deviceResponse = new HpaResponse();
         $this->deviceResponse->responseData = [
-            'getBatchReport' => [
-                'batchSummary' => [],
-                'batchReport' => [],
-                'visaCardSummary' => [],
-                'mastercardCardSummary' => [],
-                'americanExpressCardSummary' => [],
-                'discoverCardSummary' => [],
-                'paypalCardSummary' => [],
-                'batchDetail' => [],
-                'transactionDetails' => []
+            'sendSAF' => [
+                'approvedSafSummary' => [],
+                'pendingSafSummary' => [],
+                'declinedSafSummary' => [],
+                'offlineApprovedSafSummary' => [],
+                'partiallyApprovedSafSummary' => [],
+                'approvedSafVoidSummary' => [],
+                'pendingSafVoidSummary' => [],
+                'declinedSafVoidSummary' => []
             ]
         ];
-
+        
         //incase of muliple message needs to be splitted
         //convert the response as array using </SIP> keyword
         $messageList = explode('</SIP>', $gatewayMultipleResponse);
@@ -38,7 +37,7 @@ class HpaEodResponse implements IDeviceResponseHandler
                     //process individual <SIP> response
                     if (strpos($message, '<SIP>') !== false && !strpos($message, '</SIP>')) {
                         $message .= '</SIP>';
-                        $this->parseEODResponse($message);
+                        $this->parseSAFResponse($message);
                     }
                 }
             }
@@ -47,7 +46,7 @@ class HpaEodResponse implements IDeviceResponseHandler
         return $this->deviceResponse;
     }
 
-    private function parseEODResponse($gatewayResponse)
+    private function parseSAFResponse($gatewayResponse)
     {
         $responseData = TerminalUtils::xmlParse($gatewayResponse);
 
@@ -55,10 +54,11 @@ class HpaEodResponse implements IDeviceResponseHandler
             $responseType = lcfirst($responseData['Response']);
 
             if (!empty($responseData['Record'])) {
-                //for GetBatchReport
+                //other than SendSAF
                 $this->parseResponseRecord($responseData['Record'], $responseType);
-            } elseif ($responseData['Response'] == 'EOD') {
-                //process main EOD response
+            }
+            if ($responseData['Response'] == 'SendSAF') {
+                //process main SendSAF response
                 $this->setValue('versionNumber', $responseData, 'Version');
                 $this->setValue('ecrId', $responseData, 'ECRId');
                 $this->setValue('sipId', $responseData, 'SIPId');
@@ -69,17 +69,6 @@ class HpaEodResponse implements IDeviceResponseHandler
                 $this->setValue('transactionId', $responseData, 'ResponseId');
                 $this->setValue('responseCode', $responseData, 'ResponseCode');
                 $this->setValue('resultText', $responseData, 'ResultText');
-                $this->setValue('requestId', $responseData, 'RequestId');
-
-                //EOD specific
-                $this->setValue('reversal', $responseData, 'Reversal');
-                $this->setValue('emvOfflineDecline', $responseData, 'EMVOfflineDecline');
-                $this->setValue('transactionCertificate', $responseData, 'TransactionCertificate');
-                $this->setValue('attachment', $responseData, 'Attachment');
-                $this->setValue('sendSAF', $responseData, 'SendSAF');
-                $this->setValue('batchClose', $responseData, 'BatchClose');
-                $this->setValue('heartBeat', $responseData, 'HeartBeat');
-                $this->setValue('eMVPDL', $responseData, 'EMVPDL');
             }
         }
     }
@@ -113,7 +102,7 @@ class HpaEodResponse implements IDeviceResponseHandler
                     }
                 }
             }
-            if ($recordType == 'getBatchReport' || $recordType == 'sendSAF') {
+            if ($recordType == 'sendSAF') {
                 $tableCategory = $this->formatTableCategory($gatewayRecord);
 
                 $this->deviceResponse->responseData[$recordType]
@@ -152,12 +141,9 @@ class HpaEodResponse implements IDeviceResponseHandler
     private function formatTableCategory($gatewayRecord)
     {
         $tableCategory = (!empty($gatewayRecord['TableCategory'])) ?
-                lcfirst(ucwords(strtolower($gatewayRecord['TableCategory']))) : 'batchReport';
+                lcfirst(ucwords(strtolower($gatewayRecord['TableCategory']))) : 'overallReport';
         $tableCategory = str_replace(' ', '', $tableCategory);
-        
-        $tableCategory = preg_match("/transaction[0-9]+Detail/", $tableCategory) ?
-                'transactionDetails' : $tableCategory;
-        
+
         //convert approvedSaf#1Record into approvedSafRecords
         $tableCategory = preg_match("/\#[0-9]+Record/", $tableCategory) ?
                 preg_replace("/\#[0-9]+Record/", '', $tableCategory) . 'Records' : $tableCategory;

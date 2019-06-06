@@ -330,4 +330,36 @@ class HpaInterface implements IDeviceInterface
     {
         return (new TerminalManageBuilder(TransactionType::VOID, PaymentMethodType::GIFT));
     }
+    
+    public function setSafMode($parameterValue)
+    {
+        return $this->hpaController->send(
+            sprintf(
+                "<SIP>"
+                    . "<Version>1.0</Version>"
+                    . "<ECRId>1004</ECRId>"
+                    . "<Request>SetParameter</Request>"
+                    . "<RequestId>%s</RequestId>"
+                    . "<FieldCount>1</FieldCount>"
+                    . "<Key>STORMD</Key>"
+                    . "<Value>%s</Value>"
+                . "</SIP>",
+                '%s',
+                $parameterValue
+            )
+        );
+    }
+    
+    public function sendSaf()
+    {
+        return $this->hpaController->send(
+            "<SIP>"
+                . "<Version>1.0</Version>"
+                . "<ECRId>1004</ECRId>"
+                . "<Request>SendSAF</Request>"
+                . "<RequestId>%s</RequestId>"
+                . "</SIP>",
+            HpaMessageId::SENDSAF
+        );
+    }
 }

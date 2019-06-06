@@ -10,6 +10,7 @@ use GlobalPayments\Api\Terminals\TerminalUtils;
 use GlobalPayments\Api\Terminals\HPA\Responses\HpaEodResponse;
 use GlobalPayments\Api\Terminals\HPA\Entities\Enums\HpaMessageId;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Terminals\HPA\Responses\HpaSendSafResponse;
 
 /*
  * TCP interface for the device connection and parse response
@@ -155,6 +156,10 @@ class HpaTcpInterface implements IDeviceCommInterface
             //process eod reponse by HpaEodResponse handler
             $responseHandler = new HpaEodResponse();
             $this->deviceResponse = $responseHandler->mapResponse($gatewayResponse);
+        } elseif ($this->requestType == HpaMessageId::SENDSAF) {
+            //process eod reponse by HpaEodResponse handler
+            $responseHandler = new HpaSendSafResponse();
+            $this->deviceResponse = $responseHandler->mapResponse($gatewayResponse);
         } elseif ($this->requestType == HpaMessageId::GET_INFO_REPORT) {
             $messageList = explode('</SIP>', $gatewayResponse);
             $this->deviceResponse = new HpaResponse();
@@ -210,14 +215,17 @@ class HpaTcpInterface implements IDeviceCommInterface
     private function parseResponseRecord($gatewayRecord, $recordType)
     {
         if (!empty($gatewayRecord['Field'])) {
-            foreach ($gatewayRecord['Field'] as $field) {
-                if (isset($field['Key']) && isset($field['Value'])) {
-                    //convert "APPLICATION MODE" key as "applicationMode"
-                    $key = strtolower($field['Key']);
-                    $key = lcfirst(ucwords($key));
-                    $key = str_replace(' ', '', $key);
-                    
-                    $this->deviceResponse->responseData[$recordType][$key] = $field['Value'];
+            if (isset($gatewayRecord['Field']['Key']) && isset($gatewayRecord['Field']['Value'])) {
+                $field = $gatewayRecord['Field'];
+                $key = $this->convertRecordKey($field['Key']);
+                $this->deviceResponse->responseData[$recordType]["$key"] = $field['Value'];
+            } else {
+                //incase of multi dimensional array
+                foreach ($gatewayRecord['Field'] as $field) {
+                    if (isset($field['Key']) && isset($field['Value'])) {
+                        $key = $this->convertRecordKey($field['Key']);
+                        $this->deviceResponse->responseData[$recordType]["$key"] = $field['Value'];
+                    }
                 }
             }
         }
@@ -300,5 +308,14 @@ class HpaTcpInterface implements IDeviceCommInterface
         if (in_array($this->deviceResponse->response, $transactionRequests)) {
             $this->parseTransactionResponse($responseData);
         }
+    }
+    
+    private function convertRecordKey($key)
+    {
+        //convert "APPLICATION MODE" key as "applicationMode"
+        $key = strtolower($key);
+        $key = lcfirst(ucwords($key));
+        $key = str_replace(' ', '', $key);
+        return $key;
     }
 }

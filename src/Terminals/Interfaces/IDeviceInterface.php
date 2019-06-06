@@ -67,4 +67,8 @@ interface IDeviceInterface
     public function giftVoid();
     
     public function giftBalance();
+    
+    //SAF mode
+    public function setSafMode($paramValue);
+    public function sendSaf();
 }

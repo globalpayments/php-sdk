@@ -4,7 +4,7 @@ namespace GlobalPayments\Api\Entities\Enums;
 
 use GlobalPayments\Api\Entities\Enum;
 
-class TransactionType extends Enum
+class TimeZoneConversion extends Enum
 {
     const UTC = "UTC";
     const MERCHANT = "Merchant";

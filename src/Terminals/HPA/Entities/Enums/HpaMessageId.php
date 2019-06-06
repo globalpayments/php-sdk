@@ -25,5 +25,6 @@ class HpaMessageId extends Enum
     const STARTDOWNLOAD = "Download";
     const EOD = "EOD";
     const LINEITEM = "LineItem";
+    const SENDSAF = "SendSAF";
     const STARTCARD = "StartCard";
 }

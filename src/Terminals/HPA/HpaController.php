@@ -142,14 +142,19 @@ class HpaController extends DeviceController
             $acceptedCodes = ["00"];
         }
         
-        if (!empty($gatewayResponse->resultText)) {
+        if (!empty($gatewayResponse->resultText) || !empty($gatewayResponse->gatewayResponseMessage)) {
             $responseCode = (string) $gatewayResponse->resultCode;
             $responseMessage = (string) $gatewayResponse->resultText;
             $responseText = (string) $gatewayResponse->gatewayResponseMessage;
 
             if (!in_array($responseCode, $acceptedCodes)) {
                 throw new GatewayException(
-                    sprintf('Unexpected Gateway Response: %s - %s', $responseCode, $responseMessage),
+                    sprintf(
+                        'Unexpected Gateway Response: %s - %s : %s',
+                        $responseCode,
+                        $responseMessage,
+                        $responseText
+                    ),
                     $responseCode,
                     $responseMessage
                 );

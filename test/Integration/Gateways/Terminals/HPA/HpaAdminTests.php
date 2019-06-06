@@ -63,7 +63,6 @@ class HpaAdminTests extends TestCase
 
         $deviceInformation = $response->responseData['initializeResponse'];
         $this->assertEquals('HeartSIP', $deviceInformation['application']);
-        $this->assertEquals('3.3.5', $deviceInformation['version']);
     }
     
     public function testOpenLane()
@@ -237,5 +236,38 @@ class HpaAdminTests extends TestCase
     {
         $lineItemDetails = new LineItem();
         $response = $this->device->lineItem($lineItemDetails);
+    }
+    
+    public function testEnableSafMode()
+    {
+        $response = $this->device->setSafMode(1);
+
+        $this->assertNotNull($response);
+        $this->assertEquals('0', $response->resultCode);
+    }
+    
+    public function testDisableSafMode()
+    {
+        $response = $this->device->setSafMode(3);
+
+        $this->assertNotNull($response);
+        $this->assertEquals('0', $response->resultCode);
+    }
+    
+    public function testSendSaf()
+    {
+        $response = $this->device->sendSaf();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('0', $response->resultCode);
+        
+        $this->assertNotNull($response->responseData);
+        $this->assertNotNull($response->responseData['sendSAF']);
+        $this->assertNotNull($response->responseData['sendSAF']['approvedSafSummary']);
+        $this->assertNotNull($response->responseData['sendSAF']['pendingSafSummary']);
+        $this->assertNotNull($response->responseData['sendSAF']['declinedSafSummary']);
+        $this->assertNotNull($response->responseData['sendSAF']['offlineApprovedSafSummary']);
+        $this->assertNotNull($response->responseData['sendSAF']['partiallyApprovedSafSummary']);
+        $this->assertNotNull($response->responseData['sendSAF']['approvedSafVoidSummary']);
     }
 }
