@@ -33,7 +33,7 @@ class HpaAdminTests extends TestCase
     protected function getConfig()
     {
         $config = new ConnectionConfig();
-        $config->ipAddress = '10.138.141.20';
+        $config->ipAddress = '10.138.141.32';
         $config->port = '12345';
         $config->deviceType = DeviceType::HPA_ISC250;
         $config->connectionMode = ConnectionModes::TCP_IP;
@@ -269,5 +269,16 @@ class HpaAdminTests extends TestCase
         $this->assertNotNull($response->responseData['sendSAF']['offlineApprovedSafSummary']);
         $this->assertNotNull($response->responseData['sendSAF']['partiallyApprovedSafSummary']);
         $this->assertNotNull($response->responseData['sendSAF']['approvedSafVoidSummary']);
+    }
+    
+    public function testGetDiagnosticReport()
+    {
+        $response = $this->device->getDiagnosticReport(30);
+        
+        $this->assertNotNull($response);
+        $this->assertEquals('0', $response->resultCode);
+        
+        $this->assertNotNull($response->responseData);
+        $this->assertNotNull($response->responseData['getDiagnosticReport']);
     }
 }

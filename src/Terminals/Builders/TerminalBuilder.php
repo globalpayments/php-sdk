@@ -16,7 +16,8 @@ abstract class TerminalBuilder extends TransactionBuilder
     public $paymentMethodType;
 
     /**
-     * Request transaction Id
+     * Request Id used by the POS to uniquely identify transactions.
+     * Id is sent in the request and is then echoed back to the POS in the transaction response.
      *
      * @internal
      * @var int

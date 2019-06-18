@@ -90,7 +90,16 @@ class HostedService
     public function parseResponse($response, $encoded = false)
     {
         $response = json_decode($response, true);
-        
+
+        if ($encoded) {
+            $iterator = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($response));
+            foreach ($iterator as $key => $value) {
+                $iterator->getInnerIterator()->offsetSet($key, base64_decode($value));
+            }
+
+            $response = $iterator->getArrayCopy();
+        }
+
         $timestamp = $response["TIMESTAMP"];
         $merchantId = $response["MERCHANT_ID"];
         $orderId = $response["ORDER_ID"];
@@ -108,7 +117,7 @@ class HostedService
                     $transactionId,
                     $authCode
         ]));
-        
+
         if ($hash != $sha1Hash) {
             throw new ApiException("Incorrect hash. Please check your code and the Developers Documentation.");
         }

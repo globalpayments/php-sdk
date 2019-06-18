@@ -18,6 +18,7 @@ class HpaResponse
     public $resultText;
     public $responseData;
     public $requestId;
+    public $isStoredResponse;
     
     // Internal
     public $status;

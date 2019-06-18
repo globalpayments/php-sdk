@@ -605,4 +605,50 @@ class HppTest extends TestCase
         $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","COMMENT1":"Mobile Channel","CUST_NUM":"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa","OFFER_SAVE_CARD":"1","PAYER_EXIST":"0","PROD_ID":"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f","VAR_REF":"My Legal Entity","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","HPP_VERSION":"2","SHA1HASH":"7116c49826367c6513efdc0cc81e243b8095d78f"}';
         $this->assertEquals($json, $expectedJson);
     }
+
+    public function testParseResponse()
+    {
+        $config = new ServicesConfig();
+        $config->merchantId = "heartlandgpsandbox";
+        $config->accountId = "hpp";
+        $config->sharedSecret = "secret";
+        $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
+        $config->hostedPaymentConfig = new HostedPaymentConfig();
+        $config->hostedPaymentConfig->language = "GB";
+        $config->hostedPaymentConfig->responseUrl = "http://requestb.in/10q2bjb1";
+
+        $client = new RealexHppClient("secret");
+
+        $address = new Address();
+        $address->postalCode = "123|56";
+        $address->country = "IRELAND";
+
+        //run test cases for different version
+        foreach ($this->hppVersionList as $hppVersion) {
+            $config->hostedPaymentConfig->version = $hppVersion;
+            $service = new HostedService($config);
+
+            $json = $service->authorize(1)
+                    ->withCurrency("EUR")
+                    ->withCustomerId("123456")
+                    ->withAddress($address)
+                    ->serialize();
+            
+            $this->assertNotNull($json);
+
+            $response = $client->sendRequest($json, $hppVersion);
+            $this->assertNotNull($response);
+
+            // Base64 encode values
+            $iterator = new \RecursiveIteratorIterator(new \RecursiveArrayIterator(json_decode($response, true)));
+            foreach ($iterator as $key => $value) {
+                $iterator->getInnerIterator()->offsetSet($key, base64_encode($value));
+            }
+
+            $response = json_encode($iterator->getArrayCopy());
+
+            $parsedResponse = $service->parseResponse($response, true);
+            $this->assertEquals("00", $parsedResponse->responseCode);
+        }
+    }
 }

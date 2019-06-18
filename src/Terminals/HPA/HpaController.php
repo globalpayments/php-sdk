@@ -22,6 +22,7 @@ class HpaController extends DeviceController
 {
 
     public $device;
+    private $builderData = null;
 
     /*
      * Create interface based on connection mode TCP / HTTP
@@ -41,6 +42,7 @@ class HpaController extends DeviceController
 
     public function manageTransaction($builder)
     {
+        $this->builderData = $builder;
         $xml = new \DOMDocument();
         $transactionType = $this->manageTransactionType($builder->transactionType);
         // Build Request
@@ -67,6 +69,7 @@ class HpaController extends DeviceController
 
     public function processTransaction($builder)
     {
+        $this->builderData = $builder;
         $xml = new \DOMDocument('1.0', 'utf-8');
         $transactionType = $this->manageTransactionType($builder->transactionType);
         $cardGroup = $this->manageCardGroup($builder->paymentMethodType);
@@ -114,7 +117,9 @@ class HpaController extends DeviceController
     public function send($message, $requestType = null)
     {
         if (strpos($message, "<RequestId>%s</RequestId>") !== false) {
-            $requestId = $this->requestIdProvider->getRequestId();
+            $requestId = (!empty($this->builderData->requestId)) ?
+                        $this->builderData->requestId :
+                        $this->requestIdProvider->getRequestId();
             $message = sprintf($message, $requestId);
         }
         

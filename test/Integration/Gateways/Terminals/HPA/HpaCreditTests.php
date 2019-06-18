@@ -31,7 +31,7 @@ class HpaCreditTests extends TestCase
     protected function getConfig()
     {
         $config = new ConnectionConfig();
-        $config->ipAddress = '10.138.141.20';
+        $config->ipAddress = '10.138.141.32';
         $config->port = '12345';
         $config->deviceType = DeviceType::HPA_ISC250;
         $config->connectionMode = ConnectionModes::TCP_IP;
@@ -197,5 +197,29 @@ class HpaCreditTests extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
         $this->assertNotNull($response->transactionId);
+    }
+    
+    public function testLostTransaction()
+    {
+        $requestIdProvider = new RequestIdProvider();
+        $requestId = $requestIdProvider->getRequestId();
+        
+        $response = $this->device->creditSale(10)
+                ->withRequestId($requestId)
+                ->execute();
+        
+        $this->assertNotNull($response);
+        $this->assertEquals('0', $response->resultCode);
+        
+        $this->waitAndReset();
+        
+        $lostResponse = $this->device->creditSale(10)
+                ->withRequestId($requestId)
+                ->execute();
+                
+        $this->assertNotNull($lostResponse);
+        $this->assertEquals('0', $lostResponse->resultCode);
+        $this->assertEquals($requestId, $lostResponse->requestId);
+        $this->assertEquals('1', $lostResponse->isStoredResponse);
     }
 }

@@ -11,6 +11,7 @@ use GlobalPayments\Api\Terminals\HPA\Responses\HpaEodResponse;
 use GlobalPayments\Api\Terminals\HPA\Entities\Enums\HpaMessageId;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Terminals\HPA\Responses\HpaSendSafResponse;
+use GlobalPayments\Api\Terminals\HPA\Responses\HpaDiagnosticReportResponse;
 
 /*
  * TCP interface for the device connection and parse response
@@ -160,6 +161,10 @@ class HpaTcpInterface implements IDeviceCommInterface
             //process eod reponse by HpaEodResponse handler
             $responseHandler = new HpaSendSafResponse();
             $this->deviceResponse = $responseHandler->mapResponse($gatewayResponse);
+        } elseif ($this->requestType == HpaMessageId::GET_DIAGNOSTIC_REPORT) {
+            //process Diagnostic Report Response
+            $responseHandler = new HpaDiagnosticReportResponse();
+            $this->deviceResponse = $responseHandler->mapResponse($gatewayResponse);
         } elseif ($this->requestType == HpaMessageId::GET_INFO_REPORT) {
             $messageList = explode('</SIP>', $gatewayResponse);
             $this->deviceResponse = new HpaResponse();
@@ -284,6 +289,7 @@ class HpaTcpInterface implements IDeviceCommInterface
         $this->setValueInResponse('responseText', $responseData, 'ResponseText');
         $this->setValueInResponse('gatewayResponseMessage', $responseData, 'GatewayRspMsg');
         $this->setValueInResponse('balanceAmount', $responseData, 'BalanceDueAmount');
+        $this->setValueInResponse('isStoredResponse', $responseData, 'StoredResponse');
         
         //Gift Balance Enquiry
         $this->setValueInResponse('availableBalance', $responseData, 'AvailableBalance');

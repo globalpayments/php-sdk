@@ -71,4 +71,7 @@ interface IDeviceInterface
     //SAF mode
     public function setSafMode($paramValue);
     public function sendSaf();
+    
+    //Get Reports
+    public function getDiagnosticReport($totalFields);
 }

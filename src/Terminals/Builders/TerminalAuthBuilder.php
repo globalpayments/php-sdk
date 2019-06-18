@@ -53,7 +53,7 @@ class TerminalAuthBuilder extends TerminalBuilder
     {
         parent::execute();
         return ConnectionContainer::instance()
-                        ->ProcessTransaction($this);
+                        ->processTransaction($this);
     }
 
     public function withAddress($address)

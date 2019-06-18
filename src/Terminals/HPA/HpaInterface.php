@@ -362,4 +362,22 @@ class HpaInterface implements IDeviceInterface
             HpaMessageId::SENDSAF
         );
     }
+
+    public function getDiagnosticReport($totalFields)
+    {
+        return $this->hpaController->send(
+            sprintf(
+                "<SIP>"
+                    . "<Version>1.0</Version>"
+                    . "<ECRId>1004</ECRId>"
+                    . "<Request>GetDiagnosticReport</Request>"
+                    . "<RequestId>%s</RequestId>"
+                    . "<FieldCount>%s</FieldCount>"
+                . "</SIP>",
+                '%s',
+                $totalFields
+            ),
+            HpaMessageId::GET_DIAGNOSTIC_REPORT
+        );
+    }
 }
