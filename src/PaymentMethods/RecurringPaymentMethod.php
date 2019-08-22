@@ -17,6 +17,7 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\IVerifyable;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Enums\DccProcessor;
 use GlobalPayments\Api\Entities\Enums\DccRateType;
+use GlobalPayments\Api\PaymentMethods\Interfaces\ISecure3d;
 
 /**
  * Use credit or eCheck/ACH as a recurring payment method.
@@ -28,7 +29,8 @@ class RecurringPaymentMethod extends RecurringEntity implements
     IChargable,
     IAuthable,
     IVerifyable,
-    IRefundable
+    IRefundable,
+    ISecure3d
 {
 
     /**
@@ -108,6 +110,9 @@ class RecurringPaymentMethod extends RecurringEntity implements
      * @var string
      */
     public $taxType;
+
+    /** @var ThreeDSecure */
+    public $threeDSecure;
 
     /**
      * @param string|IPaymentMethod $customerIdOrPaymentMethod

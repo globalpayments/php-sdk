@@ -144,6 +144,123 @@ class ValidationClause
 
         return $this->parent->of($this->target->type, $this->target->modifier);
     }
+
+    /**
+     *
+     * @param class $clazz
+     * @param string $message
+     *
+     * @return ValidationTarget
+     */
+    public function isInstanceOf($clazz, $message = null)
+    {
+        $this->classback = function ($builder) use ($clazz) {
+            if (!($builder->{$this->target->property} instanceof $clazz)) {
+                throw new BuilderException(
+                    sprtinf(
+                        '%s must be an instance of the %s class.',
+                        $this->target->property,
+                        $clazz
+                    )
+                );
+                return false;
+            }
+            return true;
+        };
+
+        $this->message = !empty($message)
+            ? $message
+            // TODO: implement a way to expose property name
+            : sprintf(
+                '%s must be an instance of the %s class.',
+                $this->target->property,
+                $clazz
+            );
+
+        if ($this->precondition) {
+            return $this->target;
+        }
+
+        return $this->parent->of($this->target->type, $this->target->modifier);
+    }
+
+    /**
+     * Validates the target property is equal to the expected value
+     *
+     * @param string $expected
+     * @param string $message Validation message to override the default
+     *
+     * @return ValidationTarget
+     */
+    public function isEqualTo($expected, $message = null)
+    {
+        $this->callback = function ($builder) use ($expected) {
+            if ($builder->{$this->target->property} !== $expected) {
+                throw new BuilderException(
+                    sprintf(
+                        'Property `%s` does not equal the expected value `%s`',
+                        $this->target->property,
+                        $expected
+                    )
+                );
+                return false;
+            }
+            return true;
+        };
+        $this->message = !empty($message)
+            ? $message
+            // TODO: implement a way to expose property name
+            : sprintf(
+                'Property `%s` does not equal the expected value `%s`',
+                $this->target->property,
+                $expected
+            );
+
+        if ($this->precondition) {
+            return $this->target;
+        }
+
+        return $this->parent->of($this->target->type, $this->target->modifier);
+    }
+
+    /**
+     * Validates the target property is NOT equal to the expected value
+     *
+     * @param string $expected
+     * @param string $message Validation message to override the default
+     *
+     * @return ValidationTarget
+     */
+    public function isNotEqualTo($expected, $message = null)
+    {
+        $this->callback = function ($builder) use ($expected) {
+            if ($builder->{$this->target->property} === $expected) {
+                throw new BuilderException(
+                    sprintf(
+                        'Property `%s`is equal to the expected value `%s`',
+                        $this->target->property,
+                        $expected
+                    )
+                );
+                return false;
+            }
+            return true;
+        };
+        $this->message = !empty($message)
+            ? $message
+            // TODO: implement a way to expose property name
+            : sprintf(
+                'Property `%s` is equal to the expected value `%s`',
+                $this->target->property,
+                $expected
+            );
+
+        if ($this->precondition) {
+            return $this->target;
+        }
+
+        return $this->parent->of($this->target->type, $this->target->modifier);
+    }
     
     /**
      * Validates the target property is not null in a sub class

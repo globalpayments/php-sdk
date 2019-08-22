@@ -4,7 +4,6 @@ namespace GlobalPayments\Api\Terminals;
 
 class TerminalUtils
 {
-
     public static function findLength($terminalMessage)
     {
         $messageLength = strlen($terminalMessage);

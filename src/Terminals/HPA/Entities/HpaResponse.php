@@ -7,7 +7,6 @@ namespace GlobalPayments\Api\Terminals\HPA\Entities;
  */
 class HpaResponse
 {
-
     public $versionNumber;
     public $ecrId;
     public $sipId;
@@ -89,44 +88,44 @@ class HpaResponse
     /*
      * For EMV transactions this element provides the AID of the EMV card so that the POS can
      * print the AID on the receipt
-     * 
+     *
      * Conditional If transaction is EMV
      */
     public $emvApplicationId;
     
     /*
-     * This element is the preferred Name of the Application 
+     * This element is the preferred Name of the Application
      * so that the POS can print the application name on the receipt
-     * 
+     *
      * Conditional If transaction is EMV
      */
     public $emvApplicationName;
     
     /*
-     * For EMV transactions this element provides the Transaction Verification Results (TVR) register. 
+     * For EMV transactions this element provides the Transaction Verification Results (TVR) register.
      * This may be helpful in understanding why certain EMV transactions are declined
-     * 
+     *
      * Conditional If transaction is EMV
      */
     public $emvTerminalVerificationResults;
     
     /*
      * For EMV transactions this element provides the Transaction Status Information tag (TSI)
-     * 
+     *
      * Conditional If transaction is EMV
      */
     public $emvCardHolderVerificationMethod;
     
     /*
      * For EMV transactions this element provides the cryptogram type (TC, AAR, AAC, or ARQC)
-     * 
+     *
      * Conditional If transaction is EMV
      */
     public $emvCryptogramType;
     
     /*
      * For EMV transactions this element provides the cryptogram
-     * 
+     *
      * Conditional If transaction is EMV
      */
     public $emvCryptogram;
@@ -135,10 +134,20 @@ class HpaResponse
     
     /*
      * This element is only applicable to balance inquiry transactions
-     * 
+     *
      * Numeric, implied decimal point, no dollar sign
      * Value may range from 0 to 9999999, for example, $12.34 would be sent as 1234
-     * 
+     *
      */
     public $availableBalance;
+    
+    //Send File
+    /*
+     * Maximum number of characters of file data in hexadecimal ASCII format that 
+     * can be sent in each subsequent request
+     */
+    public $maxDataSize;
+    
+    //Get last Response
+    public $lastResponse;
 }

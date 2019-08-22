@@ -107,10 +107,11 @@ class MerchantDataCollection
     /**
      * @return string
      */
-    public function getValue($key, $converter = null){
+    public function getValue($key, $converter = null)
+    {
         foreach ($this->collection as $kvp) {
             if ($kvp->getKey() == $key) {
-                if($converter != null){
+                if ($converter != null) {
                     return $converter($kvp->getValue());
                 } else {
                     return $kvp->getValue();

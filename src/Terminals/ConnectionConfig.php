@@ -8,7 +8,6 @@ use GlobalPayments\Api\Terminals\Enums\DeviceType;
 
 class ConnectionConfig
 {
-
     public $deviceType;
     public $connectionMode;
     public $baudRate;

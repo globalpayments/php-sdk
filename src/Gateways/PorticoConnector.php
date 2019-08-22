@@ -437,19 +437,19 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 $secure = $xml->createElement('SecureECommerce');
                 if (!empty($builder->paymentMethod->threeDSecure->paymentDataSource)) {
                     $direct->appendChild(
-                    $xml->createElement(
-                        'PaymentDataSource',
-                        $builder->paymentMethod->threeDSecure->paymentDataSource
-                    )
-                );
+                        $xml->createElement(
+                            'PaymentDataSource',
+                            $builder->paymentMethod->threeDSecure->paymentDataSource
+                        )
+                    );
                 }
                 if (!empty($builder->paymentMethod->threeDSecure->paymentDataType)) {
                     $direct->appendChild(
-                    $xml->createElement(
-                        'TypeOfPaymentData',
-                        $builder->paymentMethod->threeDSecure->paymentDataType
-                    )
-                );
+                        $xml->createElement(
+                            'TypeOfPaymentData',
+                            $builder->paymentMethod->threeDSecure->paymentDataType
+                        )
+                    );
                 }
                 if (!empty($builder->paymentMethod->threeDSecure->cavv)) {
                     $direct->appendChild($xml->createElement('PaymentData', $builder->paymentMethod->threeDSecure->cavv));
@@ -665,7 +665,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 }
                 if ($builder->searchBuilder->settlementAmount !== null) {
                     $criteria->appendChild($xml->createElement(
-                        'SettlementAmount',
+                        'SettlementAmt',
                         $builder->searchBuilder->settlementAmount
                     ));
                 }

@@ -149,9 +149,15 @@ class Transaction
      */
     public $responseMessage;
 
+    /** @var array */
+    public $responseValues;
+
+    /** @var string */
+    public $schemeId;
+
     /**
      * The response from ThreeDSecure
-     * 
+     *
      * @internal
      * @var ThreeDSecure
      */
@@ -216,8 +222,6 @@ class Transaction
      * @var string
      */
     public $avsAddressResponse;
-    
-    public $responseValues;
     
     public $alternativePaymentResponse;
 

@@ -16,7 +16,6 @@ use GlobalPayments\Api\Entities\Enum;
  */
 class DownloadTime extends Enum
 {
-
     const NOW = "NOW";
     const EOD = "EOD";
 }

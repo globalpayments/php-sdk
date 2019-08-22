@@ -13,6 +13,8 @@ use GlobalPayments\Api\Services\DeviceService;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 use GlobalPayments\Api\Terminals\HPA\Entities\LineItem;
+use GlobalPayments\Api\Terminals\HPA\Entities\Enums\HpaSendFileType;
+use GlobalPayments\Api\Terminals\HPA\Entities\SendFileData;
 
 class HpaAdminTests extends TestCase
 {
@@ -33,11 +35,11 @@ class HpaAdminTests extends TestCase
     protected function getConfig()
     {
         $config = new ConnectionConfig();
-        $config->ipAddress = '10.138.141.32';
+        $config->ipAddress = '10.138.141.14';
         $config->port = '12345';
         $config->deviceType = DeviceType::HPA_ISC250;
         $config->connectionMode = ConnectionModes::TCP_IP;
-        $config->timeout = 60;
+        $config->timeout = 300;
         $config->requestIdProvider = new RequestIdProvider();
 
         return $config;
@@ -271,6 +273,61 @@ class HpaAdminTests extends TestCase
         $this->assertNotNull($response->responseData['sendSAF']['approvedSafVoidSummary']);
     }
     
+    /*
+     * Note: This sample banner will take 25 minutes to upload. 
+     * Timeout should be handled accordingly
+     */
+    public function testSendFileBanner()
+    {
+        $sendFileInfo = new SendFileData();
+        $sendFileInfo->imageLocation = dirname(__FILE__) . '/sampleimages/hpa_banner_iSC250_60_480.jpg';
+        $sendFileInfo->imageType = HpaSendFileType::BANNER;
+        
+        $response = $this->device->sendFile($sendFileInfo);
+
+        $this->assertNotNull($response);
+        $this->assertEquals('0', $response->resultCode);
+    }
+    
+    /*
+     * Note: This sample logo will take 20 minutes to upload. 
+     * Timeout should be handled accordingly
+     */
+    public function testSendFileIdleLogo()
+    {
+        $sendFileInfo = new SendFileData();
+        $sendFileInfo->imageLocation = dirname(__FILE__) . '/sampleimages/hpa_logo_iSC250_272_480.jpg';
+        $sendFileInfo->imageType = HpaSendFileType::IDLELOGO;
+        
+        $response = $this->device->sendFile($sendFileInfo);
+
+        $this->assertNotNull($response);
+        $this->assertEquals('0', $response->resultCode);
+    }
+    
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
+     * @expectedExceptionMessage Input error: Image location / type missing
+     */
+    public function testFileInputError()
+    {
+        $sendFileInfo = new SendFileData();
+        $this->device->sendFile($sendFileInfo);
+    }
+    
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
+     * @expectedExceptionMessage Incorrect file height and width
+     */
+    public function testIncorrectFileSize()
+    {
+        $sendFileInfo = new SendFileData();
+        $sendFileInfo->imageLocation = dirname(__FILE__) . '/sampleimages/image_500_500.jpg';
+        $sendFileInfo->imageType = HpaSendFileType::BANNER;
+        
+        $this->device->sendFile($sendFileInfo);
+    }
+    
     public function testGetDiagnosticReport()
     {
         $response = $this->device->getDiagnosticReport(30);
@@ -280,5 +337,25 @@ class HpaAdminTests extends TestCase
         
         $this->assertNotNull($response->responseData);
         $this->assertNotNull($response->responseData['getDiagnosticReport']);
+    }
+    
+    public function testPromptForSignature()
+    {
+        $this->device->openLane();
+        $response = $this->device->promptForSignature();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('0', $response->resultCode);
+        $this->assertNotNull($response->signatureData);
+    }
+    
+    public function testGetLastResponse()
+    {
+        $this->device->openLane();
+        $response = $this->device->getLastResponse();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('0', $response->resultCode);
+        $this->assertNotNull($response->lastResponse);
     }
 }

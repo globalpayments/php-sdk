@@ -154,7 +154,7 @@ class HpaInterface implements IDeviceInterface
     }
     
     /*
-     * StartCard - Admin mode message - Initiate card acquisition prior to a financial transaction. 
+     * StartCard - Admin mode message - Initiate card acquisition prior to a financial transaction.
      * The intent is to perform card acquisition while the clerk is ringing up the items
      */
 
@@ -363,6 +363,11 @@ class HpaInterface implements IDeviceInterface
         );
     }
 
+    public function sendFile($sendFileData)
+    {
+        return $this->hpaController->sendFile($sendFileData);
+    }
+  
     public function getDiagnosticReport($totalFields)
     {
         return $this->hpaController->send(
@@ -378,6 +383,39 @@ class HpaInterface implements IDeviceInterface
                 $totalFields
             ),
             HpaMessageId::GET_DIAGNOSTIC_REPORT
+        );
+    }
+
+    public function promptForSignature()
+    {
+        return $this->hpaController->send(
+            sprintf(
+                "<SIP>"
+                    . "<Version>1.0</Version>"
+                    . "<ECRId>1004</ECRId>"
+                    . "<Request>SignatureForm</Request>"
+                    . "<RequestId>%s</RequestId>"
+                    . "<FormText>PLEASE SIGN BELOW</FormText>"
+                . "</SIP>",
+                '%s'
+            ),
+            HpaMessageId::SIGNATURE_FORM
+        );
+    }
+
+    public function getLastResponse()
+    {
+        return $this->hpaController->send(
+            sprintf(
+                "<SIP>"
+                    . "<Version>1.0</Version>"
+                    . "<ECRId>1004</ECRId>"
+                    . "<Request>GetLastResponse</Request>"
+                    . "<RequestId>%s</RequestId>"
+                . "</SIP>",
+                '%s'
+            ),
+            HpaMessageId::GET_LAST_RESPONSE
         );
     }
 }

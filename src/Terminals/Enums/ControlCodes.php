@@ -6,7 +6,6 @@ use GlobalPayments\Api\Entities\Enum;
 
 class ControlCodes extends Enum
 {
-
     const STX = 0x02;
     const ETX = 0x03;
     const ACK = 0x06;

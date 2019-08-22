@@ -57,6 +57,11 @@ abstract class Credit implements
      */
     public $cardType;
 
+    /** @var bool */
+    public $isFleet;
+
+    /** @return boolean */
+
     /**
      * Authorizes the payment method
      *
@@ -64,10 +69,13 @@ abstract class Credit implements
      *
      * @return AuthorizationBuilder
      */
-    public function authorize($amount = null)
+    public function authorize($amount = null, $isEstimated = false)
     {
         return (new AuthorizationBuilder(TransactionType::AUTH, $this))
-            ->withAmount($amount);
+            ->withAmount($amount != null ? $amount : ($this->threeDSecure != null ? $this->threeDSecure->getAmount() : null))
+            ->withCurrency($this->threeDSecure != null ? $this->threeDSecure->getCurrency() : null)
+            ->withOrderId($this->threeDSecure != null ? $this->threeDSecure->getOrderId() : null)
+            ->withAmountEstimated($isEstimated);
     }
 
     /**
@@ -80,7 +88,9 @@ abstract class Credit implements
     public function charge($amount = null)
     {
         return (new AuthorizationBuilder(TransactionType::SALE, $this))
-            ->withAmount($amount);
+            ->withAmount($amount != null ? $amount : ($this->threeDSecure != null ? $this->threeDSecure->getAmount() : null))
+            ->withCurrency($this->threeDSecure != null ? $this->threeDSecure->getCurrency() : null)
+            ->withOrderId($this->threeDSecure != null ? $this->threeDSecure->getOrderId() : null);
     }
 
     /**

@@ -11,7 +11,6 @@ use GlobalPayments\Api\Terminals\ConnectionContainer;
 
 class TerminalAuthBuilder extends TerminalBuilder
 {
-
     public $address;
     public $allowDuplicates;
     public $amount;

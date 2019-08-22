@@ -27,19 +27,19 @@ class HpaTcpInterface implements IDeviceCommInterface
     
     /*
      * Device configuration details ConnectionConfig object
-     * 
+     *
      */
     public $deviceDetails;
     
     /*
      * Device final response HpaResponse object
-     * 
+     *
      */
     public $deviceResponse;
     
     /*
      * Device request type
-     * 
+     *
      */
     private $requestType;
 
@@ -143,9 +143,9 @@ class HpaTcpInterface implements IDeviceCommInterface
     }
 
     /*
-     * Filter the device response. remove control characters 
+     * Filter the device response. remove control characters
      * Convert multiple string message as array using </SIP> keyword
-     * 
+     *
      * @param XML|String $gatewayResponse XML response from device
      */
     private function filterResponseMessage($gatewayResponse)
@@ -158,13 +158,17 @@ class HpaTcpInterface implements IDeviceCommInterface
             $responseHandler = new HpaEodResponse();
             $this->deviceResponse = $responseHandler->mapResponse($gatewayResponse);
         } elseif ($this->requestType == HpaMessageId::SENDSAF) {
-            //process eod reponse by HpaEodResponse handler
+            //process eod reponse by HpaSendSafResponse handler
             $responseHandler = new HpaSendSafResponse();
             $this->deviceResponse = $responseHandler->mapResponse($gatewayResponse);
         } elseif ($this->requestType == HpaMessageId::GET_DIAGNOSTIC_REPORT) {
             //process Diagnostic Report Response
             $responseHandler = new HpaDiagnosticReportResponse();
             $this->deviceResponse = $responseHandler->mapResponse($gatewayResponse);
+        } elseif ($this->requestType == HpaMessageId::GET_LAST_RESPONSE) {
+            //process get last response report
+            $this->deviceResponse = new HpaResponse();
+            $this->parseResponse($gatewayResponse);
         } elseif ($this->requestType == HpaMessageId::GET_INFO_REPORT) {
             $messageList = explode('</SIP>', $gatewayResponse);
             $this->deviceResponse = new HpaResponse();
@@ -189,7 +193,7 @@ class HpaTcpInterface implements IDeviceCommInterface
 
     /*
      * Parse device response
-     * 
+     *
      * @param XML|String $gatewayResponse XML response from device
      */
 
@@ -212,9 +216,9 @@ class HpaTcpInterface implements IDeviceCommInterface
 
     /*
      * Parse request specific responses
-     * 
-     * @param XML $gatewayRecord 
-     * @param string $recordType array key to identify the record type 
+     *
+     * @param XML $gatewayRecord
+     * @param string $recordType array key to identify the record type
      */
 
     private function parseResponseRecord($gatewayRecord, $recordType)
@@ -238,7 +242,7 @@ class HpaTcpInterface implements IDeviceCommInterface
     
     /*
      * Set transaction based response in $deviceResponse
-     * 
+     *
      * @param array $response
      */
     private function parseTransactionResponse($response)
@@ -261,7 +265,7 @@ class HpaTcpInterface implements IDeviceCommInterface
     
     /*
      * Set transaction based response in $deviceResponse
-     * 
+     *
      * @param string $propertyName $deviceResponse object property name
      * @param array $response
      * @param string $responseKey response key received from device
@@ -290,6 +294,7 @@ class HpaTcpInterface implements IDeviceCommInterface
         $this->setValueInResponse('gatewayResponseMessage', $responseData, 'GatewayRspMsg');
         $this->setValueInResponse('balanceAmount', $responseData, 'BalanceDueAmount');
         $this->setValueInResponse('isStoredResponse', $responseData, 'StoredResponse');
+        $this->setValueInResponse('signatureData', $responseData, 'AttachmentData');
         
         //Gift Balance Enquiry
         $this->setValueInResponse('availableBalance', $responseData, 'AvailableBalance');
@@ -302,6 +307,9 @@ class HpaTcpInterface implements IDeviceCommInterface
         $this->setValueInResponse('emvCryptogramType', $responseData, 'EMV_CryptogramType');
         $this->setValueInResponse('emvCryptogram', $responseData, 'EMV_Cryptogram');
         
+        //send file response
+        $this->setValueInResponse('maxDataSize', $responseData, 'MaxDataSize');
+        
         //process transaction based response
         $transactionRequests = [
             HpaMessageId::CREDIT_SALE,
@@ -313,6 +321,15 @@ class HpaTcpInterface implements IDeviceCommInterface
         ];
         if (in_array($this->deviceResponse->response, $transactionRequests)) {
             $this->parseTransactionResponse($responseData);
+        }
+        
+        if ($this->requestType == HpaMessageId::GET_LAST_RESPONSE &&
+                !empty($responseData['LastResponse'])) {
+            foreach ($responseData['LastResponse'] as $responseKey => $responseValue) {
+                $key = ($responseKey == 'SIPId' || $responseKey == 'ECRId') ?
+                        strtolower($responseKey) : lcfirst($responseKey);
+                $this->deviceResponse->lastResponse[$key] = $responseValue;
+            }
         }
     }
     

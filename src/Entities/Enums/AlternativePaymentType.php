@@ -6,7 +6,6 @@ use GlobalPayments\Api\Entities\Enum;
 
 class AlternativePaymentType extends Enum
 {
-
     const ASTROPAY_DIRECT = 'astropaydirect';
     const AURA = 'aura';
     const BALOTO_CASH = 'baloto';

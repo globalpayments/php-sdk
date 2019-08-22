@@ -72,6 +72,12 @@ interface IDeviceInterface
     public function setSafMode($paramValue);
     public function sendSaf();
     
+    //send file request
+    public function sendFile($sendFileData);
+
     //Get Reports
     public function getDiagnosticReport($totalFields);
+    public function getLastResponse();
+    
+    public function promptForSignature();
 }

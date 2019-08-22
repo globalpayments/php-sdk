@@ -67,6 +67,9 @@ class AuthorizationBuilder extends TransactionBuilder
      */
     public $amount;
 
+    /** @var bool */
+    public $amountEstimated;
+
     /**
      * Request authorization amount
      *
@@ -212,6 +215,12 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var string|amount
      */
     public $shippingAmount;
+
+    /**
+     * @internal
+     * @var StoredCredential
+     */
+    public $storedCredential;
 
     /**
      * Request hosted payment data
@@ -398,8 +407,7 @@ class AuthorizationBuilder extends TransactionBuilder
     public function __construct($type, IPaymentMethod $paymentMethod = null)
     {
         parent::__construct($type, $paymentMethod);
-        $this->transactionType = $type;
-        $this->paymentMethod = $paymentMethod;
+        $this->withPaymentMethod($paymentMethod);
     }
 
     /**
@@ -581,6 +589,13 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withAmount($amount)
     {
         $this->amount = $amount;
+        return $this;
+    }
+
+    /** @return AuthorizationBuilder  */
+    public function withAmountEstimated($value)
+    {
+        $this->amountEstimated = $value;
         return $this;
     }
 
@@ -1023,6 +1038,15 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withShippingAmount($shippingAmount)
     {
         $this->shippingAmount = $shippingAmount;
+        return $this;
+    }
+
+    /**
+     * @return AuthorizationBuilder
+     */
+    public function withStoredCredential($storedCredential)
+    {
+        $this->storedCredential = $storedCredential;
         return $this;
     }
 

@@ -3,6 +3,8 @@
 namespace GlobalPayments\Api;
 
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
+use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 
 class ServicesConfig
 {
@@ -25,21 +27,49 @@ class ServicesConfig
     public $channel;
     public $hostedPaymentConfig;
 
+    /**
+     * @var string
+     */
+    public $challengeNotificationUrl;
+
+    /**
+     * @var string
+     */
+    public $merchantContactUrl;
+
+    /**
+     * @var string
+     */
+    public $methodNotificationUrl;
+
+    /**
+     * @var Secure3dVersion
+     */
+    public $secure3dVersion;
+
     // Common
     public $curlOptions;
+
+    /**
+     * @var Environment
+     */
+
+    public $environment;
     public $serviceUrl;
     public $timeout;
 
     public function __construct()
     {
         $this->timeout = 65000;
+        $this->environment = Environment::TEST;
     }
 
     public function validate()
     {
         // Portico API key
         if (!empty($this->secretApiKey)
-            && (!empty($this->siteId)
+            && (
+                !empty($this->siteId)
                 || !empty($this->licenseId)
                 || !empty($this->deviceId)
                 || !empty($this->username)
@@ -52,13 +82,15 @@ class ServicesConfig
         }
 
         // Portico legacy
-        if ((!empty($this->siteId)
+        if ((
+            !empty($this->siteId)
                 || !empty($this->licenseId)
                 || !empty($this->deviceId)
                 || !empty($this->username)
                 || !empty($this->password)
             )
-            && (empty($this->siteId)
+            && (
+                empty($this->siteId)
                 || empty($this->licenseId)
                 || empty($this->deviceId)
                 || empty($this->username)
@@ -72,7 +104,8 @@ class ServicesConfig
 
         // Realex
         if ((empty($this->secretApiKey)
-            && (empty($this->siteId)
+            && (
+                empty($this->siteId)
                 && empty($this->licenseId)
                 && empty($this->deviceId)
                 && empty($this->username)
@@ -86,10 +119,23 @@ class ServicesConfig
         }
 
         // Service URL
-        if (empty($this->serviceUrl)) {
+        if (empty($this->serviceUrl) && $this->secure3dVersion == null) {
             throw new ConfigurationException(
-                "Service URL could not be determined form the credentials provided. Please specify an endpoint."
+                "Service URL could not be determined from the credentials provided. Please specify an endpoint."
             );
+        }
+
+        // secure 3d
+        if ($this->secure3dVersion != null) {
+            if ($this->secure3dVersion === Secure3dVersion::TWO || $this->secure3dVersion === Secure3dVersion::ANY) {
+                if (empty($this->challengeNotificationUrl)) {
+                    throw new ConfigurationException("The challenge notification URL is required for 3DS v2 processing.");
+                }
+
+                if (empty($this->methodNotificationUrl)) {
+                    throw new ConfigurationException("The method notification URL is required for 3DS v2 processing.");
+                }
+            }
         }
     }
 }

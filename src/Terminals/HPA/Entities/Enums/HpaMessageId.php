@@ -27,5 +27,8 @@ class HpaMessageId extends Enum
     const LINEITEM = "LineItem";
     const SENDSAF = "SendSAF";
     const STARTCARD = "StartCard";
+    const SEND_FILE = "SendFile";
     const GET_DIAGNOSTIC_REPORT = "GetDiagnosticReport";
+    const SIGNATURE_FORM = "SignatureForm";
+    const GET_LAST_RESPONSE = "GetLastResponse";
 }

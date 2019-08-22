@@ -33,9 +33,11 @@ use GlobalPayments\Api\Entities\FraudManagementResponse;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\Enums\HppVersion;
 use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
+use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\ThreeDSecure;
+use GlobalPayments\Api\Builders\Secure3dBuilder;
 
-class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringService
+class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringService, ISecure3dProvider
 {
     /**
      * Merchant ID to authenticate with the gateway
@@ -100,6 +102,17 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
      */
     private $serializeData = [];
 
+    // /**
+    //  * @var Secure3dVersion
+    //  */
+    // public $version = Secure3dVersion::ONE;
+
+    /** @return Secure3dVersion */
+    public function getVersion()
+    {
+        return Secure3dVersion::ONE;
+    }
+
     /**
      * {@inheritdoc}
      *
@@ -137,6 +150,8 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $request->appendChild($xml->createElement("channel", $this->channel));
         }
         
+        $request->appendChild($xml->createElement("orderid", $orderId));
+
         if (isset($builder->amount)) {
             $amount = $xml->createElement("amount", preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount)));
             $amount->setAttribute("currency", $builder->currency);
@@ -150,8 +165,6 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $element->setAttribute("flag", $autoSettle);
             $request->appendChild($element);
         }
-        
-        $request->appendChild($xml->createElement("orderid", $orderId));
 
         // For Fraud Decision Manager
         if (!empty($builder->customerData)) {
@@ -419,22 +432,72 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $request->appendChild($recurring);
         }
 
-        //fraud filter
+        // fraud filter
         $this->buildFraudFilter($builder, $xml, $request);
         
-        // TODO: mpi
-        if (!empty($builder->paymentMethod->threeDSecure)) {
+        // tssinfo
+
+        // stored credential
+        if ($builder->storedCredential != null) {
+            $storedCredential = $xml->createElement("storedcredential");
+            $storedCredential->appendChild($xml->createElement("type", $builder->storedCredential->type));
+            $storedCredential->appendChild($xml->createElement("initiator", $builder->storedCredential->initiator));
+            $storedCredential->appendChild($xml->createElement("sequence", $builder->storedCredential->sequence));
+            $storedCredential->appendChild($xml->createElement("srd", $builder->storedCredential->schemeId));
+            $request->appendChild($storedCredential);
+        }
+
+        // mpi
+        $secureEcom = $builder->paymentMethod->threeDSecure;
+        if (!empty($secureEcom)) {
             $mpi = $xml->createElement("mpi");
-            $mpi->appendChild($xml->createElement("cavv", $builder->paymentMethod->threeDSecure->cavv));
-            $mpi->appendChild($xml->createElement("xid", $builder->paymentMethod->threeDSecure->xid));
-            $mpi->appendChild($xml->createElement("eci", $builder->paymentMethod->threeDSecure->eci));
+            $mpi->appendChild($xml->createElement("eci", $secureEcom->eci));
+            $mpi->appendChild($xml->createElement("cavv", $secureEcom->cavv));
+            $mpi->appendChild($xml->createElement("xid", $secureEcom->xid));
+
+            if ($secureEcom->directoryServerTransactionId != null || $secureEcom->authenticationValue != null || $secureEcom->messageVersion != null) {
+                $mpi->appendChild($xml->createElement("ds_trans_id", $secureEcom->directoryServerTransactionId));
+                $mpi->appendChild($xml->createElement("authentication_value", $secureEcom->authenticationValue));
+                $mpi->appendChild($xml->createElement("message_version", $secureEcom->messageVersion));
+            }
             $request->appendChild($mpi);
         }
         
         $acceptedResponseCodes = $this->mapAcceptedCodes($transactionType);
-
         $response = $this->doTransaction($xml->saveXML($request));
         return $this->mapResponse($response, $acceptedResponseCodes);
+    }
+
+    /**
+     * @return Transaction
+     */
+    public function processSecure3d(Secure3dBuilder $builder)
+    {
+        $transType = $builder->getTransactionType();
+        
+        if ($transType === TransactionType::VERIFY_ENROLLED) {
+            $authBuilder = (new AuthorizationBuilder($transType, $builder->getPaymentMethod()))
+                ->withAmount($builder->getAmount())
+                ->withCurrency($builder->getCurrency())
+                ->withOrderId($builder->getOrderId());
+
+            return $this->processAuthorization($authBuilder);
+        } elseif ($transType === TransactionType::VERIFY_SIGNATURE) {
+            // Get our three d secure object
+            $secureEcom = $builder->getThreeDSecure();
+
+            // Create our transaction reference
+            $reference = new TransactionReference();
+            $reference->orderId = $secureEcom->getOrderId();
+            
+            $managementBuilder = (new ManagementBuilder($transType))
+                ->withAmount($secureEcom->getAmount())
+                ->withCurrency($secureEcom->getCurrency())
+                ->withPayerAuthenticationResponse($builder->getPayerAuthenticationResponse())
+                ->withPaymentMethod($reference);
+            return $this->manageTransaction($managementBuilder);
+        }
+        throw new UnsupportedTransactionException(sprintf("Unknown transaction type %s", $transType));
     }
 
     public function serializeRequest(AuthorizationBuilder $builder)
@@ -654,7 +717,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $request->appendChild($xml->createElement("paymentmethod", $builder->alternativePaymentType));
         }
 
-        if($builder->transactionType === TransactionType::VERIFY_SIGNATURE){
+        if ($builder->transactionType === TransactionType::VERIFY_SIGNATURE) {
             $request->appendChild($xml->createElement("pares", $builder->payerAuthenticationResponse));
         }
 
@@ -913,6 +976,9 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $result->threeDSecure = $secureEcom;
         }
         
+        // stored credential
+        $result->schemeId = (string)$root->srd;
+
         // dccinfo
         if (!empty($root->dccinfo)) {
             $result->dccResponseResult = new DccResponseResult();
@@ -928,7 +994,8 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $result->dccResponseResult->exchangeRateSourceTimestamp = (string)
                                             $root->dccinfo->exchangeratesourcetimestamp;
         }
-        //fraud filter
+
+        // fraud filter
         if (!empty($root->fraudresponse)) {
             $fraudResponse = $root->fraudresponse;
             $result->fraudFilterResponse = new FraudManagementResponse();

@@ -122,8 +122,6 @@ class ManagementBuilder extends TransactionBuilder
     public function __construct($type, $paymentMethod = null)
     {
         parent::__construct($type, $paymentMethod);
-        $this->transactionType = $type;
-        $this->paymentMethod = $paymentMethod;
     }
 
     /**
@@ -281,6 +279,18 @@ class ManagementBuilder extends TransactionBuilder
     }
 
     /**
+     * @return ManagementBuilder
+     */
+    public function withIssuerData(CardIssuerEntryTag $tag, String $value)
+    {
+        if ($this->issuerData == null) {
+            $this->issuerData = [];
+        }
+        $this->issuerData[$tag] = $value;
+        return $this;
+    }
+
+    /**
      * Previous request's transaction reference
      *
      * @internal
@@ -356,7 +366,8 @@ class ManagementBuilder extends TransactionBuilder
         return $this;
     }
 
-    public function withPayerAuthenticationResponse($payerAuthenticationResponse){
+    public function withPayerAuthenticationResponse($payerAuthenticationResponse)
+    {
         $this->payerAuthenticationResponse = $payerAuthenticationResponse;
         return $this;
     }

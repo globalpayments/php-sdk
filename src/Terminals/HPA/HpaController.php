@@ -12,16 +12,19 @@ use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Terminals\HPA\Entities\Enums\HpaMessageId;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Terminals\HPA\Requests\HpaSendFileRequest;
 
 /*
  * Main controller class for Heartland payment application
- * 
+ *
  */
 
 class HpaController extends DeviceController
 {
-
     public $device;
+
+    public $deviceConfig;
+
     private $builderData = null;
 
     /*
@@ -32,6 +35,7 @@ class HpaController extends DeviceController
     {
         $this->device = new HpaInterface($this);
         $this->requestIdProvider = $config->requestIdProvider;
+        $this->deviceConfig = $config;
 
         switch ($config->connectionMode) {
             case ConnectionModes::TCP_IP:
@@ -108,10 +112,10 @@ class HpaController extends DeviceController
 
     /*
      * Send control message to device
-     * 
+     *
      * @param string $message control message to device
-     * 
-     * @return HpaResponse parsed device response 
+     *
+     * @return HpaResponse parsed device response
      */
 
     public function send($message, $requestType = null)
@@ -122,7 +126,6 @@ class HpaController extends DeviceController
                         $this->requestIdProvider->getRequestId();
             $message = sprintf($message, $requestId);
         }
-        
         //send messaege to gateway
         $this->deviceInterface->send(trim($message), $requestType);
         
@@ -134,10 +137,10 @@ class HpaController extends DeviceController
 
     /*
      * Check the device response code
-     * 
+     *
      * @param HpaResponse $gatewayResponse parsed response from device
      * @param array       $acceptedCodes list of success response codes
-     * 
+     *
      * @return raise GatewayException incase of different unexpected code
      */
 
@@ -171,9 +174,9 @@ class HpaController extends DeviceController
 
     /*
      * Return message id based on the transaction type
-     * 
-     * @param $transactionType|TransactionType     
-     * $return HPA message id or UnsupportedTransactionException incase of unknown transaction type 
+     *
+     * @param $transactionType|TransactionType
+     * $return HPA message id or UnsupportedTransactionException incase of unknown transaction type
      */
 
     private function manageTransactionType($transactionType)
@@ -216,7 +219,47 @@ class HpaController extends DeviceController
         }
         return $cardGroup;
     }
+    
+    public function sendFile($sendFileData)
+    {
+        $sendFile = new HpaSendFileRequest($this->deviceConfig);
+        $sendFile->validate($sendFileData);
         
+        $fileInfo = $sendFile->getFileInformation($sendFileData);
+        
+        $initialMessage = "<SIP>"
+                . "<Version>1.0</Version>"
+                . "<ECRId>1004</ECRId>"
+                . "<Request>SendFile</Request>"
+                . "<RequestId>%s</RequestId>"
+                . "<FileName>".$sendFileData->imageType."</FileName>"
+                . "<FileSize>".$fileInfo['fileSize']."</FileSize>"
+                . "<MultipleMessage>1</MultipleMessage>"
+                . "</SIP>";
+
+        $initialFileResponse = $this->send($initialMessage, HpaMessageId::SEND_FILE);
+        
+        if (!empty($initialFileResponse) && $initialFileResponse->resultCode == 0) {
+            $splitedImageData = str_split($fileInfo['fileData'], $initialFileResponse->maxDataSize);
+            $totalMessages = sizeof($splitedImageData);
+
+            for ($i = 0; $i < $totalMessages; $i++) {
+                $isMultiple = ( ($i+1) != $totalMessages) ? 1 : 0;
+                $subsequentMessage = "<SIP>"
+                        . "<Version>1.0</Version>"
+                        . "<ECRId>1004</ECRId>"
+                        . "<Request>SendFile</Request>"
+                        . "<RequestId>%s</RequestId>"
+                        . "<FileData>" . $splitedImageData[$i] . "</FileData>"
+                        . "<MultipleMessage>" . $isMultiple . "</MultipleMessage>"
+                        . "</SIP>";
+
+                $fileResponse = $this->send($subsequentMessage, HpaMessageId::SEND_FILE);
+            }
+            return $fileResponse;
+        }
+    }
+    
     public function __destruct()
     {
         $this->device->reset();

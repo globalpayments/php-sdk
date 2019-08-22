@@ -8,7 +8,6 @@ use GlobalPayments\Api\Terminals\TerminalUtils;
 
 class HpaSendSafResponse implements IDeviceResponseHandler
 {
-
     private $deviceResponse;
 
     public function mapResponse($gatewayMultipleResponse)
@@ -117,7 +116,7 @@ class HpaSendSafResponse implements IDeviceResponseHandler
 
     /*
      * Set transaction based response in $deviceResponse
-     * 
+     *
      * @param string $propertyName $deviceResponse object property name
      * @param array $response
      * @param string $responseKey response key received from device

@@ -18,15 +18,16 @@ abstract class RestGateway extends Gateway
      * @param array<string,string>|null $queryStringParams
      *
      * @throws GatewayException
-     * @return GatewayResponse
+     * @return string
      */
     protected function doTransaction(
         $verb,
         $endpoint,
         $data = null,
-        array $queryStringParams = null
+        array $queryStringParams = null,
+        $headers = []
     ) {
-        $response = $this->sendRequest($verb, $endpoint, $data, $queryStringParams);
+        $response = $this->sendRequest($verb, $endpoint, $data, $queryStringParams, $headers);
 
         if (!in_array($response->statusCode, [200, 204])) {
             $parsed = json_decode($response->rawResponse);
@@ -35,7 +36,7 @@ abstract class RestGateway extends Gateway
                 sprintf(
                     'Status Code: %s - %s',
                     $response->statusCode,
-                    isset($error->message) ? $error->message : (string) $error
+                    isset($error->error_description) ? $error->error_description : (isset($error->message) ? $error->message : (string) $error)
                 )
             );
         }

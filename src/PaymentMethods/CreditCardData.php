@@ -102,11 +102,14 @@ class CreditCardData extends Credit implements ICardData
      */
     public function getShortExpiry()
     {
-        return sprintf(
-            '%s%s',
-            str_pad($this->expMonth, 2, '0', STR_PAD_LEFT),
-            substr(str_pad($this->expYear, 4, '0', STR_PAD_LEFT), 2, 2)
-        );
+        if ($this->expMonth != null && $this->expYear != null) {
+            return sprintf(
+                '%s%s',
+                str_pad($this->expMonth, 2, '0', STR_PAD_LEFT),
+                substr(str_pad($this->expYear, 4, '0', STR_PAD_LEFT), 2, 2)
+            );
+        }
+        return null;
     }
 
     /**

@@ -4,7 +4,6 @@ namespace GlobalPayments\Api\Terminals;
 
 abstract class DeviceController
 {
-
     public $deviceInterface;
     public $requestIdProvider;
 

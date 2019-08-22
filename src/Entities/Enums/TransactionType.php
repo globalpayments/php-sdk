@@ -32,4 +32,9 @@ class TransactionType extends Enum
     const DCC_RATE_LOOKUP = 1 << 23;
     const VERIFY_ENROLLED = 1 << 24;
     const VERIFY_SIGNATURE = 1 << 25;
+    const TOKEN_DELETE = 1 << 26;
+    const VERIFY_AUTHENTICATION = 1 << 27;
+    const INITIATE_AUTHENTICATION = 1 << 28;
+    const DATA_COLLECT = 1 << 29;
+    const PRE_AUTH_COMPLETION = 1 << 30;
 }
