@@ -130,11 +130,12 @@ class ServicesContainer
                 static::$instance->setSecure3dProvider(Secure3dVersion::TWO, $secure3d2);
             }
         } else {
-            if (isset($config->serviceUrl) && !empty($config->serviceUrl)) {
-                if ($config->environment === Environment::TEST) {
-                    $config->serviceUrl = ServiceEndpoints::PORTICO_TEST;
-                } else {
+            if (empty($config->serviceUrl) && !empty($config->secretApiKey)) {
+                $env = explode('_', $config->secretApiKey)[1];
+                if ($env == "prod") {
                     $config->serviceUrl = ServiceEndpoints::PORTICO_PRODUCTION;
+                } else {
+                    $config->serviceUrl = ServiceEndpoints::PORTICO_TEST;
                 }
             }
 

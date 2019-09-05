@@ -196,22 +196,23 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $block1->appendChild($xml->createElement('Action', AliasAction::validate($builder->aliasAction)));
             $block1->appendChild($xml->createElement('Alias', $builder->alias));
         }
-
+      
         $isCheck = ($builder->paymentMethod->paymentMethodType === PaymentMethodType::ACH)
             || ($builder->paymentMethod instanceof RecurringPaymentMethod
                 && $builder->paymentMethod->paymentType === 'ACH');
+
         $propertyName = $isCheck ? 'checkHolderName' : 'cardHolderName';
         if ($isCheck
-            || $builder->billingAddress !== null
-            || $builder->paymentMethod->{$propertyName} !== null
+            || $builder->billingAddress !== null 
+            || isset($builder->paymentMethod->{$propertyName}) 
         ) {
-            $address = $this->hydrateHolder($xml, $builder, $isCheck);
-
+            if ($builder->transactionType !== TransactionType::REVERSAL) {
+                $address = $this->hydrateHolder($xml, $builder, $isCheck);
+            }
             if (!empty($address)) {
                 $block1->appendChild($address);
             }
         }
-
         list($hasToken, $tokenValue) = $this->hasToken($builder->paymentMethod);
 
         $cardData = $xml->createElement(

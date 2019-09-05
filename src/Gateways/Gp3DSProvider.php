@@ -282,7 +282,7 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             }
 
             // mobile phone
-            if (!empty($builder->getMobileNumber)) {
+            if (!empty($builder->getMobileNumber())) {
                 $request['payer']['mobile_phone'] = [];
                 $request['payer']['mobile_phone'] = $this->maybeSetKey($request['payer']['mobile_phone'], 'country_code', $builder->getMobileCountryCode());
                 $request['payer']['mobile_phone'] = $this->maybeSetKey($request['payer']['mobile_phone'], 'subscriber_number', $builder->getMobileNumber());
