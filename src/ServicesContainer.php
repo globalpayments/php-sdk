@@ -53,7 +53,7 @@ class ServicesContainer
      *
      * @return
      */
-    public function __construct(IPaymentGateway $gateway, IRecurringService $recurring = null)
+    public function __construct(IPaymentGateway $gateway = null, IRecurringService $recurring = null)
     {
         $this->gateway = $gateway;
         $this->recurring = $recurring;
