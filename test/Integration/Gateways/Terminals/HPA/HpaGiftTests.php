@@ -32,7 +32,7 @@ class HpaGiftTests extends TestCase
     protected function getConfig()
     {
         $config = new ConnectionConfig();
-        $config->ipAddress = '10.138.141.20';
+        $config->ipAddress = '10.138.141.7';
         $config->port = '12345';
         $config->deviceType = DeviceType::HPA_ISC250;
         $config->connectionMode = ConnectionModes::TCP_IP;

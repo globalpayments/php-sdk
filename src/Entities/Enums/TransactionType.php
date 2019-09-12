@@ -37,4 +37,5 @@ class TransactionType extends Enum
     const INITIATE_AUTHENTICATION = 1 << 28;
     const DATA_COLLECT = 1 << 29;
     const PRE_AUTH_COMPLETION = 1 << 30;
+    const TOKEN_UPDATE = 1 << 31;
 }

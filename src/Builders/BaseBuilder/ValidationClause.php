@@ -154,10 +154,10 @@ class ValidationClause
      */
     public function isInstanceOf($clazz, $message = null)
     {
-        $this->classback = function ($builder) use ($clazz) {
+        $this->callback = function ($builder) use ($clazz) {
             if (!($builder->{$this->target->property} instanceof $clazz)) {
                 throw new BuilderException(
-                    sprtinf(
+                    sprintf(
                         '%s must be an instance of the %s class.',
                         $this->target->property,
                         $clazz

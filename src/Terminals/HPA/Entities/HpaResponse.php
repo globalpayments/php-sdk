@@ -41,12 +41,10 @@ class HpaResponse
     public $authorizationCode;
     public $approvalCode;
     public $transactionAmount;
-    public $amountDue;
-    public $balanceAmount;
+    public $balanceAmountDue;
     public $cardHolderName;
     public $cardBIN;
     public $cardPresent;
-    public $cardAcquisition;
     public $expirationDate;
     public $tipAmount;
     public $cashBackAmount;
@@ -61,6 +59,7 @@ class HpaResponse
     public $transactionTime;
     public $cardType;
     public $referenceNumber;
+    public $partialApproval;
     
     //EOD
     public $reversal;

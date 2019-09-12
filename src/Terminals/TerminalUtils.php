@@ -26,7 +26,7 @@ class TerminalUtils
 
         return $lengthHeader;
     }
-    
+
     public static function xmlParse($gatewayResponse)
     {
         $gatewayResponse = substr($gatewayResponse, strpos($gatewayResponse, '<SIP>'));
@@ -38,5 +38,15 @@ class TerminalUtils
         $responseData = json_decode($responseJson, true);
 
         return $responseData;
+    }
+
+    public static function formatAmount($amount)
+    {
+        return preg_replace('/[^0-9]/', '', sprintf('%01.2f', $amount));
+    }
+    
+    public static function reformatAmount($amount)
+    {
+        return $amount / 100;
     }
 }

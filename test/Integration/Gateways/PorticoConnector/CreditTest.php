@@ -16,7 +16,7 @@ class CreditTest extends TestCase
     protected $track;
     private $enableCryptoUrl = true;
 
-    public function setup()
+    public function setup() : void
     {
         $this->card = new CreditCardData();
         $this->card->number = '4111111111111111';

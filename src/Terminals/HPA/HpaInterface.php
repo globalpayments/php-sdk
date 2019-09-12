@@ -245,6 +245,13 @@ class HpaInterface implements IDeviceInterface
         return (new TerminalAuthBuilder(TransactionType::REFUND, PaymentMethodType::DEBIT))
                         ->withAmount($amount);
     }
+    
+    public function debitVoid()
+    {
+        throw new UnsupportedTransactionException(
+            'The selected gateway does not support this transaction type.'
+        );
+    }
 
     public function disableHostResponseBeep()
     {

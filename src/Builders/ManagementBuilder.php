@@ -6,8 +6,10 @@ use GlobalPayments\Api\Entities\Enums\TaxType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
+use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
 use GlobalPayments\Api\ServicesContainer;
 
 /**
@@ -202,6 +204,13 @@ class ManagementBuilder extends TransactionBuilder
             ->check('amount')->isNotNull()
             ->check('currency')->isNotNull()
             ->check('orderId')->isNotNull();
+
+        $this->validations->of(TransactionType::TOKEN_DELETE | TransactionType::TOKEN_UPDATE)
+            ->check('paymentMethod')->isNotNull()
+            ->check('paymentMethod')->isInstanceOf(ITokenizable::class);
+
+        $this->validations->of(TransactionType::TOKEN_UPDATE)
+            ->check('paymentMethod')->isInstanceOf(CreditCardData::class);
     }
 
     /**

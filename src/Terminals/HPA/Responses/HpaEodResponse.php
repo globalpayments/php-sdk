@@ -90,7 +90,7 @@ class HpaEodResponse implements IDeviceResponseHandler
             if (isset($gatewayRecord['Field']['Key']) && isset($gatewayRecord['Field']['Value'])) {
                 $field = $gatewayRecord['Field'];
                 $key = $this->formatKey($field['Key']);
-                $data["$key"] = $field['Value'];
+                $data["$key"] = $this->formatValue($key, $field['Value']);
             } else {
                 //incase of multi dimensional array
                 foreach ($gatewayRecord['Field'] as $field) {
@@ -105,9 +105,9 @@ class HpaEodResponse implements IDeviceResponseHandler
                                 $data[$key] = [$prevValue];
                             }
 
-                            $data[$key][] = $field['Value'];
+                            $data[$key][] = $this->formatValue($key, $field['Value']);
                         } else {
-                            $data[$key] = $field['Value'];
+                            $data[$key] = $this->formatValue($key, $field['Value']);
                         }
                     }
                 }
@@ -148,6 +148,14 @@ class HpaEodResponse implements IDeviceResponseHandler
         return $key;
     }
     
+    private function formatValue($key, $value)
+    {
+        if (!empty($value) && (stripos($key, 'amt') !== false || stripos($key, 'amount') !== false)) {
+            return TerminalUtils::reformatAmount($value);
+        }
+        return $value;
+    }
+
     private function formatTableCategory($gatewayRecord)
     {
         $tableCategory = (!empty($gatewayRecord['TableCategory'])) ?

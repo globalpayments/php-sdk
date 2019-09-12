@@ -508,7 +508,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             }
 
             // Transaction ID
-            if ($builder->paymentMethod !== null) {
+            if ($builder->paymentMethod !== null && !empty($builder->paymentMethod->transactionId)) {
                 $root->appendChild(
                     $xml->createElement('GatewayTxnId', $builder->paymentMethod->transactionId)
                 );
@@ -559,6 +559,33 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 }
             }
 
+            // Additional Txn Fields
+            // TODO
+
+            // Token Management
+            if ($builder->transactionType === TransactionType::TOKEN_UPDATE
+                || $builder->transactionType === TransactionType::TOKEN_DELETE
+            ) {
+                $token = $builder->paymentMethod;
+
+                // Set the token value
+                $root->appendChild($xml->createElement('TokenValue', $token->token));
+
+                $tokenActions = $root->appendChild($xml->createElement('TokenActions'));
+                if ($builder->transactionType === TransactionType::TOKEN_UPDATE) {
+                    $setElement = $tokenActions->appendChild($xml->createElement('Set'));
+
+                    $expMonth = $setElement->appendChild($xml->createElement('Attribute'));
+                    $expMonth->appendChild($xml->createElement('Name', 'expmonth'));
+                    $expMonth->appendChild($xml->createElement('Value', $token->expMonth));
+
+                    $expYear = $setElement->appendChild($xml->createElement('Attribute'));
+                    $expYear->appendChild($xml->createElement('Name', 'expyear'));
+                    $expYear->appendChild($xml->createElement('Value', $token->expYear));
+                } else {
+                    $tokenActions->appendChild($xml->createElement('Delete'));
+                }
+            }
 
             if ($builder->transactionType === TransactionType::REVERSAL
                 || $builder->transactionType === TransactionType::REFUND
@@ -924,7 +951,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                     'Unexpected Gateway Response: %s - %s. ',
                     $gatewayRspCode,
                     $gatewayRspText
-                )
+                ),
+                $gatewayRspCode,
+                $gatewayRspText
             );
         }
 
@@ -1501,6 +1530,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 return 'GiftCardReplace';
             case TransactionType::REWARD:
                 return 'GiftCardReward';
+            case TransactionType::TOKEN_DELETE:
+            case TransactionType::TOKEN_UPDATE:
+                return 'ManageTokens';
             default:
                 break;
         }

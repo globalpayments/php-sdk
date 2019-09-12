@@ -48,6 +48,8 @@ interface IDeviceInterface
 
     public function debitRefund($amount = null);
     
+    public function debitVoid();
+    
     //EBT Calls
     public function ebtBalance();
 

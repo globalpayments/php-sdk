@@ -249,14 +249,24 @@ class HpaTcpInterface implements IDeviceCommInterface
     {
         $this->setValueInResponse('referenceNumber', $response, 'ReferenceNumber');
         $this->setValueInResponse('cardHolderName', $response, 'CardholderName');
-        $this->setValueInResponse('cardAcquisition', $response, 'CardAcquisition');
+        $this->setValueInResponse('entryMethod', $response, 'CardAcquisition');
         $this->setValueInResponse('approvalCode', $response, 'ApprovalCode');
         $this->setValueInResponse('transactionTime', $response, 'TransactionTime');
         $this->setValueInResponse('maskedCardNumber', $response, 'MaskedPAN');
         $this->setValueInResponse('cardType', $response, 'CardType');
-        $this->setValueInResponse('tipAmount', $response, 'TipAdjustAllowed');
         $this->setValueInResponse('signatureStatus', $response, 'SignatureLine');
-        $this->setValueInResponse('transactionAmount', $response, 'AuthorizedAmount');
+        
+        if (isset($response['TipAdjustAllowed']) && !empty($response['TipAmount'])) {
+            $this->deviceResponse->tipAmount = TerminalUtils::reformatAmount(
+                $response['TipAmount']
+            );
+        }
+        
+        if (isset($response['AuthorizedAmount'])) {
+            $this->deviceResponse->transactionAmount = TerminalUtils::reformatAmount(
+                $response['AuthorizedAmount']
+            );
+        }
         
         //EBT response
         $this->setValueInResponse('ebtType', $response, 'EBTType');
@@ -292,12 +302,25 @@ class HpaTcpInterface implements IDeviceCommInterface
         $this->setValueInResponse('requestId', $responseData, 'RequestId');
         $this->setValueInResponse('responseText', $responseData, 'ResponseText');
         $this->setValueInResponse('gatewayResponseMessage', $responseData, 'GatewayRspMsg');
-        $this->setValueInResponse('balanceAmount', $responseData, 'BalanceDueAmount');
         $this->setValueInResponse('isStoredResponse', $responseData, 'StoredResponse');
+        $this->setValueInResponse('partialApproval', $responseData, 'PartialApproval');
+        $this->setValueInResponse('avsResponseText', $responseData, 'AVSResultText');
+        $this->setValueInResponse('avsResponseCode', $responseData, 'AVS');
+        $this->setValueInResponse('cvvResponseCode', $responseData, 'CVV');
+        $this->setValueInResponse('cvvResponseText', $responseData, 'CVVResultText');
         $this->setValueInResponse('signatureData', $responseData, 'AttachmentData');
         
-        //Gift Balance Enquiry
-        $this->setValueInResponse('availableBalance', $responseData, 'AvailableBalance');
+        if (isset($responseData['BalanceDueAmount'])) {
+            $this->deviceResponse->balanceAmountDue = TerminalUtils::reformatAmount(
+                $responseData['BalanceDueAmount']
+            );
+        }
+        
+        if (isset($responseData['AvailableBalance'])) {
+            $this->deviceResponse->availableBalance = TerminalUtils::reformatAmount(
+                $responseData['AvailableBalance']
+            );
+        }
 
         //set EMV tags
         $this->setValueInResponse('emvApplicationId', $responseData, 'EMV_AID');

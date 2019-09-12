@@ -12,6 +12,7 @@ use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Terminals\HPA\Entities\Enums\HpaMessageId;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Terminals\TerminalUtils;
 use GlobalPayments\Api\Terminals\HPA\Requests\HpaSendFileRequest;
 
 /*
@@ -57,10 +58,11 @@ class HpaController extends DeviceController
         $request->appendChild($xml->createElement("RequestId", "%s"));
         $request->appendChild($xml->createElement("TransactionId", $builder->transactionId));
 
-        $totalAmount = $builder->amount;
+        $totalAmount = TerminalUtils::formatAmount($builder->amount);
+        $gratuity = TerminalUtils::formatAmount($builder->gratuity);
         if ($builder->gratuity !== null) {
-            $request->appendChild($xml->createElement("TipAmount", $builder->gratuity));
-            $totalAmount += $builder->gratuity;
+            $request->appendChild($xml->createElement("TipAmount", $gratuity));
+            $totalAmount += $gratuity;
         } else {
             $request->appendChild($xml->createElement("TipAmount", 0));
         }
@@ -78,6 +80,10 @@ class HpaController extends DeviceController
         $transactionType = $this->manageTransactionType($builder->transactionType);
         $cardGroup = $this->manageCardGroup($builder->paymentMethodType);
         
+        $amount = TerminalUtils::formatAmount($builder->amount);
+        $gratuity = TerminalUtils::formatAmount($builder->gratuity);
+        $taxAmount = TerminalUtils::formatAmount($builder->taxAmount);
+        
         // Build Request
         $request = $xml->createElement("SIP");
         $request->appendChild($xml->createElement("Version", '1.0'));
@@ -86,25 +92,25 @@ class HpaController extends DeviceController
         $request->appendChild($xml->createElement("RequestId", "%s"));
         $request->appendChild($xml->createElement("CardGroup", $cardGroup));
         $request->appendChild($xml->createElement("ConfirmAmount", '0'));
-        $request->appendChild($xml->createElement("BaseAmount", $builder->amount));
+        $request->appendChild($xml->createElement("BaseAmount", $amount));
 
         if ($builder->gratuity !== null) {
-            $request->appendChild($xml->createElement("TipAmount", $builder->gratuity));
+            $request->appendChild($xml->createElement("TipAmount", $gratuity));
         } else {
             $request->appendChild($xml->createElement("TipAmount", 0));
         }
         
         if ($builder->taxAmount !== null) {
-            //$request->appendChild($xml->createElement("TaxAmount", $builder->taxAmount));
+            $request->appendChild($xml->createElement("TaxAmount", $taxAmount));
         } else {
-            //$request->appendChild($xml->createElement("TaxAmount", 0));
+            $request->appendChild($xml->createElement("TaxAmount", 0));
         }
         
         if ($builder->paymentMethodType == PaymentMethodType::EBT) {
-            $request->appendChild($xml->createElement("EBTAmount", $builder->amount));
+            $request->appendChild($xml->createElement("EBTAmount", $amount));
         }
 
-        $request->appendChild($xml->createElement("TotalAmount", $builder->amount));
+        $request->appendChild($xml->createElement("TotalAmount", $amount));
         
         $response = $this->send($xml->saveXML($request));
         return $response;

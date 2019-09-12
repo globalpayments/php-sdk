@@ -3,9 +3,12 @@
 namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
+use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IAuthable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IBalanceable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IChargable;
@@ -165,7 +168,48 @@ abstract class Credit implements
         return $this->verify()
             ->withRequestMultiUseToken(true);
     }
+
+    /**
+     * Updates the token expiry date with the values proced to the card object
+     * 
+     * @return bool value indicating success/failure
+     */
+    public function updateTokenExpiry()
+    {
+        if (empty($this->token)) {
+            throw new BuilderException('Token cannot be null');
+        }
+
+        try {
+            (new ManagementBuilder(TransactionType::TOKEN_UPDATE))
+                ->withPaymentMethod($this)
+                ->execute();
+            return true;
+        } catch (ApiException $exc) {
+            return false;
+        }
+    }
     
+    /**
+     * Deletes the token associated with the current card object
+     * 
+     * @return bool value indicating success/failure
+     */
+    public function deleteToken() {
+        if (empty($this->token)) {
+            throw new BuilderException('Token cannot be null');
+        }
+
+        try {
+            (new ManagementBuilder(TransactionType::TOKEN_DELETE))
+                ->withPaymentMethod($this)
+                ->execute();
+            return true;
+        } catch (ApiException $exc) {
+            return false;
+        }
+    }
+
     public function getDccRate($dccRateType, $amount, $currency, $ccp, $orderId)
     {
         return (new AuthorizationBuilder(TransactionType::DCC_RATE_LOOKUP, $this))
