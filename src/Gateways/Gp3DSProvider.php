@@ -72,7 +72,7 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
 
     protected function maybeSetKey(array $arr, $key, $value = null)
     {
-        if ($value != null) {
+        if (!is_null($value)) {
             $arr[$key] = $value;
         }
         return $arr;
@@ -104,7 +104,7 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             } elseif ($paymentMethod instanceof RecurringPaymentMethod) {
                 $storedCard = $paymentMethod;
                 $request = $this->maybeSetKey($request, 'payer_reference', $storedCard->customerKey);
-                $request = $this->maybeSetKey($request, 'payment_reference', $storedCard->key);
+                $request = $this->maybeSetKey($request, 'payment_method_reference', $storedCard->key);
                 $hashValue = $storedCard->customerKey;
             }
 
@@ -170,7 +170,7 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
                 $hashValue = $storedCard->customerKey;
 
                 $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'payer_reference', $storedCard->customerKey);
-                $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'payment_reference', $storedCard->key);
+                $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'payment_method_reference', $storedCard->key);
             }
 
             // order details
