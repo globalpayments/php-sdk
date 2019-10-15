@@ -71,6 +71,13 @@ class CreditCardData extends Credit implements ICardData
     public $readerPresent;
 
     /**
+     * Card type
+     *
+     * @var string
+     */
+    public $cardType;
+
+    /**
      * Card type regex patterns
      *
      * @var array
@@ -124,6 +131,10 @@ class CreditCardData extends Credit implements ICardData
             '',
             $this->number
         );
+
+        if (!empty($this->cardType)) {
+            return $this->cardType;
+        }
 
         foreach (static::$cardTypes as $type => $regex) {
             if (1 === preg_match($regex, $this->number)) {

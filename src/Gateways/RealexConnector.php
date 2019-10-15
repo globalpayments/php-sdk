@@ -919,7 +919,9 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $cardElement = $xml->createElement("card");
         $cardElement->appendChild($xml->createElement("ref", $paymentKey));
         $cardElement->appendChild($xml->createElement("payerref", $payment->customerKey));
-        $cardElement->appendChild($xml->createElement("number", $card->number));
+        if (!empty($card->number)) {
+            $cardElement->appendChild($xml->createElement('number', $card->number));
+        }
         $cardElement->appendChild($xml->createElement("expdate", $card->getShortExpiry()));
         $cardElement->appendChild($xml->createElement("chname", $card->cardHolderName));
         $cardElement->appendChild($xml->createElement("type", strtoupper($card->getCardType())));
