@@ -82,8 +82,8 @@ abstract class Gateway
             curl_setopt($request, CURLOPT_CONNECTTIMEOUT, $this->timeout);
             curl_setopt($request, CURLOPT_TIMEOUT, $this->timeout);
             curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($request, CURLOPT_SSL_VERIFYPEER, false); //true,);
-            curl_setopt($request, CURLOPT_SSL_VERIFYHOST, false); //2,);
+            curl_setopt($request, CURLOPT_SSL_VERIFYPEER, true); //true,);
+            curl_setopt($request, CURLOPT_SSL_VERIFYHOST, 2); //2,);
             curl_setopt($request, CURLOPT_CUSTOMREQUEST, strtoupper($verb));
             curl_setopt($request, CURLOPT_POSTFIELDS, $data);
             curl_setopt($request, CURLOPT_HTTPHEADER, $headers);
