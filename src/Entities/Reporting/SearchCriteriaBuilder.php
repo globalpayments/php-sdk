@@ -211,8 +211,30 @@ class SearchCriteriaBuilder
     {
         $this->reportBuilder = $reportBuilder;
     }
-    
-    public function and($criteria, $value)
+
+    /**
+     * Added for php5.6 compatibility
+     * @param $name
+     * @param $arguments
+     * @return mixed
+     */
+    public function __call($name, $arguments)
+    {
+        $methods = [
+            'and' => 'add'
+        ];
+        if(isset($methods[$name])) {
+            return call_user_func_array(array($this, $methods[$name]), $arguments);
+        }
+    }
+
+    /**
+     * Added for php5.6 compatibility
+     * @param $criteria
+     * @param $value
+     * @return $this
+     */
+    public function add($criteria, $value)
     {
         if (property_exists($this, $criteria)) {
             $this->{$criteria} = $value;

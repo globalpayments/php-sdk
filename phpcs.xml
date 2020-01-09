@@ -2,4 +2,8 @@
 <ruleset name="Heartland">
     <file>./src</file>
     <rule ref="PSR2"/>
+
+    <rule ref="PHPCompatibility">
+        <config name="testVersion" value="5.6-"/>
+    </rule>
 </ruleset>

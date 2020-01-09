@@ -640,7 +640,7 @@ class Secure3dBuilder extends BaseBuilder
     }
 
     /** @return Secure3dBuilder */
-    public function withAddressMatchIndicator(bool $value)
+    public function withAddressMatchIndicator($value)
     {
         $this->addressMatchIndicator = $value;
         return $this;
@@ -955,7 +955,7 @@ class Secure3dBuilder extends BaseBuilder
     }
 
     /** @return Secure3dBuilder */
-    public function withPreviousSuspiciousActivity(bool $previousSuspiciousActivity)
+    public function withPreviousSuspiciousActivity($previousSuspiciousActivity)
     {
         $this->previousSuspiciousActivity = $previousSuspiciousActivity;
         return $this;
