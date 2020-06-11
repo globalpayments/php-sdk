@@ -266,7 +266,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
             if ($builder->transactionType === TransactionType::CREATE) {
                 $paymentMethod = $builder->entity->paymentMethod instanceof Credit ? 'CreditCard' : 'ACH';
             } elseif ($builder->transactionType === TransactionType::EDIT) {
-                $paymentMethod = str_replace($builder->entity->paymentType, ' ', '');
+                $paymentMethod = str_replace(' ', '', $builder->entity->paymentType);
             }
             return sprintf(
                 '%s%s%s',
