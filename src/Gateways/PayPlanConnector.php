@@ -158,12 +158,14 @@ class PayPlanConnector extends RestGateway implements IRecurringService
             }
         }
 
-        foreach ($request as $key => $value) {
-            if ($value !== 0 && empty($value)) {
-                unset($request[$key]);
+        if ($builder->transactionType !== TransactionType::EDIT) {
+            foreach ($request as $key => $value) {
+                if ($value !== 0 && empty($value)) {
+                    unset($request[$key]);
+                }
             }
         }
-        
+    
         $response = $this->doTransaction(
             $this->mapMethod($builder->transactionType),
             $this->mapUrl($builder),
