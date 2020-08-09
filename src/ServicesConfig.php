@@ -57,6 +57,16 @@ class ServicesConfig
     public $environment;
     public $serviceUrl;
     public $timeout;
+    
+    /**
+     * @var ICommsTracer|null
+     */
+    public $requestTracer;
+
+    /**
+     * @var ICommsTracer|null
+     */
+    public $responseTracer;
 
     public function __construct()
     {

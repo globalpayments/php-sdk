@@ -49,9 +49,8 @@ class ServicesContainer
     /**
      * ServicesContainer constructor.
      *
-     * @param IGateway $gateway
-     *
-     * @return
+     * @param IPaymentGateway $gateway
+     * @param IRecurringService|null $recurring
      */
     public function __construct(IPaymentGateway $gateway, IRecurringService $recurring = null)
     {
@@ -104,6 +103,8 @@ class ServicesContainer
             $gateway->serviceUrl = $config->serviceUrl;
             $gateway->hostedPaymentConfig = $config->hostedPaymentConfig;
             $gateway->curlOptions = $config->curlOptions;
+            $gateway->requestTracer = $config->requestTracer;
+            $gateway->responseTracer = $config->responseTracer;
             static::$instance = new static($gateway, $gateway);
             // set default
             if ($config->secure3dVersion == null) {
@@ -151,6 +152,8 @@ class ServicesContainer
             $gateway->timeout = $config->timeout;
             $gateway->serviceUrl = $config->serviceUrl . '/Hps.Exchange.PosGateway/PosGatewayService.asmx';
             $gateway->curlOptions = $config->curlOptions;
+            $gateway->requestTracer = $config->requestTracer;
+            $gateway->responseTracer = $config->responseTracer;
 
             $payplanEndPoint = (strpos(strtolower($config->serviceUrl), 'cert.') > 0) ?
                                 '/Portico.PayPlan.v2/':
@@ -168,6 +171,8 @@ class ServicesContainer
             $recurring->timeout = $config->timeout;
             $recurring->serviceUrl = $config->serviceUrl . $payplanEndPoint;
             $recurring->curlOptions = $config->curlOptions;
+            $recurring->requestTracer = $config->requestTracer;
+            $recurring->responseTracer = $config->responseTracer;
 
             static::$instance = new static($gateway, $recurring);
         }
