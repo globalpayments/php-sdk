@@ -525,7 +525,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
             $request['addressLine2'] = $address->streetAddress2;
             $request['city'] = $address->city;
             $request['country'] = $address->country;
-            $request['stateProvince'] = $address->province;
+            $request['stateProvince'] = !empty($address->state) ? $address->state : $address->province;
             $request['zipPostalCode'] = $address->postalCode;
         }
         return $request;
@@ -553,7 +553,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
         $customer->address->streetAddress1 = isset($response->addressLine1) ? $response->addressLine1 : null;
         $customer->address->streetAddress2 = isset($response->addressLine2) ? $response->addressLine2 : null;
         $customer->address->city = isset($response->city) ? $response->city : null;
-        $customer->address->province = isset($response->stateProvince) ? $response->stateProvince : null;
+        $customer->address->state = isset($response->stateProvince) ? $response->stateProvince : null;
         $customer->address->postalCode = isset($response->zipPostalCode) ? $response->zipPostalCode : null;
         $customer->address->country = isset($response->country) ? $response->country : null;
         return $customer;
