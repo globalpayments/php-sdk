@@ -113,6 +113,13 @@ class RecurringPaymentMethod extends RecurringEntity implements
 
     /** @var ThreeDSecure */
     public $threeDSecure;
+    
+    /**
+     * Set the Card on File storage
+     *
+     * @var bool
+     */
+    public $cardBrandTransactionId;
 
     /**
      * @param string|IPaymentMethod $customerIdOrPaymentMethod

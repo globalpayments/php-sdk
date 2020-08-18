@@ -115,6 +115,13 @@ class Transaction
     public $emvIssuerResponse;
 
     /**
+     * The host response date
+     *
+     * @var DateTime
+     */
+    public $hostResponseDate;
+
+    /**
      * The remaining points on the account after the transaction.
      *
      * @var string
@@ -224,6 +231,19 @@ class Transaction
     public $avsAddressResponse;
     
     public $alternativePaymentResponse;
+    
+    public $customerReceipt;
+  
+    public $merchantReceipt;
+  
+    public $transactionKey;
+  
+    /*
+     * Card on File field response
+     * @var string
+     *
+     */
+    public $cardBrandTransactionId;
 
     /**
      * Creates a `Transaction` object from a stored transaction ID.

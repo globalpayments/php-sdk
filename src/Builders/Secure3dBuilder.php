@@ -50,6 +50,8 @@ class Secure3dBuilder extends BaseBuilder
     public $billingAddress;
     /** @var BrowserData */
     public $browserData;
+    /** @var ChallengeRequestIndicator  */
+    public $challengeRequestIndicator;
     /** @var string */
     public $currency;
     /** @var string */
@@ -238,6 +240,11 @@ class Secure3dBuilder extends BaseBuilder
     public function getBrowserData()
     {
         return $this->browserData;
+    }
+    /** @return string */
+    public function getChallengeRequestIndicator()
+    {
+        return $this->challengeRequestIndicator;
     }
     /** @return string */
     public function getCurrency()
@@ -681,6 +688,13 @@ class Secure3dBuilder extends BaseBuilder
         return $this;
     }
 
+    /** @return Secure3dBuilder */
+    public function withChallengeRequestIndicator($challengeRequestIndicator)
+    {
+        $this->challengeRequestIndicator = $challengeRequestIndicator;
+        return $this;
+    }
+    
     /** @return Secure3dBuilder */
     public function withCustomerAccountId($customerAccountId)
     {
@@ -1155,7 +1169,7 @@ class Secure3dBuilder extends BaseBuilder
             // check the response
             if (!empty($response)) {
                 switch ($this->transactionType) {
-                    case TransactionType::VERIFY_ENROLLED: 
+                    case TransactionType::VERIFY_ENROLLED:
                         if (!empty($response->threeDSecure)) {
                             $rvalue = $response->threeDSecure;
                             if ((bool)$rvalue->enrolled) {

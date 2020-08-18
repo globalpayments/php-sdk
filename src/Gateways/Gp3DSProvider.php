@@ -139,6 +139,7 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             $request = $this->maybeSetKey($request, 'merchant_id', $this->merchantId);
             $request = $this->maybeSetKey($request, 'account_id', $this->accountId);
             $request = $this->maybeSetKey($request, 'challenge_notification_url', $this->challengeNotificationUrl);
+            $request = $this->maybeSetKey($request, 'challenge_request_indicator', $builder->getChallengeRequestIndicator());
             $request = $this->maybeSetKey($request, 'method_url_completion', $builder->getMethodUrlCompletion());
             $request = $this->maybeSetKey($request, 'merchant_contact_url', $this->merchantContactUrl);
             $request = $this->maybeSetKey($request, 'merchant_initiated_request_type', $builder->getMerchantInitiatedRequestType());
@@ -153,7 +154,8 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
                 $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'number', $cardData->number);
                 $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'scheme', strtoupper($cardData->getCardType()));
                 $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'expiry_month', $cardData->expMonth);
-                $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'expiry_year', substr($cardData->expYear, 2));
+                $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'expiry_year', 
+                                                substr(str_pad($cardData->expYear, 4, '0', STR_PAD_LEFT), 2, 2));
                 $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'full_name', $cardData->cardHolderName);
 
                 if (!empty($cardData->cardHolderName)) {
@@ -310,7 +312,8 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
                 $request['sdk_information'] = [];
                 $request['sdk_information'] = $this->maybeSetKey($request['sdk_information'], 'application_id', $builder->getApplicationId());
                 $request['sdk_information'] = $this->maybeSetKey($request['sdk_information'], 'ephemeral_public_key', $builder->getEphemeralPublicKey());
-                $request['sdk_information'] = $this->maybeSetKey($request['sdk_information'], 'maximum_timeout', $builder->getMaximumTimeout());
+                $request['sdk_information'] = $this->maybeSetKey($request['sdk_information'], 'maximum_timeout', 
+                            (!empty($builder->getMaximumTimeout())) ? str_pad($builder->getMaximumTimeout(), 2, '0' , STR_PAD_LEFT) : '');
                 $request['sdk_information'] = $this->maybeSetKey($request['sdk_information'], 'reference_number', $builder->getReferenceNumber());
                 $request['sdk_information'] = $this->maybeSetKey($request['sdk_information'], 'sdk_trans_id', $builder->getSdkTransactionId());
                 $request['sdk_information'] = $this->maybeSetKey($request['sdk_information'], 'encoded_data', $builder->getEncodedData());

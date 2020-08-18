@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Builders;
 
 use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\AutoSubstantiation;
 use GlobalPayments\Api\Entities\EcommerceInfo;
 use GlobalPayments\Api\Entities\HostedPaymentData;
 use GlobalPayments\Api\Entities\Enums\AddressType;
@@ -77,6 +78,9 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var string|float
      */
     public $authAmount;
+
+    /** @var AutoSubstantiation */
+    public $autoSubstantiation;
 
     /**
      * Balance inquiry type
@@ -397,6 +401,38 @@ class AuthorizationBuilder extends TransactionBuilder
     public $verifyAddress;
 
     /**
+     * For TransIT cash amount for a specified transaction
+     * Note: If a decimal point is included, the amount reflects a dollar value.
+     *       If a decimal point is not included, the amount reflects a cent value.
+     *
+     * @internal
+     * @var string
+     */
+    public $cashTendered;
+    
+    /**
+     * For TransIT transaction discount details
+     *
+     * @internal
+     * @var string
+     */
+    public $discountDetails;
+
+    /*
+     * Card on File field
+     * @var string
+     * 
+     */
+    public $cardBrandTransactionId;
+    
+    /*
+     * Card on File field
+     * @var string
+     *
+     */
+    public $transactionInitiator;
+
+    /**
      * {@inheritdoc}
      *
      * @param TransactionType $type Request transaction type
@@ -609,6 +645,19 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withAuthAmount($authAmount)
     {
         $this->authAmount = $authAmount;
+        return $this;
+    }
+
+    /**
+     * Sets the auto substantiation values for the transaction
+     *
+     * @param AutoSubstantiation
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withAutoSubstantiation($autoSubstantiation)
+    {
+        $this->autoSubstantiation = $autoSubstantiation;
         return $this;
     }
 
@@ -1024,7 +1073,7 @@ class AuthorizationBuilder extends TransactionBuilder
      */
     public function withConvenienceAmount($convenienceAmount)
     {
-        $this->convenienceAmount  = $convenienceAmount ;
+        $this->convenienceAmount  = $convenienceAmount;
         return $this;
     }
     
@@ -1112,6 +1161,47 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withScheduleId($scheduleId)
     {
         $this->scheduleId = $scheduleId;
+        return $this;
+    }
+    
+    /**
+     * Set the associated schedule ID
+     *
+     * @param string $scheduleId
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withDiscountDetails($discountDetails)
+    {
+        $this->discountDetails = $discountDetails;
+        return $this;
+    }
+    
+    /**
+     * Set the cash tendered amount
+     *
+     * @param string $cashTendered
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withCashTenderedDetails($cashTendered)
+    {
+        $this->cashTendered = $cashTendered;
+        return $this;
+    }
+  
+    /**
+     * Set the Card on File storage
+     *
+     * @param string $transactionInitiator
+     * @param string $value
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withCardBrandStorage($transactionInitiator, $value = '')
+    {
+        $this->transactionInitiator = $transactionInitiator;
+        $this->cardBrandTransactionId = $value;
         return $this;
     }
 }

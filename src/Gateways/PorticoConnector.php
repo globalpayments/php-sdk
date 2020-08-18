@@ -38,6 +38,7 @@ use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteriaBuilder;
 use GlobalPayments\Api\Services\ReportingService;
+use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 
 class PorticoConnector extends XmlGateway implements IPaymentGateway
 {
@@ -203,8 +204,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         $propertyName = $isCheck ? 'checkHolderName' : 'cardHolderName';
         if ($isCheck
-            || $builder->billingAddress !== null 
-            || isset($builder->paymentMethod->{$propertyName}) 
+            || $builder->billingAddress !== null
+            || isset($builder->paymentMethod->{$propertyName})
         ) {
             if ($builder->transactionType !== TransactionType::REVERSAL) {
                 $address = $this->hydrateHolder($xml, $builder, $isCheck);
@@ -219,6 +220,18 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $builder->transactionType === TransactionType::REPLACE ? 'OldCardData' : 'CardData'
         );
         if ($builder->paymentMethod instanceof ICardData) {
+            if ($builder->transactionInitiator !== null) {
+                //card on file request
+                $intiator = ($builder->transactionInitiator === StoredCredentialInitiator::CARDHOLDER) ? 'C' : 'M';
+                $cardOnFileData = $xml->createElement('CardOnFileData');
+                $cardOnFileData->appendChild($xml->createElement('CardOnFile', $intiator));
+                
+                if (!empty($builder->cardBrandTransactionId)) {
+                    $cardOnFileData->appendChild($xml->createElement('CardBrandTxnId', $builder->cardBrandTransactionId));
+                }
+                $block1->appendChild($cardOnFileData);
+            }
+            
             $cardData->appendChild(
                 $this->hydrateManualEntry(
                     $xml,
@@ -349,6 +362,18 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         if ($builder->paymentMethod instanceof RecurringPaymentMethod) {
             $method = $builder->paymentMethod;
+            if ($builder->transactionInitiator !== null) {
+                //card on file request
+                $intiator = ($builder->transactionInitiator === StoredCredentialInitiator::CARDHOLDER) ? 'C' : 'M';
+                $cardOnFileData = $xml->createElement('CardOnFileData');
+                $cardOnFileData->appendChild($xml->createElement('CardOnFile', $intiator));
+                
+                if (!empty($builder->cardBrandTransactionId)) {
+                    $cardOnFileData->appendChild($xml->createElement('CardBrandTxnId', $builder->cardBrandTransactionId));
+                }
+                $block1->appendChild($cardOnFileData);
+            }
+            
 
             if ($method->paymentType === 'ACH') {
                 $block1->appendChild($xml->createElement('CheckAction', 'SALE'));
@@ -437,17 +462,20 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 if (!empty($builder->invoiceNumber)) {
                     $direct->appendChild($xml->createElement('DirectMktInvoiceNbr', $builder->invoiceNumber));
                 }
-                if (!empty($builder->ecommerceInfo->shipDay)) {
-                    $direct->appendChild($xml->createElement('DirectMktShipDay', $builder->ecommerceInfo->shipDay));
-                }
+                
                 if (!empty($builder->ecommerceInfo->shipMonth)) {
                     $direct->appendChild($xml->createElement('DirectMktShipMonth', $builder->ecommerceInfo->shipMonth));
                 }
+                
+                if (!empty($builder->ecommerceInfo->shipDay)) {
+                    $direct->appendChild($xml->createElement('DirectMktShipDay', $builder->ecommerceInfo->shipDay));
+                }
+                $block1->appendChild($direct);
             }
             if (!empty($builder->paymentMethod->threeDSecure)) {
                 $secure = $xml->createElement('SecureECommerce');
                 if (!empty($builder->paymentMethod->threeDSecure->paymentDataSource)) {
-                    $direct->appendChild(
+                    $secure->appendChild(
                         $xml->createElement(
                             'PaymentDataSource',
                             $builder->paymentMethod->threeDSecure->paymentDataSource
@@ -455,7 +483,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                     );
                 }
                 if (!empty($builder->paymentMethod->threeDSecure->paymentDataType)) {
-                    $direct->appendChild(
+                    $secure->appendChild(
                         $xml->createElement(
                             'TypeOfPaymentData',
                             $builder->paymentMethod->threeDSecure->paymentDataType
@@ -463,14 +491,15 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                     );
                 }
                 if (!empty($builder->paymentMethod->threeDSecure->cavv)) {
-                    $direct->appendChild($xml->createElement('PaymentData', $builder->paymentMethod->threeDSecure->cavv));
+                    $secure->appendChild($xml->createElement('PaymentData', $builder->paymentMethod->threeDSecure->cavv));
                 }
                 if (!empty($builder->paymentMethod->threeDSecure->eci)) {
-                    $direct->appendChild($xml->createElement('ECommerceIndicator', $builder->paymentMethod->threeDSecure->eci));
+                    $secure->appendChild($xml->createElement('ECommerceIndicator', $builder->paymentMethod->threeDSecure->eci));
                 }
                 if (!empty($builder->paymentMethod->threeDSecure->xid)) {
-                    $direct->appendChild($xml->createElement('XID', $builder->paymentMethod->threeDSecure->xid));
+                    $secure->appendChild($xml->createElement('XID', $builder->paymentMethod->threeDSecure->xid));
                 }
+                $block1->appendChild($secure);
             }
         }
 
@@ -569,9 +598,6 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 }
             }
 
-            // Additional Txn Fields
-            // TODO
-
             // Token Management
             if ($builder->transactionType === TransactionType::TOKEN_UPDATE
                 || $builder->transactionType === TransactionType::TOKEN_DELETE
@@ -595,6 +621,16 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 } else {
                     $tokenActions->appendChild($xml->createElement('Delete'));
                 }
+            }
+
+            // Additional Transaction Fields
+            if (!empty($builder->customerId) || !empty($builder->description) || !empty($builder->invoiceNumber)) {
+                $addons = $xml->createElement('AdditionalTxnFields');
+                $addons->appendChild($xml->createElement('CustomerID', $builder->customerId));
+                $addons->appendChild($xml->createElement('Description', $builder->description));
+                $addons->appendChild($xml->createElement('InvoiceNbr', $builder->invoiceNumber));
+
+                $root->appendChild($addons);
             }
 
             if ($builder->transactionType === TransactionType::REVERSAL
@@ -1067,6 +1103,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $result->batchSummary->transactionCount = (string)$item->TxnCnt;
             $result->batchSummary->totalAmount = (string)$item->TotalAmt;
             $result->batchSummary->sequenceNumber = (string)$item->BatchSeqNbr;
+        }
+        
+        if (isset($item) && isset($item->CardBrandTxnId)) {
+            $result->cardBrandTransactionId = (string)$item->CardBrandTxnId;
         }
 
         return $result;

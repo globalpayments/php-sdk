@@ -84,6 +84,13 @@ class CreditCardData extends Credit implements ICardData
         'Discover' => '/^6([045]|22)/',
         'Jcb' => '/^35/',
     ];
+    
+    /**
+     * Set the Card on File storage
+     *
+     * @var bool
+     */
+    public $cardBrandTransactionId;
 
     /**
      * Instantiates a new credit card

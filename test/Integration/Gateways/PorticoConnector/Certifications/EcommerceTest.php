@@ -19,6 +19,8 @@ use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
+use GlobalPayments\Api\Entities\ThreeDSecure;
+use GlobalPayments\Api\Entities\Enums\Secure3dPaymentDataSource;
 
 class EcommerceTest extends TestCase
 {
@@ -1664,5 +1666,34 @@ class EcommerceTest extends TestCase
                 $this->fail($e->getMessage());
             }
         }
+    }
+    
+    public function test100ChargeVisaEcommerceInfo()
+    {
+        $address = new Address();
+        $address->streetAddress1 = '6860 Dallas Pkwy';
+        $address->postalCode = '75024';
+        
+        $secureEcom = new ThreeDSecure();
+        $secureEcom->cavv = 'AAACBllleHchZTBWIGV4AAAAAAA=';
+        $secureEcom->xid = 'crqAeMwkEL9r4POdxpByWJ1/wYg=';
+        $secureEcom->eci = '5';
+        $secureEcom->paymentDataSource = Secure3dPaymentDataSource::VISA_3DSECURE;
+        $secureEcom->paymentDataType = '3DSecure';
+        
+        $card = TestCards::visaManual();
+        $card->threeDSecure = $secureEcom;
+        
+        $response = $card->charge()
+        ->withCurrency('USD')
+        ->withAmount(13.01)
+        ->withAddress($address)
+        ->withEcommerceInfo($this->ecommerceInfo)
+        ->withInvoiceNumber('12345')
+        ->withAllowDuplicates(true)
+        ->execute();
+        
+        $this->assertEquals(true, $response != null);
+        $this->assertEquals('00', $response->responseCode);
     }
 }

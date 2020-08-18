@@ -48,7 +48,7 @@ class AchTest extends TestCase
         $this->address->state = 'NJ';
         $this->address->postalCode = '12345';
 
-        ServicesContainer::configure($this->getConfig());        
+        ServicesContainer::configure($this->getConfig());
     }
 
     public function testCheckSale()

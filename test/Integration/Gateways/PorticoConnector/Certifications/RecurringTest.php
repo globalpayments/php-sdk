@@ -20,6 +20,7 @@ use GlobalPayments\Api\PaymentMethods\ECheck;
 use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\Services\BatchService;
 use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 
 class RecurringTest extends TestCase
 {
@@ -321,7 +322,8 @@ class RecurringTest extends TestCase
         static::$scheduleVisa = $schedule;
     }
 
-    public function test009AddScheduleCreditMasterCard() {
+    public function test009AddScheduleCreditMasterCard()
+    {
         if (static::$paymentMethodMasterCard == null) {
             $this->markTestIncomplete();
         }
@@ -342,7 +344,8 @@ class RecurringTest extends TestCase
         static::$scheduleMasterCard = $schedule;
     }
 
-    public function test010AddScheduleCheckPPD() {
+    public function test010AddScheduleCheckPPD()
+    {
         if (static::$paymentMethodCheckPpd == null) {
             $this->markTestIncomplete();
         }
@@ -363,7 +366,8 @@ class RecurringTest extends TestCase
         static::$scheduleCheckPpd = $schedule;
     }
 
-    public function test011AddScheduleCheckCCD() {
+    public function test011AddScheduleCheckCCD()
+    {
         if (static::$paymentMethodCheckCcd == null) {
             $this->markTestIncomplete();
         }
@@ -386,7 +390,8 @@ class RecurringTest extends TestCase
     /**
      * expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
      */
-    public function test012AddScheduleCreditVisa() {
+    public function test012AddScheduleCreditVisa()
+    {
         if (static::$paymentMethodVisa == null) {
             $this->markTestIncomplete();
         }
@@ -406,7 +411,8 @@ class RecurringTest extends TestCase
     /**
      * expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
      */
-    public function test013AddScheduleCCheckPPD() {
+    public function test013AddScheduleCCheckPPD()
+    {
         if (static::$paymentMethodCheckPpd == null) {
             $this->markTestIncomplete();
         }
@@ -426,7 +432,8 @@ class RecurringTest extends TestCase
 
     // Recurring Billing using PayPlan - Managed Schedule
 
-    public function test014RecurringBillingVisa() {
+    public function test014RecurringBillingVisa()
+    {
         if (static::$paymentMethodVisa == null || static::$scheduleVisa == null) {
             $this->markTestIncomplete();
         }
@@ -440,7 +447,8 @@ class RecurringTest extends TestCase
         $this->assertEquals('00', $response->responseCode);
     }
 
-    public function test015RecurringBillingMasterCard() {
+    public function test015RecurringBillingMasterCard()
+    {
         if (true || static::$paymentMethodMasterCard == null || static::$scheduleMasterCard == null) {
             $this->markTestIncomplete();
         }
@@ -454,7 +462,8 @@ class RecurringTest extends TestCase
         $this->assertEquals('00', $response->responseCode);
     }
 
-    public function test016RecurringBillingCheckPPD() {
+    public function test016RecurringBillingCheckPPD()
+    {
         if (static::$paymentMethodCheckPpd == null || static::$scheduleCheckPpd == null) {
             $this->markTestIncomplete();
         }
@@ -468,7 +477,8 @@ class RecurringTest extends TestCase
         $this->assertEquals('00', $response->responseCode);
     }
 
-    public function test017RecurringBillingCheckCCD() {
+    public function test017RecurringBillingCheckCCD()
+    {
         if (static::$paymentMethodCheckCcd == null || static::$scheduleCheckCcd == null) {
             $this->markTestIncomplete();
         }
@@ -484,7 +494,8 @@ class RecurringTest extends TestCase
 
     // One time bill payment
 
-    public function test018RecurringBillingVisa() {
+    public function test018RecurringBillingVisa()
+    {
         if (static::$paymentMethodVisa == null) {
             $this->markTestIncomplete();
         }
@@ -496,7 +507,8 @@ class RecurringTest extends TestCase
         $this->assertEquals('00', $response->responseCode);
     }
 
-    public function test019RecurringBillingMasterCard() {
+    public function test019RecurringBillingMasterCard()
+    {
         if (static::$paymentMethodMasterCard == null) {
             $this->markTestIncomplete();
         }
@@ -508,7 +520,8 @@ class RecurringTest extends TestCase
         $this->assertEquals('00', $response->responseCode);
     }
 
-    public function test020RecurringBillingCheckPPD() {
+    public function test020RecurringBillingCheckPPD()
+    {
         if (static::$paymentMethodCheckPpd == null) {
             $this->markTestIncomplete();
         }
@@ -520,7 +533,8 @@ class RecurringTest extends TestCase
         $this->assertEquals('00', $response->responseCode);
     }
 
-    public function test021RecurringBillingCheckCCD() {
+    public function test021RecurringBillingCheckCCD()
+    {
         if (static::$paymentMethodCheckCcd == null) {
             $this->markTestIncomplete();
         }
@@ -534,7 +548,8 @@ class RecurringTest extends TestCase
 
     // Onetime bill payment - declined
 
-    public function test022RecurringBillingVisa_Decline() {
+    public function test022RecurringBillingVisa_Decline()
+    {
         if (static::$paymentMethodVisa == null) {
             $this->markTestIncomplete();
         }
@@ -546,7 +561,8 @@ class RecurringTest extends TestCase
         $this->assertEquals('51', $response->responseCode);
     }
 
-    public function test023RecurringBillingCheckPPD_Decline() {
+    public function test023RecurringBillingCheckPPD_Decline()
+    {
         if (true || static::$paymentMethodCheckPpd == null) {
             $this->markTestIncomplete();
         }
@@ -556,5 +572,35 @@ class RecurringTest extends TestCase
             ->execute();
         $this->assertNotNull($response);
         $this->assertEquals('1', $response->responseCode);
+    }
+    
+    public function test024RecurringBillingVisaWithCOF()
+    {
+        if (static::$paymentMethodVisa == null || static::$scheduleVisa == null) {
+            $this->markTestIncomplete();
+        }
+
+        $response = static::$paymentMethodVisa->charge(20.01)
+            ->withCurrency('USD')
+            ->withScheduleId(static::$scheduleVisa->key)
+            ->withOneTimePayment(false)
+            ->withAllowDuplicates(true)
+            ->withCardBrandStorage(StoredCredentialInitiator::CARDHOLDER)
+            ->execute();
+        
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode);
+        $this->assertNotNull($response->cardBrandTransactionId);
+
+        $nextResponse = static::$paymentMethodVisa->charge(20.01)
+            ->withCurrency('USD')
+            ->withScheduleId(static::$scheduleVisa->key)
+            ->withOneTimePayment(false)
+            ->withAllowDuplicates(true)
+            ->withCardBrandStorage(StoredCredentialInitiator::MERCHANT, $response->cardBrandTransactionId)
+            ->execute();
+
+        $this->assertNotNull($nextResponse);
+        $this->assertEquals('00', $nextResponse->responseCode);
     }
 }
