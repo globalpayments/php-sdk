@@ -49,7 +49,6 @@ class HpaTcpInterface implements IDeviceCommInterface
     public function __construct(ConnectionConfig $config)
     {
         $this->deviceDetails = $config;
-        ob_implicit_flush(true);
     }
 
     /*
@@ -58,7 +57,7 @@ class HpaTcpInterface implements IDeviceCommInterface
      */
     public function connect()
     {
-        if ($this->tcpConnection !== null) {
+        if (is_resource($this->tcpConnection)) {
             return;
         }
         
@@ -89,7 +88,7 @@ class HpaTcpInterface implements IDeviceCommInterface
     public function disconnect()
     {
         // close socket
-        if ($this->tcpConnection !== null) {
+        if (is_resource($this->tcpConnection)) {
             fclose($this->tcpConnection);
         }
     }
@@ -113,7 +112,7 @@ class HpaTcpInterface implements IDeviceCommInterface
                 } else {
                     //set time out for read and write
                     stream_set_timeout($this->tcpConnection, $this->deviceDetails->timeout);
-
+                    ob_implicit_flush(true);
                     $multipleMessage = true;
                     do {
                         // read from socket
@@ -127,6 +126,7 @@ class HpaTcpInterface implements IDeviceCommInterface
                             break;
                         }
                     } while ($part !== false && !feof($this->tcpConnection));
+                    ob_implicit_flush(false);
                 }
                 if (!empty($out)) {
                     $this->filterResponseMessage($out);

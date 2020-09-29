@@ -246,13 +246,6 @@ class HpaInterface implements IDeviceInterface
                         ->withAmount($amount);
     }
     
-    public function debitVoid()
-    {
-        throw new UnsupportedTransactionException(
-            'The selected gateway does not support this transaction type.'
-        );
-    }
-
     public function disableHostResponseBeep()
     {
     }
@@ -357,7 +350,7 @@ class HpaInterface implements IDeviceInterface
         );
     }
     
-    public function sendSaf()
+    public function sendSaf($safIndicator = null)
     {
         return $this->hpaController->send(
             "<SIP>"
@@ -367,6 +360,13 @@ class HpaInterface implements IDeviceInterface
                 . "<RequestId>%s</RequestId>"
                 . "</SIP>",
             HpaMessageId::SENDSAF
+        );
+    }
+    
+    public function safDelete($safIndicator)
+    {
+        throw new UnsupportedTransactionException(
+            'The selected gateway does not support this transaction type.'
         );
     }
 
@@ -393,7 +393,7 @@ class HpaInterface implements IDeviceInterface
         );
     }
 
-    public function promptForSignature()
+    public function promptForSignature($transactionId = null)
     {
         return $this->hpaController->send(
             sprintf(

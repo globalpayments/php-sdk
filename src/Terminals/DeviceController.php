@@ -12,6 +12,4 @@ abstract class DeviceController
     abstract public function processTransaction($builder);
 
     abstract public function manageTransaction($builder);
-    
-    abstract public function checkResponse($gatewayResponse, $acceptedCodes);
 }

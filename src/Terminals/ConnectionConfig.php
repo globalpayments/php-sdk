@@ -23,6 +23,11 @@ class ConnectionConfig
      * Implementation of IRequestIdProvider to generate request id for each transaction
      */
     public $requestIdProvider;
+    
+    /*
+     * Implementation of ILogManagement to generate logs for each transaction
+     */
+    public $logManagementProvider;
 
     public function validate()
     {

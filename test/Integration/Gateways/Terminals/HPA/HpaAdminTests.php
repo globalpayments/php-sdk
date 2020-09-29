@@ -250,6 +250,7 @@ class HpaAdminTests extends TestCase
     
     public function testDisableSafMode()
     {
+        $this->device->closeLane();
         $response = $this->device->setSafMode(3);
 
         $this->assertNotNull($response);

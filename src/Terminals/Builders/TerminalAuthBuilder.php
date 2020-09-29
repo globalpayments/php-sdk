@@ -1,5 +1,4 @@
 <?php
-
 namespace GlobalPayments\Api\Terminals\Builders;
 
 use GlobalPayments\Api\Terminals\Builders\TerminalBuilder;
@@ -8,31 +7,61 @@ use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Terminals\ConnectionContainer;
+use GlobalPayments\Api\PaymentMethods\TransactionReference;
+use GlobalPayments\Api\Terminals\Enums\CurrencyType;
+use GlobalPayments\Api\Entities\Enums\TaxType;
 
 class TerminalAuthBuilder extends TerminalBuilder
 {
+
     public $address;
+
     public $allowDuplicates;
+
     public $amount;
+
     public $authCode;
+
     public $cashBackAmount;
+
     public $currency;
+
     public $customerCode;
+
     public $gratuity;
+
     public $invoiceNumber;
+
     public $poNumber;
+
     public $requestMultiUseToken;
+
     public $signatureCapture;
+
     public $taxAmount;
+
     public $taxExempt;
+
     public $taxExemptId;
+
     public $transactionId;
 
+    public $clerkId;
+
+    public $shiftId;
+
+    public $taxType;
+    
+    public $clientTransactionId;
+
     /**
+     *
      * {@inheritdoc}
      *
-     * @param TransactionType $transactionType Request transaction type
-     * @param PaymentMethodType $paymentMethodType Request payment method
+     * @param TransactionType $transactionType
+     *            Request transaction type
+     * @param PaymentMethodType $paymentMethodType
+     *            Request payment method
      *
      * @return
      */
@@ -44,6 +73,7 @@ class TerminalAuthBuilder extends TerminalBuilder
     }
 
     /**
+     *
      * {@inheritdoc}
      *
      * @return Transaction
@@ -51,8 +81,7 @@ class TerminalAuthBuilder extends TerminalBuilder
     public function execute()
     {
         parent::execute();
-        return ConnectionContainer::instance()
-                        ->processTransaction($this);
+        return ConnectionContainer::instance()->processTransaction($this);
     }
 
     public function withAddress($address)
@@ -135,7 +164,7 @@ class TerminalAuthBuilder extends TerminalBuilder
 
     public function withToken($value)
     {
-        if ($this->paymentMethod == null || !($this->paymentMethod instanceof CreditCardData)) {
+        if ($this->paymentMethod == null || ! ($this->paymentMethod instanceof CreditCardData)) {
             $this->paymentMethod = new CreditCardData();
             $this->paymentMethod->token = value;
         }
@@ -145,40 +174,77 @@ class TerminalAuthBuilder extends TerminalBuilder
     /**
      * Previous request's transaction ID
      *
-     * @param string $transactionId Transaction ID
+     * @param string $transactionId
+     *            Transaction ID
      *
      * @return AuthorizationBuilder
      */
     public function withTransactionId($transactionId)
     {
+        if ($this->paymentMethod == null || ! $this->paymentMethod instanceof TransactionReference) {
+            $this->paymentMethod = new TransactionReference();
+            $this->paymentMethod->transactionId = $transactionId;
+        }
         $this->transactionId = $transactionId;
         return $this;
     }
 
     protected function setupValidations()
     {
-        $this->validations->of(
-            TransactionType::AUTH |
-                        TransactionType::SALE | TransactionType::REFUND
-        )
-                ->with(TransactionModifier::NONE)
-                ->check('amount')->isNotNull();
-        
-        $this->validations->of(
-            TransactionType::REFUND
-        )
-                ->check('amount')->isNotNull();
+        $this->validations->of(TransactionType::AUTH | TransactionType::SALE | TransactionType::REFUND)
+            ->with(TransactionModifier::NONE)
+            ->check('amount')
+            ->isNotNull();
 
-        $this->validations->of(
-            TransactionType::REFUND
-        )
-                ->with(PaymentMethodType::CREDIT)
-                ->check('transactionId')->isNotNull()
-                ->check('authCode')->isNotNull();
-        
-        $this->validations->of(
-            TransactionType::ADD_VALUE
-        )
-                ->check('amount')->isNotNull();
+        $this->validations->of(TransactionType::REFUND)
+            ->check('amount')
+            ->isNotNull();
+
+        $this->validations->of(TransactionType::REFUND)
+            ->with(PaymentMethodType::CREDIT)
+            ->check('transactionId')
+            ->isNotNull()
+            ->check('authCode')
+            ->isNotNull();
+
+        $this->validations->of(TransactionType::ADD_VALUE)
+            ->check('amount')
+            ->isNotNull();
+
+        $this->validations->of(TransactionType::BALANCE)
+            ->check("currency")
+            ->isNotNull()
+            ->check("currency")
+            ->isNotEqualTo(CurrencyType::VOUCHER);
+
+        $this->validations->of(TransactionType::BENEFIT_WITHDRAWAL)
+            ->check("currency")
+            ->isNotNull()
+            ->check("currency")
+            ->isEqualTo(CurrencyType::CASH_BENEFITS);
+
+        $this->validations->of(TransactionType::REFUND)
+            ->with(PaymentMethodType::EBT)
+            ->check("allowDuplicates")
+            ->isEqualTo(false);
+
+        $this->validations->of(TransactionType::BENEFIT_WITHDRAWAL)
+            ->with(PaymentMethodType::EBT)
+            ->check("allowDuplicates")
+            ->isEqualTo(false);
+    }
+
+    public function withTaxType($taxType, $taxExemptId = null)
+    {
+        $this->taxType = $taxType;
+        $this->taxExempt = ($taxType === TaxType::TAX_EXEMPT) ? 1 : 0;
+        $this->taxExemptId = $taxExemptId;
+        return $this;
+    }
+    
+    public function withClientTransactionId($clientTransactionId)
+    {
+        $this->clientTransactionId = $clientTransactionId;
+        return $this;
     }
 }

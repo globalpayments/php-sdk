@@ -6,6 +6,7 @@ use GlobalPayments\Api\Terminals\Builders\TerminalBuilder;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Terminals\ConnectionContainer;
+use GlobalPayments\Api\PaymentMethods\TransactionReference;
 
 class TerminalManageBuilder extends TerminalBuilder
 {
@@ -74,6 +75,10 @@ class TerminalManageBuilder extends TerminalBuilder
      */
     public function withTransactionId($transactionId)
     {
+        if ($this->paymentMethod == null || !$this->paymentMethod instanceof TransactionReference) {
+            $this->paymentMethod = new TransactionReference();
+            $this->paymentMethod->transactionId = $transactionId;
+        }
         $this->transactionId = $transactionId;
         return $this;
     }

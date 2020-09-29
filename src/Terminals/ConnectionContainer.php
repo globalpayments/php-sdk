@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Terminals;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
 use GlobalPayments\Api\Terminals\HPA\HpaController;
+use GlobalPayments\Api\Terminals\PAX\PaxController;
 
 class ConnectionContainer
 {
@@ -52,10 +53,16 @@ class ConnectionContainer
         $config->validate();
 
         $deviceController = null;
-
         switch ($config->deviceType) {
             case DeviceType::HPA_ISC250:
                 static::$instance = new HpaController($config);
+                break;
+            case DeviceType::PAX_S300:
+            case DeviceType::PAX_D200:
+            case DeviceType::PAX_D210:
+            case DeviceType::PAX_PX5:
+            case DeviceType::PAX_PX7:
+                static::$instance = new PaxController($config);
                 break;
         }
     }

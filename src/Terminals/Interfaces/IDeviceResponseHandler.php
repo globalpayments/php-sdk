@@ -4,5 +4,5 @@ namespace GlobalPayments\Api\Terminals\Interfaces;
 
 interface IDeviceResponseHandler
 {
-    public function mapResponse($gatewayMultipleResponse);
+    public function mapResponse($messageReader = null);
 }

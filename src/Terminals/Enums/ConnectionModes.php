@@ -10,4 +10,5 @@ class ConnectionModes extends Enum
     const TCP_IP = 'TCP_IP';
     const SSL_TCP = 'SSL_TCP';
     const HTTP = 'HTTP';
+    const HTTPS = 'HTTPS';
 }

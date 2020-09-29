@@ -48,8 +48,6 @@ interface IDeviceInterface
 
     public function debitRefund($amount = null);
     
-    public function debitVoid();
-    
     //EBT Calls
     public function ebtBalance();
 
@@ -72,7 +70,8 @@ interface IDeviceInterface
     
     //SAF mode
     public function setSafMode($paramValue);
-    public function sendSaf();
+    public function sendSaf($safIndicator = null);
+    public function safDelete($safIndicator);
     
     //send file request
     public function sendFile($sendFileData);
@@ -81,5 +80,5 @@ interface IDeviceInterface
     public function getDiagnosticReport($totalFields);
     public function getLastResponse();
     
-    public function promptForSignature();
+    public function promptForSignature($transactionId = null);
 }
