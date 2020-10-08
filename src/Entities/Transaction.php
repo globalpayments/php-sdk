@@ -279,6 +279,26 @@ class Transaction
         return $txn;
     }
 
+    public static function fromClientTransactionId($clientTransactionId, $orderId = null, $paymentMethodType = null)
+    {
+        try {
+            $paymentMethodType = PaymentMethodType::validate($orderId);
+        } catch (ArgumentException $ex) {
+            /** */
+        }
+
+        if ($orderId === null && $paymentMethodType === null) {
+            $paymentMethodType = PaymentMethodType::CREDIT;
+        }
+
+        $txn = new Transaction();
+        $txn->transactionReference = new TransactionReference();
+        $txn->transactionReference->clientTransactionId = $clientTransactionId;
+        $txn->transactionReference->paymentMethodType = $paymentMethodType;
+        $txn->transactionReference->orderId = $orderId;
+        return $txn;
+    }
+
     /**
      * Creates an additional authorization against the original transaction.
      *
