@@ -10,6 +10,7 @@ use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
+use GlobalPayments\Api\Entities\Transaction;
 
 class CreditTest extends TestCase
 {
@@ -338,5 +339,26 @@ class CreditTest extends TestCase
         
         $this->assertNotNull($captureResponse);
         $this->assertEquals('00', $captureResponse->responseCode);
+    }
+
+    public function testCreditReverseViaClientTxnId()
+    {
+        $clientTxnId = time();
+
+        $authorization = $this->card->charge(420.69)
+            ->withClientTransactionId($clientTxnId)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $this->assertNotNull($authorization);
+        $this->assertEquals('00', $authorization->responseCode);
+
+        $reverse = Transaction::fromClientTransactionId($clientTxnId)
+            ->reverse(420.69)
+            ->execute();
+            
+        $this->assertNotNull($reverse);
+        $this->assertEquals('00', $reverse->responseCode);
     }
 }
