@@ -116,6 +116,13 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
     public $supportsHostedPayments = false;
 
     /**
+     * A client-generated transaction id; limit 50 characters
+     *
+     * @var string
+     */
+    public $clientTransactionId;
+
+    /**
      * {@inheritdoc}
      *
      * @param AuthorizationBuilder $builder The transaction's builder
@@ -511,7 +518,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         $transaction->appendChild($block1);
 
-        $response = $this->doTransaction($this->buildEnvelope($xml, $transaction));
+        $response = $this->doTransaction($this->buildEnvelope($xml, $transaction, $builder->clientTransactionId));
         return $this->mapResponse($response, $builder, $this->buildEnvelope($xml, $transaction));
     }
 
@@ -550,6 +557,13 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             if ($builder->paymentMethod !== null && !empty($builder->paymentMethod->transactionId)) {
                 $root->appendChild(
                     $xml->createElement('GatewayTxnId', $builder->paymentMethod->transactionId)
+                );
+            }
+
+            // Client Transaction ID
+            if ($builder->paymentMethod !== null && !empty($builder->paymentMethod->clientTransactionId)) {
+                $root->appendChild(
+                    $xml->createElement('ClientTxnId', $builder->paymentMethod->clientTransactionId)
                 );
             }
 
@@ -901,7 +915,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
      *
      * @return DOMElement
      */
-    protected function buildEnvelope(DOMDocument $xml, DOMElement $transaction)
+    protected function buildEnvelope(DOMDocument $xml, DOMElement $transaction, $clientTransactionId = null)
     {
         $soapEnvelope = $xml->createElement('soapenv:Envelope');
         $soapEnvelope->setAttribute(
@@ -961,6 +975,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         $transactionElement = $xml->createElement('Transaction');
         $transactionElement->appendChild($xml->importNode($transaction, true));
         $version->appendChild($transactionElement);
+
+        if (!empty($clientTransactionId)) {
+            $header->appendChild($xml->createElement('ClientTxnId', $clientTransactionId));
+        }
 
         $request->appendChild($version);
         $soapBody->appendChild($request);
