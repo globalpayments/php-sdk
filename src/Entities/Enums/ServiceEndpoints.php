@@ -16,4 +16,8 @@ class ServiceEndpoints extends Enum
     const PAYROLL_TEST = "https://taapi.heartlandpayrollonlinetest.com/PosWebUI/Test/Test";
     const TABLE_SERVICE_PRODUCTION = "https://www.freshtxt.com/api31/";
     const TABLE_SERVICE_TEST = "https://www.freshtxt.com/api31/";
+    const MERCHANTWARE_TEST = "https://ps1.merchantware.net/Merchantware/ws/";
+    const MERCHANTWARE_PRODUCTION = "";
+    const TRANSIT_TEST = "https://stagegw.transnox.com/servlets/TransNox_API_Server";
+    const TRANSIT_PRODUCTION = "https://gateway.transit-pass.com/servlets/TransNox_API_Server/";
 }

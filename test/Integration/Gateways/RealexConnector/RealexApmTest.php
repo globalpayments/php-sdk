@@ -12,9 +12,11 @@ use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Transaction;
 use PHPUnit\Framework\TestCase;
 
-class RealexApmTest extends TestCase {
+class RealexApmTest extends TestCase
+{
 
-    protected function config() {
+    protected function config()
+    {
         $config = new ServicesConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "hpp";
@@ -25,11 +27,13 @@ class RealexApmTest extends TestCase {
         return $config;
     }
 
-    public function setup() {
+    public function setup()
+    {
         ServicesContainer::configure($this->config());
     }
 
-    public function testApmForCharge() {
+    public function testApmForCharge()
+    {
         $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::SOFORTUBERWEISUNG);
 
         $paymentMethod->returnUrl = 'https://www.example.com/returnUrl';
@@ -60,7 +64,8 @@ class RealexApmTest extends TestCase {
      * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
      * @expectedExceptionMessage  amount cannot be null for this transaction type
      */
-    public function testApmWithoutAmount() {
+    public function testApmWithoutAmount()
+    {
         $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::SOFORTUBERWEISUNG);
 
         $paymentMethod->returnUrl = 'https://www.example.com/returnUrl';
@@ -79,7 +84,8 @@ class RealexApmTest extends TestCase {
      * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
      * @expectedExceptionMessage  currency cannot be null for this transaction type
      */
-    public function testApmWithoutCurrency() {
+    public function testApmWithoutCurrency()
+    {
         $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::SOFORTUBERWEISUNG);
 
         $paymentMethod->returnUrl = 'https://www.example.com/returnUrl';
@@ -88,7 +94,7 @@ class RealexApmTest extends TestCase {
         $paymentMethod->country = 'DE';
         $paymentMethod->accountHolderName = 'James Mason';
 
-        $response = $paymentMethod->charge(10)                
+        $response = $paymentMethod->charge(10)
                 ->withDescription('New APM')
                 ->execute();
     }
@@ -97,7 +103,8 @@ class RealexApmTest extends TestCase {
      * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
      * @expectedExceptionMessage  returnUrl cannot be null for this transaction type
      */
-    public function testApmWithoutReturnUrl() {
+    public function testApmWithoutReturnUrl()
+    {
         $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::SOFORTUBERWEISUNG);
 
         $paymentMethod->statusUpdateUrl = 'https://www.example.com/statusUrl';
@@ -115,7 +122,8 @@ class RealexApmTest extends TestCase {
      * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
      * @expectedExceptionMessage  statusUpdateUrl cannot be null for this transaction type
      */
-    public function testApmWithoutstatusUpdateUrl() {
+    public function testApmWithoutstatusUpdateUrl()
+    {
         $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::SOFORTUBERWEISUNG);
 
         $paymentMethod->returnUrl = 'https://www.example.com/returnUrl';
@@ -133,7 +141,8 @@ class RealexApmTest extends TestCase {
      * @expectedException \GlobalPayments\Api\Entities\Exceptions\GatewayException
      * @expectedExceptionMessage  FAILED
      */
-    public function testAPMRefundPendingTransaction() {
+    public function testAPMRefundPendingTransaction()
+    {
         $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::TEST_PAY);
 
         $paymentMethod->returnUrl = 'https://www.example.com/returnUrl';
@@ -152,12 +161,13 @@ class RealexApmTest extends TestCase {
 
         // send the settle request, we must specify the amount and currency
         $response = $response->refund(10)
-                ->withCurrency("EUR")                
+                ->withCurrency("EUR")
                 ->withAlternativePaymentType(AlternativePaymentType::TEST_PAY)
                 ->execute();
     }
 
-    public function testApmForRefund() {
+    public function testApmForRefund()
+    {
         // a settle request requires the original order id
         $orderId = "20180912050207-5b989dcfc9433";
         // and the payments reference (pasref) from the authorization response
@@ -181,5 +191,4 @@ class RealexApmTest extends TestCase {
         $this->assertNotEquals(null, $response);
         $this->assertEquals("00", $responseCode);
     }
-        
 }

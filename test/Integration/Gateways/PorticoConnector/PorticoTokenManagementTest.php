@@ -29,7 +29,6 @@ class PorticoReportingTests extends TestCase
         } catch (ApiException $exc) {
             $this->fail($exc->message);
         }
-      
     }
         
     protected function getConfig()

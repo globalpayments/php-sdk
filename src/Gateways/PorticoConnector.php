@@ -39,6 +39,7 @@ use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteriaBuilder;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 
 class PorticoConnector extends XmlGateway implements IPaymentGateway
 {
@@ -450,7 +451,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $block1->appendChild($xml->createElement('BalanceInquiryType', $builder->balanceInquiryType));
         }
 
-        if ($builder->level2Request === true) {
+        if ($builder->level2Request === true || $builder->commercialData !== null) {
             $block1->appendChild($xml->createElement('CPCReq', 'Y'));
         }
 
@@ -514,6 +515,48 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $block1->appendChild(
                 $xml->createElement('TxnDescriptor', $builder->dynamicDescriptor)
             );
+        }
+      
+        if ($builder->commercialData !== null) {
+            $commercialDataNode = $xml->createElement('CPCData');
+
+            $commercialDataNode->appendChild($xml->createElement('CardHolderPONbr', $builder->commercialData->poNumber));
+            $commercialDataNode->appendChild($xml->createElement('TaxType', $builder->commercialData->taxType));
+            $commercialDataNode->appendChild($xml->createElement('TaxAmt', $builder->commercialData->taxAmount));
+
+            $block1->appendChild($commercialDataNode);
+        }
+      
+        // auto substantiation
+        if ($builder->autoSubstantiation !== null) {
+            $autoSubstantiationNode = $xml->createElement('AutoSubstantiation');
+
+            $fieldNames = ["First", "Second", "Third", "Fourth"];
+            $i = 0;
+            $hasAdditionalAmount = false;
+
+            foreach ($builder->autoSubstantiation->amounts as $amtType => $amount) {
+                if ($amount !== 0) {
+                    $hasAdditionalAmount = true;
+                    if ($i > 3) { // Portico Gateway limits to 3 subtotals
+                        throw new BuilderException("You may only specify three different subtotals in a single transaction.");
+                    }
+                    $additionalAmountNode = $xml->createElement($fieldNames[$i] . "AdditionalAmtInfo");
+                    $additionalAmountNode->appendChild($xml->createElement("AmtType", $amtType));
+                    $additionalAmountNode->appendChild($xml->createElement("Amt", $amount));
+                    $autoSubstantiationNode->appendChild($additionalAmountNode);
+                    $i++;
+                }
+            }
+          
+            $autoSubstantiationNode->appendChild($xml->createElement("MerchantVerificationValue", $builder->autoSubstantiation->merchantVerificationValue));
+            $autoSubstantiationNode->appendChild($xml->createElement("RealTimeSubstantiation", $builder->autoSubstantiation->realTimeSubstantiation ? "Y" : "N"));
+
+            if ($hasAdditionalAmount) { // Portico Gateway requires at least one healthcare amount subtotal
+                $block1->appendChild($autoSubstantiationNode);
+            } else {
+                throw new BuilderException("You must provide at least one healthcare amount w/autoSubstantiation requests");
+            }
         }
 
         $transaction->appendChild($block1);
@@ -626,11 +669,11 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                     $setElement = $tokenActions->appendChild($xml->createElement('Set'));
 
                     $expMonth = $setElement->appendChild($xml->createElement('Attribute'));
-                    $expMonth->appendChild($xml->createElement('Name', 'expmonth'));
+                    $expMonth->appendChild($xml->createElement('Name', 'ExpMonth'));
                     $expMonth->appendChild($xml->createElement('Value', $token->expMonth));
 
                     $expYear = $setElement->appendChild($xml->createElement('Attribute'));
-                    $expYear->appendChild($xml->createElement('Name', 'expyear'));
+                    $expYear->appendChild($xml->createElement('Name', 'ExpYear'));
                     $expYear->appendChild($xml->createElement('Value', $token->expYear));
                 } else {
                     $tokenActions->appendChild($xml->createElement('Delete'));

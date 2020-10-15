@@ -16,4 +16,9 @@ class StoredCredential
     public $sequence;
     /** @var string */
     public $schemeId;
+
+    /**
+     * @var string
+     */
+    public $cardBrandTransactionId;
 }

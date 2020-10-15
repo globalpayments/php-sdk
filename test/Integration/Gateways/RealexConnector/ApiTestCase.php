@@ -100,7 +100,7 @@ class ApiTestCase extends TestCase
         $message = $response->responseMessage; // [ test system ] AUTHORISED
 
         $this->assertNotEquals(null, $response);
-        $this->assertEquals("00", $responseCode);        
+        $this->assertEquals("00", $responseCode);
     }
 
     /* 03. Process Payment OTB */
@@ -901,29 +901,29 @@ class ApiTestCase extends TestCase
 
         $products = [];
         $products[] = array(
-                    'product_id' => 'SKU251584', 
-                    'productname' => 'Magazine Subscription', 
-                    'quantity' => '12', 
-                    'unitprice' => '1200', 
-                    'gift' => 'true', 
-                    'type' => 'subscription', 
+                    'product_id' => 'SKU251584',
+                    'productname' => 'Magazine Subscription',
+                    'quantity' => '12',
+                    'unitprice' => '1200',
+                    'gift' => 'true',
+                    'type' => 'subscription',
                     'risk' => 'Low'
                 );
         $products[] = array(
-                    'product_id' => 'SKU8884784', 
-                    'productname' => 'Charger', 
-                    'quantity' => '10', 
-                    'unitprice' => '1200', 
-                    'gift' => 'false', 
-                    'type' => 'subscription', 
+                    'product_id' => 'SKU8884784',
+                    'productname' => 'Charger',
+                    'quantity' => '10',
+                    'unitprice' => '1200',
+                    'gift' => 'false',
+                    'type' => 'subscription',
                     'risk' => 'High'
                 );
 
         $custom = [];
         $custom[] = array(
-                    'field01' => 'fieldValue01', 
-                    'field02' => 'fieldValue02', 
-                    'field03' => 'fieldValue03', 
+                    'field01' => 'fieldValue01',
+                    'field02' => 'fieldValue02',
+                    'field03' => 'fieldValue03',
                     'field04' => 'fieldValue04'
                 );
 
@@ -944,7 +944,8 @@ class ApiTestCase extends TestCase
         $this->assertEquals("00", $responseCode);
     }
     
-    public function testAuthorisationWithoutAccountId() {
+    public function testAuthorisationWithoutAccountId()
+    {
         $config = new ServicesConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->sharedSecret = 'secret';
@@ -972,7 +973,7 @@ class ApiTestCase extends TestCase
     public function testRefundWithoutAccountId()
     {
         $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';        
+        $config->merchantId = 'heartlandgpsandbox';
         $config->sharedSecret = 'secret';
         $config->refundPassword = 'refund';
         $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
@@ -993,7 +994,6 @@ class ApiTestCase extends TestCase
                 ->execute();
 
         $this->assertNotEquals(null, $response);
-        $this->assertEquals("00", $response->responseCode);        
+        $this->assertEquals("00", $response->responseCode);
     }
-
 }

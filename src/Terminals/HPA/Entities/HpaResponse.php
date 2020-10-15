@@ -142,7 +142,7 @@ class HpaResponse
     
     //Send File
     /*
-     * Maximum number of characters of file data in hexadecimal ASCII format that 
+     * Maximum number of characters of file data in hexadecimal ASCII format that
      * can be sent in each subsequent request
      */
     public $maxDataSize;

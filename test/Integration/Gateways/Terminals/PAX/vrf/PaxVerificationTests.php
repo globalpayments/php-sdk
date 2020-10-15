@@ -48,7 +48,7 @@ class PaxVerificationTests extends TestCase
     protected function getConfig()
     {
         $this->config = new ConnectionConfig();
-        $this->config->ipAddress = '192.168.42.37';
+        $this->config->ipAddress = '192.168.42.219';
         $this->config->port = '10009';
         $this->config->deviceType = DeviceType::PAX_S300;
         $this->config->connectionMode = ConnectionModes::TCP_IP;

@@ -11,6 +11,6 @@ class BatchService
     public static function closeBatch()
     {
         $response = (new ManagementBuilder(TransactionType::BATCH_CLOSE))->execute();
-        return new BatchSummary();
+        return $response;
     }
 }

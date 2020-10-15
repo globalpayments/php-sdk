@@ -26,6 +26,27 @@ abstract class TransactionBuilder extends BaseBuilder
     public $paymentMethod;
 
     /**
+     * used w/TransIT gateway
+     *
+     * @var bool
+     */
+    public $multiCapture;
+
+    /**
+     * used w/TransIT gateway
+     *
+     * @var int
+     */
+    public $multiCaptureSequence;
+
+    /**
+     * used w/TransIT gateway
+     *
+     * @var int
+     */
+    public $multiCapturePaymentCount;
+
+    /**
      * Request transaction modifier
      *
      * @internal

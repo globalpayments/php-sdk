@@ -1983,7 +1983,7 @@ class RealexSdkCertification extends TestCase
      * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
      */
     public function testAuth031c1()
-    {        
+    {
         $config = $this->getBaseConfig();
         ServicesContainer::configure($config);
 

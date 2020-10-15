@@ -90,6 +90,7 @@ abstract class Credit implements
      */
     public function charge($amount = null)
     {
+      
         return (new AuthorizationBuilder(TransactionType::SALE, $this))
             ->withAmount($amount != null ? $amount : ($this->threeDSecure != null ? $this->threeDSecure->getAmount() : null))
             ->withCurrency($this->threeDSecure != null ? $this->threeDSecure->getCurrency() : null)
@@ -171,7 +172,7 @@ abstract class Credit implements
 
     /**
      * Updates the token expiry date with the values proced to the card object
-     * 
+     *
      * @return bool value indicating success/failure
      */
     public function updateTokenExpiry()
@@ -192,10 +193,11 @@ abstract class Credit implements
     
     /**
      * Deletes the token associated with the current card object
-     * 
+     *
      * @return bool value indicating success/failure
      */
-    public function deleteToken() {
+    public function deleteToken()
+    {
         if (empty($this->token)) {
             throw new BuilderException('Token cannot be null');
         }

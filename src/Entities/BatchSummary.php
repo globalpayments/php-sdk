@@ -34,4 +34,7 @@ class BatchSummary
      * @var string
      */
     public $sequenceNumber;
+
+    /** @var string */
+    public $status;
 }

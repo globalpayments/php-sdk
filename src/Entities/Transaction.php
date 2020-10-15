@@ -122,6 +122,21 @@ class Transaction
     public $hostResponseDate;
 
     /**
+     * @var bool
+     */
+    public $multiCapture;
+
+    /**
+     * @var int
+     */
+    public $multiCapturePaymentCount;
+
+    /**
+     * @var int
+     */
+    public $multiCaptureSequence;
+
+    /**
      * The remaining points on the account after the transaction.
      *
      * @var string
@@ -322,9 +337,15 @@ class Transaction
      */
     public function capture($amount = null)
     {
-        return (new ManagementBuilder(TransactionType::CAPTURE))
+        $builder = (new ManagementBuilder(TransactionType::CAPTURE))
             ->withPaymentMethod($this->transactionReference)
             ->withAmount($amount);
+            
+        if ($this->multiCapture) {
+            $builder->withMultiCapture($this->multiCaptureSequence, $this->multiCapturePaymentCount);
+        }
+        
+        return $builder;
     }
 
     /**
@@ -399,10 +420,11 @@ class Transaction
      *
      * @return ManagementBuilder
      */
-    public function void()
+    public function void($amount = null)
     {
         return (new ManagementBuilder(TransactionType::VOID))
-            ->withPaymentMethod($this->transactionReference);
+            ->withPaymentMethod($this->transactionReference)
+            ->withAmount($amount);
     }
 
     public function __get($name)

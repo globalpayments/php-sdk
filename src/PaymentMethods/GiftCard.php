@@ -183,7 +183,7 @@ class GiftCard implements
     }
 
     /**
-     * Rewards the payment method
+     * Rewards/Add Points to the payment method
      *
      * @param string|float $amount Amount to reward
      *
@@ -252,5 +252,5 @@ class GiftCard implements
                 $this->valueType = 'TrackData';
                 return;
         }
-    }
+    }    
 }

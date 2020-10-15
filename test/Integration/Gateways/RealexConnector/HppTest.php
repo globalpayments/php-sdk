@@ -124,7 +124,7 @@ class HppTest extends TestCase
     /* 03. ProcessPaymentOtbRequest */
 
     public function testCreditVerify()
-    {        
+    {
         $config = new ServicesConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "hpp";
@@ -149,7 +149,7 @@ class HppTest extends TestCase
                     ->withCurrency("EUR")
                     ->withCustomerId("123456")
                     ->withAddress($address)
-                    ->serialize();            
+                    ->serialize();
             $this->assertNotNull($json);
 
             $response = $client->sendRequest($json, $hppVersion);
@@ -359,7 +359,7 @@ class HppTest extends TestCase
 
         //serialize the request
         $json = $service->Charge(19)
-                ->withCurrency("EUR")                
+                ->withCurrency("EUR")
                 ->withTimestamp("20170725154824")
                 ->withOrderId('GTI5Yxb0SumL_TkDMCAxQA')
                 ->serialize();
@@ -389,7 +389,7 @@ class HppTest extends TestCase
 
         //serialize the request
         $json = $service->Charge(19)
-                ->withCurrency("EUR")                
+                ->withCurrency("EUR")
                 ->withTimestamp("20170725154824")
                 ->withOrderId('GTI5Yxb0SumL_TkDMCAxQA')
                 ->serialize();

@@ -17,28 +17,32 @@ class AcsResponse
     /**
      * @return string
      */
-    public function getAuthResponse(){
+    public function getAuthResponse()
+    {
         return $this->authResponse;
     }
 
     /**
      * @return void
      */
-    public function setAuthResponse($authResponse){
+    public function setAuthResponse($authResponse)
+    {
         $this->authResponse = $authResponse;
     }
 
     /**
      * @return string
      */
-    public function getMerchantData(){
+    public function getMerchantData()
+    {
         return $this->merchantData;
     }
 
     /**
      * @return void
      */
-    public function setMerchantData($merchantData){
+    public function setMerchantData($merchantData)
+    {
         $this->merchantData = $merchantData;
     }
 }

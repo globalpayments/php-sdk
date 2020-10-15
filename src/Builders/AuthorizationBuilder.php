@@ -99,6 +99,14 @@ class AuthorizationBuilder extends TransactionBuilder
     public $billingAddress;
 
     /**
+     * Indicates Card On File transaction
+     *
+     * @internal
+     * @var bool
+     */
+    public $cardOnFile;
+
+    /**
      * Request cashback amount
      *
      * @internal
@@ -113,6 +121,14 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var string
      */
     public $clientTransactionId;
+
+    /**
+     * Request commercial data
+     *
+     * @internal
+     * @var CommercialData
+     */
+    public $commercialData;
 
     /**
      * Request currency
@@ -317,6 +333,15 @@ class AuthorizationBuilder extends TransactionBuilder
     public $requestMultiUseToken;
 
     /**
+     * To attach registration most recent change date value
+     * For use w/Discover cards on TransIT gateway
+     *
+     * @internal
+     * @var Date
+     */
+    public $lastRegisteredDate;
+
+    /**
      * Request replacement gift card
      *
      * @internal
@@ -421,7 +446,7 @@ class AuthorizationBuilder extends TransactionBuilder
     /*
      * Card on File field
      * @var string
-     * 
+     *
      */
     public $cardBrandTransactionId;
     
@@ -662,6 +687,19 @@ class AuthorizationBuilder extends TransactionBuilder
     }
 
     /**
+     * Sets the commercial data values for use w/ lvl2 & lvl3 transactions
+     *
+     * @param CommercialData
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withCommercialData($commercialData)
+    {
+        $this->commercialData = $commercialData;
+        return $this;
+    }
+
+    /**
      * Set the request's balance inquiry type
      *
      * @param string $balanceInquiryType Balance inquiry type
@@ -671,6 +709,19 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withBalanceInquiryType($balanceInquiryType)
     {
         $this->balanceInquiryType = $balanceInquiryType;
+        return $this;
+    }
+
+    /**
+     * Set Card On File Indicator
+     *
+     * @param bool $cardOnFile
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withCardOnFile($cardOnFile)
+    {
+        $this->cardOnFile = $cardOnFile;
         return $this;
     }
 
@@ -1202,6 +1253,20 @@ class AuthorizationBuilder extends TransactionBuilder
     {
         $this->transactionInitiator = $transactionInitiator;
         $this->cardBrandTransactionId = $value;
+        return $this;
+    }
+
+    /**
+     * Set lastRegisteredDate - DD/MM/YYYY
+     * Used w/TransIT gateway
+     *
+     * @param bool $isRegistered
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withLastRegisteredDate($date)
+    {
+        $this->lastRegisteredDate = $date;
         return $this;
     }
 }

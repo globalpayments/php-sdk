@@ -44,7 +44,7 @@ class PaxCreditTests extends TestCase
     protected function getConfig()
     {
         $config = new ConnectionConfig();
-        $config->ipAddress = '192.168.42.37';
+        $config->ipAddress = '192.168.42.219';
         $config->port = '10009';
         $config->deviceType = DeviceType::PAX_S300;
         $config->connectionMode = ConnectionModes::TCP_IP;

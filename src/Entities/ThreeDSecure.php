@@ -265,6 +265,11 @@ class ThreeDSecure
     /**
      * @var string
      */
+    public $secureCode;
+
+    /**
+     * @var string
+     */
     public $serverTransactionId;
 
     /**
@@ -276,6 +281,11 @@ class ThreeDSecure
      * @var string
      */
     public $statusReason;
+
+    /**
+     * @var enum
+     */
+    public $ucafIndicator;
 
     /** @var Secure3dVersion */
     private $version;
