@@ -7,6 +7,7 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 
 class PorticoReportingTests extends TestCase
@@ -21,7 +22,7 @@ class PorticoReportingTests extends TestCase
             $card = new CreditCardData();
             $card->number = '4111111111111111';
             $card->expMonth = 12;
-            $card->expYear = 2025;
+            $card->expYear = TestCards::validCardExpYear();
             $card->cvn = '123';
 
             $this->token = $card->tokenize()->execute()->token;
@@ -44,7 +45,7 @@ class PorticoReportingTests extends TestCase
         $token = new CreditCardData();
         $token->token = $this->token;
         $token->expMonth = 12;
-        $token->expYear = 2025;
+        $token->expYear = TestCards::validCardExpYear();
 
         $this->assertTrue($token->updateTokenExpiry());
 

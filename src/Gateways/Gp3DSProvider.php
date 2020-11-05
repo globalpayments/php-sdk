@@ -209,7 +209,7 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
 
             // payer
             $request['payer'] = [];
-            $request['payer'] = $this->maybeSetKey($request['payer'], 'email', $builder->getCustomerEmail() ?? null);
+            $request['payer'] = $this->maybeSetKey($request['payer'], 'email', $builder->getCustomerEmail());
             $request['payer'] = $this->maybeSetKey($request['payer'], 'id', $builder->getCustomerAccountId());
             $request['payer'] = $this->maybeSetKey($request['payer'], 'account_age', $builder->getAccountAgeIndicator());
             $request['payer'] = $this->maybeSetKey($request['payer'], 'account_creation_date', null !== $builder->getAccountCreateDate() ? date('Y-m-d', strtotime($builder->getAccountCreateDate())) : null);
@@ -342,23 +342,24 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
         $secureEcom = new ThreeDSecure();
 
         // check enrolled
-        $secureEcom->serverTransactionId = $doc['server_trans_id'] ?? null;
+        $secureEcom->serverTransactionId = isset($doc['server_trans_id']) ? $doc['server_trans_id'] : null;
         if (array_key_exists('enrolled', $doc)) {
             $secureEcom->enrolled = (bool)$doc['enrolled'];
         }
-        $secureEcom->issuerAcsUrl = ($doc['method_url'] ?? null) . ($doc['challenge_request_url'] ?? null);
+        $secureEcom->issuerAcsUrl = (isset($doc['method_url']) ? $doc['method_url'] : '')
+            . (isset($doc['challenge_request_url']) ? $doc['challenge_request_url'] : '');
 
         // get authentication data
-        $secureEcom->acsTransactionId = $doc['acs_trans_id'] ?? null;
-        $secureEcom->directoryServerTransactionId = $doc['ds_trans_id'] ?? null;
-        $secureEcom->authenticationType = $doc['authentication_type'] ?? null;
-        $secureEcom->authenticationValue = $doc['authentication_value'] ?? null;
-        $secureEcom->eci = $doc['eci'] ?? null;
-        $secureEcom->status = $doc['status'] ?? null;
-        $secureEcom->statusReason = $doc['status_reason'] ?? null;
-        $secureEcom->authenticationSource = $doc['authentication_source'] ?? null;
-        $secureEcom->messageCategory = $doc['message_category'] ?? null;
-        $secureEcom->messageVersion = $doc['message_version'] ?? null;
+        $secureEcom->acsTransactionId = isset($doc['acs_trans_id']) ? $doc['acs_trans_id'] : null;
+        $secureEcom->directoryServerTransactionId = isset($doc['ds_trans_id']) ? $doc['ds_trans_id'] : null;
+        $secureEcom->authenticationType = isset($doc['authentication_type']) ? $doc['authentication_type'] : null;
+        $secureEcom->authenticationValue = isset($doc['authentication_value']) ? $doc['authentication_value'] : null;
+        $secureEcom->eci = isset($doc['eci']) ? $doc['eci'] : null;
+        $secureEcom->status = isset($doc['status']) ? $doc['status'] : null;
+        $secureEcom->statusReason = isset($doc['status_reason']) ? $doc['status_reason'] : null;
+        $secureEcom->authenticationSource = isset($doc['authentication_source']) ? $doc['authentication_source'] : null;
+        $secureEcom->messageCategory = isset($doc['message_category']) ? $doc['message_category'] : null;
+        $secureEcom->messageVersion = isset($doc['message_version']) ? $doc['message_version'] : null;
 
         // challenge mandated
         if (array_key_exists('challenge_mandated', $doc)) {
@@ -366,34 +367,43 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
         }
 
         // initiate authentication
-        $secureEcom->cardHolderResponseInfo = $doc['cardHolder_response_info'] ?? null;
+        $secureEcom->cardHolderResponseInfo =
+            isset($doc['cardHolder_response_info']) ? $doc['cardHolder_response_info'] : null;
 
         // device_render_options
         if (array_key_exists('device_render_options', $doc)) {
             $renderOptions = $doc['device_render_options'];
-            $secureEcom->sdkInterface = $renderOptions['sdk_interface'] ?? null;
-            $secureEcom->sdkUiType = $renderOptions['sdk_ui_type'] ?? null;
+            $secureEcom->sdkInterface = isset($renderOptions['sdk_interface']) ? $renderOptions['sdk_interface'] : null;
+            $secureEcom->sdkUiType = isset($renderOptions['sdk_ui_type']) ? $renderOptions['sdk_ui_type'] : null;
         }
 
         // message_extension
         if (array_key_exists('message_extension', $doc)) {
-            $secureEcom->criticalityIndicator = $doc['message_extension']['criticality_indicator'] ?? null;
-            $secureEcom->messageExtensionId = $doc['message_extension']['id'] ?? null;
-            $secureEcom->messageExtensionName = $doc['message_extension']['name'] ?? null;
+            $secureEcom->criticalityIndicator =
+                isset($doc['message_extension']['criticality_indicator']) ?
+                    $doc['message_extension']['criticality_indicator'] : null;
+            $secureEcom->messageExtensionId =
+                isset($doc['message_extension']['id']) ? $doc['message_extension']['id'] : null;
+            $secureEcom->messageExtensionName =
+                isset($doc['message_extension']['name']) ? $doc['message_extension']['name'] : null;
         }
 
         // versions
-        $secureEcom->directoryServerEndVersion = $doc['ds_protocol_version_end'] ?? null;
-        $secureEcom->directoryServerStartVersion = $doc['ds_protocol_version_start'] ?? null;
-        $secureEcom->acsEndVersion = $doc['acs_protocol_version_end'] ?? null;
-        $secureEcom->acsStartVersion = $doc['acs_protocol_version_start'] ?? null;
+        $secureEcom->directoryServerEndVersion =
+            isset($doc['ds_protocol_version_end']) ? $doc['ds_protocol_version_end'] : null;
+        $secureEcom->directoryServerStartVersion =
+            isset($doc['ds_protocol_version_start']) ? $doc['ds_protocol_version_start'] : null;
+        $secureEcom->acsEndVersion = isset($doc['acs_protocol_version_end']) ? $doc['acs_protocol_version_end'] : null;
+        $secureEcom->acsStartVersion =
+            isset($doc['acs_protocol_version_start']) ? $doc['acs_protocol_version_start'] : null;
 
         // payer authentication request
         if (array_key_exists('method_data', $doc)) {
             $methodData = $doc['method_data'];
-            $secureEcom->payerAuthenticationRequest = $methodData['encoded_method_data'] ?? null;
+            $secureEcom->payerAuthenticationRequest =
+                isset($methodData['encoded_method_data']) ? $methodData['encoded_method_data'] : null;
         } elseif (array_key_exists('encoded_creq', $doc)) {
-            $secureEcom->payerAuthenticationRequest = $doc['encoded_creq'] ?? null;
+            $secureEcom->payerAuthenticationRequest = isset($doc['encoded_creq']) ? $doc['encoded_creq'] : null;
         }
 
         $response = new Transaction();

@@ -30,10 +30,10 @@ class PaxBaseResponse extends PaxResponse
 
     /*
      * Check the device response code
-     * 
+     *
      * @param PaxResponse $gatewayResponse parsed response from device
      * @param array       $acceptedCodes list of success response codes
-     * 
+     *
      * @return raise GatewayException incase of different unexpected code
      */
 

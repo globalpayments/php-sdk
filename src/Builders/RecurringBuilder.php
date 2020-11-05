@@ -67,11 +67,11 @@ class RecurringBuilder extends TransactionBuilder
      *
      * @return mixed
      */
-    public function execute()
+    public function execute(string $configName = 'default')
     {
-        parent::execute();
+        parent::execute($configName);
 
-        $client = ServicesContainer::instance()->getRecurringClient();
+        $client = ServicesContainer::instance()->getRecurringClient($configName);
         return $client->processRecurring($this);
     }
 

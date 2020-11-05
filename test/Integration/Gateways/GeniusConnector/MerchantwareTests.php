@@ -16,6 +16,8 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\Gateways\GeniusConnector;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GeniusConfig;
 
 class CreditTest extends TestCase
 {
@@ -28,7 +30,7 @@ class CreditTest extends TestCase
 
     public function setup() : void
     {
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
 
         $this->address = new Address();
         $this->address->streetAddress1 = '1 Federal Street';
@@ -47,7 +49,7 @@ class CreditTest extends TestCase
 
     protected function getConfig()
     {
-        $config = new ServicesConfig();
+        $config = new GeniusConfig();
         // $config->merchantName = 'QA TSys Sierra Test';
         // $config->merchantSiteId = 'D7MX8E4N';
         // $config->merchantKey = '5U6HL-J7GHG-28AX1-G5KQH-AEH0G';
@@ -148,7 +150,7 @@ class CreditTest extends TestCase
     public function testUpdatedBoardedCard()
     {
         $this->tokenizedCard->expMonth = 12;
-        $this->tokenizedCard->expYear = 2025;
+        $this->tokenizedCard->expYear = TestCards::validCardExpYear();
 
         $success = $this->tokenizedCard->updateTokenExpiry();
         $this->assertTrue($success);

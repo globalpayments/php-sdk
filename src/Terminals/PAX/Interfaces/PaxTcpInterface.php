@@ -62,11 +62,18 @@ class PaxTcpInterface implements IDeviceCommInterface
         // open socket
         try {
             if ($this->deviceDetails->connectionMode === ConnectionModes::SSL_TCP) {
+                // Define the constant manually for earlier versions of PHP.
+                // Disable phpcs here since this constant does not exist until PHP 5.5.
+                // phpcs:disable
+                if (!defined('STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT')) {
+                    define('STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT', 33);
+                }
                 $context = stream_context_create([
                     'ssl' => [
                         "crypto_method" => STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT
                     ]
                 ]);
+                // phpcs:enable
                 
                 stream_context_set_option($context, 'ssl', 'allow_self_signed', true);
                 stream_context_set_option($context, 'ssl', 'verify_peer', false); //true

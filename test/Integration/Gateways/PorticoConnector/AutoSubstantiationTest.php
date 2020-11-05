@@ -4,8 +4,9 @@ namespace GlobalPayments\Api\Tests\Integration\Gateways\PorticoConnector;
 
 use GlobalPayments\Api\Entities\AutoSubstantiation;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\ServicesConfig;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 
 final class AutoSubstantiationTest extends TestCase {
@@ -13,15 +14,15 @@ final class AutoSubstantiationTest extends TestCase {
         $this->card = new CreditCardData();
         $this->card->number = '4111111111111111';
         $this->card->expMonth = 12;
-        $this->card->expYear = 2025;
+        $this->card->expYear = TestCards::validCardExpYear();
         $this->card->cvn = '123';
 
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
     }
 
     protected function getConfig()
     {
-        $config = new ServicesConfig();
+        $config = new PorticoConfig();
         $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
         $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
         return $config;

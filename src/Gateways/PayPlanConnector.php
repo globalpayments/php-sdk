@@ -416,7 +416,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
     protected function buildSchedule($request, Schedule $schedule, $type)
     {
         $mapDuration = function () use ($schedule) {
-            if ($schedule->numberOfPayments !== null) {
+            if ($schedule->numberOfPaymentsRemaining !== null) {
                 return 'Limited Number';
             }
 
@@ -436,7 +436,11 @@ class PayPlanConnector extends RestGateway implements IRecurringService
                     case PaymentSchedule::LAST_DAY_OF_THE_MONTH:
                         return 'Last';
                     default:
-                        $day = $schedule->startDate->format('d');
+                        if (is_string($schedule->startDate) && !empty($schedule->startDate)) {
+                            $day = intval(substr($schedule->startDate, 2, 2));
+                        } else {
+                            $day = intval($schedule->startDate->format('d'));
+                        }
                         return $day > 28 ? 'Last' : $day;
                 }
             }
@@ -472,7 +476,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
         $request['invoiceNbr'] = $schedule->invoiceNumber;
         $request['poNumber'] = $schedule->poNumber;
         $request['description'] = $schedule->description;
-        $request['numberOfPayments'] = $schedule->numberOfPayments;
+        $request['numberOfPaymentsRemaining'] = $schedule->numberOfPaymentsRemaining;
 
         if ($type === TransactionType::CREATE) {
             $request['customerKey'] = $schedule->customerKey;
@@ -481,7 +485,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
             $request['duration'] = $mapDuration();
         } else { // Edit Fields
             if (!$schedule->hasStarted) {
-                $request = $this->buildDate($request, 'startDate', $schedule->startDate);
+                $request = $this->buildDate($request, 'startDate', $schedule->startDate, ($type === TransactionType::EDIT));
                 $request['frequency'] = $schedule->frequency;
                 $request['duration'] = $mapDuration();
             } else {
@@ -489,15 +493,19 @@ class PayPlanConnector extends RestGateway implements IRecurringService
                 $request = $this->buildDate($request, 'nextProcressingDate', $schedule->nextProcessingDate);
             }
         }
-        
+
         return $request;
     }
 
-    protected function buildDate($request, $name, \DateTime $date = null, $force = false)
+    protected function buildDate($request, $name, $date = null, $force = false)
     {
         if ($date !== null || $force) {
-            $value = $date !== null ? $date->format('mdY') : null;
-            $request[$name] = $value;
+            if ($force && is_string($date)) {
+                $request[$name] = $date;
+            } else {
+                $value = $date !== null ? $date->format('mdY') : null;
+                $request[$name] = $value;
+            }            
         }
         return $request;
     }
@@ -593,14 +601,14 @@ class PayPlanConnector extends RestGateway implements IRecurringService
         $schedule->paymentKey = isset($response->paymentMethodKey) ? $response->paymentMethodKey : null;
         if (isset($response->subtotalAmount)) {
             $subtotal = $response->subtotalAmount;
-            $schedule->amount = $subtotal->value;
+            $schedule->amount = intval($subtotal->value) / 100;
             $schedule->currency = $subtotal->currency;
         }
         if (isset($response->taxAmount)) {
             $taxAmount = $response->taxAmount;
-            $schedule->taxAmount = $taxAmount->value;
+            $schedule->taxAmount = intval($taxAmount->value) / 100;
         }
-        $schedule->deviceId = isset($response->deviceId) ? $response->deviceId : null;
+        $schedule->deviceId = isset($response->deviceID) ? $response->deviceID : null;
         $schedule->startDate = $response->startDate;
         $schedule->paymentSchedule = isset($response->processingDateInfo) ? $response->processingDateInfo : null;
         switch ($schedule->paymentSchedule) {

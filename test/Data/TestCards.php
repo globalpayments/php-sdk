@@ -13,6 +13,15 @@ use GlobalPayments\Api\PaymentMethods\GiftCard;
 
 class TestCards
 {
+    public static function validCardExpYear()
+    {
+        return intval(date('Y')) + 1;
+    }
+
+    public static function expiredCardExpYear() {
+        return 2012;
+    }
+
     public static function asDebit($card, $pinBlock)
     {
         $data = new DebitTrackData();
@@ -47,7 +56,7 @@ class TestCards
         $data = new CreditCardData();
         $data->number = '4012002000060016';
         $data->expMonth = 12;
-        $data->expYear = 2025;
+        $data->expYear = self::validCardExpYear();
         $data->cvn = '123';
         $data->cardPresent = $cardPresent;
         $data->readerPresent = $readerPresent;
@@ -87,7 +96,7 @@ class TestCards
         $data = new CreditCardData();
         $data->number = '5473500000000014';
         $data->expMonth = 12;
-        $data->expYear = 2025;
+        $data->expYear = self::validCardExpYear();
         $data->cvn = '123';
         $data->cardPresent = $cardPresent;
         $data->readerPresent = $readerPresent;
@@ -99,7 +108,7 @@ class TestCards
         $data = new CreditCardData();
         $data->number = '2223000010005780';
         $data->expMonth = 12;
-        $data->expYear = 2019;
+        $data->expYear = self::validCardExpYear();
         $data->cvn = '123';
         $data->cardPresent = $cardPresent;
         $data->readerPresent = $readerPresent;
@@ -163,7 +172,7 @@ class TestCards
         $data = new CreditCardData();
         $data->number = '6011000990156527';
         $data->expMonth = 12;
-        $data->expYear = 2025;
+        $data->expYear = self::validCardExpYear();
         $data->cvn = '123';
         $data->cardPresent = $cardPresent;
         $data->readerPresent = $readerPresent;
@@ -203,7 +212,7 @@ class TestCards
         $data = new CreditCardData();
         $data->number = '372700699251018';
         $data->expMonth = 12;
-        $data->expYear = 2025;
+        $data->expYear = self::validCardExpYear();
         $data->cvn = '1234';
         $data->cardPresent = $cardPresent;
         $data->readerPresent = $readerPresent;
@@ -227,7 +236,7 @@ class TestCards
         $data = new CreditCardData();
         $data->number = '3566007770007321';
         $data->expMonth = 12;
-        $data->expYear = 2025;
+        $data->expYear = self::validCardExpYear();
         $data->cvn = '123';
         $data->cardPresent = $cardPresent;
         $data->readerPresent = $readerPresent;
@@ -265,7 +274,7 @@ class TestCards
         $data = new CreditCardData();
         $data->number = '6277220572999800';
         $data->expMonth = '12';
-        $data->expYear = '2049';
+        $data->expYear = self::validCardExpYear();
         return $data;
     }
 }

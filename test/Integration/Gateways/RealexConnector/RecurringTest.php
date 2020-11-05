@@ -7,6 +7,7 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
@@ -107,7 +108,7 @@ class RecurringTest extends TestCase
         $card = new CreditCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '123';
         $card->cardHolderName = 'James Mason';
 
@@ -206,7 +207,7 @@ class RecurringTest extends TestCase
         $card = new CreditCardData();
         $card->number = '5425230000004415';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 
@@ -300,7 +301,7 @@ class RecurringTest extends TestCase
         $paymentMethod->paymentMethod = new CreditCardData();
         $paymentMethod->paymentMethod->number = "5425230000004415";
         $paymentMethod->paymentMethod->expMonth = 10;
-        $paymentMethod->paymentMethod->expYear = 2020;
+        $paymentMethod->paymentMethod->expYear = TestCards::validCardExpYear();
         $paymentMethod->paymentMethod->cardHolderName = "Philip Marlowe";
 
         $response = $paymentMethod->SaveChanges();

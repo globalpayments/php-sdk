@@ -88,7 +88,7 @@ class MotoTest extends TestCase
         $card = new CreditCardData();
         $card->number = '4484958240202792';
         $card->expMonth = '12';
-        $card->expYear = '2025';
+        $card->expYear = TestCards::validCardExpYear();
 
         $response = $card->verify()
             ->withRequestMultiUseToken($this->useTokens)
@@ -103,7 +103,7 @@ class MotoTest extends TestCase
         $card = new CreditCardData();
         $card->number = '5356083898949891';
         $card->expMonth = '12';
-        $card->expYear = '2025';
+        $card->expYear = TestCards::validCardExpYear();
 
         $response = $card->verify()
             ->withRequestMultiUseToken($this->useTokens)
@@ -121,7 +121,7 @@ class MotoTest extends TestCase
         $card = new CreditCardData();
         $card->number = '6223971100014620';
         $card->expMonth = '12';
-        $card->expYear = '2025';
+        $card->expYear = TestCards::validCardExpYear();
 
         $response = $card->verify()
             ->withAddress($address)
@@ -142,7 +142,7 @@ class MotoTest extends TestCase
         $card = new CreditCardData();
         $card->number = '345039962663847';
         $card->expMonth = '12';
-        $card->expYear = '2025';
+        $card->expYear = TestCards::validCardExpYear();
 
         $response = $card->verify()
             ->withAddress($address)
@@ -160,7 +160,7 @@ class MotoTest extends TestCase
         $card = new CreditCardData();
         $card->number = '4664383951958601';
         $card->expMonth = '12';
-        $card->expYear = '2025';
+        $card->expYear = TestCards::validCardExpYear();
 
         $response = $card->balanceInquiry()->execute();
 
@@ -179,7 +179,7 @@ class MotoTest extends TestCase
         $card = new CreditCardData();
         $card->number = '4012002000060016';
         $card->expMonth = '12';
-        $card->expYear = '2025';
+        $card->expYear = TestCards::validCardExpYear();
 
         $response = $card->charge(13.01)
             ->withCurrency('USD')
@@ -203,7 +203,7 @@ class MotoTest extends TestCase
         $card = new CreditCardData();
         $card->number = '5473500000000014';
         $card->expMonth = '12';
-        $card->expYear = '2025';
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '123';
 
         $response = $card->charge(13.02)
@@ -228,7 +228,7 @@ class MotoTest extends TestCase
         $card = new CreditCardData();
         $card->number = '6011000990156527';
         $card->expMonth = '12';
-        $card->expYear = '2025';
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '123';
 
         $response = $card->charge(13.03)
@@ -253,7 +253,7 @@ class MotoTest extends TestCase
         $card = new CreditCardData();
         $card->number = '372700699251018';
         $card->expMonth = '12';
-        $card->expYear = '2025';
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '1234';
 
         $response = $card->charge(13.04)
@@ -390,7 +390,7 @@ class MotoTest extends TestCase
         $card = new CreditCardData();
         $card->number = '3566007770007321';
         $card->expMonth = '12';
-        $card->expYear = '2025';
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '123';
 
         $response = $card->charge(17.05)
@@ -1150,7 +1150,7 @@ class MotoTest extends TestCase
         $card = new CreditCardData();
         $card->number = '3566007770007321';
         $card->expMonth = '12';
-        $card->expYear = '2025';
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '123';
 
         $response = $card->charge(13.15)

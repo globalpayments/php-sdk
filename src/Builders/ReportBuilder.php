@@ -34,11 +34,11 @@ abstract class ReportBuilder extends BaseBuilder
      *
      * @return mixed
      */
-    public function execute()
+    public function execute(string $configName = 'default')
     {
-        parent::execute();
+        parent::execute($configName);
 
-        $client = ServicesContainer::instance()->getClient();
+        $client = ServicesContainer::instance()->getClient($configName);
         return $client->processReport($this);
     }
 }

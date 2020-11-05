@@ -2,7 +2,6 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\Certifications;
 
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Transaction;
@@ -10,6 +9,8 @@ use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\CvnPresenceIndicator;
 use GlobalPayments\Api\Entities\Enums\ReasonCode;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
+use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 
 class RealexSdkCertification extends TestCase
@@ -21,7 +22,7 @@ class RealexSdkCertification extends TestCase
 
     protected function getBaseConfig()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "api";
         $config->sharedSecret = "secret";
@@ -37,7 +38,7 @@ class RealexSdkCertification extends TestCase
         $card = new CreditCardData();
         $card->number = "4263970000005262";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
         $card->cardHolderName = "James Mason";
@@ -47,7 +48,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth006a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -64,7 +65,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth006b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -81,7 +82,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth006c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -98,7 +99,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth006d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -115,7 +116,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth006e()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -132,7 +133,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth006f()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -149,7 +150,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth006g()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -166,7 +167,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth006h()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -183,7 +184,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth006i()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -200,7 +201,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth006j()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -217,7 +218,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth006k()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -234,7 +235,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth007a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -251,7 +252,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth007b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -268,7 +269,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth007c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -285,7 +286,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth007d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -302,7 +303,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth007e()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -319,7 +320,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth008a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -336,7 +337,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth008b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -353,7 +354,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth008c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -370,7 +371,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth008d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -387,7 +388,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth008e()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -406,7 +407,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -428,7 +429,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "E";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -450,7 +451,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOMMERCE";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -467,7 +468,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth009d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -484,7 +485,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth010a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -501,7 +502,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth010b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -518,7 +519,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth010c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -535,7 +536,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth010d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -552,7 +553,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth010e()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -569,7 +570,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth011a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -586,7 +587,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth011b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -603,7 +604,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth011c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -623,7 +624,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth011d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -640,7 +641,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth012a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -660,7 +661,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth012b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -680,7 +681,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth012c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -700,7 +701,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth012d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -716,7 +717,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth013a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -736,13 +737,13 @@ class RealexSdkCertification extends TestCase
     public function testAuth013b1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "424242000000000000000";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -759,13 +760,13 @@ class RealexSdkCertification extends TestCase
     public function testAuth013b2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "42424242424";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -782,13 +783,13 @@ class RealexSdkCertification extends TestCase
     public function testAuth013c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4263970000005262#";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -802,7 +803,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth014a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -824,12 +825,12 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped('Exception not thrown');
         
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -846,12 +847,12 @@ class RealexSdkCertification extends TestCase
     public function testAuth014c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "3a4wpIwep3uviSnW9XEB3a4wpIwep3uviSnW9XEB3a4wpIwepeep3a4wpIwep3uviSnW9XEB3a4wpIwep3uviSnW9XEB3a4wpIwepeep";
 
         // request
@@ -866,12 +867,12 @@ class RealexSdkCertification extends TestCase
     public function testAuth014d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "James~Mason";
 
         // request
@@ -886,7 +887,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth015a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -903,7 +904,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth015b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -923,12 +924,12 @@ class RealexSdkCertification extends TestCase
     public function testAuth015c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 20;
-        $card->expYear = 2012;
+        $card->expYear = TestCards::expiredCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -947,7 +948,7 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped('Exception not thrown');
         
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -964,7 +965,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth016a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -981,7 +982,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth016b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -998,7 +999,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth016c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1015,7 +1016,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth017a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1032,7 +1033,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth018a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1049,7 +1050,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth019a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1069,12 +1070,12 @@ class RealexSdkCertification extends TestCase
     public function testAuth019b1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
 
         // request
@@ -1089,7 +1090,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth019b2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1109,12 +1110,12 @@ class RealexSdkCertification extends TestCase
     public function testAuth019c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "12345";
 
         // request
@@ -1129,13 +1130,13 @@ class RealexSdkCertification extends TestCase
     public function testAuth019d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "374101000000608";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
 
         // request
@@ -1150,7 +1151,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth020a1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1167,12 +1168,12 @@ class RealexSdkCertification extends TestCase
     public function testAuth020a2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::ILLEGIBLE;
 
@@ -1188,12 +1189,12 @@ class RealexSdkCertification extends TestCase
     public function testAuth020a3()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::NOT_ON_CARD;
 
@@ -1209,12 +1210,12 @@ class RealexSdkCertification extends TestCase
     public function testAuth020a4()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::NOT_REQUESTED;
 
@@ -1235,12 +1236,12 @@ class RealexSdkCertification extends TestCase
         $this->markTestSkipped('Exception not thrown');
         
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvnPresenceIndicator = 5;
 
         // request
@@ -1255,12 +1256,12 @@ class RealexSdkCertification extends TestCase
     public function testAuth020c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvnPresenceIndicator = 0;
 
         // request
@@ -1275,7 +1276,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth021a1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1292,7 +1293,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth021a2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1309,7 +1310,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth021a3()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1326,7 +1327,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth021b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1343,7 +1344,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth021c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1360,7 +1361,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth022a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1377,7 +1378,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth022b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1394,7 +1395,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth022c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1411,7 +1412,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth022d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1428,7 +1429,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth022e()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1445,7 +1446,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth023a1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1462,7 +1463,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth023a2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1479,7 +1480,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth023b1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1496,7 +1497,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth023c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1513,7 +1514,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth024a1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1530,7 +1531,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth024a2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1547,7 +1548,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth024a3()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1564,7 +1565,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth024b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1581,7 +1582,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth024c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1598,7 +1599,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth025()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1615,7 +1616,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth026a1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1632,7 +1633,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth026a2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1648,7 +1649,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth026b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1664,7 +1665,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth026c1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1681,7 +1682,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth026c2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1698,7 +1699,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth027a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1716,7 +1717,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth028a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1734,7 +1735,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth028b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1754,7 +1755,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth028c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1775,7 +1776,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth028d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1793,7 +1794,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth029a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1811,7 +1812,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth029b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1831,7 +1832,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth029c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1852,7 +1853,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth029d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1870,7 +1871,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth030a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1888,7 +1889,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth030b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1908,7 +1909,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth030c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1929,7 +1930,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth030d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1947,7 +1948,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth031a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1965,7 +1966,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth031b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -1985,7 +1986,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth031c1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -2006,7 +2007,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth031c2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -2024,7 +2025,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth032a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2053,7 +2054,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth033a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2080,7 +2081,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth033b1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2102,7 +2103,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth033b2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // shipping address
         $shippingAddress = new Address();
@@ -2127,7 +2128,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth033c1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2152,7 +2153,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth033c2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // shipping address
         $shippingAddress = new Address();
@@ -2174,7 +2175,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth034a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2201,7 +2202,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth034b1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // shipping address
         $shippingAddress = new Address();
@@ -2223,7 +2224,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth034b2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2248,7 +2249,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth034c1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2273,7 +2274,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth034c2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // shipping address
         $shippingAddress = new Address();
@@ -2295,7 +2296,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth035a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -2312,7 +2313,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth035b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -2331,7 +2332,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2366,7 +2367,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2401,7 +2402,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2436,7 +2437,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2471,7 +2472,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2509,7 +2510,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2525,7 +2526,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = "V002625938386848";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -2547,7 +2548,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2585,7 +2586,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2601,7 +2602,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = " 4002 6259 3838 6848";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -2623,7 +2624,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2661,7 +2662,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2677,7 +2678,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = "";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -2699,7 +2700,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2734,7 +2735,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2772,7 +2773,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2787,7 +2788,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 20;
-        $card->expYear = 2012;
+        $card->expYear = TestCards::expiredCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -2812,7 +2813,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2827,7 +2828,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2015;
+        $card->expYear = TestCards::expiredCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -2852,7 +2853,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2867,7 +2868,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 11;
-        $card->expYear = 5;
+        $card->expYear = 5; // magic number?
 
         // request
         $response = $card->charge(100.01)
@@ -2889,7 +2890,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2924,7 +2925,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -2939,7 +2940,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 20;
+        $card->expYear = 20; // magic number?
 
         // request
         $response = $card->charge(100.01)
@@ -2961,7 +2962,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3001,7 +3002,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3036,7 +3037,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3074,7 +3075,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3089,7 +3090,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
 
         // request
@@ -3115,7 +3116,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3130,7 +3131,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "12345";
 
         // request
@@ -3153,7 +3154,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3169,7 +3170,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = "374101000000608";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
 
         // request
@@ -3195,7 +3196,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3211,7 +3212,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = "374101000000608";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -3233,7 +3234,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3248,7 +3249,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvnPresenceIndicator = 0;
 
         // request
@@ -3271,7 +3272,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3286,7 +3287,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvnPresenceIndicator = CvnPresenceIndicator::ILLEGIBLE;
 
         // request
@@ -3309,7 +3310,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3324,7 +3325,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvnPresenceIndicator = CvnPresenceIndicator::NOT_ON_CARD;
 
         // request
@@ -3347,7 +3348,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3362,7 +3363,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvnPresenceIndicator = CvnPresenceIndicator::NOT_REQUESTED;
 
         // request
@@ -3388,7 +3389,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3403,7 +3404,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2015;
+        $card->expYear = TestCards::expiredCardExpYear();
         $card->cvn = "1234";
 
         // request
@@ -3426,7 +3427,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3464,7 +3465,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3479,7 +3480,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
 
         // request
@@ -3505,7 +3506,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3520,7 +3521,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2015;
+        $card->expYear = TestCards::expiredCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -3545,7 +3546,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3560,7 +3561,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2015;
+        $card->expYear = TestCards::expiredCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -3585,7 +3586,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3600,7 +3601,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2015;
+        $card->expYear = TestCards::expiredCardExpYear();
         $card->cvn = "1234";
 
         // request
@@ -3626,7 +3627,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3641,7 +3642,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2015;
+        $card->expYear = TestCards::expiredCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -3666,7 +3667,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3681,7 +3682,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
 
         // request
@@ -3704,7 +3705,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3739,7 +3740,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3777,7 +3778,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3792,7 +3793,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 11;
-        $card->expYear = 2015;
+        $card->expYear = TestCards::expiredCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -3817,7 +3818,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3832,7 +3833,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 11;
-        $card->expYear = 5;
+        $card->expYear = 5; //magic number?
 
         // request
         $response = $card->charge(100.01)
@@ -3857,7 +3858,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3872,7 +3873,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
 
         // request
@@ -3895,7 +3896,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3911,7 +3912,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = "5425230000004415";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -3933,7 +3934,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3949,7 +3950,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = "5425230000004415";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -3974,7 +3975,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -3990,7 +3991,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = "5425230000004415";
         $card->expMonth = 11;
-        $card->expYear = 2015;
+        $card->expYear = TestCards::expiredCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -4015,7 +4016,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4031,7 +4032,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = "5425230000004415";
         $card->expMonth = 11;
-        $card->expYear = 5;
+        $card->expYear = 5; // magic number?
 
         // request
         $response = $card->charge(100.01)
@@ -4056,7 +4057,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4072,7 +4073,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = "5425230000004415";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
 
         // request
@@ -4095,7 +4096,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4111,7 +4112,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = "374101000000608";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
 
         // request
@@ -4137,7 +4138,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4153,7 +4154,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = "374101000000608";
         $card->expMonth = 11;
-        $card->expYear = 2015;
+        $card->expYear = TestCards::expiredCardExpYear();
         $card->cvn = "1234";
 
         // request
@@ -4179,7 +4180,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4195,7 +4196,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = "374101000000608";
         $card->expMonth = 11;
-        $card->expYear = 5;
+        $card->expYear = 5; // magic number?
         $card->cvn = "1234";
 
         // request
@@ -4221,7 +4222,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4237,7 +4238,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = "30384800000000";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -4262,7 +4263,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4278,7 +4279,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = "30450100000000";
         $card->expMonth = 11;
-        $card->expYear = 2015;
+        $card->expYear = TestCards::expiredCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -4303,7 +4304,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4319,7 +4320,7 @@ class RealexSdkCertification extends TestCase
         $card = $this->getBaseCardData();
         $card->number = "30450100000000";
         $card->expMonth = 11;
-        $card->expYear = 5;
+        $card->expYear = 5; // magic number?
 
         // request
         $response = $card->charge(100.01)
@@ -4344,7 +4345,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4359,7 +4360,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1";
 
         // request
@@ -4385,7 +4386,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4400,7 +4401,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "2";
 
         // request
@@ -4426,7 +4427,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4441,7 +4442,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "3";
 
         // request
@@ -4467,7 +4468,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4480,7 +4481,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "4";
 
         // request
@@ -4506,7 +4507,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4521,7 +4522,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "5";
 
         // request
@@ -4547,7 +4548,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4562,7 +4563,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "6";
 
         // request
@@ -4588,7 +4589,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4603,7 +4604,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "7";
 
         // request
@@ -4629,7 +4630,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4644,7 +4645,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "8";
 
         // request
@@ -4670,7 +4671,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4685,7 +4686,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "9";
 
         // request
@@ -4711,7 +4712,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4726,7 +4727,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "10";
 
         // request
@@ -4752,7 +4753,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4767,7 +4768,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "11";
 
         // request
@@ -4793,7 +4794,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4808,7 +4809,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "12";
 
         // request
@@ -4834,7 +4835,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4849,7 +4850,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "13";
 
         // request
@@ -4875,7 +4876,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4888,7 +4889,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "14";
 
         // request
@@ -4914,7 +4915,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -4927,7 +4928,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "15";
 
         // request
@@ -4950,7 +4951,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -4977,7 +4978,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5004,7 +5005,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5031,7 +5032,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5058,7 +5059,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5085,7 +5086,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5112,7 +5113,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5139,7 +5140,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5166,7 +5167,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5193,7 +5194,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5220,7 +5221,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5247,7 +5248,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5274,7 +5275,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5301,7 +5302,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5328,7 +5329,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5355,7 +5356,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5382,7 +5383,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5409,7 +5410,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5436,7 +5437,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5463,7 +5464,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5490,7 +5491,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5517,7 +5518,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5544,7 +5545,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5574,7 +5575,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOm";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5604,7 +5605,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECO#";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5631,7 +5632,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5658,7 +5659,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5685,7 +5686,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5712,7 +5713,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5739,7 +5740,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5766,7 +5767,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5793,7 +5794,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5820,7 +5821,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5847,7 +5848,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5877,7 +5878,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5907,7 +5908,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5934,7 +5935,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5964,7 +5965,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -5991,7 +5992,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6021,7 +6022,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6051,7 +6052,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6078,7 +6079,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6104,7 +6105,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6131,7 +6132,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6158,7 +6159,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6185,7 +6186,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6212,7 +6213,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6239,7 +6240,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6266,7 +6267,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6292,7 +6293,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6319,7 +6320,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6346,7 +6347,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6377,7 +6378,7 @@ class RealexSdkCertification extends TestCase
         $config->sharedSecret = 'secreto';
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6404,7 +6405,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6430,7 +6431,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6456,7 +6457,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6482,7 +6483,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6508,7 +6509,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6534,7 +6535,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6560,7 +6561,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6586,7 +6587,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6612,7 +6613,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6638,7 +6639,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6664,7 +6665,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6690,7 +6691,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6716,7 +6717,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6742,7 +6743,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6768,7 +6769,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6794,7 +6795,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6820,7 +6821,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6846,7 +6847,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6872,7 +6873,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6898,7 +6899,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6927,7 +6928,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "EC";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6953,7 +6954,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -6979,7 +6980,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7008,7 +7009,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOm";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7037,7 +7038,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECO#";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7063,7 +7064,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7089,7 +7090,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7115,7 +7116,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7141,7 +7142,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7167,7 +7168,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7193,7 +7194,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7219,7 +7220,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7245,7 +7246,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7271,7 +7272,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7297,7 +7298,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7323,7 +7324,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7349,7 +7350,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7375,7 +7376,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7401,7 +7402,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7427,7 +7428,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7453,7 +7454,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7479,7 +7480,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7505,7 +7506,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7531,7 +7532,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7558,7 +7559,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7585,7 +7586,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7612,7 +7613,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7639,7 +7640,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7666,7 +7667,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7693,7 +7694,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7720,7 +7721,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7747,7 +7748,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7774,7 +7775,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7801,7 +7802,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7828,7 +7829,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7855,7 +7856,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7882,7 +7883,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7909,7 +7910,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7936,7 +7937,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7963,7 +7964,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -7990,7 +7991,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8017,7 +8018,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8044,7 +8045,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8074,7 +8075,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "EC";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8104,7 +8105,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOm";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8134,7 +8135,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECO#";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8161,7 +8162,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8188,7 +8189,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8215,7 +8216,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8242,7 +8243,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8272,7 +8273,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8302,7 +8303,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8332,7 +8333,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8358,7 +8359,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8385,7 +8386,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8415,7 +8416,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8445,7 +8446,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8472,7 +8473,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8502,7 +8503,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8529,7 +8530,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8556,7 +8557,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8583,7 +8584,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8610,7 +8611,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8637,7 +8638,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8664,7 +8665,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8691,7 +8692,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8718,7 +8719,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8745,7 +8746,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8772,7 +8773,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8799,7 +8800,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8825,7 +8826,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8852,7 +8853,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8879,7 +8880,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8910,7 +8911,7 @@ class RealexSdkCertification extends TestCase
         $config->sharedSecret = 'secreto';
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -8937,12 +8938,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -8959,12 +8960,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -8981,12 +8982,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9003,12 +9004,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9025,12 +9026,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9047,12 +9048,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9069,12 +9070,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9091,12 +9092,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9113,12 +9114,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9135,12 +9136,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9157,12 +9158,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9179,12 +9180,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9201,12 +9202,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9223,12 +9224,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9245,12 +9246,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9267,12 +9268,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9289,12 +9290,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9311,12 +9312,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9333,12 +9334,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9355,12 +9356,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9377,12 +9378,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9399,12 +9400,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9421,12 +9422,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9443,12 +9444,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "EC";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9465,12 +9466,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9487,12 +9488,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9509,12 +9510,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9531,12 +9532,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9553,12 +9554,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9575,12 +9576,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9597,12 +9598,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9619,12 +9620,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9641,12 +9642,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9663,12 +9664,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9685,12 +9686,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9707,12 +9708,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
 
         // request
         $response = $card->verify()
@@ -9731,12 +9732,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermeloooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooon";
 
         // request
@@ -9753,12 +9754,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9775,12 +9776,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9797,12 +9798,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9822,12 +9823,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 18;
-        $card->expYear = 2012;
+        $card->expYear = TestCards::expiredCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9847,7 +9848,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -9869,12 +9870,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9891,12 +9892,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9913,12 +9914,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9935,12 +9936,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9957,12 +9958,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -9982,12 +9983,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
         $card->cardHolderName = "Peter Watermelon";
 
@@ -10008,12 +10009,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1.23457E+18";
         $card->cardHolderName = "Peter Watermelon";
 
@@ -10031,13 +10032,13 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "374101000000608";
         $card->expMonth = 12;
-        $card->expYear = 2019;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
         $card->cardHolderName = "Peter Watermelon";
 
@@ -10058,12 +10059,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "7";
         $card->cardHolderName = "Peter Watermelon";
 
@@ -10084,12 +10085,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "7";
         $card->cardHolderName = "Peter Watermelon";
 
@@ -10107,12 +10108,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10133,12 +10134,12 @@ class RealexSdkCertification extends TestCase
         $config->sharedSecret = 'secreto';
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10155,12 +10156,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10177,12 +10178,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10199,12 +10200,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10221,12 +10222,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10243,12 +10244,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10265,12 +10266,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10287,12 +10288,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10309,12 +10310,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10331,12 +10332,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10353,12 +10354,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10375,12 +10376,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10397,12 +10398,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10419,12 +10420,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10441,12 +10442,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10463,12 +10464,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10485,12 +10486,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10507,12 +10508,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10529,12 +10530,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10551,12 +10552,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10573,12 +10574,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10595,12 +10596,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "EC";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10617,12 +10618,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10638,12 +10639,12 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10660,12 +10661,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10682,12 +10683,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10704,12 +10705,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10726,12 +10727,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10748,12 +10749,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10770,12 +10771,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10792,12 +10793,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10814,12 +10815,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10836,12 +10837,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
 
         // request
         $response = $card->refund(1)
@@ -10860,12 +10861,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo";
 
         // request
@@ -10882,12 +10883,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10904,12 +10905,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 1813;
+        $card->expYear = 1813; // magic number?
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10926,12 +10927,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 18;
-        $card->expYear = 2012;
+        $card->expYear = TestCards::expiredCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10948,7 +10949,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -10970,12 +10971,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -10992,12 +10993,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11014,12 +11015,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11036,12 +11037,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11058,12 +11059,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11080,12 +11081,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11105,12 +11106,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123456789";
         $card->cardHolderName = "Peter Watermelon";
 
@@ -11128,13 +11129,13 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "374101000000608";
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
         $card->cardHolderName = "Peter Watermelon";
 
@@ -11155,13 +11156,13 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4242424242424240";
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "7";
         $card->cardHolderName = "Peter Watermelon";
 
@@ -11182,12 +11183,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "12#";
         $card->cardHolderName = "Peter Watermelon";
 
@@ -11205,12 +11206,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11227,12 +11228,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11249,12 +11250,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11271,12 +11272,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11293,12 +11294,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11315,12 +11316,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11337,12 +11338,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11359,12 +11360,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11385,12 +11386,12 @@ class RealexSdkCertification extends TestCase
         $config->sharedSecret = 'secreto';
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11407,12 +11408,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11429,12 +11430,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11454,12 +11455,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11479,12 +11480,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11501,12 +11502,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11526,12 +11527,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11548,12 +11549,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11573,12 +11574,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11598,12 +11599,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11623,12 +11624,12 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2018;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "Peter Watermelon";
 
         // request
@@ -11644,7 +11645,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -11671,7 +11672,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -11698,7 +11699,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -11725,7 +11726,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -11752,7 +11753,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -11779,7 +11780,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -11806,7 +11807,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -11833,7 +11834,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -11860,7 +11861,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -11887,7 +11888,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -11914,7 +11915,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -11941,7 +11942,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -11968,7 +11969,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -11995,7 +11996,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12022,7 +12023,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12051,7 +12052,7 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -12070,7 +12071,7 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -12087,7 +12088,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12114,7 +12115,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12143,7 +12144,7 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -12162,7 +12163,7 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -12181,7 +12182,7 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -12198,7 +12199,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12228,7 +12229,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -12249,7 +12250,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -12267,7 +12268,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12294,7 +12295,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12324,7 +12325,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -12342,7 +12343,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12369,7 +12370,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12396,7 +12397,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12423,7 +12424,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12449,7 +12450,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12476,7 +12477,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12507,7 +12508,7 @@ class RealexSdkCertification extends TestCase
         $config->sharedSecret = 'secreto';
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12534,7 +12535,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12564,7 +12565,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "EC";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12594,7 +12595,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOOOOOOOOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12621,7 +12622,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12656,7 +12657,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12691,7 +12692,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12726,7 +12727,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12761,7 +12762,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12796,7 +12797,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12831,7 +12832,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12866,7 +12867,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12901,7 +12902,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12936,7 +12937,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -12971,7 +12972,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13006,7 +13007,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13041,7 +13042,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13076,7 +13077,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13111,7 +13112,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13148,7 +13149,7 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -13167,7 +13168,7 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -13186,7 +13187,7 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -13205,7 +13206,7 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -13224,7 +13225,7 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -13244,7 +13245,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -13265,7 +13266,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -13283,7 +13284,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13310,7 +13311,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13340,7 +13341,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         $saleResponse = Transaction::fromId(null);
 
@@ -13358,7 +13359,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13385,7 +13386,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13412,7 +13413,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13439,7 +13440,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13465,7 +13466,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13492,7 +13493,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13523,7 +13524,7 @@ class RealexSdkCertification extends TestCase
         $config->sharedSecret = 'secreto';
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13550,7 +13551,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13580,7 +13581,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "EC";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13610,7 +13611,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOOOOOOOOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13635,7 +13636,7 @@ class RealexSdkCertification extends TestCase
     public function testManual006a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13660,7 +13661,7 @@ class RealexSdkCertification extends TestCase
     public function testManual006b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13685,7 +13686,7 @@ class RealexSdkCertification extends TestCase
     public function testManual006c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13710,7 +13711,7 @@ class RealexSdkCertification extends TestCase
     public function testManual006d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13735,7 +13736,7 @@ class RealexSdkCertification extends TestCase
     public function testManual006e()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13760,7 +13761,7 @@ class RealexSdkCertification extends TestCase
     public function testManual006f()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13785,7 +13786,7 @@ class RealexSdkCertification extends TestCase
     public function testManual006g()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13810,7 +13811,7 @@ class RealexSdkCertification extends TestCase
     public function testManual006h()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13835,7 +13836,7 @@ class RealexSdkCertification extends TestCase
     public function testManual006i()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13860,7 +13861,7 @@ class RealexSdkCertification extends TestCase
     public function testManual006j()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13885,7 +13886,7 @@ class RealexSdkCertification extends TestCase
     public function testManual006k()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13910,7 +13911,7 @@ class RealexSdkCertification extends TestCase
     public function testManual007a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13935,7 +13936,7 @@ class RealexSdkCertification extends TestCase
     public function testManual007b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13960,7 +13961,7 @@ class RealexSdkCertification extends TestCase
     public function testManual007c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -13985,7 +13986,7 @@ class RealexSdkCertification extends TestCase
     public function testManual007d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14010,7 +14011,7 @@ class RealexSdkCertification extends TestCase
     public function testManual007e()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14035,7 +14036,7 @@ class RealexSdkCertification extends TestCase
     public function testManual008a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14060,7 +14061,7 @@ class RealexSdkCertification extends TestCase
     public function testManual008b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14085,7 +14086,7 @@ class RealexSdkCertification extends TestCase
     public function testManual008c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14110,7 +14111,7 @@ class RealexSdkCertification extends TestCase
     public function testManual008d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14135,7 +14136,7 @@ class RealexSdkCertification extends TestCase
     public function testManual008e()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14162,7 +14163,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14192,7 +14193,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "E";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14222,7 +14223,7 @@ class RealexSdkCertification extends TestCase
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOMMERCE";
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14247,7 +14248,7 @@ class RealexSdkCertification extends TestCase
     public function testManual009d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14272,7 +14273,7 @@ class RealexSdkCertification extends TestCase
     public function testManual010a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14297,7 +14298,7 @@ class RealexSdkCertification extends TestCase
     public function testManual010b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14322,7 +14323,7 @@ class RealexSdkCertification extends TestCase
     public function testManual010c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14347,7 +14348,7 @@ class RealexSdkCertification extends TestCase
     public function testManual010d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14372,7 +14373,7 @@ class RealexSdkCertification extends TestCase
     public function testManual010e()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14397,7 +14398,7 @@ class RealexSdkCertification extends TestCase
     public function testManual011a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14422,7 +14423,7 @@ class RealexSdkCertification extends TestCase
     public function testManual011b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14447,7 +14448,7 @@ class RealexSdkCertification extends TestCase
     public function testManual011c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14475,7 +14476,7 @@ class RealexSdkCertification extends TestCase
     public function testManual011d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14500,7 +14501,7 @@ class RealexSdkCertification extends TestCase
     public function testManual012a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14528,7 +14529,7 @@ class RealexSdkCertification extends TestCase
     public function testManual012b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14556,7 +14557,7 @@ class RealexSdkCertification extends TestCase
     public function testManual012c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14584,7 +14585,7 @@ class RealexSdkCertification extends TestCase
     public function testManual012d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14600,7 +14601,7 @@ class RealexSdkCertification extends TestCase
     public function testManual013a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14625,7 +14626,7 @@ class RealexSdkCertification extends TestCase
     public function testManual013b1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14650,7 +14651,7 @@ class RealexSdkCertification extends TestCase
     public function testManual013b2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14675,7 +14676,7 @@ class RealexSdkCertification extends TestCase
     public function testManual013c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14700,7 +14701,7 @@ class RealexSdkCertification extends TestCase
     public function testManual014a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14725,12 +14726,12 @@ class RealexSdkCertification extends TestCase
     public function testManual014b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
 
         // build transaction
         $saleResponse = $card->charge(100.01)
@@ -14755,12 +14756,12 @@ class RealexSdkCertification extends TestCase
     public function testManual014c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "3a4wpIwep3uviSnW9XEB3a4wpIwep3uviSnW9XEB3a4wpIwepeep3a4wpIwep3uviSnW9XEB3a4wpIwep3uviSnW9XEB3a4wpIwepeep";
 
         // build transaction
@@ -14783,12 +14784,12 @@ class RealexSdkCertification extends TestCase
     public function testManual014d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = "James~Mason";
 
         // build transaction
@@ -14811,7 +14812,7 @@ class RealexSdkCertification extends TestCase
     public function testManual015a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14836,7 +14837,7 @@ class RealexSdkCertification extends TestCase
     public function testManual015b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14864,12 +14865,12 @@ class RealexSdkCertification extends TestCase
     public function testManual015c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 20;
-        $card->expYear = 2012;
+        $card->expYear = TestCards::expiredCardExpYear();
 
         // build transaction
         $saleResponse = $card->charge(100.01)
@@ -14894,7 +14895,7 @@ class RealexSdkCertification extends TestCase
     public function testManual015d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14921,7 +14922,7 @@ class RealexSdkCertification extends TestCase
     public function testManual016a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14946,7 +14947,7 @@ class RealexSdkCertification extends TestCase
     public function testManual016b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14971,7 +14972,7 @@ class RealexSdkCertification extends TestCase
     public function testManual016c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -14996,7 +14997,7 @@ class RealexSdkCertification extends TestCase
     public function testManual017a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15021,7 +15022,7 @@ class RealexSdkCertification extends TestCase
     public function testManual018a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15046,7 +15047,7 @@ class RealexSdkCertification extends TestCase
     public function testManual019a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15074,12 +15075,12 @@ class RealexSdkCertification extends TestCase
     public function testManual019b1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
 
         // build transaction
@@ -15105,13 +15106,13 @@ class RealexSdkCertification extends TestCase
     public function testManual019b2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "374101000000608";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
 
         // build transaction
         $saleResponse = $card->charge(100.01)
@@ -15136,12 +15137,12 @@ class RealexSdkCertification extends TestCase
     public function testManual019c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "12345";
 
         // build transaction
@@ -15164,13 +15165,13 @@ class RealexSdkCertification extends TestCase
     public function testManual019d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "374101000000608";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
 
         // build transaction
@@ -15193,7 +15194,7 @@ class RealexSdkCertification extends TestCase
     public function testManual020a1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15218,12 +15219,12 @@ class RealexSdkCertification extends TestCase
     public function testManual020a2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::ILLEGIBLE;
 
@@ -15247,12 +15248,12 @@ class RealexSdkCertification extends TestCase
     public function testManual020a3()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::NOT_ON_CARD;
 
@@ -15276,12 +15277,12 @@ class RealexSdkCertification extends TestCase
     public function testManual020a4()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::NOT_REQUESTED;
 
@@ -15305,12 +15306,12 @@ class RealexSdkCertification extends TestCase
     public function testManual020b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvnPresenceIndicator = 5;
 
         // build transaction
@@ -15333,12 +15334,12 @@ class RealexSdkCertification extends TestCase
     public function testManual020c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = 0;
 
@@ -15362,7 +15363,7 @@ class RealexSdkCertification extends TestCase
     public function testManual021a1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15387,7 +15388,7 @@ class RealexSdkCertification extends TestCase
     public function testManual021a2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15412,7 +15413,7 @@ class RealexSdkCertification extends TestCase
     public function testManual021a3()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15437,7 +15438,7 @@ class RealexSdkCertification extends TestCase
     public function testManual021b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15462,7 +15463,7 @@ class RealexSdkCertification extends TestCase
     public function testManual021c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15487,7 +15488,7 @@ class RealexSdkCertification extends TestCase
     public function testManual022a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15512,7 +15513,7 @@ class RealexSdkCertification extends TestCase
     public function testManual022b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15537,7 +15538,7 @@ class RealexSdkCertification extends TestCase
     public function testManual022c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15562,7 +15563,7 @@ class RealexSdkCertification extends TestCase
     public function testManual022d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15587,7 +15588,7 @@ class RealexSdkCertification extends TestCase
     public function testManual022e()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15612,7 +15613,7 @@ class RealexSdkCertification extends TestCase
     public function testManual023a1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15637,7 +15638,7 @@ class RealexSdkCertification extends TestCase
     public function testManual023a2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15662,7 +15663,7 @@ class RealexSdkCertification extends TestCase
     public function testManual023b1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15687,7 +15688,7 @@ class RealexSdkCertification extends TestCase
     public function testManual023c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15712,7 +15713,7 @@ class RealexSdkCertification extends TestCase
     public function testManual024a1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15737,7 +15738,7 @@ class RealexSdkCertification extends TestCase
     public function testManual024a2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15762,7 +15763,7 @@ class RealexSdkCertification extends TestCase
     public function testManual024a3()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15787,7 +15788,7 @@ class RealexSdkCertification extends TestCase
     public function testManual024b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15812,7 +15813,7 @@ class RealexSdkCertification extends TestCase
     public function testManual024c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15837,7 +15838,7 @@ class RealexSdkCertification extends TestCase
     public function testManual025()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15862,7 +15863,7 @@ class RealexSdkCertification extends TestCase
     public function testManual026a1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15887,7 +15888,7 @@ class RealexSdkCertification extends TestCase
     public function testManual026a2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15911,7 +15912,7 @@ class RealexSdkCertification extends TestCase
     public function testManual026b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15935,7 +15936,7 @@ class RealexSdkCertification extends TestCase
     public function testManual026c1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15960,7 +15961,7 @@ class RealexSdkCertification extends TestCase
     public function testManual026c2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -15985,7 +15986,7 @@ class RealexSdkCertification extends TestCase
     public function testManual027a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16011,7 +16012,7 @@ class RealexSdkCertification extends TestCase
     public function testManual028a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16037,7 +16038,7 @@ class RealexSdkCertification extends TestCase
     public function testManual028b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16065,7 +16066,7 @@ class RealexSdkCertification extends TestCase
     public function testManual028c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16094,7 +16095,7 @@ class RealexSdkCertification extends TestCase
     public function testManual028d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16120,7 +16121,7 @@ class RealexSdkCertification extends TestCase
     public function testManual029a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16146,7 +16147,7 @@ class RealexSdkCertification extends TestCase
     public function testManual029b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16174,7 +16175,7 @@ class RealexSdkCertification extends TestCase
     public function testManual029c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16203,7 +16204,7 @@ class RealexSdkCertification extends TestCase
     public function testManual029d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16229,7 +16230,7 @@ class RealexSdkCertification extends TestCase
     public function testManual030a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16255,7 +16256,7 @@ class RealexSdkCertification extends TestCase
     public function testManual030b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16283,7 +16284,7 @@ class RealexSdkCertification extends TestCase
     public function testManual030c()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16312,7 +16313,7 @@ class RealexSdkCertification extends TestCase
     public function testManual030d()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16338,7 +16339,7 @@ class RealexSdkCertification extends TestCase
     public function testManual031a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16364,7 +16365,7 @@ class RealexSdkCertification extends TestCase
     public function testManual031b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16389,7 +16390,7 @@ class RealexSdkCertification extends TestCase
     public function testManual031c1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16415,7 +16416,7 @@ class RealexSdkCertification extends TestCase
     public function testManual031c2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16441,7 +16442,7 @@ class RealexSdkCertification extends TestCase
     public function testManual032a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -16478,7 +16479,7 @@ class RealexSdkCertification extends TestCase
     public function testManual033a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -16513,7 +16514,7 @@ class RealexSdkCertification extends TestCase
     public function testManual033b1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -16543,7 +16544,7 @@ class RealexSdkCertification extends TestCase
     public function testManual033b2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // shipping address
         $shippingAddress = new Address();
@@ -16573,7 +16574,7 @@ class RealexSdkCertification extends TestCase
     public function testManual033c1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -16603,7 +16604,7 @@ class RealexSdkCertification extends TestCase
     public function testManual033c2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // shipping address
         $shippingAddress = new Address();
@@ -16633,7 +16634,7 @@ class RealexSdkCertification extends TestCase
     public function testManual034a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -16668,7 +16669,7 @@ class RealexSdkCertification extends TestCase
     public function testManual034b1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // shipping address
         $shippingAddress = new Address();
@@ -16698,7 +16699,7 @@ class RealexSdkCertification extends TestCase
     public function testManual034b2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -16728,7 +16729,7 @@ class RealexSdkCertification extends TestCase
     public function testManual034c1()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // billing address
         $billingAddress = new Address();
@@ -16758,7 +16759,7 @@ class RealexSdkCertification extends TestCase
     public function testManual034c2()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // shipping address
         $shippingAddress = new Address();
@@ -16788,7 +16789,7 @@ class RealexSdkCertification extends TestCase
     public function testManual035a()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16813,7 +16814,7 @@ class RealexSdkCertification extends TestCase
     public function testManual035b()
     {
         $config = $this->getBaseConfig();
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -16839,13 +16840,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001038443335";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -16862,13 +16863,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001038488884";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -16885,13 +16886,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001036298889";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -16908,13 +16909,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001036853337";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -16931,13 +16932,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -16954,13 +16955,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037167778";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -16977,13 +16978,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17000,13 +17001,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037484447";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17023,13 +17024,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037490006";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17049,13 +17050,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "5100000000000198�";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17074,13 +17075,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "5100000000000149";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17099,13 +17100,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "5100000000000172";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17124,13 +17125,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "5100000000000297";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17149,13 +17150,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "5100000000000131";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17174,13 +17175,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "5100000000000206";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17199,13 +17200,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "5100000000000131";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17224,13 +17225,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "5100000000000214";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17249,13 +17250,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "5100000000000164";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17275,13 +17276,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "370537726695896�";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17300,13 +17301,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "344598846104303";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17325,13 +17326,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "342911579886552";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17350,13 +17351,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "377775599797356";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17375,13 +17376,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "371810438025523";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17400,13 +17401,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "374973180958759";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17425,13 +17426,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "371810438025523";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17450,13 +17451,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "376515222233960";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17475,13 +17476,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "372749236937027";
         $card->expMonth = 10;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17498,13 +17499,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17521,13 +17522,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17544,13 +17545,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17567,13 +17568,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17590,13 +17591,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17613,13 +17614,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17636,13 +17637,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17659,13 +17660,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17682,13 +17683,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17705,13 +17706,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17728,13 +17729,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17751,13 +17752,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17774,13 +17775,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17797,13 +17798,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17820,13 +17821,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17843,13 +17844,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17866,13 +17867,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17889,13 +17890,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17912,13 +17913,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17935,13 +17936,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17958,13 +17959,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -17981,13 +17982,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18004,13 +18005,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18027,13 +18028,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18050,13 +18051,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18073,13 +18074,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18096,13 +18097,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18119,13 +18120,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18142,13 +18143,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18165,13 +18166,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18188,13 +18189,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18211,13 +18212,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18234,13 +18235,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18256,13 +18257,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18279,13 +18280,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18305,13 +18306,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "42424242424";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18331,13 +18332,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4263970000005262#";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18354,13 +18355,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->CvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18380,13 +18381,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18406,13 +18407,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
         $card->cardHolderName = "3a4wpIwep3uviSnW9XEB3a4wpIwep3uviSnW9XEB3a4wpIwepeep3a4wpIwep3uviSnW9XEB3a4wpIwep3uviSnW9XEB3a4wpIwepeep";
@@ -18430,13 +18431,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
         $card->cardHolderName = "James~Mason";
@@ -18454,13 +18455,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18477,13 +18478,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18503,13 +18504,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 20;
-        $card->expYear = 2012;
+        $card->expYear = TestCards::expiredCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18529,7 +18530,7 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
@@ -18550,13 +18551,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18573,13 +18574,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18596,13 +18597,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18619,13 +18620,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18642,13 +18643,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18665,13 +18666,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18691,13 +18692,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18717,13 +18718,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "371810438025523";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18743,13 +18744,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "12345";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18768,13 +18769,13 @@ class RealexSdkCertification extends TestCase
 
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "371810438025523";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "1234";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18791,13 +18792,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
@@ -18814,13 +18815,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::ILLEGIBLE;
 
@@ -18837,13 +18838,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::NOT_ON_CARD;
 
@@ -18860,13 +18861,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "";
         $card->cvnPresenceIndicator = CvnPresenceIndicator::NOT_REQUESTED;
 
@@ -18886,13 +18887,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = 5;
 
@@ -18909,13 +18910,13 @@ class RealexSdkCertification extends TestCase
     {
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
         $card->expMonth = 12;
-        $card->expYear = 2020;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
         $card->cvnPresenceIndicator = 0;
 

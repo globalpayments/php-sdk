@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\PaymentMethods\GiftCard;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GeniusConfig;
 
 class GiftTest extends TestCase
 {
@@ -17,7 +18,7 @@ class GiftTest extends TestCase
 
     public function setup() : void
     {
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
 
         $this->card = new GiftCard();
         $this->card->number = '6033590009112245098';
@@ -29,7 +30,7 @@ class GiftTest extends TestCase
 
     protected function getConfig()
     {
-        $config = new ServicesConfig();
+        $config = new GeniusConfig();
         $config->merchantName = 'Test Shane Logsdon';
         $config->merchantSiteId = 'BKHV2T68';
         $config->merchantKey = 'AT6AN-ALYJE-YF3AW-3M5NN-UQDG1';

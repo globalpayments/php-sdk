@@ -2,9 +2,11 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\PorticoConnector\Certifications;
 
+use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
+use DateTime;
+use DateInterval;
 
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Customer;
@@ -21,8 +23,9 @@ use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\Services\BatchService;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 
-class RecurringTest extends TestCase
+final class RecurringTest extends TestCase
 {
     /** @var string */
     private $todayDate = null;
@@ -62,6 +65,8 @@ class RecurringTest extends TestCase
 
     private $enableCryptoUrl = true;
 
+    private static $scheduleVisaID;
+
     /**
      * @param string $identifier
      *
@@ -73,11 +78,11 @@ class RecurringTest extends TestCase
     }
 
     /**
-     * @return ServicesConfig
+     * @return PorticoConfig
      */
     private function config()
     {
-        $config = new ServicesConfig();
+        $config = new PorticoConfig();
         $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':
@@ -85,9 +90,9 @@ class RecurringTest extends TestCase
         return $config;
     }
 
-    protected function setup()
+    public function setup() : void
     {
-        ServicesContainer::configure($this->config());
+        ServicesContainer::configureService($this->config());
 
         $this->todayDate = date('Ymd');
         $this->identifierBase = substr(
@@ -185,7 +190,7 @@ class RecurringTest extends TestCase
         $card = new CreditCardData();
         $card->number = '4012002000060016';
         $card->expMonth = '12';
-        $card->expYear = '2025';
+        $card->expYear = TestCards::validCardExpYear();
 
         $paymentMethod = static::$customerPerson->addPaymentMethod(
             $this->getIdentifier('CreditV'),
@@ -206,7 +211,7 @@ class RecurringTest extends TestCase
         $card = new CreditCardData();
         $card->number = '5473500000000014';
         $card->expMonth = '12';
-        $card->expYear = '2025';
+        $card->expYear = TestCards::validCardExpYear();
 
         $paymentMethod = static::$customerPerson->addPaymentMethod(
             $this->getIdentifier('CreditMC'),
@@ -305,8 +310,10 @@ class RecurringTest extends TestCase
             $this->markTestIncomplete();
         }
 
+        static::$scheduleVisaID = $this->getIdentifier('CreditV');
+
         $schedule = static::$paymentMethodVisa->addSchedule(
-            $this->getIdentifier('CreditV')
+            static::$scheduleVisaID
         )
             ->withStatus('Active')
             ->withAmount(30.02)
@@ -359,7 +366,7 @@ class RecurringTest extends TestCase
             ->withStartDate(\DateTime::createFromFormat('Y-m-d', '2027-02-01'))
             ->withFrequency(ScheduleFrequency::MONTHLY)
             ->withReprocessingCount(1)
-            ->withNumberOfPayments(2)
+            ->withnumberOfPaymentsRemaining(2)
             ->create();
         $this->assertNotNull($schedule);
         $this->assertNotNull($schedule->key);
@@ -426,7 +433,7 @@ class RecurringTest extends TestCase
             ->withStartDate(\DateTime::createFromFormat('Y-m-d', '2027-02-01'))
             ->withFrequency(ScheduleFrequency::MONTHLY)
             ->withReprocessingCount(1)
-            ->withNumberOfPayments(2)
+            ->withnumberOfPaymentsRemaining(2)
             ->create();
     }
 
@@ -602,5 +609,22 @@ class RecurringTest extends TestCase
 
         $this->assertNotNull($nextResponse);
         $this->assertEquals('00', $nextResponse->responseCode);
+    }
+
+    public function test025EditStartDateUsingString()
+    {
+        $schedule = Schedule::find(static::$scheduleVisaID);
+        $schedule->startDate = '01022026';
+        $schedule->saveChanges();
+    }
+
+    public function test026EditStartDateUsingDateTimeObj()
+    {
+        $updateTimeValueAsObj = new DateTime();
+        $updateTimeValueAsObj->add(new DateInterval('P1Y'));
+
+        $schedule = Schedule::find(static::$scheduleVisaID);
+        $schedule->startDate = $updateTimeValueAsObj;
+        $schedule->saveChanges();
     }
 }

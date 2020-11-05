@@ -8,7 +8,7 @@ use GlobalPayments\Api\Entities\Enums\CheckType;
 use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\SecCode;
 use GlobalPayments\Api\PaymentMethods\ECheck;
-use GlobalPayments\Api\ServicesConfig;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\ServicesContainer;
 use PHPUnit\Framework\TestCase;
 
@@ -48,7 +48,7 @@ class AchTest extends TestCase
         $this->address->state = 'NJ';
         $this->address->postalCode = '12345';
 
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
     }
 
     public function testCheckSale()
@@ -73,7 +73,7 @@ class AchTest extends TestCase
 
     protected function getConfig()
     {
-        $config = new ServicesConfig();
+        $config = new PorticoConfig();
         $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':

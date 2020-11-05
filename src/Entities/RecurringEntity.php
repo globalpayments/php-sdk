@@ -51,9 +51,9 @@ abstract class RecurringEntity implements IRecurringEntity
     /**
      * {@inheritDoc}
      */
-    public static function find($id)
+    public static function find($id, $configName = 'default')
     {
-        $client = ServicesContainer::instance()->getRecurringClient();
+        $client = ServicesContainer::instance()->getRecurringClient($configName);
         if (!$client->supportsRetrieval) {
             throw new UnsupportedTransactionException();
         }
@@ -74,9 +74,9 @@ abstract class RecurringEntity implements IRecurringEntity
     /**
      * {@inheritDoc}
      */
-    public static function findAll()
+    public static function findAll($configName = 'default')
     {
-        $client = ServicesContainer::instance()->getRecurringClient();
+        $client = ServicesContainer::instance()->getRecurringClient($configName);
         if (!$client->supportsRetrieval) {
             throw new UnsupportedTransactionException();
         }
@@ -87,7 +87,7 @@ abstract class RecurringEntity implements IRecurringEntity
     /**
      * {@inheritDoc}
      */
-    public function saveChanges()
+    public function saveChanges($configName = 'default')
     {
         try {
             return RecurringService::edit($this);

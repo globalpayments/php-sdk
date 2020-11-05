@@ -6,6 +6,7 @@ use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Customer;
+use GlobalPayments\Api\Tests\Data\TestCards;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
@@ -56,7 +57,7 @@ class RealexHppClient
         $card = new CreditCardData();
         $card->number = '4006097467207025';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 

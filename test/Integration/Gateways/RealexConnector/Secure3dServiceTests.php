@@ -14,6 +14,7 @@ use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
 use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\Services\Secure3dService;
+use GlobalPayments\Api\Tests\Data\TestCards;
 use GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\ThreeDSecureAcsClient;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\Address;
@@ -51,7 +52,7 @@ class Secure3dServiceTests extends TestCase
         $this->card = new CreditCardData();
         $this->card->number = 4263970000005262;
         $this->card->expMonth = 12;
-        $this->card->expYear = 2025;
+        $this->card->expYear = TestCards::validCardExpYear();
         $this->card->cardHolderName = 'John Smith';
 
         // stored card
@@ -108,7 +109,7 @@ class Secure3dServiceTests extends TestCase
         $card = new CreditCardData();
         $card->number = 4012001037141112;
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = 'John Smith';
 
         $secureEcom = Secure3dService::checkEnrollment($card)
@@ -750,7 +751,7 @@ class Secure3dServiceTests extends TestCase
         $card = new CreditCardData();
         $card->number = 4012001037141112;
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $secureEcom = Secure3dService::checkEnrollment($card)
             ->execute(Secure3dVersion::ANY);
         $this->assertNotNull($secureEcom);

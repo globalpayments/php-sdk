@@ -548,7 +548,7 @@ class Secure3dBuilder extends BaseBuilder
     public function getVersion()
     {
         if (!empty($this->threeDSecure)) {
-            return $this->threeDSecure->version;
+            return $this->threeDSecure->getVersion();
         }
         return null;
     }
@@ -646,8 +646,11 @@ class Secure3dBuilder extends BaseBuilder
         return $this;
     }
 
-    /** @return Secure3dBuilder */
-    public function withAddressMatchIndicator(bool $value)
+    /**
+     * @param bool $value
+     * @return Secure3dBuilder
+     */
+    public function withAddressMatchIndicator($value)
     {
         $this->addressMatchIndicator = $value;
         return $this;
@@ -968,8 +971,11 @@ class Secure3dBuilder extends BaseBuilder
         return $this;
     }
 
-    /** @return Secure3dBuilder */
-    public function withPreviousSuspiciousActivity(bool $previousSuspiciousActivity)
+    /**
+     * @param bool $previousSuspiciousActivity
+     * @return Secure3dBuilder
+     */
+    public function withPreviousSuspiciousActivity($previousSuspiciousActivity)
     {
         $this->previousSuspiciousActivity = $previousSuspiciousActivity;
         return $this;

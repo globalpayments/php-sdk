@@ -6,6 +6,7 @@ use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
 use GlobalPayments\Api\Services\DeviceService;
+use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxSearchCriteria;
@@ -29,7 +30,7 @@ class PaxReportTests extends TestCase
         $card = new CreditCardData();
         $card->number = '4111111111111111';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '123';
         $card->cardHolderName = 'Joe Smith';
                 

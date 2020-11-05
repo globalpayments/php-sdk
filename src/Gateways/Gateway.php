@@ -90,7 +90,15 @@ abstract class Gateway
             curl_setopt($request, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($request, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
             curl_setopt($request, CURLOPT_VERBOSE, false);
+
+            // Define the constant manually for earlier versions of PHP.
+            // Disable phpcs here since this constant does not exist until PHP 5.5.19.
+            // phpcs:disable
+            if (!defined('CURL_SSLVERSION_TLSv1_2')) {
+                define('CURL_SSLVERSION_TLSv1_2', 6);
+            }
             curl_setopt($request, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
+            // phpcs:enable
 
             if ($this->curlOptions != null && !empty($this->curlOptions)) {
                 curl_setopt_array($request, $this->curlOptions);

@@ -16,6 +16,7 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\TaxCategory;
+use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 
 final class CommercialCardTest extends TestCase {
@@ -47,7 +48,7 @@ final class CommercialCardTest extends TestCase {
         $visaManual = new CreditCardData();
         $visaManual->number = '4012000098765439';
         $visaManual->expMonth = 12;
-        $visaManual->expYear = 2020;
+        $visaManual->expYear = TestCards::validCardExpYear();
         $visaManual->cvn = '999';
         return $visaManual;
     }
@@ -56,7 +57,7 @@ final class CommercialCardTest extends TestCase {
         $masterCardManual = new CreditCardData();
         $masterCardManual->number = '5146315000000055';
         $masterCardManual->expMonth = 12;
-        $masterCardManual->expYear = 2020;
+        $masterCardManual->expYear = TestCards::validCardExpYear();
         $masterCardManual->cvn = '998';
         return $masterCardManual;
     }
@@ -65,7 +66,7 @@ final class CommercialCardTest extends TestCase {
         $amexManual = new CreditCardData();
         $amexManual->number = "371449635392376";
         $amexManual->expMonth = 12;
-        $amexManual->expYear = 2020;
+        $amexManual->expYear = TestCards::validCardExpYear();
         $amexManual->cvn = "9997";
         return $amexManual;
     }

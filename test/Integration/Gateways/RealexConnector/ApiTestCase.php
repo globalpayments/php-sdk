@@ -18,6 +18,7 @@ use GlobalPayments\Api\Entities\Enums\RecurringType;
 use GlobalPayments\Api\Entities\Enums\ReasonCode;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Tests\Data\TestCards;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
@@ -44,7 +45,7 @@ class ApiTestCase extends TestCase
         $card = new CreditCardData();
         $card->number = '4263970000005262';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 
@@ -86,7 +87,7 @@ class ApiTestCase extends TestCase
         $card = new CreditCardData();
         $card->number = '4263970000005262';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 
@@ -119,7 +120,7 @@ class ApiTestCase extends TestCase
         $card = new CreditCardData();
         $card->number = '4263970000005262';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 
@@ -170,7 +171,7 @@ class ApiTestCase extends TestCase
         $card = new CreditCardData();
         $card->number = '4263970000005262';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 
@@ -217,7 +218,7 @@ class ApiTestCase extends TestCase
         $card = new CreditCardData();
         $card->number = '4263970000005262';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 
@@ -293,7 +294,7 @@ class ApiTestCase extends TestCase
         $card = new CreditCardData();
         $card->number = '4263970000005262';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
         
@@ -376,7 +377,7 @@ class ApiTestCase extends TestCase
         $card = new CreditCardData();
         $card->number = '4263970000005262';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 
@@ -430,7 +431,7 @@ class ApiTestCase extends TestCase
         $card = new CreditCardData();
         $card->number = '4263970000005262';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 
@@ -479,7 +480,7 @@ class ApiTestCase extends TestCase
         $card = new CreditCardData();
         $card->number = '4263970000005262';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 
@@ -744,7 +745,7 @@ class ApiTestCase extends TestCase
         $card = new CreditCardData();
         $card->number = '4263970000005262';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 
@@ -787,7 +788,7 @@ class ApiTestCase extends TestCase
         $card = new CreditCardData();
         $card->number = '4263970000005262';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 
@@ -841,7 +842,7 @@ class ApiTestCase extends TestCase
         $card = new CreditCardData();
         $card->number = '4263970000005262';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 
@@ -957,7 +958,7 @@ class ApiTestCase extends TestCase
         $card = new CreditCardData();
         $card->number = '4263970000005262';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 
@@ -984,7 +985,7 @@ class ApiTestCase extends TestCase
         $card = new CreditCardData();
         $card->number = '4263970000005262';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = TestCards::validCardExpYear();
         $card->cvn = '131';
         $card->cardHolderName = 'James Mason';
 

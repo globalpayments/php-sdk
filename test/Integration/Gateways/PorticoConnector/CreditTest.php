@@ -11,6 +11,7 @@ use GlobalPayments\Api\ServicesContainer;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\Tests\Data\TestCards;
 
 class CreditTest extends TestCase
 {
@@ -23,7 +24,7 @@ class CreditTest extends TestCase
         $this->card = new CreditCardData();
         $this->card->number = '4111111111111111';
         $this->card->expMonth = 12;
-        $this->card->expYear = 2025;
+        $this->card->expYear = TestCards::validCardExpYear();
         $this->card->cvn = '123';
         $this->card->cardHolderName = 'Joe Smith';
 

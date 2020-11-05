@@ -6,6 +6,7 @@ use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
 use GlobalPayments\Api\Services\DeviceService;
+use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
@@ -27,7 +28,7 @@ class PaxCreditTests extends TestCase
         $this->card = new CreditCardData();
         $this->card->number = '4111111111111111';
         $this->card->expMonth = 12;
-        $this->card->expYear = 2025;
+        $this->card->expYear = TestCards::validCardExpYear();
         $this->card->cvn = '123';
         $this->card->cardHolderName = 'Joe Smith';
         

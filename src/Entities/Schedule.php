@@ -113,7 +113,7 @@ class Schedule extends RecurringEntity
      *
      * @var integer|null
      */
-    public $numberOfPayments;
+    public $numberOfPaymentsRemaining;
 
     /**
      * The purchase order (PO) number associated with the schedule.
@@ -337,9 +337,9 @@ class Schedule extends RecurringEntity
      *
      * @return Schedule
      */
-    public function withNumberOfPayments($value)
+    public function withnumberOfPaymentsRemaining($value)
     {
-        $this->numberOfPayments = $value;
+        $this->numberOfPaymentsRemaining = $value;
         return $this;
     }
 

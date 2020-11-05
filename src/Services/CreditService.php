@@ -7,7 +7,7 @@ use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
-use GlobalPayments\Api\ServicesConfig;
+use GlobalPayments\Api\ServiceConfigs\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 
 class CreditService
@@ -19,9 +19,9 @@ class CreditService
      *
      * @return void
      */
-    public function __construct(ServicesConfig $config)
+    public function __construct($config)
     {
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
     }
 
     /**

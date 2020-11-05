@@ -18,7 +18,7 @@ class PaxHttpInterface implements IDeviceCommInterface
 {
     /*
      * Device configuration details ConnectionConfig object
-     * 
+     *
      */
 
     public $deviceDetails;
@@ -26,7 +26,7 @@ class PaxHttpInterface implements IDeviceCommInterface
 
     /*
      * Device request type
-     * 
+     *
      */
     private $requestType;
 
@@ -98,7 +98,15 @@ class PaxHttpInterface implements IDeviceCommInterface
             $config[CURLOPT_SSL_VERIFYPEER] = false; //true
             $config[CURLOPT_SSL_VERIFYHOST] = false; //2
             $config[CURLOPT_PROTOCOLS] = CURLPROTO_HTTPS;
+
+            // Define the constant manually for earlier versions of PHP.
+            // Disable phpcs here since this constant does not exist until PHP 5.5.19.
+            // phpcs:disable
+            if (!defined('CURL_SSLVERSION_TLSv1_2')) {
+                define('CURL_SSLVERSION_TLSv1_2', 6);
+            }
             $config[CURLOPT_SSLVERSION] = CURL_SSLVERSION_TLSv1_2;
+            // phpcs:enable
         }
         
         return $config;

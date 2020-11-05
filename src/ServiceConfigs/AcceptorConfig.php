@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api;
+namespace GlobalPayments\Api\ServiceConfigs;
 
 use GlobalPayments\Api\Entities\Enums\CardHolderAuthenticationEntity;
 use GlobalPayments\Api\Entities\Enums\CardDataInputCapability;
@@ -94,5 +94,9 @@ class AcceptorConfig
         $this->operatingEnvironment                 = $operatingEnvironment;
         $this->pinCaptureCapability                 = $pinCaptureCapability;
         $this->terminalOutputCapability             = $terminalOutputCapability;
+    }
+
+    public function validate() {
+        // for use in future gateway integrations
     }
 }

@@ -4,20 +4,14 @@ namespace GlobalPayments\Api\Test\Integration\Gateways\RealexConnector;
 
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Services\HostedService;
-use GlobalPayments\Api\ServicesConfig;
-use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\HostedPaymentConfig;
 use GlobalPayments\Api\Entities\HostedPaymentData;
 use GlobalPayments\Api\Entities\Enums\HppVersion;
 use GlobalPayments\Api\Entities\Enums\RecurringSequence;
 use GlobalPayments\Api\Entities\Enums\RecurringType;
-use GlobalPayments\Api\Entities\Enums\DccProcessor;
-use GlobalPayments\Api\Entities\Enums\DccRateType;
-use GlobalPayments\Api\Entities\DccRateData;
-use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\Hpp\RealexHppClient;
 use PHPUnit\Framework\TestCase;
 
@@ -32,7 +26,7 @@ class HppTest extends TestCase
 
     public function basicSetup()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "hpp";
         $config->sharedSecret = "secret";
@@ -46,7 +40,7 @@ class HppTest extends TestCase
 
     public function testCreditAuth()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "hpp";
         $config->sharedSecret = "secret";
@@ -84,7 +78,7 @@ class HppTest extends TestCase
 
     public function testCreditSale()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "hpp";
         $config->sharedSecret = "secret";
@@ -125,7 +119,7 @@ class HppTest extends TestCase
 
     public function testCreditVerify()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "hpp";
         $config->sharedSecret = "secret";
@@ -219,7 +213,7 @@ class HppTest extends TestCase
 
     public function testCardStorageCreatePayer()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "3dsecure";
         $config->refundPassword = "refund";
@@ -260,7 +254,7 @@ class HppTest extends TestCase
 
     public function testCardStorageDisplayStoredCard()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "3dsecure";
         $config->refundPassword = "refund";
@@ -303,7 +297,7 @@ class HppTest extends TestCase
 
     public function testContinuousAuthorityRequest()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "3dsecure";
         $config->refundPassword = "refund";
@@ -341,7 +335,7 @@ class HppTest extends TestCase
     public function testEnableDynamicCurrencyConversionRequest()
     {
         //set config for DCC
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "MerchantId";
         $config->accountId = "internet";
         $config->refundPassword = "refund";
@@ -371,7 +365,7 @@ class HppTest extends TestCase
     public function testDisableDynamicCurrencyConversionRequest()
     {
         //set config for DCC
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "MerchantId";
         $config->accountId = "internet";
         $config->refundPassword = "refund";
@@ -402,7 +396,7 @@ class HppTest extends TestCase
 
     public function testFraudManagementRequest()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "3dsecure";
         $config->refundPassword = "refund";
@@ -460,7 +454,7 @@ class HppTest extends TestCase
 
     public function testBasicAuthHppVersion1()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "MerchantId";
         $config->accountId = "internet";
         $config->refundPassword = "refund";
@@ -486,7 +480,7 @@ class HppTest extends TestCase
 
     public function testBasicAuthHppVersion2()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "MerchantId";
         $config->accountId = "internet";
         $config->refundPassword = "refund";
@@ -512,7 +506,7 @@ class HppTest extends TestCase
 
     public function testBasicSale()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "MerchantId";
         $config->accountId = "internet";
         $config->refundPassword = "refund";
@@ -538,7 +532,7 @@ class HppTest extends TestCase
 
     public function testBasicHostedPaymentDataHppVersion1()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "MerchantId";
         $config->accountId = "internet";
         $config->refundPassword = "refund";
@@ -573,7 +567,7 @@ class HppTest extends TestCase
 
     public function testBasicHostedPaymentDataHppVersion2()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "MerchantId";
         $config->accountId = "internet";
         $config->refundPassword = "refund";
@@ -608,7 +602,7 @@ class HppTest extends TestCase
 
     public function testParseResponse()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "hpp";
         $config->sharedSecret = "secret";

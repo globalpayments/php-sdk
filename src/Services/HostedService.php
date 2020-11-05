@@ -7,11 +7,11 @@ use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\ServiceConfigs\ServicesConfig;
 
 class HostedService
 {
@@ -30,9 +30,9 @@ class HostedService
      *
      * @return void
      */
-    public function __construct(ServicesConfig $config)
+    public function __construct($config)
     {
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
         $this->sharedSecret = $config->sharedSecret;
     }
 

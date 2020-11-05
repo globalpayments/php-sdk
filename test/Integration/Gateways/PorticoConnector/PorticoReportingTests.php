@@ -29,7 +29,7 @@ class PorticoReportingTests extends TestCase
         $this->card = new CreditCardData();
         $this->card->number = '4111111111111111';
         $this->card->expMonth = 12;
-        $this->card->expYear = 2025;
+        $this->card->expYear = TestCards::validCardExpYear();
         $this->card->cvn = '123';
         $this->card->cardHolderName = 'Joe Smith';
         

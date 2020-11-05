@@ -41,7 +41,7 @@ use GlobalPayments\Api\Entities\Reporting\SearchCriteriaBuilder;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
 use GlobalPayments\Api\Services\ReportingService;
 
-class MerchantwareConnector extends XmlGateway implements IPaymentGateway
+class GeniusConnector extends XmlGateway implements IPaymentGateway
 {
     /**
      * Portico's XML namespace

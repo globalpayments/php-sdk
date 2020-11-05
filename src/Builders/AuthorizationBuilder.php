@@ -476,12 +476,12 @@ class AuthorizationBuilder extends TransactionBuilder
      *
      * @return Transaction
      */
-    public function execute()
+    public function execute(string $configName = 'default')
     {
-        parent::execute();
-        return ServicesContainer::instance()
-                        ->getClient()
-                        ->processAuthorization($this);
+        parent::execute($configName);
+        
+        $client = ServicesContainer::instance()->getClient($configName);
+        return $client->processAuthorization($this);
     }
 
     /**
@@ -489,12 +489,12 @@ class AuthorizationBuilder extends TransactionBuilder
      *
      * @return String
      */
-    public function serialize()
+    public function serialize(string $configName = 'default')
     {
         $this->transactionModifier = TransactionModifier::HOSTEDREQUEST;
         parent::execute();
 
-        $client = ServicesContainer::instance()->getClient();
+        $client = ServicesContainer::instance()->getClient($configName);
 
         if ($client->supportsHostedPayments()) {
             return $client->serializeRequest($this);
