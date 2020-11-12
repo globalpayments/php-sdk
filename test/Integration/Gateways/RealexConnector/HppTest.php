@@ -645,4 +645,111 @@ class HppTest extends TestCase
             $this->assertEquals("00", $parsedResponse->responseCode);
         }
     }
+
+    public function testHostedPaymentDataSupplementaryDataSerialize() 
+    {
+        $config = new ServicesConfig();
+        $config->merchantId = "MerchantId";
+        $config->accountId = "internet";
+        $config->refundPassword = "refund";
+        $config->sharedSecret = "secret";
+        $config->serviceUrl = "https://pay.sandbox.realexpayments.com/pay";
+        $config->hostedPaymentConfig = new HostedPaymentConfig();
+        $config->hostedPaymentConfig->language = "GB";
+        $config->hostedPaymentConfig->responseUrl = "https://www.example.com/response";
+        $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
+        $config->gatewayProvider = GatewayProvider::GP_ECOM;
+
+        $service = new HostedService($config);
+
+        $hostedPaymentData = new HostedPaymentData();
+        $hostedPaymentData->offerToSaveCard = "1"; // display the save card tick box
+        $hostedPaymentData->customerExists = "0"; // new customer
+        $hostedPaymentData->customerNumber = 'a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa';
+        $hostedPaymentData->productId = 'a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f';
+        $hostedPaymentData->supplementaryData = ['HPP_FRAUDFILTER_MODE' => 'ACTIVE'];
+
+        $json = $service->charge(19.99)
+            ->withCurrency("EUR")
+            ->withTimeStamp("20170725154824")
+            ->withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+            ->withHostedPaymentData($hostedPaymentData)
+            ->withDescription("Mobile Channel")
+            ->withClientTransactionId("My Legal Entity")
+            ->serialize();
+
+        $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","COMMENT1":"Mobile Channel","CUST_NUM":"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa","OFFER_SAVE_CARD":"1","PAYER_EXIST":"0","PROD_ID":"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f","VAR_REF":"My Legal Entity","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","HPP_FRAUDFILTER_MODE":"ACTIVE","HPP_VERSION":"2","SHA1HASH":"7116c49826367c6513efdc0cc81e243b8095d78f"}';
+        $this->assertEquals($json, $expectedJson);
+    }
+
+    public function testSupplementaryDataWithOneValueSerialized() {
+        $config = new ServicesConfig();
+        $config->merchantId = "MerchantId";
+        $config->accountId = "internet";
+        $config->refundPassword = "refund";
+        $config->sharedSecret = "secret";
+        $config->serviceUrl = "https://pay.sandbox.realexpayments.com/pay";
+        $config->hostedPaymentConfig = new HostedPaymentConfig();
+        $config->hostedPaymentConfig->language = "GB";
+        $config->hostedPaymentConfig->responseUrl = "https://www.example.com/response";
+        $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
+        $config->gatewayProvider = GatewayProvider::GP_ECOM;
+
+        $service = new HostedService($config);
+
+        $hostedPaymentData = new HostedPaymentData();
+        $hostedPaymentData->offerToSaveCard = "1"; // display the save card tick box
+        $hostedPaymentData->customerExists = "0"; // new customer
+        $hostedPaymentData->customerNumber = 'a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa';
+        $hostedPaymentData->productId = 'a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f';
+
+        $json = $service->charge(19.99)
+            ->withCurrency("EUR")
+            ->withTimeStamp("20170725154824")
+            ->withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+            ->withHostedPaymentData($hostedPaymentData)
+            ->withDescription("Mobile Channel")
+            ->withClientTransactionId("My Legal Entity")
+            ->withSupplementaryData('HPP_FRAUDFILTER_MODE', 'ACTIVE')
+            ->serialize();
+
+        $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","COMMENT1":"Mobile Channel","CUST_NUM":"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa","OFFER_SAVE_CARD":"1","PAYER_EXIST":"0","PROD_ID":"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f","VAR_REF":"My Legal Entity","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","HPP_VERSION":"2","HPP_FRAUDFILTER_MODE":"ACTIVE","SHA1HASH":"7116c49826367c6513efdc0cc81e243b8095d78f"}';
+        $this->assertEquals($json, $expectedJson);
+    }
+
+    public function testSupplementaryDataWithTwoValuesSerialized() 
+    {
+        $config = new ServicesConfig();
+        $config->merchantId = "MerchantId";
+        $config->accountId = "internet";
+        $config->refundPassword = "refund";
+        $config->sharedSecret = "secret";
+        $config->serviceUrl = "https://pay.sandbox.realexpayments.com/pay";
+        $config->hostedPaymentConfig = new HostedPaymentConfig();
+        $config->hostedPaymentConfig->language = "GB";
+        $config->hostedPaymentConfig->responseUrl = "https://www.example.com/response";
+        $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
+        $config->gatewayProvider = GatewayProvider::GP_ECOM;
+
+        $service = new HostedService($config);
+
+        $hostedPaymentData = new HostedPaymentData();
+        $hostedPaymentData->offerToSaveCard = "1"; // display the save card tick box
+        $hostedPaymentData->customerExists = "0"; // new customer
+        $hostedPaymentData->customerNumber = 'a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa';
+        $hostedPaymentData->productId = 'a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f';
+
+        $json = $service->charge(19.99)
+            ->withCurrency("EUR")
+            ->withTimeStamp("20170725154824")
+            ->withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+            ->withHostedPaymentData($hostedPaymentData)
+            ->withDescription("Mobile Channel")
+            ->withClientTransactionId("My Legal Entity")
+            ->withSupplementaryData(["RANDOM_KEY1" => "VALUE_1", "RANDOM_KEY2" => "VALUE_2"])
+            ->serialize();
+
+        $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","COMMENT1":"Mobile Channel","CUST_NUM":"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa","OFFER_SAVE_CARD":"1","PAYER_EXIST":"0","PROD_ID":"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f","VAR_REF":"My Legal Entity","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","HPP_VERSION":"2","RANDOM_KEY1":"VALUE_1","RANDOM_KEY2":"VALUE_2","SHA1HASH":"7116c49826367c6513efdc0cc81e243b8095d78f"}';
+        $this->assertEquals($json, $expectedJson);
+    }
 }

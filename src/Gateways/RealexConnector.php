@@ -520,7 +520,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
 
         $this->setSerializeData('MERCHANT_ID', $this->merchantId);
         $this->setSerializeData('ACCOUNT', $this->accountId);
-        $this->setSerializeData('CHANNEL', $this->channel);
+        $this->setSerializeData('HPP_CHANNEL', $this->channel);
         $this->setSerializeData('ORDER_ID', $orderId);
         if ($builder->amount !== null) {
             $this->setSerializeData('AMOUNT', preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount)));
@@ -613,6 +613,9 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             if (isset($builder->hostedPaymentData->addressesMatch)) {
                 $this->setSerializeData('HPP_ADDRESS_MATCH_INDICATOR', $builder->hostedPaymentData->addressesMatch ? 'TRUE' : 'FALSE');
             }
+            if (!empty($builder->hostedPaymentData->supplementaryData)) {
+                $this->serializeSupplementaryData($builder->hostedPaymentData->supplementaryData);
+            }
         }
         if (isset($this->hostedPaymentConfig->cardStorageEnabled)) {
             $this->setSerializeData('CARD_STORAGE_ENABLE', $this->hostedPaymentConfig->cardStorageEnabled ? '1' : '0');
@@ -633,6 +636,10 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         }
         if (isset($this->hostedPaymentConfig->version)) {
             $this->setSerializeData('HPP_VERSION', $this->hostedPaymentConfig->version);
+        }
+
+        if (!empty($builder->supplementaryData)) {
+            $this->serializeSupplementaryData($builder->supplementaryData);
         }
 
         $toHash = [
@@ -1408,6 +1415,16 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
     {
         if ($value !== null) {
             $this->serializeData[$key] = $value;
+        }
+    }
+
+    /**
+     * @param array<string, array<string>> $supplementaryData
+     */
+    private function serializeSupplementaryData($supplementaryData)
+    {
+        foreach ($supplementaryData as $key => $value) {
+            $this->setSerializeData(strtoupper($key), $value);
         }
     }
 }
