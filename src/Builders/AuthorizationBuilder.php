@@ -376,6 +376,13 @@ class AuthorizationBuilder extends TransactionBuilder
     public $timestamp;
 
     /**
+     * Request supplementary data
+     *
+     * @var array<string, string>
+     */
+    public $supplementaryData;
+
+    /**
      * DCC rate Data
      *
      * @internal
@@ -469,6 +476,7 @@ class AuthorizationBuilder extends TransactionBuilder
     {
         parent::__construct($type, $paymentMethod);
         $this->withPaymentMethod($paymentMethod);
+        $this->supplementaryData = [];
     }
 
     /**
@@ -741,8 +749,7 @@ class AuthorizationBuilder extends TransactionBuilder
 
     public function withClientTransactionId($clientTransactionId)
     {
-        if ($this->transactionType !== TransactionType::REVERSAL && $this->transactionType !== TransactionType::REFUND
-        ) {
+        if ($this->transactionType !== TransactionType::REVERSAL) {
             $this->clientTransactionId = $clientTransactionId;
             return $this;
         }
@@ -1267,6 +1274,31 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withLastRegisteredDate($date)
     {
         $this->lastRegisteredDate = $date;
+        return $this;
+    }
+
+    /**
+     * Depending on the parameters received,
+     * Add supplementary data or
+     * Add multiple values to the supplementaryData array
+     *
+     * @param string|array<string, string>  $key
+     * @param string $value
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withSupplementaryData($key, $value = null)
+    {
+        if ($value === null && is_array($key)) {
+            foreach ($key as $k => $v) {
+                $this->withSupplementaryData($k, $v);
+            }
+        }
+
+        if ($key && isset($value)) {
+            $this->supplementaryData[$key] = (string) $value;
+        }
+
         return $this;
     }
 }
