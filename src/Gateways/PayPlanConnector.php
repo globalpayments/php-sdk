@@ -78,23 +78,29 @@ class PayPlanConnector extends RestGateway implements IRecurringService
      *
      * @var string
      */
-    public $developerId;
+    protected $devId;
 
     /**
      * Version number for the application, as given during certification
      *
      * @var string
      */
-    public $versionNumber;
+    protected $versionNbr;
 
     public $supportsRetrieval = true;
     public $supportsUpdatePaymentDetails = false;
+
+    protected $integrationHeader = array();
 
     public function __get($name)
     {
         switch ($name) {
             case 'secretApiKey':
                 return $this->apiKey;
+            case 'developerId':
+                return $this->devId;
+            case 'versionNumber':
+                return $this->versionNbr;
             default:
                 break;
         }
@@ -120,6 +126,16 @@ class PayPlanConnector extends RestGateway implements IRecurringService
                 $this->apiKey = $value;
                 $auth = sprintf('Basic %s', base64_encode($value));
                 $this->headers['Authorization'] = $auth;
+                return;
+            case 'developerId':
+                $this->devId = $value;
+                $this->integrationHeader['DeveloperId'] = $value;
+                $this->updateIntegrationHeader();
+                return;
+            case 'versionNumber':
+                $this->versionNbr = $value;
+                $this->integrationHeader['VersionNbr'] = $value;
+                $this->updateIntegrationHeader();
                 return;
             default:
                 break;
@@ -677,4 +693,15 @@ class PayPlanConnector extends RestGateway implements IRecurringService
     }
 
     #endregion
+
+    protected function updateIntegrationHeader()
+    {
+        $pairs = array();
+
+        foreach ($this->integrationHeader as $key => $value) {
+            $pairs[] = sprintf('%s=%s', $key, $value);
+        }
+    
+        $this->headers['HPS-Integration'] = implode(',', $pairs);
+    }
 }
