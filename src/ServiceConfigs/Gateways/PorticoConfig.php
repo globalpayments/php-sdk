@@ -83,6 +83,8 @@ class PorticoConfig extends GatewayConfig
         
         $payplan = new PayPlanConnector();
         $payplan->secretApiKey = $this->secretApiKey;
+        $payplan->developerId = $this->developerId;
+        $payplan->versionNumber = $this->versionNumber;
         $payplan->timeout = $this->timeout;
         $payplan->serviceUrl = $this->serviceUrl . $this->getPayPlanEndpoint();
 
