@@ -20,6 +20,11 @@ class ThreeDSecure
     public $acsStartVersion;
 
     /**
+     * @var array
+     */
+    public $acsInfoIndicator;
+
+    /**
      * The algorithm used
      *
      * @var int
@@ -110,6 +115,11 @@ class ThreeDSecure
     /**
      * @var string
      */
+    public $decoupledResponseIndicator;
+
+    /**
+     * @var string
+     */
     public $directoryServerTransactionId;
 
     /**
@@ -135,6 +145,13 @@ class ThreeDSecure
      * @var string
      */
     public $enrolled;
+
+    /**
+     * The exempt status
+     *
+     * @var string
+     */
+    public $exemptStatus;
 
     /**
      * The URL of the Issuing Bank's ACS
@@ -189,6 +206,11 @@ class ThreeDSecure
      * @var string
      */
     public $messageCategory;
+
+    /**
+     * @var string
+     */
+    public $messageExtensionData;
 
     /**
      * @var string
@@ -304,6 +326,11 @@ class ThreeDSecure
     }
 
     /**
+     * @var string
+     */
+    public $whitelistStatus;
+
+    /**
      * Consumer authentication (3DSecure) transaction ID
      *
      * @var string
@@ -337,6 +364,7 @@ class ThreeDSecure
             $this->challengeMandated = $this->mergeValue($this->challengeMandated, $secureEcom->challengeMandated);
             $this->criticalityIndicator = $this->mergeValue($this->criticalityIndicator, $secureEcom->criticalityIndicator);
             $this->currency = $this->mergeValue($this->currency, $secureEcom->currency);
+            $this->decoupledResponseIndicator = $this->mergeValue($this->decoupledResponseIndicator, $secureEcom->decoupledResponseIndicator);
             $this->directoryServerTransactionId = $this->mergeValue($this->directoryServerTransactionId, $secureEcom->directoryServerTransactionId);
             $this->directoryServerEndVersion = $this->mergeValue($this->directoryServerEndVersion, $secureEcom->directoryServerEndVersion);
             $this->directoryServerStartVersion = $this->mergeValue($this->directoryServerStartVersion, $secureEcom->directoryServerStartVersion);
@@ -344,6 +372,7 @@ class ThreeDSecure
             $this->enrolled = $this->mergeValue($this->enrolled, $secureEcom->enrolled);
             $this->issuerAcsUrl = $this->mergeValue($this->issuerAcsUrl, $secureEcom->issuerAcsUrl);
             $this->messageCategory = $this->mergeValue($this->messageCategory, $secureEcom->messageCategory);
+            $this->messageExtensionData = $this->mergeValue($this->messageExtensionData, $secureEcom->messageExtensionData);
             $this->messageExtensionId = $this->mergeValue($this->messageExtensionId, $secureEcom->messageExtensionId);
             $this->messageExtensionName = $this->mergeValue($this->messageExtensionName, $secureEcom->messageExtensionName);
             $this->messageVersion = $this->mergeValue($this->messageVersion, $secureEcom->messageVersion);
@@ -357,6 +386,7 @@ class ThreeDSecure
             $this->status = $this->mergeValue($this->status, $secureEcom->status);
             $this->statusReason = $this->mergeValue($this->statusReason, $secureEcom->statusReason);
             $this->version = $this->mergeValue($this->version, $secureEcom->version);
+            $this->whitelistStatus = $this->mergeValue($this->whitelistStatus, $secureEcom->whitelistStatus);
             $this->xid = $this->mergeValue($this->xid, $secureEcom->xid);
         }
     }

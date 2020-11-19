@@ -40,9 +40,9 @@ class ConfiguredServices
         $this->secure3dProviders = array();
     }
 
-    protected function getSecure3dProvider(Secure3dVersion $version)
+    public function getSecure3dProvider($version)
     {
-        if (in_array($version, $this->secure3dProviders)) {
+        if (array_key_exists($version, $this->secure3dProviders)) {
             return $this->secure3dProviders[$version];
         } elseif ($version == Secure3dVersion::ANY) {
             $provider = $this->secure3dProviders[Secure3dVersion::TWO];
@@ -55,7 +55,7 @@ class ConfiguredServices
         }
     }
 
-    protected function setSecure3dProvider(Secure3dVersion $version, ISecure3dProvider $provider)
+    public function setSecure3dProvider($version, $provider)
     {
         $this->secure3dProviders[$version] = $provider;
     }

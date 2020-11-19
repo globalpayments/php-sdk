@@ -68,9 +68,9 @@ class GpEcomConfig extends GatewayConfig
             $secure3d2->setMerchantId($gateway->merchantId);
             $secure3d2->setAccountId($gateway->accountId);
             $secure3d2->setSharedSecret($gateway->sharedSecret);
-            $secure3d2->serviceUrl = $gateway->serviceUrl;
+            $secure3d2->serviceUrl = $this->environment == Environment::TEST ? ServiceEndpoints::THREE_DS_AUTH_TEST : ServiceEndpoints::THREE_DS_AUTH_PRODUCTION;
             $secure3d2->setMerchantContactUrl($this->merchantContactUrl);
-            $secure3d2->setMethodNotificationUrl($this->merchantNotificationUrl);
+            $secure3d2->setMethodNotificationUrl($this->methodNotificationUrl);
             $secure3d2->setChallengeNotificationUrl($this->challengeNotificationUrl);
             $secure3d2->timeout = $gateway->timeout;
 

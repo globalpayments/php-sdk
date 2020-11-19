@@ -169,7 +169,7 @@ class ServicesContainer
     /**
      * @return ISecure3dProvider
      */
-    public function getSecure3d($configName, Secure3dVersion $version)
+    public function getSecure3d($configName, $version)
     {
         if (array_key_exists($configName, static::$configurations)) {
             $provider = static::$configurations[$configName]->getSecure3dProvider($version);

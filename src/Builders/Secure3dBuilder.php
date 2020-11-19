@@ -2,21 +2,18 @@
 
 namespace GlobalPayments\Api\Builders;
 
+use GlobalPayments\Api\Entities\Enums\DecoupledFlowRequest;
+use GlobalPayments\Api\Entities\Enums\WhiteListStatus;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
-use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
-use GlobalPayments\Api\Gateways\ISecure3dProvider;
-use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ISecure3d;
-use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\BrowserData;
 use GlobalPayments\Api\Entities\MerchantDataCollection;
 use GlobalPayments\Api\Entities\ThreeDSecure;
-use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\AgeIndicator;
 use GlobalPayments\Api\Entities\Enums\AuthenticationRequestType;
@@ -50,7 +47,7 @@ class Secure3dBuilder extends BaseBuilder
     public $billingAddress;
     /** @var BrowserData */
     public $browserData;
-    /** @var ChallengeRequestIndicator  */
+    /** @var ChallengeRequestIndicator */
     public $challengeRequestIndicator;
     /** @var string */
     public $currency;
@@ -64,6 +61,12 @@ class Secure3dBuilder extends BaseBuilder
     public $customerAuthenticationTimestamp;
     /** @var string */
     public $customerEmail;
+    /** @var DecoupledFlowRequest */
+    public $decoupledFlowRequest;
+    /** @var integer */
+    public $decoupledFlowTimeout;
+    /** @var string */
+    public $decoupledNotificationUrl;
     /** @var string */
     public $deliveryEmail;
     /** @var DeliveryTimeFrame */
@@ -170,8 +173,10 @@ class Secure3dBuilder extends BaseBuilder
     public $transactionType;
     /** @var TransactionModifier */
     public $transactionModifier = TransactionModifier::NONE;
-    // /** @var Secure3dVersion */
-    // public $version;
+//    /** @var Secure3dVersion */
+//    public $version;
+    /** @var string */
+    public $whitelistStatus;
     /** @var string */
     public $workCountryCode;
     /** @var string */
@@ -191,316 +196,379 @@ class Secure3dBuilder extends BaseBuilder
     {
         return $this->accountAgeIndicator;
     }
+
     /** @return DateTime */
     public function getAccountChangeDate()
     {
         return $this->accountChangeDate;
     }
+
     /** @return DateTime */
     public function getAccountCreateDate()
     {
         return $this->accountCreateDate;
     }
+
     /** @return AgeIndicator */
     public function getAccountChangeIndicator()
     {
         return $this->accountChangeIndicator;
     }
+
     /** @return bool */
     public function isAddressMatchIndicator()
     {
         return $this->addressMatchIndicator;
     }
+
     /** @return string|float */
     public function getAmount()
     {
         return $this->amount;
     }
+
     /** @return string */
     public function getApplicationId()
     {
         return $this->applicationId;
     }
+
     /** @return AuthenticationSource */
     public function getAuthenticationSource()
     {
         return $this->authenticationSource;
     }
+
     /** @return AuthenticationRequestType */
     public function getAuthenticationRequestType()
     {
         return $this->authenticationRequestType;
     }
+
     /** @return address */
     public function getBillingAddress()
     {
         return $this->billingAddress;
     }
+
     /** @return BrowserData */
     public function getBrowserData()
     {
         return $this->browserData;
     }
+
     /** @return string */
     public function getChallengeRequestIndicator()
     {
         return $this->challengeRequestIndicator;
     }
+
     /** @return string */
     public function getCurrency()
     {
         return $this->currency;
     }
+
     /** @return string */
     public function getCustomerAccountId()
     {
         return $this->customerAccountId;
     }
+
     /** @return string */
     public function getCustomerAuthenticationData()
     {
         return $this->customerAuthenticationData;
     }
+
     /** @return CustomerAuthenticationMethod */
     public function getCustomerAuthenticationMethod()
     {
         return $this->customerAuthenticationMethod;
     }
+
     /** @return DateTime */
     public function getCustomerAuthenticationTimestamp()
     {
         return $this->customerAuthenticationTimestamp;
     }
+
     /** @return string */
     public function getCustomerEmail()
     {
         return $this->customerEmail;
     }
+
     /** @return string */
     public function getDeliveryEmail()
     {
         return $this->deliveryEmail;
     }
+
     /** @return DeliveryTimeFrame */
     public function getDeliveryTimeframe()
     {
         return $this->deliveryTimeframe;
     }
+
     /** @return string */
     public function getEncodedData()
     {
         return $this->encodedData;
     }
+
     /** @return string */
     public function getEphemeralPublicKey()
     {
         return $this->ephemeralPublicKey;
     }
+
     /** @return int */
     public function getGiftCardCount()
     {
         return $this->giftCardCount;
     }
+
     /** @return string */
     public function getGiftCardCurrency()
     {
         return $this->giftCardCurrency;
     }
+
     /** @return decimal */
     public function getGiftCardAmount()
     {
         return $this->giftCardAmount;
     }
+
     /** @return string */
     public function getHomeCountryCode()
     {
         return $this->homeCountryCode;
     }
+
     /** @return string */
     public function getHomeNumber()
     {
         return $this->homeNumber;
     }
+
     /** @return int */
     public function getMaxNumberOfInstallments()
     {
         return $this->maxNumberOfInstallments;
     }
+
     /** @return int */
     public function getMaximumTimeout()
     {
         return $this->maximumTimeout;
     }
+
     /** @return MerchantDataCollection */
     public function getMerchantData()
     {
         return $this->merchantData;
     }
+
     /** @return MessageCategory */
     public function getMessageCategory()
     {
         return $this->messageCategory;
     }
+
     /** @return AuthenticationRequestType */
     public function getMerchantInitiatedRequestType()
     {
         return $this->merchantInitiatedRequestType;
     }
+
     /** @return MessageVersion */
     public function getMessageVersion()
     {
         return $this->messageVersion;
     }
+
     /** @return MethodUrlCompletion */
     public function getMethodUrlCompletion()
     {
         return $this->methodUrlCompletion;
     }
+
     /** @return string */
     public function getMobileCountryCode()
     {
         return $this->mobileCountryCode;
     }
+
     /** @return string */
     public function getMobileNumber()
     {
         return $this->mobileNumber;
     }
+
     /** @return int */
     public function getNumberOfAddCardAttemptsInLast24Hours()
     {
         return $this->numberOfAddCardAttemptsInLast24Hours;
     }
+
     /** @return int */
     public function getNumberOfPurchasesInLastSixMonths()
     {
         return $this->numberOfPurchasesInLastSixMonths;
     }
+
     /** @return int */
     public function getNumberOfTransactionsInLast24Hours()
     {
         return $this->numberOfTransactionsInLast24Hours;
     }
+
     /** @return int */
     public function getNumberOfTransactionsInLastYear()
     {
         return $this->numberOfTransactionsInLastYear;
     }
+
     /** @return DateTime */
     public function getOrderCreateDate()
     {
         return $this->orderCreateDate;
     }
+
     /** @return string */
     public function getOrderId()
     {
         return $this->orderId;
     }
+
     /** @return OrderTransactionType */
     public function getOrderTransactionType()
     {
         return $this->orderTransactionType;
     }
+
     /** @return DateTime */
     public function getPasswordChangeDate()
     {
         return $this->passwordChangeDate;
     }
+
     /** @return AgeIndicator */
     public function getPasswordChangeIndicator()
     {
         return $this->passwordChangeIndicator;
     }
+
     /** @return DateTime */
     public function getPaymentAccountCreateDate()
     {
         return $this->paymentAccountCreateDate;
     }
+
     /** @return AgeIndicator */
     public function getPaymentAgeIndicator()
     {
         return $this->paymentAgeIndicator;
     }
+
     /** @return string */
     public function getPayerAuthenticationResponse()
     {
         return $this->payerAuthenticationResponse;
     }
+
     /** @return IPaymentMethod */
     public function getPaymentMethod()
     {
         return $this->paymentMethod;
     }
+
     /** @return DateTime */
     public function getPreOrderAvailabilityDate()
     {
         return $this->preOrderAvailabilityDate;
     }
+
     /** @return PreOrderIndicator */
     public function getPreOrderIndicator()
     {
         return $this->preOrderIndicator;
     }
+
     /** @return bool */
     public function getPreviousSuspiciousActivity()
     {
         return $this->previousSuspiciousActivity;
     }
+
     /** @return string */
     public function getPriorAuthenticationData()
     {
         return $this->priorAuthenticationData;
     }
+
     /** @return PriorAuthenticationMethod */
     public function getPriorAuthenticationMethod()
     {
         return $this->priorAuthenticationMethod;
     }
+
     /** @return string */
     public function getPriorAuthenticationTransactionId()
     {
         return $this->priorAuthenticationTransactionId;
     }
+
     /** @return DateTime */
     public function getPriorAuthenticationTimestamp()
     {
         return $this->priorAuthenticationTimestamp;
     }
+
     /** @return DateTime */
     public function getRecurringAuthorizationExpiryDate()
     {
         return $this->recurringAuthorizationExpiryDate;
     }
+
     /** @return int */
     public function getRecurringAuthorizationFrequency()
     {
         return $this->recurringAuthorizationFrequency;
     }
+
     /** @return string */
     public function getReferenceNumber()
     {
         return $this->referenceNumber;
     }
+
     /** @return ReorderIndicator */
     public function getReorderIndicator()
     {
         return $this->reorderIndicator;
     }
+
     /** @return SdkInterface */
     public function getSdkInterface()
     {
         return $this->sdkInterface;
     }
+
     /** @return string */
     public function getSdkTransactionId()
     {
         return $this->sdkTransactionId;
     }
+
     /** @return array<SdkUiType> */
     public function getSdkUiTypes()
     {
         return $this->sdkUiTypes;
     }
+
     /** @return string */
     public function getServerTransactionId()
     {
@@ -509,41 +577,49 @@ class Secure3dBuilder extends BaseBuilder
         }
         return null;
     }
+
     /** @return Address */
     public function getShippingAddress()
     {
         return $this->shippingAddress;
     }
+
     /** @return DateTime */
     public function getShippingAddressCreateDate()
     {
         return $this->shippingAddressCreateDate;
     }
+
     /** @return AgeIndicator */
     public function getShippingAddressUsageIndicator()
     {
         return $this->shippingAddressUsageIndicator;
     }
+
     /** @return ShippingMethod */
     public function getShippingMethod()
     {
         return $this->shippingMethod;
     }
+
     /** @return bool */
     public function getShippingNameMatchesCardHolderName()
     {
         return $this->shippingNameMatchesCardHolderName;
     }
+
     /** @return ThreeDSecure */
     public function getThreeDSecure()
     {
         return $this->threeDSecure;
     }
+
     /** @return TransactionType */
     public function getTransactionType()
     {
         return $this->transactionType;
     }
+
     /** @return Secure3dVersion */
     public function getVersion()
     {
@@ -552,11 +628,47 @@ class Secure3dBuilder extends BaseBuilder
         }
         return null;
     }
+
+    /**
+     * @return DecoupledFlowRequest
+     */
+    public function getDecoupledFlowRequest()
+    {
+        return $this->decoupledFlowRequest;
+    }
+
+    /**
+     * @return int
+     */
+    public function getDecoupledFlowTimeout()
+    {
+        return $this->decoupledFlowTimeout;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDecoupledNotificationUrl()
+    {
+        return $this->decoupledNotificationUrl;
+    }
+
+    /**
+     * @return string
+     */
+    public function getWhitelistStatus()
+    {
+        return $this->whitelistStatus;
+    }
+
+
+
     /** @return string */
     public function getWorkCountryCode()
     {
         return $this->workCountryCode;
     }
+
     /** @return string */
     public function getWorkNumber()
     {
@@ -564,10 +676,11 @@ class Secure3dBuilder extends BaseBuilder
     }
 
     // HELPER METHOD FOR THE CONNECTOR
+
     /** @return bool */
     public function hasMobileFields()
     {
-        return(
+        return (
             !empty($this->applicationId) ||
             $this->ephemeralPublicKey != null ||
             $this->maximumTimeout != null ||
@@ -578,6 +691,7 @@ class Secure3dBuilder extends BaseBuilder
             $this->sdkUiTypes != null
         );
     }
+
     /** @return bool */
     public function hasPriorAuthenticationData()
     {
@@ -588,6 +702,7 @@ class Secure3dBuilder extends BaseBuilder
             !empty($this->priorAuthenticationData)
         );
     }
+
     /** @return bool */
     public function hasRecurringAuthData()
     {
@@ -597,6 +712,7 @@ class Secure3dBuilder extends BaseBuilder
             $this->recurringAuthorizationExpiryDate != null
         );
     }
+
     /** @return bool */
     public function hasPayerLoginData()
     {
@@ -697,7 +813,7 @@ class Secure3dBuilder extends BaseBuilder
         $this->challengeRequestIndicator = $challengeRequestIndicator;
         return $this;
     }
-    
+
     /** @return Secure3dBuilder */
     public function withCustomerAccountId($customerAccountId)
     {
@@ -737,6 +853,36 @@ class Secure3dBuilder extends BaseBuilder
     public function withCustomerEmail($value)
     {
         $this->customerEmail = $value;
+        return $this;
+    }
+
+    /**
+     * @param DecoupledFlowRequest
+     * @return Secure3dBuilder
+     */
+    public function withDecoupledFlowRequest($decoupledFlowRequest)
+    {
+        $this->decoupledFlowRequest = $decoupledFlowRequest;
+        return $this;
+    }
+
+    /**
+     * @param  $decoupledFlowTimeout
+     * @return Secure3dBuilder
+     */
+    public function withDecoupledFlowTimeout($decoupledFlowTimeout)
+    {
+        $this->decoupledFlowTimeout = $decoupledFlowTimeout;
+        return $this;
+    }
+
+    /**
+     * @param $decoupledNotificationUrl
+     * @return Secure3dBuilder
+     */
+    public function withDecoupledNotificationUrl($decoupledNotificationUrl)
+    {
+        $this->decoupledNotificationUrl = $decoupledNotificationUrl;
         return $this;
     }
 
@@ -1110,6 +1256,16 @@ class Secure3dBuilder extends BaseBuilder
         return $this;
     }
 
+    /**
+     * @param WhiteListStatus
+     * @return Secure3dBuilder
+     */
+    public function withWhitelistStatus($whitelistStatus)
+    {
+        $this->whitelistStatus = $whitelistStatus;
+        return $this;
+    }
+
     /** @return Secure3dBuilder */
     public function withWorkNumber($countryCode, $number)
     {
@@ -1121,7 +1277,7 @@ class Secure3dBuilder extends BaseBuilder
     /**
      * @throws ApiException
      * @return ThreeDSecure */
-    public function execute($version = Secure3dVersion::ANY)
+    public function execute($configName = 'default', $version = Secure3dVersion::ANY)
     {
         // TODO Get validations working
         // parent::execute();
@@ -1139,12 +1295,12 @@ class Secure3dBuilder extends BaseBuilder
         }
 
         // get the provider
-        $provider = ServicesContainer::instance()->getSecure3d($version);
+        $provider = ServicesContainer::instance()->getSecure3d($configName, $version);
         if (!empty($provider)) {
             $canDowngrade = false;
             if ($provider->getVersion() === Secure3dVersion::TWO && $version === Secure3dVersion::ANY) {
                 try {
-                    $oneProvider = ServicesContainer::instance()->getSecure3d(Secure3dVersion::ONE);
+                    $oneProvider = ServicesContainer::instance()->getSecure3d($configName, Secure3dVersion::ONE);
                     $canDowngrade = (bool)(!empty($oneProvider));
                 } catch (ConfigurationException $exc) {
                     // NOT CONFIGURED
@@ -1157,7 +1313,7 @@ class Secure3dBuilder extends BaseBuilder
                 $response = $provider->processSecure3d($this);
 
                 if (empty($response) && (bool)$canDowngrade) {
-                    return $this->execute(Secure3dVersion::ONE);
+                    return $this->execute($configName, Secure3dVersion::ONE);
                 }
             } catch (GatewayException $exc) {
                 // check for not enrolled
@@ -1166,7 +1322,7 @@ class Secure3dBuilder extends BaseBuilder
                         return $rvalue;
                     }
                 } elseif ((bool)$canDowngrade && $this->transactionType === TransactionType::VERIFY_ENROLLED) { // check if we can downgrade
-                    return $this->execute(Secure3dVersion::ONE);
+                    return $this->execute($configName, Secure3dVersion::ONE);
                 } else { // throw exception
                     throw $exc;
                 }
@@ -1184,10 +1340,10 @@ class Secure3dBuilder extends BaseBuilder
                                 $rvalue->setOrderId($response->orderId);
                                 $rvalue->setVersion($provider->getVersion());
                             } elseif ((bool)$canDowngrade) {
-                                return $this->execute(Secure3dVersion::ONE);
+                                return $this->execute($configName, Secure3dVersion::ONE);
                             }
                         } elseif ((bool)$canDowngrade) {
-                            return $this->execute(Secure3dVersion::ONE);
+                            return $this->execute($configName, Secure3dVersion::ONE);
                         }
                         break;
                     case TransactionType::INITIATE_AUTHENTICATION:

@@ -455,10 +455,17 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $mpi->appendChild($xml->createElement("cavv", $secureEcom->cavv));
             $mpi->appendChild($xml->createElement("xid", $secureEcom->xid));
 
-            if ($secureEcom->directoryServerTransactionId != null || $secureEcom->authenticationValue != null || $secureEcom->messageVersion != null) {
+            if (
+                $secureEcom->directoryServerTransactionId != null ||
+                $secureEcom->authenticationValue != null ||
+                $secureEcom->messageVersion != null
+            ) {
                 $mpi->appendChild($xml->createElement("ds_trans_id", $secureEcom->directoryServerTransactionId));
                 $mpi->appendChild($xml->createElement("authentication_value", $secureEcom->authenticationValue));
                 $mpi->appendChild($xml->createElement("message_version", $secureEcom->messageVersion));
+            }
+            if ($secureEcom->exemptStatus != null) {
+                $mpi->appendChild($xml->createElement("exempt_status", $secureEcom->exemptStatus));
             }
             $request->appendChild($mpi);
         }

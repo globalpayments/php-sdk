@@ -110,12 +110,14 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
 
             $hash = GenerationUtils::generateHash($this->sharedSecret, implode('.', [$timestamp, $this->merchantId, $hashValue]));
             $headers['Authorization'] = sprintf('securehash %s', $hash);
+            $headers["X-GP-Version"] = "2.2.0";
 
             $rawResponse = $this->doTransaction('POST', 'protocol-versions', json_encode($request), null, $headers);
             return $this->mapResponse($rawResponse);
         } elseif ($transType === TransactionType::VERIFY_SIGNATURE) {
             $hash = GenerationUtils::generateHash($this->sharedSecret, implode('.', [$timestamp, $this->merchantId, $builder->getServerTransactionId()]));
             $headers['Authorization'] = sprintf('securehash %s', $hash);
+            $headers["X-GP-Version"] = "2.2.0";
 
             $queryValues = [];
             $queryValues['merchant_id'] = $this->merchantId;
@@ -143,6 +145,10 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             $request = $this->maybeSetKey($request, 'method_url_completion', $builder->getMethodUrlCompletion());
             $request = $this->maybeSetKey($request, 'merchant_contact_url', $this->merchantContactUrl);
             $request = $this->maybeSetKey($request, 'merchant_initiated_request_type', $builder->getMerchantInitiatedRequestType());
+            $request = $this->maybeSetKey($request, 'whitelist_status', $builder->getWhitelistStatus());
+            $request = $this->maybeSetKey($request, 'decoupled_flow_request', $builder->getDecoupledFlowRequest());
+            $request = $this->maybeSetKey($request, 'decoupled_flow_timeout', $builder->getDecoupledFlowTimeout());
+            $request = $this->maybeSetKey($request, 'decoupled_notification_url', $builder->getDecoupledNotificationUrl());
 
             // card details
             $hashValue = '';
@@ -150,11 +156,11 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             if ($paymentMethod instanceof CreditCardData) {
                 $cardData = $paymentMethod;
                 $hashValue = $cardData->number;
-                
+
                 $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'number', $cardData->number);
                 $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'scheme', strtoupper($cardData->getCardType()));
                 $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'expiry_month', $cardData->expMonth);
-                $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'expiry_year', 
+                $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'expiry_year',
                                                 substr(str_pad($cardData->expYear, 4, '0', STR_PAD_LEFT), 2, 2));
                 $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'full_name', $cardData->cardHolderName);
 
@@ -312,7 +318,7 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
                 $request['sdk_information'] = [];
                 $request['sdk_information'] = $this->maybeSetKey($request['sdk_information'], 'application_id', $builder->getApplicationId());
                 $request['sdk_information'] = $this->maybeSetKey($request['sdk_information'], 'ephemeral_public_key', $builder->getEphemeralPublicKey());
-                $request['sdk_information'] = $this->maybeSetKey($request['sdk_information'], 'maximum_timeout', 
+                $request['sdk_information'] = $this->maybeSetKey($request['sdk_information'], 'maximum_timeout',
                             (!empty($builder->getMaximumTimeout())) ? str_pad($builder->getMaximumTimeout(), 2, '0' , STR_PAD_LEFT) : '');
                 $request['sdk_information'] = $this->maybeSetKey($request['sdk_information'], 'reference_number', $builder->getReferenceNumber());
                 $request['sdk_information'] = $this->maybeSetKey($request['sdk_information'], 'sdk_trans_id', $builder->getSdkTransactionId());
@@ -328,6 +334,7 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
 
             $hash = GenerationUtils::generateHash($this->sharedSecret, implode('.', [$timestamp, $this->merchantId, $hashValue, $secureEcom->serverTransactionId]));
             $headers['Authorization'] = sprintf('securehash %s', $hash);
+            $headers["X-GP-Version"] = "2.2.0";
             $rawResponse = $this->doTransaction('POST', 'authentications', json_encode($request, JSON_UNESCAPED_SLASHES), null, $headers);
             return $this->mapResponse($rawResponse);
         }
@@ -360,6 +367,10 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
         $secureEcom->authenticationSource = isset($doc['authentication_source']) ? $doc['authentication_source'] : null;
         $secureEcom->messageCategory = isset($doc['message_category']) ? $doc['message_category'] : null;
         $secureEcom->messageVersion = isset($doc['message_version']) ? $doc['message_version'] : null;
+        $secureEcom->acsInfoIndicator = isset($doc['acs_info_indicator']) ? $doc['acs_info_indicator'] : null;
+        $secureEcom->decoupledResponseIndicator = isset($doc['decoupled_response_indicator']) ?
+                                                    $doc['decoupled_response_indicator'] : null;
+        $secureEcom->whitelistStatus = isset($doc['whitelist_status']) ? $doc['whitelist_status'] : null;
 
         // challenge mandated
         if (array_key_exists('challenge_mandated', $doc)) {
@@ -382,6 +393,8 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             $secureEcom->criticalityIndicator =
                 isset($doc['message_extension']['criticality_indicator']) ?
                     $doc['message_extension']['criticality_indicator'] : null;
+            $secureEcom->messageExtensionData = isset($doc['message_extension']['data']) ?
+                $doc['message_extension']['data'] : null;
             $secureEcom->messageExtensionId =
                 isset($doc['message_extension']['id']) ? $doc['message_extension']['id'] : null;
             $secureEcom->messageExtensionName =

@@ -2,16 +2,13 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
 
-use GlobalPayments\Api\ServicesConfig;
+use GlobalPayments\Api\Entities\Enums\DecoupledFlowRequest;
+use GlobalPayments\Api\Entities\Enums\MerchantInitiatedRequestType;
+use GlobalPayments\Api\Entities\Enums\WhiteListStatus;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\MerchantDataCollection;
-use GlobalPayments\Api\Entities\ThreeDSecure;
-use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
-use GlobalPayments\Api\Entities\Exceptions\ApiException;
-use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\PaymentMethods\DebitTrackData;
 use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\Tests\Data\TestCards;
@@ -35,6 +32,7 @@ use GlobalPayments\Api\Entities\Enums\CustomerAuthenticationMethod;
 use GlobalPayments\Api\Entities\Enums\SdkInterface;
 use GlobalPayments\Api\Entities\Enums\SdkUiType;
 use GlobalPayments\Api\Entities\Enums\ChallengeRequestIndicator;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 
 class Secure3dServiceTests extends TestCase
 {
@@ -44,9 +42,9 @@ class Secure3dServiceTests extends TestCase
     private $billingAddress;
     private $browserData;
 
-    public function setup() : void
+    public function setup()
     {
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
 
         // create card data
         $this->card = new CreditCardData();
@@ -93,7 +91,7 @@ class Secure3dServiceTests extends TestCase
 
     protected function getConfig()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = 'myMerchantId';
         $config->accountId = 'ecom3ds';
         $config->sharedSecret = 'secret';
@@ -115,7 +113,7 @@ class Secure3dServiceTests extends TestCase
         $secureEcom = Secure3dService::checkEnrollment($card)
             ->withAmount(10.01)
             ->withCurrency('USD')
-            ->execute(Secure3dVersion::ONE);
+            ->execute('default', Secure3dVersion::ONE);
         $this->assertEquals(Secure3dVersion::ONE, $secureEcom->getVersion());
         
         if ($secureEcom->enrolled) {
@@ -147,7 +145,7 @@ class Secure3dServiceTests extends TestCase
     public function testFullCycle_v2()
     {
         $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->execute(Secure3dVersion::TWO);
+            ->execute('default', Secure3dVersion::TWO);
         $this->assertNotNull($secureEcom);
         $this->assertNotNull($secureEcom->serverTransactionId);
 
@@ -188,12 +186,61 @@ class Secure3dServiceTests extends TestCase
         }
     }
 
+    public function testFullCycle_v2_2()
+    {
+        $secureEcom = Secure3dService::checkEnrollment($this->card)
+            ->execute('default', Secure3dVersion::TWO);
+        $this->assertNotNull($secureEcom);
+        $this->assertNotNull($secureEcom->serverTransactionId);
+
+        if ($secureEcom->enrolled) {
+            $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
+
+            // initiate authentication
+            $initAuth = Secure3dService::initiateAuthentication($this->card, $secureEcom)
+                ->withAmount(10.01)
+                ->withCurrency('USD')
+                ->withOrderCreateDate(date('Y-m-d H:i:s'))
+                ->withAddress($this->billingAddress, AddressType::BILLING)
+                ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+                ->withBrowserData($this->browserData)
+                ->withMethodUrlCompletion(MethodUrlCompletion::NO)
+                ->withChallengeRequestIndicator(ChallengeRequestIndicator::NO_PREFERENCE)
+                ->withMerchantInitiatedRequestType(MerchantInitiatedRequestType::TOP_UP)
+//                ->withWhitelistStatus(WhiteListStatus::NOT_WHITELISTED)
+//                ->withDecoupledFlowRequest(DecoupledFlowRequest::DO_NOT_USE_DECOUPLED)
+                ->withDecoupledFlowTimeout('9001')
+                ->withDecoupledNotificationUrl('https://example-value.com')
+                ->execute();
+            $this->assertNotNull($initAuth);
+
+            // get authentication data
+            $secureEcom = Secure3dService::getAuthenticationData()
+                ->withServerTransactionId($initAuth->serverTransactionId)
+                ->execute();
+            $this->card->threeDSecure = $secureEcom;
+
+            if ($secureEcom->status == 'AUTHENTICATION_SUCCESSFUL') {
+                $response = $this->card->charge(10.01)
+                    ->withCurrency('USD')
+                    ->execute();
+
+                $this->assertNotNull($response);
+                $this->assertEquals('00', $response->responseCode);
+            } else {
+                $this->fail('Signature verification failed.');
+            }
+        } else {
+            $this->fail('Card not enrolled');
+        }
+    }
+
     public function testFullCycle_Any()
     {
         $secureEcom = Secure3dService::checkEnrollment($this->card)
             ->withAmount(1.00)
             ->withCurrency('USD')
-            ->execute(Secure3dVersion::ANY);
+            ->execute();
         $this->assertNotNull($secureEcom);
 
         if ($secureEcom->enrolled) {
@@ -258,7 +305,7 @@ class Secure3dServiceTests extends TestCase
     public function testFullCycle_v2_StoredCard()
     {
         $secureEcom = Secure3dService::checkEnrollment($this->stored)
-            ->execute(Secure3dVersion::TWO);
+            ->execute('default', Secure3dVersion::TWO);
         $this->assertNotNull($secureEcom);
         $this->assertNotNull($secureEcom->serverTransactionId);
 
@@ -301,7 +348,7 @@ class Secure3dServiceTests extends TestCase
     public function testFullCycle_v2_OTB()
     {
         $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->execute(Secure3dVersion::TWO);
+            ->execute('default', Secure3dVersion::TWO);
         $this->assertNotNull($secureEcom);
         $this->assertNotNull($secureEcom->serverTransactionId);
 
@@ -344,7 +391,7 @@ class Secure3dServiceTests extends TestCase
     public function testFullCycle_v2_OTB_StoredCard()
     {
         $secureEcom = Secure3dService::checkEnrollment($this->stored)
-            ->execute(Secure3dVersion::TWO);
+            ->execute('default', Secure3dVersion::TWO);
         $this->assertNotNull($secureEcom);
         $this->assertNotNull($secureEcom->serverTransactionId);
 
@@ -387,7 +434,7 @@ class Secure3dServiceTests extends TestCase
     public function testOptionalRequestLevelFields()
     {
         $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->execute(Secure3dVersion::TWO);
+            ->execute('default', Secure3dVersion::TWO);
         $this->assertNotNull($secureEcom);
 
         if ($secureEcom->enrolled) {
@@ -433,7 +480,7 @@ class Secure3dServiceTests extends TestCase
     public function testOptionalOrderLevelFields()
     {
         $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->execute(Secure3dVersion::TWO);
+            ->execute('default', Secure3dVersion::TWO);
         $this->assertNotNull($secureEcom);
 
         if ($secureEcom->enrolled) {
@@ -491,7 +538,7 @@ class Secure3dServiceTests extends TestCase
     public function testOptionalPayerLevelFields()
     {
         $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->execute(Secure3dVersion::TWO);
+            ->execute('default', Secure3dVersion::TWO);
         $this->assertNotNull($secureEcom);
 
         if ($secureEcom->enrolled) {
@@ -554,7 +601,7 @@ class Secure3dServiceTests extends TestCase
     public function testOptionalPriorAuthenticationData()
     {
         $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->execute(Secure3dVersion::TWO);
+            ->execute('default', Secure3dVersion::TWO);
         $this->assertNotNull($secureEcom);
 
         if ($secureEcom->enrolled) {
@@ -602,7 +649,7 @@ class Secure3dServiceTests extends TestCase
     public function testOptionalRecurringData()
     {
         $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->execute(Secure3dVersion::TWO);
+            ->execute('default', Secure3dVersion::TWO);
         $this->assertNotNull($secureEcom);
 
         if ($secureEcom->enrolled) {
@@ -650,7 +697,7 @@ class Secure3dServiceTests extends TestCase
     public function testOptionalPayerLoginData()
     {
         $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->execute(Secure3dVersion::TWO);
+            ->execute('default', Secure3dVersion::TWO);
         $this->assertNotNull($secureEcom);
 
         if ($secureEcom->enrolled) {
@@ -698,7 +745,7 @@ class Secure3dServiceTests extends TestCase
     public function testOptionalMobileFields()
     {
         $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->execute(Secure3dVersion::TWO);
+            ->execute('default', Secure3dVersion::TWO);
         $this->assertNotNull($secureEcom);
 
         if ($secureEcom->enrolled) {
@@ -753,7 +800,7 @@ class Secure3dServiceTests extends TestCase
         $card->expMonth = 12;
         $card->expYear = TestCards::validCardExpYear();
         $secureEcom = Secure3dService::checkEnrollment($card)
-            ->execute(Secure3dVersion::ANY);
+            ->execute();
         $this->assertNotNull($secureEcom);
         $this->assertFalse((bool)$secureEcom->enrolled);
     }
