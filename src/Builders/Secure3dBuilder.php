@@ -857,12 +857,16 @@ class Secure3dBuilder extends BaseBuilder
     }
 
     /**
-     * @param DecoupledFlowRequest
+     * @param bool
      * @return Secure3dBuilder
      */
     public function withDecoupledFlowRequest($decoupledFlowRequest)
     {
-        $this->decoupledFlowRequest = $decoupledFlowRequest;
+        if ($decoupledFlowRequest == true) {
+            $this->decoupledFlowRequest = "TRUE";
+        } else {
+            $this->decoupledFlowRequest = "FALSE";
+        }
         return $this;
     }
 
@@ -1257,12 +1261,16 @@ class Secure3dBuilder extends BaseBuilder
     }
 
     /**
-     * @param WhiteListStatus
+     * @param bool
      * @return Secure3dBuilder
      */
     public function withWhitelistStatus($whitelistStatus)
     {
-        $this->whitelistStatus = $whitelistStatus;
+        if ($whitelistStatus == true) {
+            $this->whitelistStatus = "TRUE";
+        } else {
+            $this->whitelistStatus = "FALSE";
+        }
         return $this;
     }
 

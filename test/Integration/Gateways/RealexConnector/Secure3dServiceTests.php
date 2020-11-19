@@ -207,8 +207,8 @@ class Secure3dServiceTests extends TestCase
                 ->withMethodUrlCompletion(MethodUrlCompletion::NO)
                 ->withChallengeRequestIndicator(ChallengeRequestIndicator::NO_PREFERENCE)
                 ->withMerchantInitiatedRequestType(MerchantInitiatedRequestType::TOP_UP)
-//                ->withWhitelistStatus(WhiteListStatus::NOT_WHITELISTED)
-//                ->withDecoupledFlowRequest(DecoupledFlowRequest::DO_NOT_USE_DECOUPLED)
+                ->withWhitelistStatus(true)
+                ->withDecoupledFlowRequest(false)
                 ->withDecoupledFlowTimeout('9001')
                 ->withDecoupledNotificationUrl('https://example-value.com')
                 ->execute();
