@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\Certifications;
 
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Transaction;
@@ -16407,6 +16408,8 @@ class RealexSdkCertification extends TestCase
         $this->assertNotNull($saleResponse);
         $this->assertEquals("00", $saleResponse->responseCode);
         $this->tearDown();
+
+        $this->expectException(GatewayException::class);
 
         // request
         $response = $card->charge(100.01)
