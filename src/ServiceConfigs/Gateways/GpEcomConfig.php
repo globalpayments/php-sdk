@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\ServiceConfigs\Gateways;
 
+use GlobalPayments\Api\ConfiguredServices;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
@@ -34,9 +35,9 @@ class GpEcomConfig extends GatewayConfig
         $this->gatewayProvider = GatewayProvider::GP_ECOM;
     }
 
-    public function configureContainer($services) {
+    public function configureContainer(ConfiguredServices $services) {
         // parent::configureContainer($services); // must implement data services first
-        
+
         if (empty($this->serviceUrl)) {
             $this->serviceUrl = $this->environment == Environment::TEST ? ServiceEndpoints::GLOBAL_ECOM_TEST : ServiceEndpoints::GLOBAL_ECOM_PRODUCTION;
         }
@@ -51,7 +52,7 @@ class GpEcomConfig extends GatewayConfig
         $gateway->serviceUrl = $this->serviceUrl;
         $gateway->refundPassword = $this->refundPassword;
         $gateway->hostedPaymentConfig = $this->hostedPaymentConfig;
-        
+
         $services->gatewayConnector = $gateway;
         $services->recurringConnector = $gateway;
 
@@ -81,7 +82,7 @@ class GpEcomConfig extends GatewayConfig
     public function validate()
     {
         parent::validate();
-        
+
         if (empty($this->merchantId)) {
             throw new ConfigurationException("MerchantId is required for this gateway.");
         }
