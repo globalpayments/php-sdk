@@ -823,7 +823,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth014b()
     {
         $this->markTestSkipped('Exception not thrown');
-        
+
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -946,7 +946,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth015d()
     {
         $this->markTestSkipped('Exception not thrown');
-        
+
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -1234,7 +1234,7 @@ class RealexSdkCertification extends TestCase
     public function testAuth020b()
     {
         $this->markTestSkipped('Exception not thrown');
-        
+
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -2121,7 +2121,7 @@ class RealexSdkCertification extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->responseCode);
     }
-    
+
     /**
      * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
      */
@@ -2998,7 +2998,7 @@ class RealexSdkCertification extends TestCase
     public function testValidation003i()
     {
         $this->markTestSkipped('Exception not thrown');
-        
+
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -10831,7 +10831,7 @@ class RealexSdkCertification extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->responseCode);
     }
-    
+
     public function testCredit013b()
     {
         $config = $this->getBaseConfig();
@@ -10944,6 +10944,11 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
+
+
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     */
     public function testCredit014d()
     {
         $config = $this->getBaseConfig();
@@ -10958,10 +10963,10 @@ class RealexSdkCertification extends TestCase
         $card->cardHolderName = "Peter Watermelon";
 
         // request
-        $response = $card->refund(1)
-            ->withCurrency("EUR")
-            ->withDescription("JAVA-Credit")
-            ->execute();
+            $response = $card->refund(1)
+                    ->withCurrency("EUR")
+                    ->withDescription("JAVA-Credit")
+                    ->execute();
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->responseCode);
     }
@@ -15302,7 +15307,7 @@ class RealexSdkCertification extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->responseCode);
     }
-    
+
     public function testManual020b()
     {
         $config = $this->getBaseConfig();
