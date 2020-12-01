@@ -18390,9 +18390,6 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testverifyenrolled024b()
     {
         $config = $this->getBaseConfig();
