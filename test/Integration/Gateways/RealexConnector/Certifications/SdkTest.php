@@ -16429,14 +16429,15 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $saleResponse->responseCode);
         $this->tearDown();
 
+        $this->expectException(GatewayException::class);
+        $this->expectExceptionMessage('Unexpected Gateway Response: 506');
+
         // request
         $response = $card->charge(100.01)
             ->withCurrency("GBP")
             ->withCustomerIpAddress("123~.123.123.123")
             ->withDescription("JAVA-Manual-031c2")
             ->execute();
-        $this->assertNotNull($response);
-        $this->assertEquals("00", $response->responseCode);
     }
 
     public function testManual032a()
@@ -16591,14 +16592,16 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $saleResponse->responseCode);
         $this->tearDown();
 
+        $this->expectException(GatewayException::class);
+        $this->expectExceptionMessage("Unexpected Gateway Response: 506");
+
         // request
         $response = $card->charge(100.01)
             ->withCurrency("USD")
             ->withAddress($billingAddress)
             ->withDescription("JAVA-Manual-033c1")
             ->execute();
-        $this->assertNotNull($response);
-        $this->assertEquals("00", $response->responseCode);
+
     }
 
     public function testManual033c2()
@@ -16621,14 +16624,15 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $saleResponse->responseCode);
         $this->tearDown();
 
+        $this->expectException(GatewayException::class);
+        $this->expectExceptionMessage('Unexpected Gateway Response: 506');
+
         // request
         $response = $card->charge(100.01)
             ->withCurrency("GBP")
             ->withAddress($shippingAddress, AddressType::SHIPPING)
             ->withDescription("JAVA-Manual-033c2")
             ->execute();
-        $this->assertNotNull($response);
-        $this->assertEquals("00", $response->responseCode);
     }
 
     public function testManual034a()
@@ -16746,14 +16750,15 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $saleResponse->responseCode);
         $this->tearDown();
 
+        $this->expectException(GatewayException::class);
+        $this->expectExceptionMessage('Unexpected Gateway Response: 506');
+
         // request
         $response = $card->charge(100.01)
             ->withCurrency("EUR")
             ->withAddress($billingAddress)
             ->withDescription("JAVA-Manual-034c1")
             ->execute();
-        $this->assertNotNull($response);
-        $this->assertEquals("00", $response->responseCode);
     }
 
     public function testManual034c2()
@@ -16775,6 +16780,9 @@ class RealexSdkCertification extends TestCase
         $this->assertNotNull($saleResponse);
         $this->assertEquals("00", $saleResponse->responseCode);
         $this->tearDown();
+
+        $this->expectException(GatewayException::class);
+        $this->expectExceptionMessage('Unexpected Gateway Response: 506');
 
         // request
         $response = $card->charge(100.01)
