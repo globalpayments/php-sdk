@@ -32,13 +32,18 @@ abstract class RestGateway extends Gateway
         if (!in_array($response->statusCode, [200, 204])) {
             $parsed = json_decode($response->rawResponse);
             $error = isset($parsed->error) ? $parsed->error : $parsed;
-            throw new GatewayException(
-                sprintf(
-                    'Status Code: %s - %s',
-                    $response->statusCode,
-                    isset($error->error_description) ? $error->error_description : (isset($error->message) ? $error->message : (string) $error)
-                )
+            $message = sprintf(
+                'Status Code: %s - %s',
+                $response->statusCode,
+                isset($error->error_description) ? $error->error_description : (isset($error->message) ? $error->message : (string) $error)
             );
+
+            if (!empty($error->error_detail)) {
+                $message .= " ({$error->error_detail})";
+            }
+
+            // Ex: "Status Code: 400 - Required Data Element (number)"
+            throw new GatewayException($message);
         }
 
         return $response->rawResponse;
