@@ -2,43 +2,29 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\TransITConnector\Certification;
 
-use GlobalPayments\Api\AcceptorConfig;
-use GlobalPayments\Api\Entities\AdditionalTaxDetails;
-use GlobalPayments\Api\Entities\CommercialData;
 use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\CommercialLineItem;
-use GlobalPayments\Api\Entities\DiscountDetails;
 use GlobalPayments\Api\Entities\Enums\CardDataSource;
 use GlobalPayments\Api\Entities\Enums\CardType;
-use GlobalPayments\Api\Entities\Enums\CommercialIndicator;
-use GlobalPayments\Api\Entities\Enums\CreditDebitIndicator;
-use GlobalPayments\Api\Entities\Enums\TaxType;
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\OperatingEnvironment;
-use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
-use GlobalPayments\Api\Entities\Enums\TaxCategory;
-use GlobalPayments\Api\Entities\StoredCredential;
-use GlobalPayments\Api\Entities\Transaction;
-use GlobalPayments\Api\Services\BatchService;
+use GlobalPayments\Api\ServiceConfigs\AcceptorConfig;
+use GlobalPayments\Api\ServiceConfigs\Gateways\TransitConfig;
 use PHPUnit\Framework\TestCase;
 
 final class Token_Request_Only extends TestCase {
     public function setup() : void {
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
     }
 
     public function getConfig() { 
-        $config = new ServicesConfig();
+        $config = new TransitConfig();
         $config->merchantId = '887000003226';
         $config->username = 'TA5622118';
         $config->password = 'f8mapGqWrE^rVaA9';
         $config->deviceId = '88700000322601';
         $config->transactionKey = '2HZFSJ98G4XEGHXGP31IRLLG8H3XAWB2';
         $config->developerId = '003226G001';
-        $config->gatewayProvider = GatewayProvider::TRANSIT;
         $config->acceptorConfig = new AcceptorConfig();
         $config->acceptorConfig->operatingEnvironment = OperatingEnvironment::ON_MERCHANT_PREMISES_ATTENDED;
         $config->acceptorConfig->cardDataSource = CardDataSource::INTERNET;
@@ -88,7 +74,7 @@ final class Token_Request_Only extends TestCase {
     }
 
     public function test05GenerateAmexMUT() {
-        ServicesContainer::configure($this->getPhoneConfig());
+        ServicesContainer::configureService($this->getPhoneConfig());
 
         $response = $this->getAmex()->tokenize()->execute();
 
@@ -97,7 +83,7 @@ final class Token_Request_Only extends TestCase {
     }
 
     public function test06GenerateJCB_MUT() {
-        ServicesContainer::configure($this->getMailConfig());
+        ServicesContainer::configureService($this->getMailConfig());
 
         $response = $this->getJCB()->tokenize()->execute();
 
@@ -106,7 +92,7 @@ final class Token_Request_Only extends TestCase {
     }
 
     public function test07GeneratDiscoverCUP_MUT() {
-        ServicesContainer::configure($this->getMailConfig());
+        ServicesContainer::configureService($this->getMailConfig());
 
         $response = $this->getDiscoverCUP()->tokenize()->execute();
 
@@ -115,7 +101,7 @@ final class Token_Request_Only extends TestCase {
     }
 
     public function test08GenerateDinersMUT() {
-        ServicesContainer::configure($this->getPhoneConfig());
+        ServicesContainer::configureService($this->getPhoneConfig());
 
         $response = $this->getDiners()->tokenize()->execute();
 
