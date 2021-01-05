@@ -13,6 +13,7 @@ use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\HostedPaymentConfig;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 
 class RealexHppClient
 {
@@ -41,7 +42,7 @@ class RealexHppClient
         $billingCode = $this->getValue('BILLING_CODE');
         $billingCountry = $this->getValue('BILLING_CO');
 
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = $merchantId;
         $config->accountId = $account;
         $config->sharedSecret = $this->sharedSecret;
@@ -51,7 +52,7 @@ class RealexHppClient
         $config->hostedPaymentConfig->responseUrl = "http://requestb.in/10q2bjb1";
         $config->hostedPaymentConfig->version = $hppVersion;
 
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create the card object
         $card = new CreditCardData();
