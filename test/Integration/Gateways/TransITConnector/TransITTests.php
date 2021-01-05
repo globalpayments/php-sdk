@@ -6,6 +6,8 @@ use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
+use GlobalPayments\Api\ServiceConfigs\AcceptorConfig;
+use GlobalPayments\Api\ServiceConfigs\Gateways\TransitConfig;
 use GlobalPayments\Api\Services\BatchService;
 use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
@@ -21,7 +23,7 @@ class CreditTest extends TestCase
 
     public function setup()
     {
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
 
         $this->address = new Address();
         $this->address->streetAddress1 = '1 Federal Street';
@@ -38,14 +40,14 @@ class CreditTest extends TestCase
 
     protected function getConfig()
     {
-        $config = new ServicesConfig();
+        $config = new TransitConfig();
         $config->merchantId = '887000003226';
         $config->username = 'TA5622118';
         $config->password = 'f8mapGqWrE^rVaA9';
         $config->deviceId = '88700000322602';
         $config->transactionKey = '2HZFSJ98G4XEGHXGP31IRLLG8H3XAWB2';
         $config->developerId = '003226G001';
-        $config->gatewayProvider = GatewayProvider::TRANSIT;
+        $config->acceptorConfig = new AcceptorConfig();
         return $config;
     }
     
@@ -315,9 +317,9 @@ class CreditTest extends TestCase
      */
     public function testCredentialsError()
     {
-        $config = new ServicesConfig();
-        $config->gatewayProvider = GatewayProvider::TRANSIT;
+        $config = new TransitConfig();
+        $config->acceptorConfig = new AcceptorConfig();
         
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
     }
 }

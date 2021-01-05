@@ -3,7 +3,8 @@
 namespace GlobalPayments\Api\Tests\Integration\Gateways\TransITConnector;
 
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
-use GlobalPayments\Api\ServicesConfig;
+use GlobalPayments\Api\ServiceConfigs\AcceptorConfig;
+use GlobalPayments\Api\ServiceConfigs\Gateways\TransitConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
@@ -16,12 +17,12 @@ class TransITAdminTest extends TestCase
     {
         $this->card = TestCards::visaManual();
         
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
     }
 
     protected function getConfig()
     {
-        $config = new ServicesConfig();
+        $config = new TransitConfig();
         $config->merchantId = '887000003226';
         $config->username = 'TA5622118';
         $config->password = 'f8mapGqWrE^rVaA9';
@@ -29,6 +30,7 @@ class TransITAdminTest extends TestCase
         $config->transactionKey = '2HZFSJ98G4XEGHXGP31IRLLG8H3XAWB2';
         $config->developerId = '003226G001';
         $config->gatewayProvider = GatewayProvider::TRANSIT;
+        $config->acceptorConfig = new AcceptorConfig();
         
         return $config;
     }
@@ -43,15 +45,16 @@ class TransITAdminTest extends TestCase
     
     public function testCreateManifest()
     {
-        $config = new ServicesConfig();
+        $config = new TransitConfig();
         $config->merchantId = '887000003226';
         $config->username = 'TA5622118';
         $config->password = 'f8mapGqWrE^rVaA9';
         $config->deviceId = '88700000322602';
         $config->developerId = '003226G001';
         $config->gatewayProvider = GatewayProvider::TRANSIT;
+        $config->acceptorConfig = new AcceptorConfig();
         
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
         $provider = ServicesContainer::instance()->getClient();
         
         //create Transaction Key
@@ -70,7 +73,7 @@ class TransITAdminTest extends TestCase
     
     public function testDisableTransactionKey()
     {
-        $config = new ServicesConfig();
+        $config = new TransitConfig();
         $config->merchantId = '887000003226';
         $config->username = 'TA5622118';
         $config->password = 'f8mapGqWrE^rVaA9';
@@ -78,9 +81,10 @@ class TransITAdminTest extends TestCase
         $config->developerId = '003226G001';
          //TransactionKey needs to be disabled. Throw 'Invalid Transaction Key' when key is not in active state
         $config->transactionKey = 'F508Z7TIGFORSTDYJQLMK9NGFFPBIXV0';
+        $config->acceptorConfig = new AcceptorConfig();
         $config->gatewayProvider = GatewayProvider::TRANSIT;
         
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
         $provider = ServicesContainer::instance()->getClient();
         
         //create new Transaction Key
