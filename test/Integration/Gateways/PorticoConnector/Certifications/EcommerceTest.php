@@ -450,6 +450,7 @@ class EcommerceTest extends TestCase
         $response = $card->charge()
             ->withCurrency('USD')
             ->withAmount(13.01)
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withRequestMultiUseToken(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -473,6 +474,7 @@ class EcommerceTest extends TestCase
         $response = $card->charge()
             ->withCurrency('USD')
             ->withAmount(13.02)
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withRequestMultiUseToken(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -496,6 +498,7 @@ class EcommerceTest extends TestCase
         $response = $card->charge()
             ->withCurrency('USD')
             ->withAmount(13.03)
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withRequestMultiUseToken(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -520,6 +523,7 @@ class EcommerceTest extends TestCase
             ->withCurrency('USD')
             ->withAmount(13.04)
             ->withAddress($address)
+            ->withInvoiceNumber('123456')
             ->withRequestMultiUseToken(true)
             ->withEcommerceInfo($this->ecommerceInfo)
             ->withAllowDuplicates(true)
@@ -846,6 +850,7 @@ class EcommerceTest extends TestCase
 
         $response = $card->charge(112.34)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -875,6 +880,7 @@ class EcommerceTest extends TestCase
 
         $response = $card->charge(112.34)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -904,6 +910,7 @@ class EcommerceTest extends TestCase
 
         $response = $card->charge(123.45)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -931,6 +938,7 @@ class EcommerceTest extends TestCase
 
         $response = $card->charge(134.56)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -960,6 +968,7 @@ class EcommerceTest extends TestCase
 
         $response = $card->charge(111.06)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -988,6 +997,7 @@ class EcommerceTest extends TestCase
 
         $response = $card->charge(111.07)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -1016,6 +1026,7 @@ class EcommerceTest extends TestCase
 
         $response = $card->charge(111.08)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -1045,6 +1056,7 @@ class EcommerceTest extends TestCase
 
         $response = $card->charge(111.09)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -1073,6 +1085,7 @@ class EcommerceTest extends TestCase
 
         $response = $card->charge(111.10)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -1101,6 +1114,7 @@ class EcommerceTest extends TestCase
 
         $response = $card->charge(111.11)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -1129,6 +1143,7 @@ class EcommerceTest extends TestCase
 
         $response = $card->charge(111.12)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -1158,6 +1173,7 @@ class EcommerceTest extends TestCase
 
         $response = $card->charge(111.13)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -1253,14 +1269,11 @@ class EcommerceTest extends TestCase
     }
 
     /// Time Out Reversal
-
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException
-     */
     public function test036bTimeoutReversal()
     {
         $sale = TestCards::visaManual()->charge(911)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withClientTransactionId('987321654')
             ->withEcommerceInfo($this->ecommerceInfo)
             ->execute();
@@ -1271,6 +1284,7 @@ class EcommerceTest extends TestCase
         $response = Transaction::fromId(null, PaymentMethodType::CREDIT);
         $response->clientTransactionId = '987321654';
 
+        $this->expectException(GatewayException::class);
         $response->reverse(911)->execute();
     }
 
@@ -1754,7 +1768,7 @@ class EcommerceTest extends TestCase
             ->execute();
         $this->assertEquals(true, $response != null);
         $this->assertEquals('00', $response->responseCode);
-        $this->assertEquals('0', $response->pointsBalanceAmount);
+        $this->assertTrue($response->pointsBalanceAmount > 0);
     }
 
     public function test060BalanceInquiryRewards2()
@@ -1765,7 +1779,7 @@ class EcommerceTest extends TestCase
             ->execute();
         $this->assertEquals(true, $response != null);
         $this->assertEquals('00', $response->responseCode);
-        $this->assertEquals('0', $response->pointsBalanceAmount);
+        $this->assertTrue($response->pointsBalanceAmount > 0);
     }
 
     /// ALIAS

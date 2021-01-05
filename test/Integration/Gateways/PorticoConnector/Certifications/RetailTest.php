@@ -9,8 +9,8 @@ use GlobalPayments\Api\Entities\Enums\TaxType;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\GiftCard;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\Services\BatchService;
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
@@ -30,12 +30,12 @@ class RetailTest extends TestCase
 
     public function __construct()
     {
-        $config = new ServicesConfig();
+        $config = new PorticoConfig();
         $config->secretApiKey = 'skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':
                               'https://cert.api2.heartlandportico.com';
-        ServicesContainer::Configure($config);
+        ServicesContainer::configureService($config);
     }
 
     public function testRetail000CloseBatch()
@@ -1910,7 +1910,7 @@ class RetailTest extends TestCase
         $response = $card->balanceInquiry()->execute();
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->responseCode);
-        $this->assertEquals(0, $response->pointsBalanceAmount);
+        $this->assertTrue($response->pointsBalanceAmount > 0);
     }
 
     public function testRetail112BalanceInquiryRewards2()
@@ -1920,7 +1920,7 @@ class RetailTest extends TestCase
         $response = $card->balanceInquiry()->execute();
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->responseCode);
-        $this->assertEquals(0, $response->pointsBalanceAmount);
+        $this->assertTrue($response->pointsBalanceAmount > 0);
     }
 
     // ALIAS
@@ -1971,7 +1971,7 @@ class RetailTest extends TestCase
             $this->assertNotNull($response);
             // error_log(sprintf('Batch ID: %s', $response->Id));
             // error_log(sprintf('Sequence Number: %s', $response->SequenceNumber));
-        } catch (Exception $exec) {
+        } catch (Exception $e) {
             if (false === strpos($e->getMessage(), static::BATCH_NOT_OPEN)
                 && false === strpos($e->getMessage(), static::NO_TRANS_IN_BATCH)
             ) {

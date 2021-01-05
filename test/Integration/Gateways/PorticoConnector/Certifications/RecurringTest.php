@@ -6,7 +6,6 @@ use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 use DateTime;
 use DateInterval;
-
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Customer;
@@ -15,12 +14,9 @@ use GlobalPayments\Api\Entities\Enums\AccountType;
 use GlobalPayments\Api\Entities\Enums\CheckType;
 use GlobalPayments\Api\Entities\Enums\SecCode;
 use GlobalPayments\Api\Entities\Enums\ScheduleFrequency;
-use GlobalPayments\Api\Entities\Exceptions\ApiException;
-use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\ECheck;
 use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
-use GlobalPayments\Api\Services\BatchService;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
@@ -555,7 +551,7 @@ final class RecurringTest extends TestCase
 
     // Onetime bill payment - declined
 
-    public function test022RecurringBillingVisa_Decline()
+    public function test022RecurringBillingVisaDecline()
     {
         if (static::$paymentMethodVisa == null) {
             $this->markTestIncomplete();
@@ -568,7 +564,7 @@ final class RecurringTest extends TestCase
         $this->assertEquals('51', $response->responseCode);
     }
 
-    public function test023RecurringBillingCheckPPD_Decline()
+    public function test023RecurringBillingCheckPPDDecline()
     {
         if (true || static::$paymentMethodCheckPpd == null) {
             $this->markTestIncomplete();
