@@ -6,11 +6,11 @@ use GlobalPayments\Api\Entities\EncryptionData;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
 use GlobalPayments\Api\Services\CreditService;
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\Tests\Data\TestCards;
 
 class CreditTest extends TestCase
@@ -34,7 +34,7 @@ class CreditTest extends TestCase
         $this->track->encryptionData = new EncryptionData();
         $this->track->encryptionData->version = '01';
 
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
     }
 
     public function testCreditAuthorization()
@@ -263,7 +263,7 @@ class CreditTest extends TestCase
 
     protected function getConfig()
     {
-        $config = new ServicesConfig();
+        $config = new PorticoConfig();
         $config->secretApiKey = 'skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':

@@ -2,7 +2,6 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\TransITConnector;
 
-use GlobalPayments\Api\AcceptorConfig;
 use GlobalPayments\Api\Entities\AdditionalTaxDetails;
 use GlobalPayments\Api\Entities\CommercialData;
 use GlobalPayments\Api\Entities\Address;
@@ -11,21 +10,22 @@ use GlobalPayments\Api\Entities\DiscountDetails;
 use GlobalPayments\Api\Entities\Enums\CommercialIndicator;
 use GlobalPayments\Api\Entities\Enums\CreditDebitIndicator;
 use GlobalPayments\Api\Entities\Enums\TaxType;
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\TaxCategory;
+use GlobalPayments\Api\ServiceConfigs\AcceptorConfig;
+use GlobalPayments\Api\ServiceConfigs\Gateways\TransitConfig;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 
 final class CommercialCardTest extends TestCase {
     public function setup() : void {
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
     }
 
     protected function getConfig() {
-        $config = new ServicesConfig();
+        $config = new TransitConfig();
         $config->merchantId = '887000003226';
         $config->username = 'TA5622118';
         $config->password = 'f8mapGqWrE^rVaA9';

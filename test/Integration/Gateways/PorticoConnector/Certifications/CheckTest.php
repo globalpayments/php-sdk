@@ -3,13 +3,12 @@
 namespace GlobalPayments\Api\Tests\Integration\Gateways\PorticoConnector\Certifications;
 
 use PHPUnit\Framework\TestCase;
-
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\AccountType;
 use GlobalPayments\Api\Entities\Enums\CheckType;
 use GlobalPayments\Api\Entities\Enums\SecCode;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\Tests\Data\TestChecks;
 
 class CheckTest extends TestCase
@@ -20,7 +19,7 @@ class CheckTest extends TestCase
 
     private function config()
     {
-        $config = new ServicesConfig();
+        $config = new PorticoConfig();
         $config->secretApiKey  = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':
@@ -30,7 +29,7 @@ class CheckTest extends TestCase
 
     protected function setup()
     {
-        ServicesContainer::configure($this->config());
+        ServicesContainer::configureService($this->config());
 
         $this->address = new Address();
         $this->address->streetAddress1 = '123 Main St.';
@@ -191,23 +190,6 @@ class CheckTest extends TestCase
         $this->assertEquals('00', $response->responseCode);
     }
 
-    public function test009EgoldPersonalChecking()
-    {
-        $check = TestChecks::certification(
-            SecCode::POP,
-            CheckType::PERSONAL,
-            AccountType::CHECKING
-        );
-
-        $response = $check->charge(11.00)
-            ->withCurrency('USD')
-            ->withAddress($this->address)
-            ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals('00', $response->responseCode);
-    }
-
     public function test010EgoldBusinessChecking()
     {
         $check = TestChecks::certification(
@@ -225,57 +207,6 @@ class CheckTest extends TestCase
         $this->assertEquals('00', $response->responseCode);
     }
 
-    public function test011EgoldPersonalSavings()
-    {
-        $check = TestChecks::certification(
-            SecCode::POP,
-            CheckType::PERSONAL,
-            AccountType::SAVINGS
-        );
-
-        $response = $check->charge(13.00)
-            ->withCurrency('USD')
-            ->withAddress($this->address)
-            ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals('00', $response->responseCode);
-    }
-
-    public function test012EgoldBusinessSavings()
-    {
-        $check = TestChecks::certification(
-            SecCode::POP,
-            CheckType::BUSINESS,
-            AccountType::SAVINGS
-        );
-
-        $response = $check->charge(14.00)
-            ->withCurrency('USD')
-            ->withAddress($this->address)
-            ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals('00', $response->responseCode);
-    }
-
-    public function test013EsilverPersonalChecking()
-    {
-        $check = TestChecks::certification(
-            SecCode::POP,
-            CheckType::PERSONAL,
-            AccountType::CHECKING
-        );
-
-        $response = $check->charge(15.00)
-            ->withCurrency('USD')
-            ->withAddress($this->address)
-            ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals('00', $response->responseCode);
-    }
-
     public function test014EsilverBusinessChecking()
     {
         $check = TestChecks::certification(
@@ -285,40 +216,6 @@ class CheckTest extends TestCase
         );
 
         $response = $check->charge(16.00)
-            ->withCurrency('USD')
-            ->withAddress($this->address)
-            ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals('00', $response->responseCode);
-    }
-
-    public function test015EsilverPersonalSavings()
-    {
-        $check = TestChecks::certification(
-            SecCode::POP,
-            CheckType::PERSONAL,
-            AccountType::SAVINGS
-        );
-
-        $response = $check->charge(17.00)
-            ->withCurrency('USD')
-            ->withAddress($this->address)
-            ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals('00', $response->responseCode);
-    }
-
-    public function test016EsilverBusinessSavings()
-    {
-        $check = TestChecks::certification(
-            SecCode::POP,
-            CheckType::BUSINESS,
-            AccountType::SAVINGS
-        );
-
-        $response = $check->charge(18.00)
             ->withCurrency('USD')
             ->withAddress($this->address)
             ->execute();

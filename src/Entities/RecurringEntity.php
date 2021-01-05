@@ -62,10 +62,11 @@ abstract class RecurringEntity implements IRecurringEntity
         $response = RecurringService::search(static::class)
             ->addSearchCriteria($identifier, $id)
             ->execute();
-        $entity = isset($response[0]) ? $response[0] : null;
 
-        if ($entity !== null) {
-            return RecurringService::get($entity);
+        foreach ($response as $entity) {
+            if ($entity->id === $id) {
+                return RecurringService::get($entity);
+            }
         }
 
         return null;

@@ -18,6 +18,7 @@ use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use DateTime;
 use DateInterval;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 
 class PorticoReportingTests extends TestCase
 {
@@ -37,12 +38,12 @@ class PorticoReportingTests extends TestCase
         $this->reportingService = new ReportingService();
         $this->searchCriteria = new SearchCriteriaBuilder();
 
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
     }
         
     protected function getConfig()
     {
-        $config = new ServicesConfig();
+        $config = new PorticoConfig();
         $config->secretApiKey = 'skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':

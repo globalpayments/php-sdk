@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\Enums\DccProcessor;
 use GlobalPayments\Api\Entities\Enums\DccRateType;
 use GlobalPayments\Api\Entities\DccRateData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
 
 class CreditTest extends TestCase
@@ -27,7 +28,7 @@ class CreditTest extends TestCase
         $card->cardHolderName = 'Joe Smith';
         $this->card = $card;
 
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
     }
 
     public function testCreditAuthorization()
@@ -132,7 +133,7 @@ class CreditTest extends TestCase
 
     protected function getConfig()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'api';
         $config->sharedSecret = 'secret';
@@ -144,14 +145,14 @@ class CreditTest extends TestCase
     
     protected function dccSetup()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "apidcc";
         $config->refundPassword = "refund";
         $config->sharedSecret = "secret";
         $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
         
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
     }
     
     public function testCreditGetDccInfo()

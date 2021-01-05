@@ -6,7 +6,7 @@ use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\AccountType;
 use GlobalPayments\Api\Entities\Enums\CheckType;
 use GlobalPayments\Api\Entities\Enums\SecCode;
-use GlobalPayments\Api\ServicesConfig;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestChecks;
 use PHPUnit\Framework\TestCase;
@@ -19,7 +19,7 @@ class EcommerceCheckTest extends TestCase
 
     private function config()
     {
-        $config = new ServicesConfig();
+        $config = new PorticoConfig();
         $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':
@@ -29,7 +29,7 @@ class EcommerceCheckTest extends TestCase
 
     protected function setup()
     {
-        ServicesContainer::configure($this->config());
+        ServicesContainer::configureService($this->config());
 
         $this->address = new Address();
         $this->address->streetAddress1 = '123 Main St.';

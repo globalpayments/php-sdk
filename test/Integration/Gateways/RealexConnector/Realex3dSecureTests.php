@@ -3,13 +3,12 @@
 namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
 
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\Services\CreditService;
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\MerchantDataCollection;
 use GlobalPayments\Api\Entities\ThreeDSecure;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\ThreeDSecureAcsClient;
 use GlobalPayments\Api\Utils\GenerationUtils;
 
@@ -17,12 +16,12 @@ class Realex3dSecureTests extends TestCase
 {
     public function setup() : void
     {
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
     }
 
     protected function getConfig()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = '3dsecure';
         $config->sharedSecret = 'secret';

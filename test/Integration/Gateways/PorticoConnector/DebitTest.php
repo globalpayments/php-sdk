@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\PorticoConnector;
 
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
@@ -16,7 +17,7 @@ class DebitTest extends TestCase
     {
         $this->track = TestCards::asDebit(TestCards::visaSwipeEncrypted(), '32539F50C245A6A93D123412324000AA');
 
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
     }
 
     public function testDebitSale()
@@ -63,7 +64,7 @@ class DebitTest extends TestCase
 
     protected function getConfig()
     {
-        $config = new ServicesConfig();
+        $config = new PorticoConfig();
         $config->secretApiKey = 'skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':

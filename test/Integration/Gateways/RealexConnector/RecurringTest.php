@@ -2,7 +2,6 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
 
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Customer;
@@ -17,6 +16,7 @@ use GlobalPayments\Api\Entities\Enums\RecurringType;
 use GlobalPayments\Api\Entities\Enums\DccProcessor;
 use GlobalPayments\Api\Entities\Enums\DccRateType;
 use GlobalPayments\Api\Entities\DccRateData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
 
 class RecurringTest extends TestCase
@@ -37,7 +37,7 @@ class RecurringTest extends TestCase
 
     protected function config()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "3dsecure";
         $config->refundPassword = "refund";
@@ -48,19 +48,19 @@ class RecurringTest extends TestCase
     
     protected function dccSetup()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "apidcc";
         $config->refundPassword = "refund";
         $config->sharedSecret = "secret";
         $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
         
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
     }
 
     public function setup()
     {
-        ServicesContainer::configure($this->config());
+        ServicesContainer::configureService($this->config());
         
         $this->newCustomer = new Customer();
         $this->newCustomer->key = $this->getCustomerId();

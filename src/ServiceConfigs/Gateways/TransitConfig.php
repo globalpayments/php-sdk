@@ -12,11 +12,12 @@ class TransitConfig extends GatewayConfig
 {
     /** @var GatewayProvider */
     public $gatewayProvider;
-
     public $deviceId;
     public $developerId;
     public $merchantId;
     public $transactionKey;
+    public $username;
+    public $password;
 
     public function __construct()
     {
@@ -34,6 +35,8 @@ class TransitConfig extends GatewayConfig
         $gateway->acceptorConfig = $this->acceptorConfig;
         $gateway->merchantId = $this->merchantId;
         $gateway->transactionKey = $this->transactionKey;
+        $gateway->userId = $this->username;
+        $gateway->password = $this->password;
 
         if (empty($this->serviceUrl)) {
             $gateway->serviceUrl = $this->environment == Environment::TEST ? ServiceEndpoints::TRANSIT_TEST : ServiceEndpoints::TRANSIT_PRODUCTION;

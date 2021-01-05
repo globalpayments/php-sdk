@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\PorticoConnector\Certifications;
 
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
@@ -14,6 +15,7 @@ use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\GiftCard;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\Services\BatchService;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
@@ -51,7 +53,7 @@ class MotoTest extends TestCase
      */
     private function config()
     {
-        $config = new ServicesConfig();
+        $config = new PorticoConfig();
         $config->secretApiKey = 'skapi_cert_MRCQAQBC_VQACBE0rFaZlbDDPieMGP06JDAtjyS7NQ';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':
@@ -61,7 +63,7 @@ class MotoTest extends TestCase
 
     protected function setup()
     {
-        ServicesContainer::configure($this->config());
+        ServicesContainer::configureService($this->config());
 
         $this->ecommerceInfo = new EcommerceInfo();
         $this->ecommerceInfo->channel = EcommerceChannel::MOTO;
@@ -183,6 +185,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(13.01)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withEcommerceInfo($this->ecommerceInfo)
             ->withAddress($address)
             ->withRequestMultiUseToken(true)
@@ -208,6 +211,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(13.02)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withEcommerceInfo($this->ecommerceInfo)
             ->withAddress($address)
             ->withRequestMultiUseToken(true)
@@ -233,6 +237,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(13.03)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withEcommerceInfo($this->ecommerceInfo)
             ->withAddress($address)
             ->withRequestMultiUseToken(true)
@@ -258,6 +263,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(13.04)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withEcommerceInfo($this->ecommerceInfo)
             ->withAddress($address)
             ->withRequestMultiUseToken(true)
@@ -602,6 +608,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(112.34)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -631,6 +638,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(112.34)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -660,6 +668,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(123.45)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -687,6 +696,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(134.56)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -716,6 +726,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(111.06)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -744,6 +755,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(111.07)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -772,6 +784,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(111.08)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -801,6 +814,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(111.09)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -829,6 +843,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(111.10)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -857,6 +872,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(111.11)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -885,6 +901,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(111.12)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -914,6 +931,7 @@ class MotoTest extends TestCase
 
         $response = $card->charge(111.13)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withAddress($address)
             ->withCommercialRequest(true)
             ->withEcommerceInfo($this->ecommerceInfo)
@@ -1009,14 +1027,11 @@ class MotoTest extends TestCase
     }
 
     /// Time Out Reversal
-
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException
-     */
     public function test036bTimeoutReversal()
     {
         $sale = TestCards::visaManual()->charge(911)
             ->withCurrency('USD')
+            ->withInvoiceNumber('123456')
             ->withClientTransactionId('987321654')
             ->withEcommerceInfo($this->ecommerceInfo)
             ->execute();
@@ -1027,6 +1042,7 @@ class MotoTest extends TestCase
         $response = Transaction::fromId(null, PaymentMethodType::CREDIT);
         $response->clientTransactionId = '987321654';
 
+        $this->expectException(GatewayException::class);
         $response->reverse(911)->execute();
     }
 
@@ -1508,7 +1524,7 @@ class MotoTest extends TestCase
             ->execute();
         $this->assertEquals(true, $response != null);
         $this->assertEquals('00', $response->responseCode);
-        $this->assertEquals('0', $response->pointsBalanceAmount);
+        $this->assertTrue($response->pointsBalanceAmount > 0);
     }
 
     public function test060BalanceInquiryRewards2()
@@ -1519,7 +1535,7 @@ class MotoTest extends TestCase
             ->execute();
         $this->assertEquals(true, $response != null);
         $this->assertEquals('00', $response->responseCode);
-        $this->assertEquals('0', $response->pointsBalanceAmount);
+        $this->assertTrue($response->pointsBalanceAmount > 0);
     }
 
     /// ALIAS
