@@ -2,7 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\PorticoConnector;
 
-use GlobalPayments\Api\ServicesConfig;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
@@ -19,7 +19,7 @@ class EbtTest extends TestCase
         $this->card = TestCards::asEBTManual(TestCards::visaManual(), '32539F50C245A6A93D123412324000AA');
         $this->track = TestCards::asEBTTrack(TestCards::visaSwipeEncrypted(), '32539F50C245A6A93D123412324000AA');
 
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
     }
 
     public function testEbtBalanceInquiry()
@@ -80,7 +80,7 @@ class EbtTest extends TestCase
 
     protected function getConfig()
     {
-        $config = new ServicesConfig();
+        $config = new PorticoConfig();
         $config->secretApiKey = 'skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':

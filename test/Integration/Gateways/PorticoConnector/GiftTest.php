@@ -3,7 +3,7 @@
 namespace GlobalPayments\Api\Tests\Integration\Gateways\PorticoConnector;
 
 use GlobalPayments\Api\PaymentMethods\GiftCard;
-use GlobalPayments\Api\ServicesConfig;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\ServicesContainer;
 use PHPUnit\Framework\TestCase;
 
@@ -21,7 +21,7 @@ class GiftTest extends TestCase
         $this->track = new GiftCard();
         $this->track->trackData = '%B5022440000000000098^^391200081613?;5022440000000000098=391200081613?';
 
-        ServicesContainer::configure($this->getConfig());
+        ServicesContainer::configureService($this->getConfig());
     }
 
     public function testGiftCreate()
@@ -109,7 +109,7 @@ class GiftTest extends TestCase
 
     protected function getConfig()
     {
-        $config = new ServicesConfig();
+        $config = new PorticoConfig();
         $config->secretApiKey = 'skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':
