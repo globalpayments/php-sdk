@@ -17,8 +17,8 @@ class TestChecks
         $checkHolderName = null
     ) {
         $check = new ECheck();
-        $check->accountNumber = '24413815';
-        $check->routingNumber = '490000018';
+        $check->accountNumber = '1357902468';
+        $check->routingNumber = '122000030';
         $check->checkType = $checkType;
         $check->accountType = $accountType;
         $check->secCode = $secCode;
