@@ -4,7 +4,7 @@
          bootstrap="./test/setup.php"
          colors="true"
          processIsolation="false"
-         stopOnFailure="true"
+         stopOnFailure="false"
 >
     <php>
         <ini name="zend.enable_gc" value="0"/>
