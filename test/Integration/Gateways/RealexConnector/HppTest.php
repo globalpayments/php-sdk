@@ -11,6 +11,7 @@ use GlobalPayments\Api\Entities\Enums\RecurringSequence;
 use GlobalPayments\Api\Entities\Enums\RecurringType;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
+use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\Hpp\RealexHppClient;
 use PHPUnit\Framework\TestCase;
@@ -648,7 +649,7 @@ class HppTest extends TestCase
 
     public function testHostedPaymentDataSupplementaryDataSerialize() 
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "MerchantId";
         $config->accountId = "internet";
         $config->refundPassword = "refund";
@@ -683,7 +684,7 @@ class HppTest extends TestCase
     }
 
     public function testSupplementaryDataWithOneValueSerialized() {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "MerchantId";
         $config->accountId = "internet";
         $config->refundPassword = "refund";
@@ -719,7 +720,7 @@ class HppTest extends TestCase
 
     public function testSupplementaryDataWithTwoValuesSerialized() 
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "MerchantId";
         $config->accountId = "internet";
         $config->refundPassword = "refund";

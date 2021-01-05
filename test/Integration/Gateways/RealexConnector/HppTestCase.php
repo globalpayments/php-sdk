@@ -4,14 +4,8 @@ namespace GlobalPayments\Api\Test\Integration\Gateways\RealexConnector;
 
 use GlobalPayments\Api\Services\HostedService;
 use GlobalPayments\Api\ServicesConfig;
-use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\HostedPaymentConfig;
-use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\Enums\AddressType;
-use GlobalPayments\Api\Builders\AuthorizationBuilder;
-use GlobalPayments\Api\Entities\Exceptions\BuilderException;
-use GlobalPayments\Api\Entities\Enums\HppVersion;
-use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use PHPUnit\Framework\TestCase;
 
 class HppTestCase extends TestCase
@@ -25,7 +19,7 @@ class HppTestCase extends TestCase
 
     protected function config()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "hpp";
         $config->sharedSecret = "secret";
@@ -46,7 +40,7 @@ class HppTestCase extends TestCase
 
     public function testThreedSecureResponse()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'hpp';
         $config->sharedSecret = 'secret';
@@ -78,7 +72,7 @@ class HppTestCase extends TestCase
 
     public function testprocessPaymentConsumeResponse()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'hpp';
         $config->sharedSecret = 'secret';
@@ -105,7 +99,7 @@ class HppTestCase extends TestCase
 
     public function testCardStorageCreatePayerStoreCardResponse()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'hpp';
         $config->sharedSecret = 'secret';
@@ -148,7 +142,7 @@ class HppTestCase extends TestCase
 
     public function testCardStorageDisplayStoredCardsResponse()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'hpp';
         $config->sharedSecret = 'secret';
@@ -180,7 +174,7 @@ class HppTestCase extends TestCase
 
     public function testFraudManagementResponse()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'hpp';
         $config->sharedSecret = 'secret';
@@ -212,7 +206,7 @@ class HppTestCase extends TestCase
 
     public function testDynamicCurrencyConversionResponse()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'hpp';
         $config->sharedSecret = 'secret';

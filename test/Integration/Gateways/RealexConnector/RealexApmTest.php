@@ -2,14 +2,11 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
 
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
-use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
-use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use PHPUnit\Framework\TestCase;
 
 class RealexApmTest extends TestCase
@@ -17,7 +14,7 @@ class RealexApmTest extends TestCase
 
     protected function config()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "hpp";
         $config->rebatePassword = 'refund';
@@ -29,7 +26,7 @@ class RealexApmTest extends TestCase
 
     public function setup()
     {
-        ServicesContainer::configure($this->config());
+        ServicesContainer::configureService($this->config());
     }
 
     public function testApmForCharge()
