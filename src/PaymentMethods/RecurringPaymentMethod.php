@@ -241,19 +241,6 @@ class RecurringPaymentMethod extends RecurringEntity implements
 
     public function __set($name, $value)
     {
-        switch ($name) {
-            case 'paymentMethod':
-                $client = ServicesContainer::instance()->getRecurringClient();
-                if (!$client->supportsUpdatePaymentDetails) {
-                    throw new UnsupportedTransactionException();
-                }
-
-                $this->paymentMethod = $value;
-                return;
-            default:
-                break;
-        }
-
         if (property_exists($this, $name)) {
             return $this->{$name} = $value;
         }

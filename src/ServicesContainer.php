@@ -176,7 +176,7 @@ class ServicesContainer
             if ($provider != null) {
                 return $provider;
             } else {
-                throw new ConfigurationException("Secure 3d is not configured for version " . $version) . ".";
+                throw new ConfigurationException("Secure 3d is not configured for version " . $version . ".");
             }
         } else {
             throw new ConfigurationException("Secure 3d is not configured on the connector.");
