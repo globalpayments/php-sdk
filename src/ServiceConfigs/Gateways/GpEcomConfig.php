@@ -9,6 +9,7 @@ use GlobalPayments\Api\Entities\Enums\ServiceEndpoints;
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
 use GlobalPayments\Api\Gateways\Gp3DSProvider;
 use GlobalPayments\Api\Gateways\RealexConnector;
+use GlobalPayments\Api\ConfiguredServices;
 
 class GpEcomConfig extends GatewayConfig
 {
@@ -34,7 +35,8 @@ class GpEcomConfig extends GatewayConfig
         $this->gatewayProvider = GatewayProvider::GP_ECOM;
     }
 
-    public function configureContainer($services) {
+    public function configureContainer(ConfiguredServices $services)
+    {
         // parent::configureContainer($services); // must implement data services first
         
         if (empty($this->serviceUrl)) {

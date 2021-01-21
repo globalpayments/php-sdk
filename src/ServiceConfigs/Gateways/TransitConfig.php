@@ -7,6 +7,7 @@ use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\ServiceEndpoints;
 use GlobalPayments\Api\Gateways\TransITConnector;
+use GlobalPayments\Api\ConfiguredServices;
 
 class TransitConfig extends GatewayConfig
 {
@@ -24,8 +25,8 @@ class TransitConfig extends GatewayConfig
         $this->gatewayProvider = GatewayProvider::TRANSIT;
     }
 
-    public function configureContainer($services) {
-
+    public function configureContainer(ConfiguredServices $services)
+    {
         $gateway = new TransITConnector();
         $gateway->deviceId = $this->deviceId;
         $gateway->developerId = $this->developerId;

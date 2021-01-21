@@ -22,7 +22,7 @@ abstract class Configuration
     /** @var bool */
     public $validated;
 
-    abstract function configureContainer(ConfiguredServices $services);
+    abstract public function configureContainer(ConfiguredServices $services);
 
     /** @var bool */
     public $enableLogging;

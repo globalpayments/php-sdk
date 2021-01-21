@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\ServiceConfigs\Gateways;
 
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\Api\ConfiguredServices;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\ServiceEndpoints;
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
@@ -30,8 +31,8 @@ class GeniusConfig extends GatewayConfig
         $this->gatewayProvider = GatewayProvider::GENIUS;
     }
 
-    public function configureContainer ($services) {
-        
+    public function configureContainer(ConfiguredServices $services)
+    {
         if (empty($this->serviceUrl)) {
             $this->serviceUrl = $this->environment == Environment::TEST ? ServiceEndpoints::MERCHANTWARE_TEST : ServiceEndpoints::MERCHANTWARE_PRODUCTION;
         }

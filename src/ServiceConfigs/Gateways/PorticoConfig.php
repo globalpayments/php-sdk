@@ -47,7 +47,7 @@ class PorticoConfig extends GatewayConfig
         $this->gatewayProvider = GatewayProvider::PORTICO;
     }
 
-    public function configureContainer($services)
+    public function configureContainer(ConfiguredServices $services)
     {
         if (!empty($this->secretApiKey)) {
             if (strpos($this->secretApiKey, '_prod_') !== false) {
