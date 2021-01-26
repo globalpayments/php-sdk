@@ -475,16 +475,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $xmlString = $xml->saveXML($request);
     
     
-        if(isset($_SERVER["DOCUMENT_ROOT"])) {
-            $doc = dirname($_SERVER["DOCUMENT_ROOT"]) . "/var/log/11.log";
-            file_put_contents($doc,$xmlString.PHP_EOL,FILE_APPEND);
-        }
-        
         $response = $this->doTransaction($xmlString);
-        if(isset($_SERVER["DOCUMENT_ROOT"])) {
-            $doc = dirname($_SERVER["DOCUMENT_ROOT"]) . "/var/log/11.log";
-            file_put_contents($doc,$response.PHP_EOL,FILE_APPEND);
-        }
         return $this->mapResponse($response, $acceptedResponseCodes);
     }
 
@@ -794,16 +785,8 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             );
         }
         $xmlStr = $xml->saveXML($request);
-        if(isset($_SERVER["DOCUMENT_ROOT"])) {
-            $doc = dirname($_SERVER["DOCUMENT_ROOT"]) . "/var/log/11.log";
-            file_put_contents($doc,$xmlStr.PHP_EOL,FILE_APPEND);
-        }
         
         $response = $this->doTransaction($xmlStr);
-        if(isset($_SERVER["DOCUMENT_ROOT"])) {
-            $doc = dirname($_SERVER["DOCUMENT_ROOT"]) . "/var/log/11.log";
-            file_put_contents($doc,$response.PHP_EOL,FILE_APPEND);
-        }
         return $this->mapResponse($response, $this->mapAcceptedCodes($transactionType));
     }
 
