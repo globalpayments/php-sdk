@@ -3,7 +3,7 @@
 require_once ('../../vendor/autoload.php');
 
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\ServicesConfig;
+use GlobalPayments\Api\ServicesConfig\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
 
