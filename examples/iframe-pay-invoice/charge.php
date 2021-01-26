@@ -3,18 +3,17 @@
 require_once ('../../vendor/autoload.php');
 
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 
 $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 $_GET = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
 
-$config = new ServicesConfig();
+$config = new PorticoConfig();
 $config->secretApiKey = 'skapi_cert_MYl2AQAowiQAbLp5JesGKh7QFkcizOP2jcX9BrEMqQ';
-$config->serviceUrl = 'https://cert.api2.heartlandportico.com';
 
-ServicesContainer::configure($config);
+ServicesContainer::configureService($config);
 
 $card = new CreditCardData();
 $card->token = $_GET['token_value'];
@@ -26,7 +25,6 @@ $address->state = $_GET["State"];
 $address->postalCode = preg_replace('/[^0-9]/', '', $_GET["Zip"]);
 $address->country = "United States";
 
-
 try {
     $response = $card->charge(15)
             ->withCurrency('USD')
@@ -35,7 +33,7 @@ try {
             ->execute();
 
     $body = '<h1>Success!</h1>';
-    $body .= '<p>Thank you, ' . $_GET['FirstName'] . ', for your order of $' . $_GET["payment_amount"] . '.</p>';
+    $body .= '<p>Thank you, ' . $_GET['cardholder_name'] . ', for your order of $' . $_GET["payment_amount"] . '.</p>';
 
     echo "<b>Transaction Success! </b><br/> Transaction Id: " . $response->transactionId;
     echo "<br />Invoice Number: " . $_GET["invoice_number"];

@@ -3,9 +3,9 @@ require_once ('../../vendor/autoload.php');
 require 'JWT.php';
 
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\EcommerceInfo;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 
 $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 $_GET = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
@@ -19,11 +19,10 @@ if (!empty($_GET)) {
     print_r($_GET);
     print '</code></pre>';
 
-    $config = new ServicesConfig();
+    $config = new PorticoConfig();
     $config->secretApiKey = 'skapi_cert_MT2PAQB-9VQA5Z1mOXQbzZcH6O5PpdhjWtFhMBoL4A';
-    $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
 
-    ServicesContainer::configure($config);
+    ServicesContainer::configureService($config);
 
     $card = new CreditCardData();
     $card->token = $_GET['heartlandToken'];

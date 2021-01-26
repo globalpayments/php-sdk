@@ -3,18 +3,16 @@
 require_once ('../../vendor/autoload.php');
 
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\ServicesConfig;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
 
 $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 $_GET = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
 
-$config = new ServicesConfig();
+$config = new PorticoConfig();
 $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
-$config->serviceUrl = 'https://cert.api2.heartlandportico.com';
-
-ServicesContainer::configure($config);
+ServicesContainer::configureService($config);
 
 $card = new CreditCardData();
 $card->token = $_GET['token_value'];
@@ -28,10 +26,12 @@ $address->country = "United States";
 
 try {
     $response = $card->charge(15)
-            ->withCurrency('USD')
-            ->withAddress($address)
-            ->withAllowDuplicates(true)
-            ->execute();
+        ->withCurrency('USD')
+        ->withAddress($address)
+        ->withAllowDuplicates(true)
+        ->execute();
+
+    // print_r($response);
 
     $body = '<h1>Success!</h1>';
     $body .= '<p>Thank you, ' . $_GET['FirstName'] . ', for your order of $15.</p>';

@@ -1,10 +1,11 @@
+<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="SecureSubmit PHP end-to-end payment example using tokenization.">
-        <meta name="author" content="Mark Hagan">
+        <meta name="author" content="Mark Smedal">
         <title>Simple Payment Form Demo</title>
         <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     </head>
@@ -14,45 +15,33 @@
             <form class="payment_form form-horizontal" id="payment_form" action="charge.php">
                 <h2>Billing Information</h2>
                 <div class="form-group">
-                    <label for="FirstName" class="col-sm-2 control-label">First Name</label>
-                    <div class="col-sm-10">
-                        <input type="text" name="FirstName" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="LastName" class="col-sm-2 control-label">Last Name</label>
-                    <div class="col-sm-10">
-                        <input type="text" name="LastName" />
-                    </div>
-                </div>
-                <div class="form-group">
                     <label for="PhoneNumber" class="col-sm-2 control-label">Phone Number</label>
                     <div class="col-sm-10">
-                        <input type="text" name="PhoneNumber" />
+                        <input type="text" name="PhoneNumber" id="PhoneNumber" />
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="Email" class="col-sm-2 control-label">Email</label>
                     <div class="col-sm-10">
-                        <input type="text" name="Email" />
+                        <input type="text" name="Email" id="Email" />
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="Address" class="col-sm-2 control-label">Address</label>
                     <div class="col-sm-10">
-                        <input type="text" name="Address" />
+                        <input type="text" name="Address" id="Address" />
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="City" class="col-sm-2 control-label">City</label>
                     <div class="col-sm-10">
-                        <input type="text" name="City" />
+                        <input type="text" name="City" id="City"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="State" class="col-sm-2 control-label">State</label>
                     <div class="col-sm-10">
-                        <select Name="State">
+                        <select name="State" id="State">
                             <option value="AL">Alabama</option>
                             <option value="AK">Alaska</option>
                             <option value="AZ">Arizona</option>
@@ -110,10 +99,9 @@
                 <div class="form-group">
                     <label for="Zip" class="col-sm-2 control-label">Zip</label>
                     <div class="col-sm-10">
-                        <input type="text" name="Zip" />
+                        <input type="text" name="Zip" id="Zip" />
                     </div>
                 </div>
-
                 <h2>Payment Information</h2>
                 <div class="form-group">
                     <label for="payment_amount" class="col-sm-2 control-label">Payment Amount</label>
@@ -127,42 +115,22 @@
                         <input type="text" name="invoice_number" id="invoice_number" />
                     </div>
                 </div>
-
                 <h2>Card Information</h2>
                 <div class="form-group">
                     <div class="form-wrapper">
                         <div id="ss-banner"></div>
-
-                        <div class="form-row">
-                            <label for="iframesCardNumber">Card Number:</label>
-                            <div id="iframesCardNumber"></div>
-                        </div>
-
-                        <div class="form-row">
-                            <label for="iframesCardExpiration">Card Expiration:</label>
-                            <div id="iframesCardExpiration"></div>
-                        </div>
-
-                        <div class="form-row">
-                            <label for="iframesCardCvv">Card CVV:</label>
-                            <div id="iframesCardCvv"></div>
-                        </div>
-
                         <br />
-                        <div id="iframesSubmit"></div>
+                        <div id="credit-card"></div>
                     </div>
                 </div>
-
-
                 <br />
                 <input type="hidden" id="token_value" name="token_value" />
-                <!-- <input type="button" value="Submit Payment" id="PaymentButton" /> -->
+                <input type="hidden" id="cardholder_name" name="cardholder_name" />
                 <br />
             </form>
         </div>
-
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-        <script type="text/javascript" src="https://api2.heartlandportico.com/SecureSubmit.v1/token/2.1/securesubmit.js"></script>
+        <script src="https://api2.heartlandportico.com/SecureSubmit.v1/token/gp-1.6.0/globalpayments.js"></script>
         <script src="assets/main.js"></script>
     </body>
 </html>

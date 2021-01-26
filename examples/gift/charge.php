@@ -3,18 +3,17 @@
 require_once ('../../vendor/autoload.php');
 
 use GlobalPayments\Api\PaymentMethods\GiftCard;
-use GlobalPayments\Api\ServicesConfig;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\ServicesContainer;
 
 $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 $_GET = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
 
 
-$config = new ServicesConfig();
+$config = new PorticoConfig();
 $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
-$config->serviceUrl = 'https://cert.api2.heartlandportico.com';
 
-ServicesContainer::configure($config);
+ServicesContainer::configureService($config);
 
 try {
     $card = new GiftCard();
@@ -29,5 +28,3 @@ try {
 } catch (Exception $e) {
     echo $e->getMessage();
 }
-
-

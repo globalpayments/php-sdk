@@ -50,7 +50,7 @@ class CardUtils
         'EnRoute' => '/^2(014|149)/',
         'Discover' => '/^6([045]|22)/',
         'Jcb' => '/^35/',
-        "Wex" => "^(?:690046|707138)",
+        'Wex' => '/^(?:690046|707138)/',
     ];
     
     public static function parseTrackData($paymentMethod)

@@ -13,6 +13,7 @@ use GlobalPayments\Api\Entities\Enums\SecCode;
 use GlobalPayments\Api\PaymentMethods\ECheck;
 use GlobalPayments\Api\Entities\Enums\ScheduleFrequency;
 use GlobalPayments\Api\Entities\Enums\PaymentSchedule;
+use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 
 function SendEmail($to, $from, $subject, $body, $isHtml) {
     $message = '<html><body>';
@@ -79,7 +80,7 @@ function createSchedule($customerKey, $paymentMethodKey, $amount) {
     $schedule->paymentKey = $paymentMethodKey;
     $schedule->amount = $amount;
     $schedule->currency = 'USD';
-    $schedule->startDate = date('mdY', strtotime("last day of next month"));
+    $schedule->startDate = new DateTime('last day of +1 month');
     $schedule->paymentSchedule = PaymentSchedule::LAST_DAY_OF_THE_MONTH; //or PaymentSchedule::FIRST_DAY_OF_THE_MONTH
     $schedule->frequency = ScheduleFrequency::MONTHLY; //'Monthly', 'Bi-Monthly', 'Quarterly', 'Semi-Annually'
     //$schedule->duration = HpsPayPlanScheduleDuration::ONGOING;
@@ -92,11 +93,11 @@ function createSchedule($customerKey, $paymentMethodKey, $amount) {
     return $response;
 }
 
-$config = new ServicesConfig();
+$config = new PorticoConfig();
 $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
 $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
 
-ServicesContainer::configure($config);
+ServicesContainer::configureService($config);
 
 $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 $_GET = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
