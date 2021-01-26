@@ -463,7 +463,11 @@ class AuthorizationBuilder extends TransactionBuilder
      *
      */
     public $transactionInitiator;
-
+    
+    /**
+     * @var string
+     */
+    public $authCode;
     /**
      * {@inheritdoc}
      *
@@ -588,6 +592,10 @@ class AuthorizationBuilder extends TransactionBuilder
                 ->check('accountHolderName')->isNotNullInSubProperty('paymentMethod');
     }
 
+    public function withAuthCode($code) {
+        $this->authCode = $code;
+        return $this;
+    }
     /**
      * Set an address value; where applicable.
      *

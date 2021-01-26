@@ -726,8 +726,8 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         if ($builder->transactionType === TransactionType::REFUND &&
                 is_null($builder->alternativePaymentType)) {
             $request->appendChild($xml->createElement("authcode", $builder->paymentMethod->authCode));
-        } else {
-            $request->appendChild($xml->createElement("authcode", "12345"));
+        } else if($builder->authCode) {
+            $request->appendChild($xml->createElement("authcode", $builder->authCode));
         }
         
         // reason code
@@ -763,7 +763,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         if($transactionType == "multisettle") {
             $txnseq = $xml->createElement("txnseq");
             $final = $xml->createElement("final");
-            $final->setAttribute("flag",1);
+            $final->setAttribute("flag",0);
             $txnseq->appendChild($final);
             $request->appendChild($txnseq);
         }
@@ -785,7 +785,6 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             );
         }
         $xmlStr = $xml->saveXML($request);
-        
         $response = $this->doTransaction($xmlStr);
         return $this->mapResponse($response, $this->mapAcceptedCodes($transactionType));
     }

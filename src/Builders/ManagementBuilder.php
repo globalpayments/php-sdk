@@ -128,7 +128,11 @@ class ManagementBuilder extends TransactionBuilder
      * @var string
      */
     public $payerAuthenticationResponse;
-
+    
+    /**
+     * @var string
+     */
+    public $authCode;
     /**
      * {@inheritdoc}
      *
@@ -233,6 +237,11 @@ class ManagementBuilder extends TransactionBuilder
             ->check('paymentMethod')->isInstanceOf(CreditCardData::class);
     }
 
+    public function withAuthCode($code) {
+        $this->authCode = $code;
+        return $this;
+    }
+    
     /**
      * Sets the current transaction's amount.
      *
