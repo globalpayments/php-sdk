@@ -487,7 +487,10 @@ class AuthorizationBuilder extends TransactionBuilder
     public function execute(string $configName = 'default')
     {
         parent::execute($configName);
-        
+    
+        /**
+         * @var \GlobalPayments\Api\Gateways\RealexConnector $client
+         */
         $client = ServicesContainer::instance()->getClient($configName);
         return $client->processAuthorization($this);
     }

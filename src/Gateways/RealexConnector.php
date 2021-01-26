@@ -135,7 +135,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $timestamp = isset($builder->timestamp) ? $builder->timestamp : GenerationUtils::generateTimestamp();
         $orderId = isset($builder->orderId) ? $builder->orderId : GenerationUtils::generateOrderId();
         $transactionType = $this->mapAuthRequestType($builder);
-
+        
         // Build Request
         $request = $xml->createElement("request");
         $request->setAttribute("timestamp", $timestamp);
@@ -156,14 +156,6 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $amount = $xml->createElement("amount", preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount)));
             $amount->setAttribute("currency", $builder->currency);
             $request->appendChild($amount);
-        }
-        
-        // This needs to be figured out based on txn type and set to 0, 1 or MULTI
-        if ($builder->transactionType === TransactionType::SALE || $builder->transactionType == TransactionType::AUTH) {
-            $autoSettle = $builder->transactionType === TransactionType::SALE ? "1" : "0";
-            $element = $xml->createElement("autosettle");
-            $element->setAttribute("flag", $autoSettle);
-            $request->appendChild($element);
         }
 
         // For Fraud Decision Manager
@@ -322,7 +314,16 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                     implode('.', $requestValues)
                 );
             }
-           
+    
+            // This needs to be figured out based on txn type and set to 0, 1 or MULTI
+            if ($builder->transactionType === TransactionType::SALE || $builder->transactionType == TransactionType::AUTH) {
+                $autoSettle = $builder->transactionType === TransactionType::SALE ? "1" : "0";
+                $autoSettle = "MULTI";
+                $element = $xml->createElement("autosettle");
+                $element->setAttribute("flag", $autoSettle);
+                $request->appendChild($element);
+                //$request->appendChild($xml->createElement("estnumtxn",3));
+            }
             $request->appendChild($xml->createElement("sha1hash", $hash));
         }
         if ($builder->paymentMethod instanceof RecurringPaymentMethod) {
@@ -471,7 +472,19 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         }
         
         $acceptedResponseCodes = $this->mapAcceptedCodes($transactionType);
-        $response = $this->doTransaction($xml->saveXML($request));
+        $xmlString = $xml->saveXML($request);
+    
+    
+        if(isset($_SERVER["DOCUMENT_ROOT"])) {
+            $doc = dirname($_SERVER["DOCUMENT_ROOT"]) . "/var/log/11.log";
+            file_put_contents($doc,$xmlString.PHP_EOL,FILE_APPEND);
+        }
+        
+        $response = $this->doTransaction($xmlString);
+        if(isset($_SERVER["DOCUMENT_ROOT"])) {
+            $doc = dirname($_SERVER["DOCUMENT_ROOT"]) . "/var/log/11.log";
+            file_put_contents($doc,$response.PHP_EOL,FILE_APPEND);
+        }
         return $this->mapResponse($response, $acceptedResponseCodes);
     }
 
@@ -691,10 +704,14 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $timestamp = GenerationUtils::generateTimestamp();
         $orderId = $builder->orderId ?: GenerationUtils::generateOrderId();
         $transactionType = $this->mapManageRequestType($builder);
+        if($transactionType == "settle") {
+            $transactionType = "multisettle";
+        }
+        
         // Build Request
         $request = $xml->createElement("request");
-        $request->setAttribute("timestamp", $timestamp);
         $request->setAttribute("type", $transactionType);
+        $request->setAttribute("timestamp", $timestamp);
 
         $request->appendChild($xml->createElement("merchantid", $this->merchantId));
         
@@ -702,9 +719,9 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $request->appendChild($xml->createElement("account", $this->accountId));
         }
         if (is_null($builder->alternativePaymentType)) {
-            $request->appendChild($xml->createElement("channel", $this->channel));
+            //$request->appendChild($xml->createElement("channel", $this->channel));
         }
-      
+        $request->appendChild($xml->createElement("orderid", $orderId));
         if ($builder->amount !== null) {
             $amount = $xml->createElement("amount", preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount)));
             $amount->setAttribute("currency", $builder->currency);
@@ -712,16 +729,16 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         } elseif ($builder->transactionType === TransactionType::CAPTURE) {
             throw new BuilderException("Amount cannot be null for capture.");
         }
-        
-        $request->appendChild($xml->createElement("orderid", $orderId));
         $request->appendChild($xml->createElement("pasref", $builder->transactionId));
 
         // rebate hash
         if ($builder->transactionType === TransactionType::REFUND &&
                 is_null($builder->alternativePaymentType)) {
             $request->appendChild($xml->createElement("authcode", $builder->paymentMethod->authCode));
+        } else {
+            $request->appendChild($xml->createElement("authcode", "12345"));
         }
-
+        
         // reason code
         if ($builder->reasonCode !== null) {
             $request->appendChild($xml->createElement("reasoncode", $builder->reasonCode));
@@ -752,7 +769,14 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                 ($builder->currency !== null ? $builder->currency : ''),
                 ($builder->alternativePaymentType !== null ? $builder->alternativePaymentType : '')
             ];
-
+        if($transactionType == "multisettle") {
+            $txnseq = $xml->createElement("txnseq");
+            $final = $xml->createElement("final");
+            $final->setAttribute("flag",1);
+            $txnseq->appendChild($final);
+            $request->appendChild($txnseq);
+        }
+        
         $request->appendChild(
             $xml->createElement(
                 "sha1hash",
@@ -769,8 +793,17 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                 )
             );
         }
+        $xmlStr = $xml->saveXML($request);
+        if(isset($_SERVER["DOCUMENT_ROOT"])) {
+            $doc = dirname($_SERVER["DOCUMENT_ROOT"]) . "/var/log/11.log";
+            file_put_contents($doc,$xmlStr.PHP_EOL,FILE_APPEND);
+        }
         
-        $response = $this->doTransaction($xml->saveXML($request));
+        $response = $this->doTransaction($xmlStr);
+        if(isset($_SERVER["DOCUMENT_ROOT"])) {
+            $doc = dirname($_SERVER["DOCUMENT_ROOT"]) . "/var/log/11.log";
+            file_put_contents($doc,$response.PHP_EOL,FILE_APPEND);
+        }
         return $this->mapResponse($response, $this->mapAcceptedCodes($transactionType));
     }
 
@@ -953,7 +986,6 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $result = new Transaction();
 
         $root = $this->xml2object($rawResponse);
-
         $this->checkResponse($root, $acceptedCodes);
 
         $result->responseCode = (string)$root->result;
@@ -1050,7 +1082,6 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $result->alternativePaymentResponse->paymentPurpose = (string)
                     $root->paymentmethoddetails->paymentpurpose;
         }
-       
         return $result;
     }
 
