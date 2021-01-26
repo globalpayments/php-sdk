@@ -710,7 +710,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $request->appendChild($xml->createElement("account", $this->accountId));
         }
         if (is_null($builder->alternativePaymentType)) {
-            //$request->appendChild($xml->createElement("channel", $this->channel));
+            $request->appendChild($xml->createElement("channel", $this->channel));
         }
         $request->appendChild($xml->createElement("orderid", $orderId));
         if ($builder->amount !== null) {
