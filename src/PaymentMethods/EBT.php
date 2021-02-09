@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
+use GlobalPayments\Api\Entities\Enums\EbtCardType;
 use GlobalPayments\Api\Entities\Enums\InquiryType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
@@ -28,6 +29,11 @@ abstract class EBT implements
 {
     public $paymentMethodType = PaymentMethodType::EBT;
     public $pinBlock;
+
+    /**
+     * @var EbtCardType $ebtCardType
+     */
+    public $ebtCardType;
 
     /**
      * Adds value to the payment method

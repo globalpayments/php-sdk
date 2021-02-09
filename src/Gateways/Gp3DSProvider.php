@@ -87,8 +87,8 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
         $timestamp = date("Y-m-d\TH:i:s.u");
         $paymentMethod = $builder->getPaymentMethod();
         $secure3d = $paymentMethod;
-
         $request = [];
+
         if ($transType === TransactionType::VERIFY_ENROLLED) {
             $request = $this->maybeSetKey($request, 'request_timestamp', $timestamp);
             $request = $this->maybeSetKey($request, 'merchant_id', $this->merchantId);
@@ -109,21 +109,18 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             }
 
             $hash = GenerationUtils::generateHash($this->sharedSecret, implode('.', [$timestamp, $this->merchantId, $hashValue]));
-            $headers['Authorization'] = sprintf('securehash %s', $hash);
-            $headers["X-GP-Version"] = "2.2.0";
-
-            $rawResponse = $this->doTransaction('POST', 'protocol-versions', json_encode($request), null, $headers);
-            return $this->mapResponse($rawResponse);
+            $verb = 'POST';
+            $endpoint = 'protocol-versions';
+            $queryValues = null;
+            $request = json_encode($request);
         } elseif ($transType === TransactionType::VERIFY_SIGNATURE) {
             $hash = GenerationUtils::generateHash($this->sharedSecret, implode('.', [$timestamp, $this->merchantId, $builder->getServerTransactionId()]));
-            $headers['Authorization'] = sprintf('securehash %s', $hash);
-            $headers["X-GP-Version"] = "2.2.0";
-
             $queryValues = [];
             $queryValues['merchant_id'] = $this->merchantId;
             $queryValues['request_timestamp'] = $timestamp;
-            $rawResponse = $this->doTransaction('GET', sprintf('authentications/%s', $builder->getServerTransactionId()), null, $queryValues, $headers);
-            return $this->mapResponse($rawResponse);
+            $verb = 'GET';
+            $endpoint = sprintf('authentications/%s', $builder->getServerTransactionId());
+            $request = null;
         } elseif ($transType === TransactionType::INITIATE_AUTHENTICATION) {
             $orderId = $builder->getOrderId();
             if (empty($orderId)) {
@@ -333,9 +330,22 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             }
 
             $hash = GenerationUtils::generateHash($this->sharedSecret, implode('.', [$timestamp, $this->merchantId, $hashValue, $secureEcom->serverTransactionId]));
-            $headers['Authorization'] = sprintf('securehash %s', $hash);
-            $headers["X-GP-Version"] = "2.2.0";
-            $rawResponse = $this->doTransaction('POST', 'authentications', json_encode($request, JSON_UNESCAPED_SLASHES), null, $headers);
+            $verb = 'POST';
+            $endpoint = 'authentications';
+            $queryValues = null;
+            $request = json_encode($request, JSON_UNESCAPED_SLASHES);
+        }
+
+        if (!empty($verb) && !empty($endpoint)) {
+            $this->headers['Authorization'] = sprintf('securehash %s', $hash);
+            $this->headers["X-GP-Version"] = "2.2.0";
+            $rawResponse = $this->doTransaction(
+                $verb,
+                $endpoint,
+                $request,
+                $queryValues
+            );
+
             return $this->mapResponse($rawResponse);
         }
 

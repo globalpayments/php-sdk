@@ -14,6 +14,6 @@ class AmountUtils
      */
     public static function transitFormat($amount)
     {
-        return number_format($amount, 2);
+        return number_format($amount, 2, '.', '');
     }
 }

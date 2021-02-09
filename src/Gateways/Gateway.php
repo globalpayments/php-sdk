@@ -2,12 +2,15 @@
 
 namespace GlobalPayments\Api\Gateways;
 
+use GlobalPayments\Api\Entities\IRequestLogger;
+use GlobalPayments\Api\Utils\Logging\Logger;
+
 abstract class Gateway
 {
     /**
      * @var string
      */
-    private $contentType;
+    protected $contentType;
 
     /**
      * @var array<string,string>
@@ -28,6 +31,11 @@ abstract class Gateway
      * @var array<integer,string>
      */
     public $curlOptions;
+
+    /**
+     * @var $requestLogger IRequestLogger
+     */
+    public $requestLogger;
 
     /**
      * @param string $contentType
@@ -63,21 +71,24 @@ abstract class Gateway
         $verb,
         $endpoint,
         $data = null,
-        array $queryStringParams = null,
-        $headers = []
+        array $queryStringParams = null
     ) {
         try {
             $queryString = $this->buildQueryString($queryStringParams);
             $request = curl_init($this->serviceUrl . $endpoint . $queryString);
 
-            $this->headers = array_merge($this->headers, $headers, [
-                'Content-Type' => sprintf('%s', $this->contentType),
+            $this->headers = array_merge($this->headers, [
+                'Content-Type' => sprintf('%s; charset=UTF-8', $this->contentType),
                 'Content-Length' => $data === null ? 0 : strlen($data),
             ]);
 
             $headers = [];
             foreach ($this->headers as $key => $value) {
                 $headers[] = $key . ': '. $value;
+            }
+
+            if (isset($this->requestLogger)) {
+                $this->requestLogger->requestSent($verb, $endpoint, $headers, $queryStringParams, $data);
             }
 
             curl_setopt($request, CURLOPT_CONNECTTIMEOUT, $this->timeout);
@@ -90,6 +101,7 @@ abstract class Gateway
             curl_setopt($request, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($request, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
             curl_setopt($request, CURLOPT_VERBOSE, false);
+            curl_setopt($request, CURLOPT_HEADER, true);
 
             // Define the constant manually for earlier versions of PHP.
             // Disable phpcs here since this constant does not exist until PHP 5.5.19.
@@ -107,10 +119,18 @@ abstract class Gateway
             $curlResponse = curl_exec($request);
             $curlInfo = curl_getinfo($request);
             $curlError = curl_errno($request);
+            $header_size = curl_getinfo($request, CURLINFO_HEADER_SIZE);
+            $header = substr($curlResponse, 0, $header_size);
+            $body = substr($curlResponse, $header_size);
 
             $response = new GatewayResponse();
             $response->statusCode = $curlInfo['http_code'];
-            $response->rawResponse = $curlResponse;
+            $response->rawResponse = $body;
+            $response->header = $header;
+
+            if (isset($this->requestLogger)) {
+                $this->requestLogger->responseReceived($response);
+            }
 
             return $response;
         } catch (\Exception $e) {

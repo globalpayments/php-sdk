@@ -260,6 +260,12 @@ class Transaction
      */
     public $cardBrandTransactionId;
 
+    public $cardNumber;
+
+    public $cardExpMonth;
+
+    public $cardExpYear;
+
     /**
      * Creates a `Transaction` object from a stored transaction ID.
      *

@@ -88,6 +88,11 @@ class ThreeDSecure
     /**
      * @var string
      */
+    public $challengeValue;
+
+    /**
+     * @var string
+     */
     public $criticalityIndicator;
 
     /**
@@ -362,6 +367,7 @@ class ThreeDSecure
             $this->cardHolderResponseInfo = $this->mergeValue($this->cardHolderResponseInfo, $secureEcom->cardHolderResponseInfo);
             $this->cavv = $this->mergeValue($this->cavv, $secureEcom->cavv);
             $this->challengeMandated = $this->mergeValue($this->challengeMandated, $secureEcom->challengeMandated);
+            $this->challengeValue = $this->mergeValue($this->challengeValue, $secureEcom->challengeValue);
             $this->criticalityIndicator = $this->mergeValue($this->criticalityIndicator, $secureEcom->criticalityIndicator);
             $this->currency = $this->mergeValue($this->currency, $secureEcom->currency);
             $this->decoupledResponseIndicator = $this->mergeValue($this->decoupledResponseIndicator, $secureEcom->decoupledResponseIndicator);

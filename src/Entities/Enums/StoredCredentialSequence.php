@@ -8,4 +8,5 @@ class StoredCredentialSequence extends Enum
 {
     const FIRST = 'first';
     const SUBSEQUENT = 'subsequent';
+    const LAST = 'last';
 }

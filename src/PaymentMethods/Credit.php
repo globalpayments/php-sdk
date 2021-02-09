@@ -17,6 +17,7 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPrePayable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IRefundable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IReversable;
+use GlobalPayments\Api\PaymentMethods\Interfaces\ISecure3d;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IVerifyable;
 
@@ -30,7 +31,8 @@ abstract class Credit implements
     IReversable,
     IVerifyable,
     IPrePayable,
-    IBalanceable
+    IBalanceable,
+    ISecure3d
 {
     public $encryptionData;
     public $paymentMethodType = PaymentMethodType::CREDIT;
@@ -171,20 +173,43 @@ abstract class Credit implements
     }
 
     /**
+     * Tokenizes with idempotencyKey the payment method
+     *
+     * @param string $idempotencyKey
+     *
+     * @return AuthorizationBuilder
+     */
+    public function tokenizeWithIdempotencyKey($idempotencyKey)
+    {
+        return $this->verify()
+            ->withRequestMultiUseToken(true)
+            ->withIdempotencyKey($idempotencyKey);
+    }
+
+    /**
      * Updates the token expiry date with the values proced to the card object
      *
      * @return bool value indicating success/failure
      */
     public function updateTokenExpiry()
     {
+        return $this->updateTokenExpiryWithIdemPotencyKey(null);
+    }
+
+    public function updateTokenExpiryWithIdemPotencyKey($idemPotencyKey)
+    {
         if (empty($this->token)) {
             throw new BuilderException('Token cannot be null');
         }
 
         try {
-            (new ManagementBuilder(TransactionType::TOKEN_UPDATE))
-                ->withPaymentMethod($this)
-                ->execute();
+            $mb = (new ManagementBuilder(TransactionType::TOKEN_UPDATE))
+                ->withPaymentMethod($this);
+            if (!empty($idemPotencyKey)) {
+                $mb->withIdempotencyKey($idemPotencyKey);
+            }
+            $mb->execute();
+
             return true;
         } catch (ApiException $exc) {
             return false;
@@ -198,14 +223,31 @@ abstract class Credit implements
      */
     public function deleteToken()
     {
+        return $this->deleteTokenWithIdempotencyKey(null);
+    }
+
+    /**
+     * Deletes the token associated with the current card object
+     *
+     * @param string $idempotencyKey
+     *
+     * @return bool
+     * @throws BuilderException
+     */
+    public function deleteTokenWithIdempotencyKey($idempotencyKey)
+    {
         if (empty($this->token)) {
             throw new BuilderException('Token cannot be null');
         }
 
         try {
-            (new ManagementBuilder(TransactionType::TOKEN_DELETE))
-                ->withPaymentMethod($this)
-                ->execute();
+            $mb = (new ManagementBuilder(TransactionType::TOKEN_DELETE))
+                ->withPaymentMethod($this);
+            if (!empty($idempotencyKey)) {
+                $mb->withIdempotencyKey($idempotencyKey);
+            }
+            $mb->execute();
+
             return true;
         } catch (ApiException $exc) {
             return false;
@@ -222,5 +264,22 @@ abstract class Credit implements
                         ->withDccType("1")
                         ->withOrderId($orderId)
                         ->execute();
+    }
+
+    public function detokenize()
+    {
+        return $this->detokenizeWithIdempotencyKey(null);
+    }
+
+    public function detokenizeWithIdempotencyKey($idempotencyKey)
+    {
+        if (empty($this->token)) {
+            throw new BuilderException("Token cannot be null or empty");
+        }
+        $mb = (new ManagementBuilder(TransactionType::DETOKENIZE, $this));
+        if (!empty($idempotencyKey)) {
+            $mb->withIdempotencyKey($idempotencyKey);
+        }
+        return $mb->execute();
     }
 }

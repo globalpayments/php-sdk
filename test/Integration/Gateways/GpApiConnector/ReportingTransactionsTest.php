@@ -1,0 +1,667 @@
+<?php
+
+namespace Gateways\GpApiConnector;
+
+use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
+use GlobalPayments\Api\Entities\Enums\GpApi\EntryMode;
+use GlobalPayments\Api\Entities\Enums\GpApi\PaymentType;
+use GlobalPayments\Api\Entities\Enums\GpApi\SortDirection;
+use GlobalPayments\Api\Entities\Enums\GpApi\TransactionSortProperty;
+use GlobalPayments\Api\Entities\Enums\TransactionStatus;
+use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
+use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
+use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
+use GlobalPayments\Api\Services\ReportingService;
+use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Utils\GenerationUtils;
+use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+
+class ReportingTransactionsTest extends TestCase
+{
+    public function setup()
+    {
+        ServicesContainer::configureService($this->setUpConfig());
+    }
+
+    public function testTransactionDetailsReport()
+    {
+        $transactionId = 'TRN_piIDuelPio1Vk1JWE7bNatWngfxUQT';
+        try {
+            /** @var TransactionSummary $response */
+            $response = ReportingService::transactionDetail($transactionId)->execute();
+        } catch (ApiException $e) {
+            $this->fail("Transaction details report failed with " . $e->getMessage());
+        }
+        $this->assertNotNull($response);
+        $this->assertInstanceOf(TransactionSummary::class, $response);
+        $this->assertEquals($transactionId, $response->transactionId);
+    }
+
+    public function testTransactionDetailsReport_WrongId()
+    {
+        $transactionId = GenerationUtils::getGuid();
+        try {
+            ReportingService::transactionDetail($transactionId)
+                ->execute();
+        } catch (GatewayException $e) {
+            $this->assertEquals('40118', $e->responseCode);
+            $this->assertEquals("Status Code: RESOURCE_NOT_FOUND - Transactions " . $transactionId . " not found at this /ucp/transactions/" . $transactionId . "", $e->getMessage());
+        }
+    }
+
+    public function testReportFindTransactionsByStartDateAndEndDate()
+    {
+        $startDate = new \DateTime('2020-11-01 midnight');
+        $endDate = new \DateTime('2020-12-01 23:59');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::END_DATE, $endDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail("Find transactions failed with " . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        /** @var TransactionSummary $rs */
+        foreach ($response as $rs) {
+            $this->assertLessThanOrEqual($endDate, $rs->transactionDate);
+            $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
+        }
+    }
+
+    public function testReportFindTransactionsById()
+    {
+        $transactionId = 'TRN_mCBetNCJSP0xdJK1QdlfBsMVzemHHt';
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->withTransactionId($transactionId)
+                ->where(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail("Find transactions by Id failed: " . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        $this->assertEquals(1, count($response));
+        $this->assertEquals($transactionId, $response[0]->transactionId);
+    }
+
+    public function testReportFindTransactionsById_WrongId()
+    {
+        $transactionId = GenerationUtils::getGuid();;
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->withTransactionId($transactionId)
+                ->where(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail("Find transactions by Id failed: " . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        $this->assertEquals(0, count($response));
+    }
+
+    public function testReportFindTransactionsByBatchId()
+    {
+        $batchId = 'BAT_870078';
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::BATCH_ID, $batchId)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by batch id failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        /** @var TransactionSummary $rs */
+        foreach ($response as $rs) {
+            $this->assertEquals($batchId, $rs->batchSequenceNumber);
+        }
+    }
+
+    public function testReportFindTransactionsByType()
+    {
+        $paymentType = PaymentType::SALE;
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::PAYMENT_TYPE, $paymentType)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by type failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        /** @var TransactionSummary $rs */
+        foreach ($response as $rs) {
+            $this->assertEquals($paymentType, $rs->transactionType);
+        }
+
+        $paymentTypeRefund = PaymentType::REFUND;
+        try {
+            $responseRefund = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::PAYMENT_TYPE, $paymentTypeRefund)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by type failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($responseRefund);
+        $this->assertTrue(is_array($responseRefund));
+        /** @var TransactionSummary $rs */
+        foreach ($responseRefund as $rs) {
+            $this->assertEquals($paymentTypeRefund, $rs->transactionType);
+        }
+
+        $this->assertNotSame($response, $responseRefund);
+    }
+
+    public function testReportFindTransactionsByAmountAndCurrencyAndCountry()
+    {
+        $amount = 19.99;
+        $currency = 'USD'; //case sensitive
+        $country = 'US'; //case sensitive
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(DataServiceCriteria::AMOUNT, $amount)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(DataServiceCriteria::CURRENCY, $currency)
+                ->andWith(DataServiceCriteria::COUNTRY, $country)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by amount, currency and country failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        /** @var TransactionSummary $rs */
+        foreach ($response as $rs) {
+            $this->assertEquals($amount, $rs->amount);
+            $this->assertEquals($currency, $rs->currency);
+            $this->assertEquals($country, $rs->country);
+        }
+    }
+
+    public function testReportFindTransactionsByChannel()
+    {
+        $channel = Channels::CardNotPresent;
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::CHANNEL, $channel)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by channel failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        /** @var TransactionSummary $rs */
+        foreach ($response as $rs) {
+            $this->assertEquals($channel, $rs->channel);
+        }
+
+        $channelCP = Channels::CardPresent;
+        try {
+            $responseCP = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::CHANNEL, $channelCP)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by channel failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($responseCP);
+        $this->assertTrue(is_array($responseCP));
+        /** @var TransactionSummary $rs */
+        foreach ($responseCP as $rs) {
+            $this->assertEquals($channelCP, $rs->channel);
+        }
+
+        $this->assertNotSame($response, $responseCP);
+    }
+
+    public function testReportFindTransactionsByStatus()
+    {
+        $transactionStatus = TransactionStatus::CAPTURED;
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::TRANSACTION_STATUS, $transactionStatus)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by status failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        /** @var TransactionSummary $rs */
+        foreach ($response as $rs) {
+            $this->assertEquals($transactionStatus, $rs->transactionStatus);
+        }
+    }
+
+    public function testReportFindTransactionsBy_AllStatuses()
+    {
+        $startDate = new \DateTime('2020-11-01 midnight');
+
+        $transactionStatus = new TransactionStatus();
+        $reflectionClass = new ReflectionClass($transactionStatus);
+        foreach ($reflectionClass->getConstants() as $value) {
+            try {
+                $response = ReportingService::findTransactions()
+                    ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                    ->withPaging(1, 10)
+                    ->where(SearchCriteria::TRANSACTION_STATUS, $value)
+                    ->andWith(SearchCriteria::START_DATE, $startDate)
+                    ->execute();
+            } catch (ApiException $e) {
+                $this->fail('Find transactions by status failed: ' . $e->getMessage());
+            }
+
+            $this->assertNotNull($response);
+            $this->assertTrue(is_array($response));
+            /** @var TransactionSummary $rs */
+            foreach ($response as $rs) {
+                $this->assertEquals(TransactionStatus::$mapTransactionStatusResponse[$value], $rs->transactionStatus);
+            }
+        }
+    }
+
+    public function testReportFindTransactionsByCardBrandAndAuthCode()
+    {
+        $cardBrand = 'VISA';
+        $authCode = '12345';
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::CARD_BRAND, $cardBrand)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::AUTH_CODE, $authCode)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by type failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        /** @var TransactionSummary $rs */
+        foreach ($response as $rs) {
+            $this->assertEquals($cardBrand, $rs->cardType);
+            $this->assertEquals($authCode, $rs->authCode);
+        }
+    }
+
+    public function testReportFindTransactionsBy_AllCardBrands()
+    {
+        $startDate = new \DateTime('2020-11-01 midnight');
+
+        $cardBrand = array("VISA", "MASTERCARD", "AMEX", "DINERS", "DISCOVER", "JCB", "CUP");
+        foreach ($cardBrand as $value) {
+            try {
+                $response = ReportingService::findTransactions()
+                    ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                    ->withPaging(1, 10)
+                    ->where(SearchCriteria::CARD_BRAND, $value)
+                    ->andWith(SearchCriteria::START_DATE, $startDate)
+                    ->execute();
+            } catch (ApiException $e) {
+                $this->fail('Find transactions by type failed: ' . $e->getMessage());
+            }
+
+            $this->assertNotNull($response);
+            $this->assertTrue(is_array($response));
+            if ($value == "MASTERCARD") {
+                $value = "MC";
+            }
+            /** @var TransactionSummary $rs */
+            foreach ($response as $rs) {
+                $this->assertEquals($value, $rs->cardType);
+            }
+        }
+    }
+
+    public function testReportFindTransactionsByReference()
+    {
+        $referenceNumber = '1010000158841908572';
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::REFERENCE_NUMBER, $referenceNumber)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by type failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        /** @var TransactionSummary $rs */
+        foreach ($response as $rs) {
+            $this->assertEquals($referenceNumber, $rs->referenceNumber);
+        }
+    }
+
+    public function testReportFindTransactionsBy_WrongReference()
+    {
+        $referenceNumber = GenerationUtils::getGuid();;
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::REFERENCE_NUMBER, $referenceNumber)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by type failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        $this->assertEquals(0, count($response));
+    }
+
+    public function testReportFindTransactionsByBrandReference()
+    {
+        $brandReference = 's9RpaDwXq1sPRkbP';
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::BRAND_REFERENCE, $brandReference)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by brand reference failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        /** @var TransactionSummary $rs */
+        foreach ($response as $rs) {
+            $this->assertEquals($brandReference, $rs->brandReference);
+        }
+    }
+
+    public function testReportFindTransactionsBy_WrongBrandReference()
+    {
+        $brandReference = GenerationUtils::getGuid();;
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::BRAND_REFERENCE, $brandReference)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by brand reference failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        $this->assertEquals(0, count($response));
+    }
+
+    public function testReportFindTransactionsByEntryMode()
+    {
+        $startDate = new \DateTime('2020-11-01 midnight');
+        $entryMode = new EntryMode();
+        $reflectionClass = new ReflectionClass($entryMode);
+        foreach ($reflectionClass->getConstants() as $value) {
+            try {
+                $response = ReportingService::findTransactions()
+                    ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                    ->withPaging(1, 10)
+                    ->where(SearchCriteria::PAYMENT_ENTRY_MODE, $value)
+                    ->andWith(SearchCriteria::START_DATE, $startDate)
+                    ->execute();
+            } catch (ApiException $e) {
+                $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
+            }
+
+            $this->assertNotNull($response);
+            $this->assertTrue(is_array($response));
+            /** @var TransactionSummary $rs */
+            foreach ($response as $rs) {
+                $this->assertEquals($value, $rs->entryMode);
+            }
+        }
+    }
+
+    public function testReportFindTransactionsBy_NumberFirst6_and_NumberLast4()
+    {
+        $numberFirst6 = "411111";
+        $numberLast4 = "1111";
+
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::CARD_NUMBER_FIRST_SIX, $numberFirst6)
+                ->andWith(SearchCriteria::CARD_NUMBER_LAST_FOUR, $numberLast4)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        /** @var TransactionSummary $rs */
+        foreach ($response as $rs) {
+            $this->assertStringStartsWith($numberFirst6, $rs->maskedCardNumber);
+            $this->assertStringEndsWith($numberLast4, $rs->maskedCardNumber);
+        }
+    }
+
+    public function testReportFindTransactionsBy_TokenFirst6_and_TokenLast4()
+    {
+        $tokenFirst6 = "516730";
+        $tokenLast4 = "5507";
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::TOKEN_FIRST_SIX, $tokenFirst6)
+                ->andWith(SearchCriteria::TOKEN_LAST_FOUR, $tokenLast4)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
+        }
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        /** @var TransactionSummary $rs */
+        foreach ($response as $rs) {
+            $this->assertStringStartsWith($tokenFirst6, (string)$rs->maskedCardNumber);
+            $this->assertStringEndsWith($tokenLast4, $rs->maskedCardNumber);
+        }
+    }
+
+    public function testReportFindTransactionsBy_Name()
+    {
+        $name = "NAME NOT PROVIDED";
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->where(SearchCriteria::CARDHOLDER_NAME, $name)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
+        }
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+        /** @var TransactionSummary $rs */
+        foreach ($response as $rs) {
+            $this->assertEquals($name, $rs->cardHolderName);
+        }
+    }
+
+    public function testReportFindTransactions_OrderBy_Status()
+    {
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::STATUS, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+    }
+
+    public function testReportFindTransactions_OrderBy_Type()
+    {
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TYPE, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+
+        try {
+            $responseAsc = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TYPE, SortDirection::ASC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($responseAsc);
+        $this->assertTrue(is_array($responseAsc));
+
+        $this->assertNotSame($response, $responseAsc);
+    }
+
+    public function testReportFindTransactions_OrderBy_TypeAndTimeCreated()
+    {
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TYPE, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response));
+
+        try {
+            $responseTime = ReportingService::findTransactions()
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->withPaging(1, 10)
+                ->where(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($responseTime);
+        $this->assertTrue(is_array($responseTime));
+
+        $this->assertNotSame($response, $responseTime);
+    }
+
+    public function testReportFindTransactions_InvalidAccountName()
+    {
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            ReportingService::findTransactions()
+                ->where(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::ACCOUNT_NAME, "12345")
+                ->execute();
+        } catch (ApiException $e) {
+            $this->assertEquals('40003', $e->responseCode);
+            $this->assertEquals("Status Code: ACTION_NOT_AUTHORIZED - Token does not match account_id or account_name in the request", $e->getMessage());
+        }
+    }
+
+    public function testReportFindTransactions_WithoutStartDate()
+    {
+        try {
+            ReportingService::findTransactions()
+                ->execute();
+        } catch (ApiException $e) {
+            $this->assertEquals('40075', $e->responseCode);
+            $this->assertEquals("Status Code: MANDATORY_DATA_MISSING - Retrieving a list expects a date range to be populated", $e->getMessage());
+        }
+    }
+
+    public function setUpConfig()
+    {
+        $config = new GpApiConfig();
+        $accessTokenInfo = new \GlobalPayments\Api\Utils\AccessTokenInfo();
+        //this is gpapistuff stuff
+        $config->setAppId('VuKlC2n1cr5LZ8fzLUQhA7UObVks6tFF');
+        $config->setAppKey('NmGM0kg92z2gA7Og');
+        $config->environment = Environment::TEST;
+        $config->setAccessTokenInfo($accessTokenInfo);
+//        $klogger = new Logger("C:\\laragon\\www\\PHP-SDK-v3\\logs");
+//        $config->requestLogger = new SampleRequestLogger($klogger);
+
+        return $config;
+    }
+}

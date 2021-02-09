@@ -124,10 +124,28 @@ class ManagementBuilder extends TransactionBuilder
     public $alternativePaymentType;
 
     /**
+     * Dispute id
+     *
+     * @var int
+     */
+    public $disputeId;
+    /**
+     * Array with DisputeDocument objects
+     *
+     * @var array
+     */
+    public $disputeDocuments;
+
+    /**
      * @internal
      * @var string
      */
     public $payerAuthenticationResponse;
+
+    /**
+     * @var string $idempotencyKey
+     */
+    public $idempotencyKey;
 
     /**
      * {@inheritdoc}
@@ -438,6 +456,25 @@ class ManagementBuilder extends TransactionBuilder
     public function withPayerAuthenticationResponse($payerAuthenticationResponse)
     {
         $this->payerAuthenticationResponse = $payerAuthenticationResponse;
+        return $this;
+    }
+
+    public function withDisputeId($value)
+    {
+        $this->disputeId = $value;
+        return $this;
+    }
+
+    public function withDisputeDocuments($value)
+    {
+        $this->disputeDocuments = $value;
+        return $this;
+    }
+
+    public function withIdempotencyKey($value)
+    {
+        $this->idempotencyKey = $value;
+
         return $this;
     }
 }

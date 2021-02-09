@@ -33,7 +33,9 @@
 		<testsuite name="realex">
             <directory>./test/Integration/Gateways/RealexConnector/</directory>
         </testsuite>
-		
+        <testsuite name="gpapi">
+            <directory>./test/Integration/Gateways/GpApiConnector/</directory>
+        </testsuite>
     </testsuites>
 
     <filter>

@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Utils;
 
 use DateTime;
 use GlobalPayments\Api\Entities\Enums\HppVersion;
+use ReflectionClass;
 
 /**
  * Utils for the auto-generation of fields, for example the SHA1 hash.
@@ -155,5 +156,20 @@ class GenerationUtils
             return array_map('base64_decode', json_decode($json, true));
         }
         return json_decode($json, $returnArray);
+    }
+
+    public static function convertObjectToArray($object)
+    {
+        $reflectionClass = new ReflectionClass(get_class($object));
+        $array = array();
+        foreach ($reflectionClass->getProperties() as $property) {
+            $property->setAccessible(true);
+            if (!empty($property->getValue($object))) {
+                $array[$property->getName()] = $property->getValue($object);
+            }
+            $property->setAccessible(false);
+        }
+
+        return $array;
     }
 }

@@ -39,5 +39,8 @@ class TransactionType extends Enum
     const PRE_AUTH_COMPLETION = 1073741824; // 1 << 30
     const TOKEN_UPDATE = 2147483648; // 1 << 31
     const BENEFIT_WITHDRAWAL = 4294967296; // 1 <<32
-    const TOKENIZE = 8589934592; // 1 << 33;
+    const TOKENIZE = 8589934592; // 1 << 33
+    const DETOKENIZE = 17179869184; //1 << 34
+    const DISPUTE_ACCEPTANCE = 274877906944; // 1 << 38
+    const DISPUTE_CHALLENGE = 549755813888; // 1 << 39
 }

@@ -2,6 +2,8 @@
 
 namespace GlobalPayments\Api\Builders;
 
+use GlobalPayments\Api\Entities\Enums\ReportType;
+use GlobalPayments\Api\Entities\Enums\TimeZoneConversion;
 use GlobalPayments\Api\ServicesContainer;
 
 abstract class ReportBuilder extends BaseBuilder

@@ -182,6 +182,11 @@ class Secure3dBuilder extends BaseBuilder
     /** @var string */
     public $workNumber;
 
+    /**
+     * @var string
+     */
+    public $idempotencyKey;
+
     public function __construct($transactionType)
     {
         parent::__construct();
@@ -1283,6 +1288,18 @@ class Secure3dBuilder extends BaseBuilder
     }
 
     /**
+     * @param string $value
+     *
+     * @return Secure3dBuilder
+     */
+    public function withIdempotencyKey($value)
+    {
+        $this->idempotencyKey = $value;
+
+        return $this;
+    }
+
+    /**
      * @throws ApiException
      * @return ThreeDSecure */
     public function execute($configName = 'default', $version = Secure3dVersion::ANY)
@@ -1342,7 +1359,7 @@ class Secure3dBuilder extends BaseBuilder
                     case TransactionType::VERIFY_ENROLLED:
                         if (!empty($response->threeDSecure)) {
                             $rvalue = $response->threeDSecure;
-                            if ((bool)$rvalue->enrolled) {
+                            if (in_array($rvalue->enrolled, ['True', 'Y', true], true)) {
                                 $rvalue->setAmount($this->amount);
                                 $rvalue->setCurrency($this->currency);
                                 $rvalue->setOrderId($response->orderId);
@@ -1361,6 +1378,7 @@ class Secure3dBuilder extends BaseBuilder
                 }
             }
         }
+
         return $rvalue;
     }
 

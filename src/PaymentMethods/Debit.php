@@ -25,6 +25,7 @@ abstract class Debit implements
     public $encryptionData;
     public $paymentMethodType = PaymentMethodType::DEBIT;
     public $pinBlock;
+    public $cardType = 'Unknown';
 
     /**
      * Adds value to the payment method

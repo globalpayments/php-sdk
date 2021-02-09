@@ -10,4 +10,5 @@ class GatewayProvider extends Enum
     const GP_ECOM = 'GP_ECOM';
     const GENIUS = 'GENIUS';
     const TRANSIT = 'TRANSIT';
+    const GP_API = 'GP-API';
 }

@@ -7,7 +7,6 @@ use GlobalPayments\Api\Utils\CardUtils;
 
 class CreditTrackData extends Credit implements ITrackData
 {
-
     public $entryMethod;
     public $value;
     public $discretionaryData;
@@ -16,6 +15,15 @@ class CreditTrackData extends Credit implements ITrackData
     public $purchaseDeviceSequenceNumber;
     public $trackNumber;
     public $trackData;
+
+    public function setTrackData($value)
+    {
+        if (empty($this->value)) {
+            $this->setValue($value);
+        } else {
+            $this->trackData = $value;
+        }
+    }
 
     public function setValue($value)
     {

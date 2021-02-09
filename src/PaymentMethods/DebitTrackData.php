@@ -16,6 +16,15 @@ class DebitTrackData extends Debit implements ITrackData
     public $trackNumber;
     public $trackData;
 
+    public function setTrackData($value)
+    {
+        if (empty($this->value)) {
+            $this->setValue($value);
+        } else {
+            $this->trackData = $value;
+        }
+    }
+
     public function setValue($value)
     {
         $this->value = $value;

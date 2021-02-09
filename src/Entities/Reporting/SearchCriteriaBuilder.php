@@ -2,6 +2,17 @@
 namespace GlobalPayments\Api\Entities\Reporting;
 
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
+use GlobalPayments\Api\Entities\Enums\CardType;
+use GlobalPayments\Api\Entities\Enums\GpApi\AdjustmentFunding;
+use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
+use GlobalPayments\Api\Entities\Enums\GpApi\DepositStatus;
+use GlobalPayments\Api\Entities\Enums\GpApi\DisputeStage;
+use GlobalPayments\Api\Entities\Enums\GpApi\DisputeStatus;
+use GlobalPayments\Api\Entities\Enums\GpApi\EntryMode;
+use GlobalPayments\Api\Entities\Enums\GpApi\PaymentType;
+use GlobalPayments\Api\Entities\Enums\GpApi\TransactionStatus;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 
@@ -11,21 +22,46 @@ class SearchCriteriaBuilder
      * @var TransactionReportBuilder
      */
     public $reportBuilder;
-    
+
+    /**
+     * @var string
+     */
+    public $accountName;
+
     /**
      * @var string
      */
     public $accountNumberLastFour;
+
+    /**
+     * @var AdjustmentFunding
+     */
+    public $adjustmentFunding;
     
     /**
      * @var string
      */
     public $altPaymentStatus;
+
+    /**
+     * @var integer
+     */
+    public $amount;
+
+    /**
+     * @var string
+     */
+    public $aquirerReferenceNumber;
     
     /**
      * @var string
      */
     public $authCode;
+
+    /**
+     * @var string
+     */
+    public $bankAccountNumber;
     
     /**
      * @var string
@@ -41,11 +77,21 @@ class SearchCriteriaBuilder
      * @var string
      */
     public $batchSequenceNumber;
+
+    /**
+     * @var string
+     */
+    public $brandReference;
     
     /**
      * @var string
      */
     public $buyerEmailAddress;
+
+    /**
+     * @var string
+     */
+    public $cardBrand;
     
     /**
      * @var string
@@ -73,9 +119,14 @@ class SearchCriteriaBuilder
     public $cardNumberLastFour;
     
     /**
-     * @var IEnumerable<CardType>
+     * @var array<CardType>
      */
     public $cardTypes;
+
+    /**
+     * @var Channels
+     */
+    public $channel;
     
     /**
      * @var string
@@ -106,37 +157,102 @@ class SearchCriteriaBuilder
      * @var string
      */
     public $clientTransactionId;
+
+    /**
+     * @var string
+     */
+    public $country;
+
+    /**
+     * @var string
+     */
+    public $currency;
     
     /**
      * @var string
      */
     public $customerId;
+
+    /**
+     * @var string
+     */
+    public $depositId;
+
+    /**
+     * @var string
+     */
+    public $depositReference;
+
+    /**
+     * @var DepositStatus
+     */
+    public $depositStatus;
     
     /**
      * @var string
      */
     public $displayName;
+
+    /**
+     * @var string
+     */
+    public $disputeId;
+
+    /**
+     * @var DisputeStage
+     */
+    public $disputeStage;
+
+    /**
+     * @var DisputeStatus
+     */
+    public $disputeStatus;
+
+    /**
+     * @var \DateTime
+     */
+    public $endAdjustmentDate;
+
+    /**
+     * @var \DateTime
+     */
+    public $endBatchDate;
     
     /**
-     * @var DateTime
+     * @var \DateTime
      */
     public $endDate;
-    
+
     /**
-     * @var string
+     * @var \DateTime
      */
-    public $giftCurrency;
-    
+    public $endDepositDate;
+
     /**
-     * @var string
+     * @var \DateTime
      */
-    public $giftMaskedAlias;
-    
+    public $endStageDate;
+
     /**
      * @var bool
      */
     public $fullyCaptured;
-    
+
+    /**
+     * @var string
+     */
+    public $giftCurrency;
+
+    /**
+     * @var string
+     */
+    public $giftMaskedAlias;
+
+    /**
+     * @var string
+     */
+    public $hierarchy;
+
     /**
      * @var string
      */
@@ -151,19 +267,54 @@ class SearchCriteriaBuilder
      * @var string
      */
     public $issuerTransactionId;
+
+    /**
+     * @var \DateTime
+     */
+    public $localTransactionEndTime;
+
+    /**
+     * @var \DateTime
+     */
+    public $localTransactionStartTime;
+
+    /**
+     * @var string
+     */
+    public $merchantId;
+
+    /**
+     * @var string
+     */
+    public $name;
     
     /**
      * @var bool
      */
     public $oneTime;
+
+    /**
+     * @var string
+     */
+    public $oderId;
+
+    /**
+     * @var EntryMode
+     */
+    public $paymentEntryMode;
     
     /**
      * @var string
      */
     public $paymentMethodKey;
+
+    /**
+     * @var PaymentType
+     */
+    public $paymentType;
     
     /**
-     * @var IEnumerable<PaymentMethodType>
+     * @var array<PaymentMethodType>
      */
     public $paymentTypes;
     
@@ -173,14 +324,19 @@ class SearchCriteriaBuilder
     public $referenceNumber;
     
     /**
-     * @var IEnumerable<TransactionType>
+     * @var array<TransactionType>
      */
     public $transactionType;
     
     /**
-     * @var decimal
+     * @var integer
      */
     public $settlementAmount;
+
+    /**
+     * @var string
+     */
+    public $settlementDisputeId;
     
     /**
      * @var string
@@ -191,11 +347,51 @@ class SearchCriteriaBuilder
      * @var string
      */
     public $siteTrace;
+
+    /**
+     * @var \DateTime
+     */
+    public $startAdjustmentDate;
+
+    /**
+     * @var \DateTime
+     */
+    public $startBatchDate;
     
     /**
-     * @var DateTime
+     * @var \DateTime
      */
     public $startDate;
+
+    /**
+     * @var \DateTime
+     */
+    public $startDepositDate;
+
+    /**
+     * @var \DateTime
+     */
+    public $startStageDate;
+
+    /**
+     * @var string
+     */
+    public $systemHierarchy;
+
+    /**
+     * @var string
+     */
+    public $tokenFirstSix;
+
+    /**
+     * @var string
+     */
+    public $tokenLastFour;
+
+    /**
+     * @var TransactionStatus
+     */
+    public $transactionStatus;
     
     /**
      * @var string
@@ -206,6 +402,11 @@ class SearchCriteriaBuilder
      * @var string
      */
     public $username;
+
+    /**
+     * @var string
+     */
+    public $timezone;
     
     public function __construct(TransactionReportBuilder $reportBuilder = null)
     {

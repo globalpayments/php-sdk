@@ -13,4 +13,9 @@ class GatewayResponse
      * @var string
      */
     public $rawResponse;
+
+    /**
+     * @var string
+     */
+    public $header;
 }

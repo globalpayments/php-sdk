@@ -16,16 +16,57 @@ class ReportingService
         return $response;
     }
 
+    public static function findDeposits()
+    {
+        $response = new TransactionReportBuilder(ReportType::FIND_DEPOSITS);
+        return $response;
+    }
+
+    public static function findSettlementTransactions()
+    {
+        $response = new TransactionReportBuilder(ReportType::FIND_SETTLEMENT_TRANSACTIONS);
+        return $response;
+    }
+
     public static function activity()
     {
         $response = (new TransactionReportBuilder(ReportType::ACTIVITY));
         return $response;
     }
-    
+
     public static function transactionDetail($transactionId)
     {
         $response = (new TransactionReportBuilder(ReportType::TRANSACTION_DETAIL))
             ->withTransactionId($transactionId);
         return $response;
+    }
+
+    public static function depositDetail($depositId)
+    {
+        $response = (new TransactionReportBuilder(ReportType::DEPOSIT_DETAIL))
+            ->withDepositId($depositId);
+        return $response;
+    }
+
+    public static function findDisputes()
+    {
+        return new TransactionReportBuilder(ReportType::FIND_DISPUTES);
+    }
+
+    public static function disputeDetail($disputeId)
+    {
+        return (new TransactionReportBuilder(ReportType::DISPUTE_DETAIL))
+            ->withDisputeId($disputeId);
+    }
+
+    public static function findSettlementDisputes()
+    {
+        return new TransactionReportBuilder(ReportType::FIND_SETTLEMENT_DISPUTES);
+    }
+
+    public static function settlementDisputeDetail($settlementDisputeId)
+    {
+        return (new TransactionReportBuilder(ReportType::SETTLEMENT_DISPUTE_DETAIL))
+            ->withSettlementDisputeId($settlementDisputeId);
     }
 }

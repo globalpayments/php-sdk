@@ -7,3 +7,5 @@ composer.phar
 composer
 /docs/
 /docs-cache/
+
+.idea

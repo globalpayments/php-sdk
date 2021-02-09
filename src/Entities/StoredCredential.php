@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Entities;
 
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
+use GlobalPayments\Api\Entities\Enums\StoredCredentialReason;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialSequence;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialType;
 
@@ -16,6 +17,10 @@ class StoredCredential
     public $sequence;
     /** @var string */
     public $schemeId;
+    /**
+     * @var StoredCredentialReason
+     */
+    public $reason;
 
     /**
      * @var string
