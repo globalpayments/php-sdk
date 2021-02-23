@@ -1166,6 +1166,9 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                     'The selected gateway does not support this transaction type.'
                 );
             case TransactionType::VERIFY_ENROLLED:
+                if ($builder->paymentMethod instanceof RecurringPaymentMethod) {
+                    return 'realvault-3ds-verifyenrolled';
+                }
                 return '3ds-verifyenrolled';
             default:
                 return 'unknown';

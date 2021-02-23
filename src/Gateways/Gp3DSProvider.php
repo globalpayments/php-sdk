@@ -162,7 +162,7 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
                 $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'full_name', $cardData->cardHolderName);
 
                 if (!empty($cardData->cardHolderName)) {
-                    $names = explode(' ', $cardData->cardHolderName);
+                    $names = explode(' ', $cardData->cardHolderName, 2);
                     if (count($names) >= 1) {
                         $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'first_name', $names[0]);
                     }

@@ -49,7 +49,7 @@ class ServicesContainer
         self::configureService($config->gatewayConfig, $configName);
     }
 
-    public static function configureService($config, string $configName = 'default')
+    public static function configureService($config, $configName = 'default')
     {
         if ($config != null) {
             if (!($config->validated)) {
