@@ -184,6 +184,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $block1->appendChild($xml->createElement('ShippingAmtInfo', $builder->shippingAmount));
         }
 
+        if ($builder->surchargeAmount !== null) {
+            $block1->appendChild($xml->createElement('SurchargeAmtInfo', $builder->surchargeAmount));
+        }
+
         if ($builder->cashBackAmount !== null) {
             $block1->appendChild(
                 $xml->createElement(
@@ -205,7 +209,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $block1->appendChild($xml->createElement('Action', AliasAction::validate($builder->aliasAction)));
             $block1->appendChild($xml->createElement('Alias', $builder->alias));
         }
-      
+
         $isCheck = ($builder->paymentMethod->paymentMethodType === PaymentMethodType::ACH)
             || ($builder->paymentMethod instanceof RecurringPaymentMethod
                 && $builder->paymentMethod->paymentType === 'ACH');
@@ -233,13 +237,13 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 $intiator = ($builder->transactionInitiator === StoredCredentialInitiator::CARDHOLDER) ? 'C' : 'M';
                 $cardOnFileData = $xml->createElement('CardOnFileData');
                 $cardOnFileData->appendChild($xml->createElement('CardOnFile', $intiator));
-                
+
                 if (!empty($builder->cardBrandTransactionId)) {
                     $cardOnFileData->appendChild($xml->createElement('CardBrandTxnId', $builder->cardBrandTransactionId));
                 }
                 $block1->appendChild($cardOnFileData);
             }
-            
+
             $cardData->appendChild(
                 $this->hydrateManualEntry(
                     $xml,
@@ -375,13 +379,13 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 $intiator = ($builder->transactionInitiator === StoredCredentialInitiator::CARDHOLDER) ? 'C' : 'M';
                 $cardOnFileData = $xml->createElement('CardOnFileData');
                 $cardOnFileData->appendChild($xml->createElement('CardOnFile', $intiator));
-                
+
                 if (!empty($builder->cardBrandTransactionId)) {
                     $cardOnFileData->appendChild($xml->createElement('CardBrandTxnId', $builder->cardBrandTransactionId));
                 }
                 $block1->appendChild($cardOnFileData);
             }
-            
+
 
             if ($method->paymentType === 'ACH') {
                 $block1->appendChild($xml->createElement('CheckAction', 'SALE'));
@@ -470,11 +474,11 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 if (!empty($builder->invoiceNumber)) {
                     $direct->appendChild($xml->createElement('DirectMktInvoiceNbr', $builder->invoiceNumber));
                 }
-                
+
                 if (!empty($builder->ecommerceInfo->shipMonth)) {
                     $direct->appendChild($xml->createElement('DirectMktShipMonth', $builder->ecommerceInfo->shipMonth));
                 }
-                
+
                 if (!empty($builder->ecommerceInfo->shipDay)) {
                     $direct->appendChild($xml->createElement('DirectMktShipDay', $builder->ecommerceInfo->shipDay));
                 }
@@ -516,7 +520,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 $xml->createElement('TxnDescriptor', $builder->dynamicDescriptor)
             );
         }
-      
+
         if ($builder->commercialData !== null) {
             $commercialDataNode = $xml->createElement('CPCData');
 
@@ -526,7 +530,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
             $block1->appendChild($commercialDataNode);
         }
-      
+
         // auto substantiation
         if ($builder->autoSubstantiation !== null) {
             $autoSubstantiationNode = $xml->createElement('AutoSubstantiation');
@@ -548,7 +552,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                     $i++;
                 }
             }
-          
+
             $autoSubstantiationNode->appendChild($xml->createElement("MerchantVerificationValue", $builder->autoSubstantiation->merchantVerificationValue));
             $autoSubstantiationNode->appendChild($xml->createElement("RealTimeSubstantiation", $builder->autoSubstantiation->realTimeSubstantiation ? "Y" : "N"));
 
@@ -1165,7 +1169,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $result->batchSummary->totalAmount = (string)$item->TotalAmt;
             $result->batchSummary->sequenceNumber = (string)$item->BatchSeqNbr;
         }
-        
+
         if (isset($item) && isset($item->CardBrandTxnId)) {
             $result->cardBrandTransactionId = (string)$item->CardBrandTxnId;
         }
@@ -1742,7 +1746,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         if ($isCheck && $builder->paymentMethod instanceof RecurringPaymentMethod) {
             return null;
         }
-        
+
         if ($builder->billingAddress !== null) {
             $holder->appendChild(
                 $xml->createElement($isCheck ? 'Address1' : 'CardHolderAddr', $builder->billingAddress->streetAddress1)
@@ -1981,7 +1985,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         return $trackData;
     }
-    
+
     public function supportsHostedPayments()
     {
         return $this->supportsHostedPayments;

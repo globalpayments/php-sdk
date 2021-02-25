@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
+use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\Tests\Data\TestCards;
 
 class CreditTest extends TestCase
@@ -137,6 +138,25 @@ class CreditTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->responseCode);
+    }
+
+    public function testCreditSaleWithSurchargeAmount()
+    {
+        $amount = 10;
+        $surcharge = $amount * .35;
+        $response = $this->card->charge($amount + $surcharge)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->withSurchargeAmount($surcharge)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode);
+
+        $report = ReportingService::transactionDetail($response->transactionId)->execute();
+
+        $this->assertNotNull($report);
+        $this->assertEquals($surcharge, $report->surchargeAmount);
     }
 
     public function testCreditSwipeAuthorization()
@@ -270,7 +290,7 @@ class CreditTest extends TestCase
                               'https://cert.api2.heartlandportico.com';
         return $config;
     }
-    
+
     public function testCreditSaleWithCOF()
     {
         $response = $this->card->charge(15)
@@ -292,7 +312,7 @@ class CreditTest extends TestCase
         $this->assertNotNull($nextResponse);
         $this->assertEquals('00', $nextResponse->responseCode);
     }
-    
+
     public function testCreditVerifyWithCOF()
     {
         $response = $this->card->verify()
@@ -312,7 +332,7 @@ class CreditTest extends TestCase
         $this->assertNotNull($nextResponse);
         $this->assertEquals('00', $nextResponse->responseCode);
     }
-    
+
     public function testCreditAuthorizationWithCOF()
     {
         $response = $this->card->authorize(14)
@@ -333,11 +353,11 @@ class CreditTest extends TestCase
 
         $this->assertNotNull($nextResponse);
         $this->assertEquals('00', $nextResponse->responseCode);
-        
+
         $captureResponse = $nextResponse->capture(16)
         ->withGratuity(2)
         ->execute();
-        
+
         $this->assertNotNull($captureResponse);
         $this->assertEquals('00', $captureResponse->responseCode);
     }
@@ -358,7 +378,7 @@ class CreditTest extends TestCase
         $reverse = Transaction::fromClientTransactionId($clientTxnId)
             ->reverse(420.69)
             ->execute();
-            
+
         $this->assertNotNull($reverse);
         $this->assertEquals('00', $reverse->responseCode);
     }
