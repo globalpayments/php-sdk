@@ -22,6 +22,7 @@ use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\Reporting\CheckData;
+use GlobalPayments\Api\Entities\Reporting\LodgingData;
 use GlobalPayments\Api\PaymentMethods\ECheck;
 use GlobalPayments\Api\PaymentMethods\GiftCard;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IBalanceable;
