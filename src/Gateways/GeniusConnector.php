@@ -348,14 +348,14 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
     }
     
     private function setGatewayParams($paymentMethod)
-    {        
+    {
         if (!empty($paymentMethod->paymentMethodType) &&
             $paymentMethod->paymentMethodType === PaymentMethodType::GIFT) {
                 $this->xmlNamespace = 'http://schemas.merchantwarehouse.com/merchantware/46/Giftcard';
                 $this->serviceUrl .= self::GIFT_SERVICE_END_POINT;
-            } else {
-                $this->serviceUrl .= self::CREDIT_SERVICE_END_POINT;
-            }
+        } else {
+            $this->serviceUrl .= self::CREDIT_SERVICE_END_POINT;
+        }
     }
     
     private function hydratePaymentData($xml, $paymentData, $paymentMethod)
@@ -365,7 +365,7 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
             if ($card->valueType === 'CardNbr') {
                 $paymentData->appendChild($xml->createElement('Source', 'Keyed'));
                 $paymentData->appendChild($xml->createElement('CardNumber', $card->number));
-                $paymentData->appendChild($xml->createElement('GiftCardPin', $card->pin));                
+                $paymentData->appendChild($xml->createElement('GiftCardPin', $card->pin));
             } elseif ($card->valueType === 'TrackData') {
                 $paymentData->appendChild($xml->createElement('Source', 'READER'));
                 $paymentData->appendChild($xml->createElement('TrackData', $card->value));
@@ -400,5 +400,5 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
                 $paymentData->appendChild($xml->createElement('TrackData', $track->value));
             }
         }
-    }    
+    }
 }

@@ -10,6 +10,9 @@ use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 class ConfiguredServices
 {
     private $secure3dProviders;
+    
+    /** @var IPayFacProvider  */
+    private $payFacProvider;
 
     /** @var IPaymentGateway */
     public $gatewayConnector;
@@ -58,5 +61,25 @@ class ConfiguredServices
     public function setSecure3dProvider($version, $provider)
     {
         $this->secure3dProviders[$version] = $provider;
+    }
+    
+    /**
+     * @return void
+     */
+    public function setPayFacProvider($provider)
+    {
+        $this->payFacProvider = $provider;
+    }
+    
+    /**
+     * @return IPayFacProvider
+     */
+    public function getPayFacProvider()
+    {
+        $provider = $this->payFacProvider;
+        if ($provider != null) {
+            return $provider;
+        }
+        return null;
     }
 }

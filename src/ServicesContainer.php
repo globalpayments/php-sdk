@@ -182,4 +182,16 @@ class ServicesContainer
             throw new ConfigurationException("Secure 3d is not configured on the connector.");
         }
     }
+    
+    /**
+     * @return IPayFacProvider
+     */
+    public function getPayFac($configName)
+    {
+        $provider = static::$configurations[$configName]->getPayFacProvider();
+        if ($provider != null) {
+            return $provider;
+        }
+        throw new ConfigurationException('payFacProvider is not configured');
+    }
 }

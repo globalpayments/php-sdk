@@ -64,7 +64,7 @@ abstract class RecurringEntity implements IRecurringEntity
             ->execute();
 
         foreach ($response as $entity) {
-            if ($entity->id === $id) {
+            if ($entity->id === (string) $id) {
                 return RecurringService::get($entity);
             }
         }

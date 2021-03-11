@@ -30,7 +30,8 @@ abstract class Configuration
     /** @var bool */
     public $forceGatewayTimeout;
 
-    public function validate() {
+    public function validate()
+    {
         $this->validated = true;
     }
 }

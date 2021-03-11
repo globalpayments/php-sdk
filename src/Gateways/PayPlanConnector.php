@@ -521,7 +521,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
             } else {
                 $value = $date !== null ? $date->format('mdY') : null;
                 $request[$name] = $value;
-            }            
+            }
         }
         return $request;
     }

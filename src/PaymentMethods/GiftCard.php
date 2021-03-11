@@ -252,5 +252,5 @@ class GiftCard implements
                 $this->valueType = 'TrackData';
                 return;
         }
-    }    
+    }
 }

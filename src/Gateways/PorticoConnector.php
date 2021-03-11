@@ -40,6 +40,7 @@ use GlobalPayments\Api\Entities\Reporting\SearchCriteriaBuilder;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
+use GlobalPayments\Api\Entities\PayFac\PayFacResponseData;
 
 class PorticoConnector extends XmlGateway implements IPaymentGateway
 {
@@ -409,6 +410,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 }
 
                 $block1->appendChild($data);
+            }
+
+            if ($method->paymentType === "ACH" && !empty($method->secCode)) {
+                $block1->appendChild($xml->createElement('SECCode', $method->secCode));
             }
 
             $data = $xml->createElement('RecurringData');
@@ -1173,7 +1178,13 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         if (isset($item) && isset($item->CardBrandTxnId)) {
             $result->cardBrandTransactionId = (string)$item->CardBrandTxnId;
         }
-
+        
+        if(!empty($root->PaymentFacilitatorTxnId) || !empty($root->PaymentFacilitatorTxnNbr)){
+            $result->payFacData = new PayFacResponseData();            
+            $result->payFacData->transactionId = !empty($root->PaymentFacilitatorTxnId) ? (string) $root->PaymentFacilitatorTxnId : '';
+            $result->payFacData->transactionNumber = !empty($root->PaymentFacilitatorTxnNbr) ? (string) $root->PaymentFacilitatorTxnNbr : '';
+        }
+        
         return $result;
     }
 

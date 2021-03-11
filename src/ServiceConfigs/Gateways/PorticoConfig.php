@@ -9,6 +9,7 @@ use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\ServiceEndpoints;
 use GlobalPayments\Api\Gateways\PayPlanConnector;
 use GlobalPayments\Api\Gateways\PorticoConnector;
+use GlobalPayments\Api\Gateways\ProPayConnector;
 
 class PorticoConfig extends GatewayConfig
 {
@@ -25,6 +26,11 @@ class PorticoConfig extends GatewayConfig
     public $versionNumber;
     public $secretApiKey;
     public $uniqueDeviceId;
+    
+    //ProPay
+    public $certificationStr;
+    public $selfSignedCertLocation;
+    public $proPayUS = true;
 
     public function getPayPlanEndpoint()
     {
@@ -89,6 +95,24 @@ class PorticoConfig extends GatewayConfig
         $payplan->serviceUrl = $this->serviceUrl . $this->getPayPlanEndpoint();
 
         $services->recurringConnector = $payplan;
+        
+        //propay connector
+        if (!empty($this->certificationStr)) {
+            if ($this->environment === Environment::TEST) {
+                $this->serviceUrl = ($this->proPayUS) ? ServiceEndpoints::PROPAY_TEST : ServiceEndpoints::PROPAY_TEST_CANADIAN;
+            } else {
+                $this->serviceUrl = ($this->proPayUS) ? ServiceEndpoints::PROPAY_PRODUCTION : ServiceEndpoints::PROPAY_PRODUCTION_CANADIAN;
+            }
+            
+            $payFac = new ProPayConnector();
+            $payFac->certStr = $this->certificationStr;
+            $payFac->termId = $this->terminalId;
+            $payFac->timeout = $this->timeout;
+            $payFac->serviceUrl = $this->serviceUrl;
+            $payFac->selfSignedCert = $this->selfSignedCertLocation;
+            
+            $services->setPayFacProvider($payFac);
+        }
     }
 
     public function validate()

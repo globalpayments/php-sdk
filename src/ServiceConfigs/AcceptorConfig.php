@@ -96,7 +96,8 @@ class AcceptorConfig
         $this->terminalOutputCapability             = $terminalOutputCapability;
     }
 
-    public function validate() {
+    public function validate()
+    {
         // for use in future gateway integrations
     }
 }

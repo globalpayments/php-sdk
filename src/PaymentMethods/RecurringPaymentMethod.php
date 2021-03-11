@@ -105,6 +105,13 @@ class RecurringPaymentMethod extends RecurringEntity implements
     public $status;
 
     /**
+     * eCheck Sec Code value
+     *
+     * @var string
+     */
+    public $secCode;
+
+    /**
      * The payment method's tax type
      *
      * @var string

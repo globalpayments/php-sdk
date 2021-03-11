@@ -259,6 +259,13 @@ class Transaction
      *
      */
     public $cardBrandTransactionId;
+    
+    /**
+     * The response from Propay
+     *
+     * @var PayFacResponseData
+     */
+    public $payFacData;
 
     public $cardNumber;
 
