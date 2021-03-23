@@ -36,7 +36,7 @@ abstract class ReportBuilder extends BaseBuilder
      *
      * @return mixed
      */
-    public function execute(string $configName = 'default')
+    public function execute($configName = 'default')
     {
         parent::execute($configName);
 

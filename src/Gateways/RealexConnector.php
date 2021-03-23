@@ -7,6 +7,7 @@ use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Builders\RecurringBuilder;
 use GlobalPayments\Api\Builders\ReportBuilder;
+use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\CvnPresenceIndicator;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
@@ -18,6 +19,7 @@ use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
+use GlobalPayments\Api\Utils\CountryUtils;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
@@ -581,9 +583,12 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $this->setSerializeData('CUST_NUM', $builder->customerId);
         }
         if (!empty($builder->shippingAddress)) {
+            $countryCode = CountryUtils::getCountryCodeByCountry($builder->shippingAddress->country);
+            $shippingCode = $this->generateCode($builder->shippingAddress);
+
             // Fraud values
-            $this->setSerializeData('SHIPPING_CODE', $builder->shippingAddress->postalCode);
-            $this->setSerializeData('SHIPPING_CO', $builder->shippingAddress->country);
+            $this->setSerializeData('SHIPPING_CODE', $shippingCode);
+            $this->setSerializeData('SHIPPING_CO', $countryCode);
 
             // 3DS 2.0 values
             $this->setSerializeData('HPP_SHIPPING_STREET1', $builder->shippingAddress->streetAddress1);
@@ -592,12 +597,14 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $this->setSerializeData('HPP_SHIPPING_CITY', $builder->shippingAddress->city);
             $this->setSerializeData('HPP_SHIPPING_STATE', $builder->shippingAddress->state);
             $this->setSerializeData('HPP_SHIPPING_POSTALCODE', $builder->shippingAddress->postalCode);
-            $this->setSerializeData('HPP_SHIPPING_COUNTRY', $builder->shippingAddress->country);
+            $this->setSerializeData('HPP_SHIPPING_COUNTRY', CountryUtils::getNumericCodeByCountry($builder->shippingAddress->country));
         }
         if (!empty($builder->billingAddress)) {
+            $countryCode = CountryUtils::getCountryCodeByCountry($builder->billingAddress->country);
+            $billingCode = $this->generateCode($builder->billingAddress);
             // Fraud values
-            $this->setSerializeData('BILLING_CODE', $builder->billingAddress->postalCode);
-            $this->setSerializeData('BILLING_CO', $builder->billingAddress->country);
+            $this->setSerializeData('BILLING_CODE', $billingCode);
+            $this->setSerializeData('BILLING_CO', $countryCode);
 
             // 3DS 2.0 values
             $this->setSerializeData('HPP_BILLING_STREET1', $builder->billingAddress->streetAddress1);
@@ -606,7 +613,10 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $this->setSerializeData('HPP_BILLING_CITY', $builder->billingAddress->city);
             $this->setSerializeData('HPP_BILLING_STATE', $builder->billingAddress->state);
             $this->setSerializeData('HPP_BILLING_POSTALCODE', $builder->billingAddress->postalCode);
-            $this->setSerializeData('HPP_BILLING_COUNTRY', $builder->billingAddress->country);
+            $this->setSerializeData(
+                'HPP_BILLING_COUNTRY',
+                CountryUtils::getNumericCodeByCountry($builder->billingAddress->country)
+            );
         }
         
         $this->setSerializeData('VAR_REF', $builder->clientTransactionId);
@@ -1435,6 +1445,21 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
     {
         foreach ($supplementaryData as $key => $value) {
             $this->setSerializeData(strtoupper($key), $value);
+        }
+    }
+
+    private function generateCode(Address $address)
+    {
+        $countryCode = CountryUtils::getCountryCodeByCountry($address->country);
+        switch ($countryCode)
+        {
+            case 'GB':
+                return filter_var($address->postalCode, FILTER_SANITIZE_NUMBER_INT) . '|' . filter_var($address->streetAddress1, FILTER_SANITIZE_NUMBER_INT);
+            case 'US':
+            case 'CA':
+                return $address->postalCode . '|' . $address->streetAddress1;
+            default:
+                return null;
         }
     }
 }

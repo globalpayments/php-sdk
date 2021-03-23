@@ -522,7 +522,7 @@ class AuthorizationBuilder extends TransactionBuilder
      *
      * @return Transaction
      */
-    public function execute(string $configName = 'default')
+    public function execute($configName = 'default')
     {
         parent::execute($configName);
         
@@ -535,7 +535,7 @@ class AuthorizationBuilder extends TransactionBuilder
      *
      * @return String
      */
-    public function serialize(string $configName = 'default')
+    public function serialize($configName = 'default')
     {
         $this->transactionModifier = TransactionModifier::HOSTEDREQUEST;
         parent::execute();

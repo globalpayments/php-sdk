@@ -67,7 +67,7 @@ class RecurringBuilder extends TransactionBuilder
      *
      * @return mixed
      */
-    public function execute(string $configName = 'default')
+    public function execute($configName = 'default')
     {
         parent::execute($configName);
 

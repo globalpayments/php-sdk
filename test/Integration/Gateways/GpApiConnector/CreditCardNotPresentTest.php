@@ -4,6 +4,7 @@
 namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\CustomWebProxy;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
@@ -911,11 +912,12 @@ class CreditCardNotPresentTest extends TestCase
         $config = new GpApiConfig();
         $accessTokenInfo = new AccessTokenInfo();
         //this is gpapistuff stuff
-        $config->setAppId('VuKlC2n1cr5LZ8fzLUQhA7UObVks6tFF');
-        $config->setAppKey('NmGM0kg92z2gA7Og');
-        $config->environment = Environment::TEST;
+        $config->setAppId('i872l4VgZRtSrykvSn8Lkah8RE1jihvT');
+        $config->setAppKey( '9pArW2uWoA8enxKc');
         $config->setAccessTokenInfo($accessTokenInfo);
         $config->setChannel(Channels::CardNotPresent);
+        $config->environment = Environment::TEST;
+//        $config->webProxy = new CustomWebProxy('127.0.0.1:8866');
 
         return $config;
     }

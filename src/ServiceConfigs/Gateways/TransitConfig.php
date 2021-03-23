@@ -38,6 +38,7 @@ class TransitConfig extends GatewayConfig
         $gateway->transactionKey = $this->transactionKey;
         $gateway->userId = $this->username;
         $gateway->password = $this->password;
+        $gateway->webProxy = $this->webProxy;
 
         if (empty($this->serviceUrl)) {
             $gateway->serviceUrl = $this->environment == Environment::TEST ? ServiceEndpoints::TRANSIT_TEST : ServiceEndpoints::TRANSIT_PRODUCTION;

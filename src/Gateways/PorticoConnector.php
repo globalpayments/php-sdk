@@ -41,6 +41,10 @@ use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\PayFac\PayFacResponseData;
+use GlobalPayments\Api\Entities\Reporting\LodgingData;
+use GlobalPayments\Api\Entities\Reporting\AltPaymentData;
+use GlobalPayments\Api\Entities\Reporting\AltPaymentProcessorInfo;
+use GlobalPayments\Api\Entities\Exceptions\NotImplementedException;
 
 class PorticoConnector extends XmlGateway implements IPaymentGateway
 {

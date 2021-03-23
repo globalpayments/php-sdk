@@ -40,7 +40,7 @@ abstract class RestGateway extends Gateway
         $response = $this->sendRequest($verb, $endpoint, $data, $queryStringParams);
 
         if ($this->isGpApi()) {
-            if (strpos($response->header, 'Content-Encoding: gzip') !== false) {
+            if (strpos($response->header, ': gzip') !== false) {
                 $response->rawResponse = gzdecode($response->rawResponse);
             }
         }

@@ -73,13 +73,10 @@ class GpApiConfig extends GatewayConfig
         $this->accessTokenInfo->initialize($this);
         $gateway = new GpApiConnector($this);
         $gateway->serviceUrl = $this->serviceUrl;
-
-        if (isset($this->requestLogger)) {
-            $gateway->requestLogger = $this->requestLogger;
-        }
+        $gateway->requestLogger = $this->requestLogger;
+        $gateway->webProxy = $this->webProxy;
 
         $services->gatewayConnector = $gateway;
-
         $services->reportingService = $gateway;
 
         $services->setSecure3dProvider(Secure3dVersion::ONE, $gateway);

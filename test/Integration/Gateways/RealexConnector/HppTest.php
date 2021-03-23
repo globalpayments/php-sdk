@@ -414,12 +414,16 @@ class HppTest extends TestCase
 
         // billing address
         $billingAddress = new Address();
-        $billingAddress->postalCode = "50001|Flat 123";
+        $billingAddress->streetAddress1 = 'Flat 123';
+        $billingAddress->streetAddress2 = 'House 456';
+        $billingAddress->postalCode = "50001";
         $billingAddress->country = "US";
 
         // shipping address
         $shippingAddress = new Address();
-        $shippingAddress->postalCode = "654|123";
+        $shippingAddress->streetAddress1 = 'Flat 456';
+        $shippingAddress->streetAddress2 = 'House 123';
+        $shippingAddress->postalCode = "WB3 A21";
         $shippingAddress->country = "GB";
         
         // data to be passed to the HPP along with transaction level settings

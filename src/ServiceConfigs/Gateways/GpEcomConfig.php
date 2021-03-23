@@ -53,7 +53,8 @@ class GpEcomConfig extends GatewayConfig
         $gateway->serviceUrl = $this->serviceUrl;
         $gateway->refundPassword = $this->refundPassword;
         $gateway->hostedPaymentConfig = $this->hostedPaymentConfig;
-        
+        $gateway->webProxy = $this->webProxy;
+
         $services->gatewayConnector = $gateway;
         $services->recurringConnector = $gateway;
 

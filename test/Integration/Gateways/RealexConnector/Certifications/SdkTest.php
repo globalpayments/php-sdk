@@ -4349,7 +4349,7 @@ class RealexSdkCertification extends TestCase
 
         // billing address
         $billingAddress = new Address();
-        $billingAddress->StreetAddress1 = "Flat 123 House 456";
+        $billingAddress->streetAddress1 = "Flat 123 House 456";
         $billingAddress->postalCode = "E77 4QJ";
         $billingAddress->country = "GB";
 
@@ -4390,7 +4390,7 @@ class RealexSdkCertification extends TestCase
 
         // billing address
         $billingAddress = new Address();
-        $billingAddress->StreetAddress1 = "Flat #123 House No. 456";
+        $billingAddress->streetAddress1 = "Flat #123 House No. 456";
         $billingAddress->postalCode = "E77 #4QJ";
         $billingAddress->country = "GB";
 
@@ -4431,7 +4431,7 @@ class RealexSdkCertification extends TestCase
 
         // billing address
         $billingAddress = new Address();
-        $billingAddress->StreetAddress1 = "# Flat #123 House No. #456";
+        $billingAddress->streetAddress1 = "# Flat #123 House No. #456";
         $billingAddress->postalCode = "# E77 @~4 Q # J";
         $billingAddress->country = "GB";
 
@@ -4511,7 +4511,7 @@ class RealexSdkCertification extends TestCase
 
         // billing address
         $billingAddress = new Address();
-        $billingAddress->StreetAddress1 = "Lorem ipsum dolor sit 1amet; consectetur adipiscing elit. Aenean ali2quam tellus in elit hendrerit; non 3porttE77 4QJitor lorem venenatis. Pellentesque dictum eu nunc ac fringilla. In vitae quam eu odio sollicitudin rhoncus. Praesent ullamcorper eros vitae consequat tempus. In gravida viverra iaculis. Morbi dignissim orci et ipsum accumsan";
+        $billingAddress->streetAddress1 = "Lorem ipsum dolor sit 1amet; consectetur adipiscing elit. Aenean ali2quam tellus in elit hendrerit; non 3porttE77 4QJitor lorem venenatis. Pellentesque dictum eu nunc ac fringilla. In vitae quam eu odio sollicitudin rhoncus. Praesent ullamcorper eros vitae consequat tempus. In gravida viverra iaculis. Morbi dignissim orci et ipsum accumsan";
         $billingAddress->postalCode = "Lorem ipsum dolo1r sit amet; consectetur adipiscing elit. Aenean aliquam tellus in elit hendrerit; non porttE77 4QJitor lorem venenatis. Pellentesque dictum eu2 nunc ac fringilla. In vitae quam eu 3odio sollicitudin rhoncus. Praesent ullamcorper eros vitae consequat tempus. In gravida viverra iaculis. Morbi dignissim orci et ipsum accumsan";
         $billingAddress->country = "GB";
 
@@ -4552,7 +4552,7 @@ class RealexSdkCertification extends TestCase
 
         // billing address
         $billingAddress = new Address();
-        $billingAddress->StreetAddress1 = "ABCDEFGHIJ";
+        $billingAddress->streetAddress1 = "ABCDEFGHIJ";
         $billingAddress->postalCode = "ABCDEFGHIJ";
         $billingAddress->country = "GB";
 
@@ -4593,7 +4593,7 @@ class RealexSdkCertification extends TestCase
 
         // billing address
         $billingAddress = new Address();
-        $billingAddress->StreetAddress1 = "Lorem ipsum dolor sit amet; consectetur adipiscing elit. Aenean aliquam tellus in elit hendrerit; non porttE77 4QJitor lorem venenatis. Pellentesque dictum eu nunc ac fringilla. In vitae quam eu odio sollicitudin rhoncus. Praesent ullamcorper eros vitae consequat tempus. In gravida viverra iaculis. Morbi dignissim orci et ipsum accumsan";
+        $billingAddress->streetAddress1 = "Lorem ipsum dolor sit amet; consectetur adipiscing elit. Aenean aliquam tellus in elit hendrerit; non porttE77 4QJitor lorem venenatis. Pellentesque dictum eu nunc ac fringilla. In vitae quam eu odio sollicitudin rhoncus. Praesent ullamcorper eros vitae consequat tempus. In gravida viverra iaculis. Morbi dignissim orci et ipsum accumsan";
         $billingAddress->postalCode = "Lorem ipsum dolor sit amet; consectetur adipiscing elit. Aenean aliquam tellus in elit hendrerit; non porttE77 4QJitor lorem venenatis. Pellentesque dictum eu nunc ac fringilla. In vitae quam eu odio sollicitudin rhoncus. Praesent ullamcorper eros vitae consequat tempus. In gravida viverra iaculis. Morbi dignissim orci et ipsum accumsan";
         $billingAddress->country = "GB";
 
@@ -4634,7 +4634,7 @@ class RealexSdkCertification extends TestCase
 
         // billing address
         $billingAddress = new Address();
-        $billingAddress->StreetAddress1 = "Flat 123 House 456";
+        $billingAddress->streetAddress1 = "Flat 123 House 456";
         $billingAddress->postalCode = "E77 4QJ";
         $billingAddress->country = "GB";
 
@@ -4675,7 +4675,7 @@ class RealexSdkCertification extends TestCase
 
         // billing address
         $billingAddress = new Address();
-        $billingAddress->StreetAddress1 = "Flat 123 House 456";
+        $billingAddress->streetAddress1 = "Flat 123 House 456";
         $billingAddress->postalCode = "E77 4QJ";
         $billingAddress->country = "GB";
 
@@ -4716,7 +4716,7 @@ class RealexSdkCertification extends TestCase
 
         // billing address
         $billingAddress = new Address();
-        $billingAddress->StreetAddress1 = "Flat 123 House 456";
+        $billingAddress->streetAddress1 = "Flat 123 House 456";
         $billingAddress->postalCode = "E77 4QJ";
         $billingAddress->country = "GB";
 
@@ -4757,7 +4757,8 @@ class RealexSdkCertification extends TestCase
 
         // billing address
         $billingAddress = new Address();
-        $billingAddress->StreetAddress1 = "Flat 123 House 456";
+
+        $billingAddress->streetAddress1 = "Flat 123 House 456";
         $billingAddress->postalCode = "E77 4QJ";
         $billingAddress->country = "GB";
 
@@ -4798,7 +4799,7 @@ class RealexSdkCertification extends TestCase
 
         // billing address
         $billingAddress = new Address();
-        $billingAddress->StreetAddress1 = "Flat 123 House 456";
+        $billingAddress->streetAddress1 = "Flat 123 House 456";
         $billingAddress->postalCode = "E77 4QJ";
         $billingAddress->country = "GB";
 
@@ -4839,7 +4840,7 @@ class RealexSdkCertification extends TestCase
 
         // billing address
         $billingAddress = new Address();
-        $billingAddress->StreetAddress1 = "Flat 123 House 456";
+        $billingAddress->streetAddress1 = "Flat 123 House 456";
         $billingAddress->postalCode = "E77 4QJ";
         $billingAddress->country = "GB";
 

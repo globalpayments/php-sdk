@@ -202,7 +202,7 @@ class ManagementBuilder extends TransactionBuilder
      *
      * @return Transaction
      */
-    public function execute(string $configName = 'default')
+    public function execute($configName = 'default')
     {
         parent::execute($configName);
         return ServicesContainer::instance()

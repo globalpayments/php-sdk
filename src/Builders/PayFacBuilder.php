@@ -68,7 +68,7 @@ class PayFacBuilder extends BaseBuilder
      *
      * @return mixed
      */
-    public function execute(string $configName = 'default')
+    public function execute($configName = 'default')
     {
         parent::execute($configName);
 
@@ -170,7 +170,7 @@ class PayFacBuilder extends BaseBuilder
     }
 
     /*
-     * Primary Bank Account Information – Optional. Used to add a bank account to which funds can be settled
+     * Primary Bank Account Information - Optional. Used to add a bank account to which funds can be settled
      *
      * var Object GlobalPayments\Api\Entities\PayFac\BankAccountData;
      */
@@ -180,7 +180,7 @@ class PayFacBuilder extends BaseBuilder
         return $this;
     }
     /*
-     * Merchant Beneficiary Owner Information – Required for all merchants validating KYC based off of personal data
+     * Merchant Beneficiary Owner Information - Required for all merchants validating KYC based off of personal data
      *
      * var Object GlobalPayments\Api\Entities\PayFac\BeneficialOwnerData;
      */
@@ -190,7 +190,7 @@ class PayFacBuilder extends BaseBuilder
         return $this;
     }
     /*
-     * Business Data – Required for business validated accounts. May also be required for personal validated accounts
+     * Business Data - Required for business validated accounts. May also be required for personal validated accounts
      * by ProPay Risk Team
      *
      * var Object GlobalPayments\Api\Entities\PayFac\BusinessData;
@@ -201,7 +201,7 @@ class PayFacBuilder extends BaseBuilder
         return $this;
     }
     /*
-     * Significant Owner Information – May be required for some partners based on ProPay Risk decision
+     * Significant Owner Information - May be required for some partners based on ProPay Risk decision
      *
      * var Object GlobalPayments\Api\Entities\PayFac\SignificantOwnerData;
      */
@@ -211,7 +211,7 @@ class PayFacBuilder extends BaseBuilder
         return $this;
     }
     /*
-     * Threat Risk Assessment Information – May be required based on ProPay Risk Decision
+     * Threat Risk Assessment Information - May be required based on ProPay Risk Decision
      *
      * var Object GlobalPayments\Api\Entities\PayFac\ThreatRiskData;
      */
@@ -268,7 +268,7 @@ class PayFacBuilder extends BaseBuilder
     }
     
     /*
-     * Temporary password which will allow a onetime login to ProPay’s website. Must be at least eight characters.
+     * Temporary password which will allow a onetime login to ProPay's website. Must be at least eight characters.
      * Must not contain part or the entire first or last name. Must contain at least one capital letter,
      * one lower case letter, and either one symbol or one number
      *

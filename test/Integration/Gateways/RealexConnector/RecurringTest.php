@@ -74,7 +74,7 @@ class RecurringTest extends TestCase
         $this->newCustomer->address->streetAddress3 = "The Cul-De-Sac";
         $this->newCustomer->address->city = "Halifax";
         $this->newCustomer->address->province = "West Yorkshire";
-        $this->newCustomer->address->pstalCode = "W6 9HR";
+        $this->newCustomer->address->postalCode = "W6 9HR";
         $this->newCustomer->address->country = "United Kingdom";
         $this->newCustomer->homePhone = "+35312345678";
         $this->newCustomer->workPhone = "+3531987654321";
