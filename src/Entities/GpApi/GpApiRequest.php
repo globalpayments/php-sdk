@@ -1,23 +1,30 @@
 <?php
 
-
 namespace GlobalPayments\Api\Entities\GpApi;
-
 
 class GpApiRequest
 {
-    public $account_name;
+    const ACCESS_TOKEN_ENDPOINT = '/accesstoken';
+    const TRANSACTION_ENDPOINT = '/transactions';
+    const PAYMENT_METHODS_ENDPOINT = '/payment-methods';
+    const VERIFICATIONS_ENDPOINT = '/verifications';
+    const DEPOSITS_ENDPOINT = '/settlement/deposits';
+    const DISPUTES_ENDPOINT = '/disputes';
+    const SETTLEMENT_DISPUTES_ENDPOINT = '/settlement/disputes';
+    const SETTLEMENT_TRANSACTIONS_ENDPOINT = '/settlement/transactions';
+    const AUTHENTICATIONS_ENDPOINT = '/authentications';
 
-    public $reference;
+    public $endpoint;
+    public $requestBody;
+    public $queryParams;
+    public $httpVerb;
+    public $resultsField;
 
-    public $channel;
-
-    public $country;
-
-    public static function initBaseParams(&$request, $config)
+    public function __construct($endpoint, $httpVerb, $requestBody = '', $queryParams = null)
     {
-        $request->account_name = $config->getAccessTokenInfo()->getTransactionProcessingAccountName();
-        $request->channel = $config->getChannel();
-        $request->country = $config->getCountry();
+        $this->endpoint = $endpoint;
+        $this->httpVerb = $httpVerb;
+        $this->requestBody = $requestBody;
+        $this->queryParams = $queryParams;
     }
 }

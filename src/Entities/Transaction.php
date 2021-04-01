@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Entities;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
+use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
@@ -373,6 +374,10 @@ class Transaction
 
         if ($this->commercialIndicator !== null) {
             $builder = $builder->withModifier(TransactionModifier::LEVEL_II);
+        }
+
+        if ($this->cardType !== null) {
+            $builder->cardType = $this->cardType;
         }
 
         return $builder;

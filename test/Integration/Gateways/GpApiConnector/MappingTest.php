@@ -18,7 +18,6 @@ class MappingTest extends TestCase
          $this->assertEquals($doc->status, $transaction->responseMessage);
          $this->assertEquals($doc->reference, $transaction->referenceNumber);
          $this->assertEquals($doc->action->result_code, $transaction->responseCode);
-         $this->assertEquals($doc->id, $transaction->token);
 
          if (!empty($transaction->batchSummary)) {
              $this->assertEquals($doc->batch_id, $transaction->batchSummary->sequenceNumber);

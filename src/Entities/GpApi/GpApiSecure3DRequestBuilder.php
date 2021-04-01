@@ -1,77 +1,99 @@
 <?php
 
-
 namespace GlobalPayments\Api\Entities\GpApi;
 
-
+use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
+use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
+use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ICardData;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
+use GlobalPayments\Api\Utils\CountryUtils;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\StringUtils;
 
-class Authentication3DSRequest extends GpApiRequest
+class GpApiSecure3DRequestBuilder implements IRequestBuilder
 {
-    public $amount;
-
-    public $currency;
-
-    public $notifications;
-
-    public $method_url_completion_status;
-
-    public $source;
-
-    public $merchant_contact_url;
-
-    public $order;
-
-    public $payment_method;
-
-    public $payer;
-
-    public $payer_prior_three_ds_authentication_data;
-
-    public $recurring_authorization_data;
-
-    public $payer_login_data;
-
-    public $browser_data;
-
-    public $message_category;
-
-    public $preference;
-
-    public static function verifyEnrolled(Secure3dBuilder $builder, GpApiConfig $config)
+    public static function canProcess($builder)
     {
-        $threeDS = new Authentication3DSRequest();
-        parent::initBaseParams($threeDS, $config);
-        $threeDS->reference = !empty($builder->referenceNumber) ? $builder->referenceNumber : GenerationUtils::getGuid();
-        $threeDS->amount = StringUtils::toNumeric($builder->amount);
-        $threeDS->currency = $builder->currency;
+        if ($builder instanceof Secure3dBuilder) {
+            return true;
+        }
 
-        $threeDS->payment_method = self::setPaymentMethodParam($builder->paymentMethod);
-        $threeDS->notifications = [
-            'challenge_return_url' => $config->getChallengeNotificationUrl(),
-            'three_ds_method_return_url' => $config->getMethodNotificationUrl()
+        return false;
+    }
+
+    public function buildRequest(BaseBuilder $builder, $config)
+    {
+        $requestData = null;
+        switch ($builder->transactionType)
+        {
+            case TransactionType::VERIFY_ENROLLED:
+                $verb = 'POST';
+                $endpoint = GpApiRequest::AUTHENTICATIONS_ENDPOINT;
+                $requestData = $this->verifyEnrolled($builder, $config);
+                break;
+            case TransactionType::INITIATE_AUTHENTICATION:
+                $verb = 'POST';
+                $endpoint = GpApiRequest::AUTHENTICATIONS_ENDPOINT . "/{$builder->getServerTransactionId()}/initiate";
+                $requestData = $this->initiateAuthenticationData($builder, $config);
+                break;
+            case  TransactionType::VERIFY_SIGNATURE:
+                $verb = 'POST';
+                $endpoint = GpApiRequest::AUTHENTICATIONS_ENDPOINT . "/{$builder->getServerTransactionId()}/result";
+                if (!empty($builder->getPayerAuthenticationResponse())) {
+                    $requestData['three_ds'] = [
+                        'challenge_result_value' => $builder->getPayerAuthenticationResponse()
+                    ];
+                }
+                break;
+            default:
+                 return null;
+        }
+
+        return new GpApiRequest(
+            $endpoint,
+            $verb,
+            $requestData
+        );
+    }
+
+    private function verifyEnrolled(Secure3dBuilder $builder, GpApiConfig $config)
+    {
+        $threeDS = [];
+        $threeDS['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
+        $threeDS['channel'] = $config->channel;
+        $threeDS['country'] = $config->country;
+        $threeDS['reference'] = !empty($builder->referenceNumber) ? $builder->referenceNumber : GenerationUtils::getGuid();
+        $threeDS['amount'] = StringUtils::toNumeric($builder->amount);
+        $threeDS['currency'] = $builder->currency;
+        $threeDS['preference'] = $builder->challengeRequestIndicator;
+        $threeDS['transaction_type'] = $builder->orderTransactionType;
+        $threeDS['source'] = (string) $builder->authenticationSource;
+        $threeDS['payment_method'] = $this->setPaymentMethodParam($builder->paymentMethod);
+        $threeDS['notifications'] = [
+            'challenge_return_url' => $config->challengeNotificationUrl,
+            'three_ds_method_return_url' => $config->methodNotificationUrl
         ];
 
         return $threeDS;
     }
 
-    public static function initiateAuthenticationData(Secure3dBuilder $builder, GpApiConfig $config)
+    private function initiateAuthenticationData(Secure3dBuilder $builder, GpApiConfig $config)
     {
-        $threeDS = new Authentication3DSRequest();
-        parent::initBaseParams($threeDS, $config);
-        $threeDS->amount = StringUtils::toNumeric($builder->amount);
-        $threeDS->currency = $builder->currency;
-        $threeDS->preference = $builder->challengeRequestIndicator;
-        $threeDS->method_url_completion_status = (string) $builder->methodUrlCompletion;
-        $threeDS->source = (string) $builder->authenticationSource;
+        $threeDS = [];
+        $threeDS['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
+        $threeDS['channel'] = $config->channel;
+        $threeDS['country'] = $config->country;
+        $threeDS['amount'] = StringUtils::toNumeric($builder->amount);
+        $threeDS['currency'] = $builder->currency;
+        $threeDS['preference'] = $builder->challengeRequestIndicator;
+        $threeDS['method_url_completion_status'] = (string) $builder->methodUrlCompletion;
+        $threeDS['source'] = (string) $builder->authenticationSource;
 //        $threeDS->message_category = (string) $builder->messageCategory; ???
-        $threeDS->merchant_contact_url = 'https://enp4qhvjseljg.x.pipedream.net/'; // @TODO
+        $threeDS['merchant_contact_url'] = 'https://enp4qhvjseljg.x.pipedream.net/'; // @TODO
         $order = [
             'time_created_reference' => !empty($builder->orderCreateDate) ?
                 (new \DateTime($builder->orderCreateDate))->format('Y-m-d\TH:i:s.u\Z') : null,
@@ -101,12 +123,12 @@ class Authentication3DSRequest extends GpApiRequest
                 'city' => $builder->shippingAddress->city,
                 'postal_code' => $builder->shippingAddress->postalCode,
                 'state' => $builder->shippingAddress->state,
-                'country' => $builder->shippingAddress->countryCode
+                'country' => CountryUtils::getNumericCodeByCountry($builder->shippingAddress->countryCode)
             ];
         }
-        $threeDS->order = $order;
-        $threeDS->payment_method = self::setPaymentMethodParam($builder->paymentMethod);
-        $threeDS->payer = [
+        $threeDS['order'] = $order;
+        $threeDS['payment_method'] = $this->setPaymentMethodParam($builder->paymentMethod);
+        $threeDS['payer'] = [
             'reference' => $builder->customerAccountId,
             'account_age' => (string) $builder->accountAgeIndicator,
             'account_creation_date' => !empty($builder->accountCreateDate) ?
@@ -138,7 +160,7 @@ class Authentication3DSRequest extends GpApiRequest
             'shipping_address_creation_indicator' => (string) $builder->shippingAddressUsageIndicator
         ];
 
-        $threeDS->payer_prior_three_ds_authentication_data = [
+        $threeDS['payer_prior_three_ds_authentication_data'] = [
             'authentication_method' => (string) $builder->priorAuthenticationMethod,
             'acs_transaction_reference' => $builder->priorAuthenticationTransactionId,
             'authentication_timestamp' => !empty($builder->priorAuthenticationTimestamp) ?
@@ -146,20 +168,20 @@ class Authentication3DSRequest extends GpApiRequest
             'authentication_data' => $builder->priorAuthenticationData
         ];
 
-        $threeDS->recurring_authorization_data = [
+        $threeDS['recurring_authorization_data'] = [
             'max_number_of_instalments' => $builder->maxNumberOfInstallments,
             'frequency' => $builder->recurringAuthorizationFrequency,
             'expiry_date' => $builder->recurringAuthorizationExpiryDate
         ];
 
-        $threeDS->payer_login_data = [
+        $threeDS['payer_login_data'] = [
             'authentication_data' => $builder->customerAuthenticationData,
             'authentication_timestamp' => !empty($builder->customerAuthenticationTimestamp) ?
                 $builder->customerAuthenticationTimestamp->format('Y-m-d\TH:i:s.u\Z') : null,
             'authentication_type' => (string) $builder->customerAuthenticationMethod
         ];
         if (!empty($builder->browserData)) {
-            $threeDS->browser_data = [
+            $threeDS['browser_data'] = [
                 'accept_header' => $builder->browserData->acceptHeader,
                 'color_depth' => (string) $builder->browserData->colorDepth,
                 'ip' => $builder->browserData->ipAddress,
@@ -177,7 +199,7 @@ class Authentication3DSRequest extends GpApiRequest
         return $threeDS;
     }
 
-    public static function setPaymentMethodParam($cardData)
+    private function setPaymentMethodParam($cardData)
     {
         $paymentMethod = new PaymentMethod();
         if ($cardData instanceof ITokenizable && !empty($cardData->token)) {

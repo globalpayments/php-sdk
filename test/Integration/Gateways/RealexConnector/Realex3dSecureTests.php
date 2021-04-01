@@ -9,14 +9,18 @@ use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\MerchantDataCollection;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
-use GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\ThreeDSecureAcsClient;
+use GlobalPayments\Api\Tests\Integration\Gateways\ThreeDSecureAcsClient;
 use GlobalPayments\Api\Utils\GenerationUtils;
 
 class Realex3dSecureTests extends TestCase
 {
+    private $gatewayProvider;
+
     public function setup() : void
     {
-        ServicesContainer::configureService($this->getConfig());
+        $config = $this->getConfig();
+        ServicesContainer::configureService($config);
+        $this->gatewayProvider = $config->getGatewayProvider();
     }
 
     protected function getConfig()
@@ -28,13 +32,15 @@ class Realex3dSecureTests extends TestCase
         $config->rebatePassword = 'rebate';
         $config->refundPassword = 'refund';
         $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
+
         return $config;
     }
 
     public function testAcsClient()
     {
         $authClient = new ThreeDSecureAcsClient('https://pit.3dsecure.net/VbVTestSuiteService/pit1/acsService/paReq?summary=MTNmMzI4NzgtNTdmZi00OWEzLWJhZTAtYzFhNzAxMDJkMGNi');
-        $this->assertNotNull($authClient->authenticate('eJxlUsFSwjAQvfsVTO82TSm0MNs4FVBwRkUF8ZomK1Rpimkr6NebYBEdc8jsy27evrwNnO3ydesddZkVKnao6zktVKKQmVrGznx2cRo5Z+wEZiuNOHxAUWtkcI1lyZfYymTs+KIjZYRt30tl0H2WPRpFIuQyDULsdTvoMJgm9/jGoOnCTBPXB3KAhk2LFVcVAy7ezic3LAgD2ouANBBy1JMh6zULyDcGxXNkK+S6WnMll5vS7GmxA7JPgChqVekPFgUekAOAWq/Zqqo2ZZ+Q7Xbr/r/visKtX4HYSiBHcdPaRqVh3mWSJcM7Nb7t0O1iGs6n7cXnI025N7hSk1EMxFaA5BUy36MhpX7Y8r1+J+hTI39/Djy3kqwZRl4DYGN7JE3GJn4fgDFfm+EcnnRAgLtNodBUGFd/YiBHwYOx9VZUxrVxdjEb1aPXy5f5k27Tmzo/v75N4ti6vS+wbJlxikb0m84CIJaCNIMkzfxN9OdffAF4VML9'));
+        $authClient->setGatewayProvider($this->gatewayProvider);
+        $this->assertNotNull($authClient->authenticate('eJxlUsFSwjAQvfsVTO82TSm0MNs4FVBwRkUF8ZomK1Rpimkr6NebYBEdc8jsy27evrwNnO3ydesddZkVKnao6zktVKKQmVrGznx2cRo5Z+wEZiuNOHxAUWtkcI1lyZfYymTs+KIjZYRt30tl0H2WPRpFIuQyDULsdTvoMJgm9/jGoOnCTBPXB3KAhk2LFVcVAy7ezic3LAgD2ouANBBy1JMh6zULyDcGxXNkK+S6WnMll5vS7GmxA7JPgChqVekPFgUekAOAWq/Zqqo2ZZ+Q7Xbr/r/visKtX4HYSiBHcdPaRqVh3mWSJcM7Nb7t0O1iGs6n7cXnI025N7hSk1EMxFaA5BUy36MhpX7Y8r1+J+hTI39/Djy3kqwZRl4DYGN7JE3GJn4fgDFfm+EcnnRAgLtNodBUGFd/YiBHwYOx9VZUxrVxdjEb1aPXy5f5k27Tmzo/v75N4ti6vS+wbJlxikb0m84CIJaCNIMkzfxN9OdffAF4VML9',));
     }
 
     public function testMerchantDataEnumerator()
@@ -139,6 +145,7 @@ class Realex3dSecureTests extends TestCase
                 $merchantData->add('client_txn_id', '123456');
 
                 $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
+                $authClient->setGatewayProvider($this->gatewayProvider);
                 $authResponse = $authClient->authenticate($secureEcom->payerAuthenticationRequest, (string)$secureEcom->getMerchantData()->toString());
                 
                 $payerAuthenticationResponse = $authResponse->getAuthResponse();
@@ -180,6 +187,7 @@ class Realex3dSecureTests extends TestCase
 
             if ($secureEcom != null) {
                 $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
+                $authClient->setGatewayProvider($this->gatewayProvider);
                 $authResponse = $authClient->authenticate($secureEcom->payerAuthenticationRequest, (string)$secureEcom->getMerchantData()->toString());
             
                 $payerAuthenticationResponse = $authResponse->getAuthResponse();
@@ -365,6 +373,7 @@ class Realex3dSecureTests extends TestCase
 
         $secureEcom = $card->threeDSecure;
         $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
+        $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate($secureEcom->payerAuthenticationRequest, $secureEcom->getMerchantData()->toString());
     
         // $payerAuthenticationResponse = $authResponse->parse();
@@ -396,6 +405,7 @@ class Realex3dSecureTests extends TestCase
 
         $secureEcom = $card->threeDSecure;
         $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
+        $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate($secureEcom->payerAuthenticationRequest, $secureEcom->getMerchantData()->toString());
     
         // $payerAuthenticationResponse = $authResponse->parse();
@@ -426,6 +436,7 @@ class Realex3dSecureTests extends TestCase
 
         $secureEcom = $card->threeDSecure;
         $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
+        $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate($secureEcom->payerAuthenticationRequest, $secureEcom->getMerchantData()->toString());
     
         // $payerAuthenticationResponse = $authResponse->parse();
@@ -457,6 +468,7 @@ class Realex3dSecureTests extends TestCase
 
         $secureEcom = $card->threeDSecure;
         $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
+        $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate($secureEcom->payerAuthenticationRequest, $secureEcom->getMerchantData()->toString());
     
         $payerAuthenticationResponse = $authResponse->getAuthResponse();
@@ -490,6 +502,7 @@ class Realex3dSecureTests extends TestCase
 
         $secureEcom = $card->threeDSecure;
         $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
+        $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate($secureEcom->payerAuthenticationRequest, $secureEcom->getMerchantData()->toString());
     
         $payerAuthenticationResponse = $authResponse->getAuthResponse();

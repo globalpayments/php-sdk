@@ -12,7 +12,7 @@ use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\Tests\Data\TestCards;
-use GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\ThreeDSecureAcsClient;
+use GlobalPayments\Api\Tests\Integration\Gateways\ThreeDSecureAcsClient;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\BrowserData;
@@ -41,10 +41,16 @@ class Secure3dServiceTests extends TestCase
     private $shippingAddress;
     private $billingAddress;
     private $browserData;
+    /**
+     * @var string
+     */
+    private $gatewayProvider;
 
     public function setup()
     {
-        ServicesContainer::configureService($this->getConfig());
+        $config = $this->getConfig();
+        ServicesContainer::configureService($config);
+        $this->gatewayProvider = $config->getGatewayProvider();
 
         // create card data
         $this->card = new CreditCardData();
@@ -99,6 +105,7 @@ class Secure3dServiceTests extends TestCase
         $config->challengeNotificationUrl = 'https://www.example.com/challengeNotificationUrl';
         $config->secure3dVersion = Secure3dVersion::ANY;
         $config->merchantContactUrl = 'https://www.example.com';
+
         return $config;
     }
 
@@ -119,7 +126,11 @@ class Secure3dServiceTests extends TestCase
         if ($secureEcom->enrolled) {
             // authenticate
             $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
-            $authResponse = $authClient->authenticate($secureEcom->payerAuthenticationRequest, $secureEcom->getMerchantData()->toString());
+            $authClient->setGatewayProvider($this->gatewayProvider);
+            $authResponse = $authClient->authenticate(
+                $secureEcom->payerAuthenticationRequest,
+                $secureEcom->getMerchantData()->toString()
+            );
         
             $payerAuthenticationResponse = $authResponse->getAuthResponse();
             $md = MerchantDataCollection::parse($authResponse->getMerchantData());
@@ -129,7 +140,6 @@ class Secure3dServiceTests extends TestCase
                 ->withMerchantData($md)
                 ->execute();
             $card->threeDSecure = $secureEcom;
-
             if ($secureEcom->status == 'Y') {
                 $response = $card->charge()->execute();
                 $this->assertNotNull($response);
@@ -278,7 +288,11 @@ class Secure3dServiceTests extends TestCase
             } else {
                 // authenticate
                 $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
-                $authResponse = $authClient->authenticate($secureEcom->payerAuthenticationRequest, $secureEcom->getMerchantData()->toString());
+                $authClient->setGatewayProvider($this->gatewayProvider);
+                $authResponse = $authClient->authenticate(
+                    $secureEcom->payerAuthenticationRequest,
+                    $secureEcom->getMerchantData()->toString()
+                );
             
                 $payerAuthenticationResponse = $authResponse->getAuthResponse();
                 $md = MerchantDataCollection::parse($authResponse->getMerchantData());

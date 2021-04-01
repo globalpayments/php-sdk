@@ -78,7 +78,7 @@ abstract class RestGateway extends Gateway
 
     private function isGpApi()
     {
-        return isset($this->headers['X-GP-VERSION']);
+        return $this instanceof GpApiConnector;
     }
 
     private function array_remove_empty(&$haystack)

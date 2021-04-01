@@ -91,6 +91,11 @@ class ThreeDSecure
     public $challengeValue;
 
     /**
+     * string
+     */
+    public $challengeReturnUrl;
+
+    /**
      * @var string
      */
     public $criticalityIndicator;
@@ -233,6 +238,11 @@ class ThreeDSecure
     public $messageVersion;
 
     /**
+     * @var string
+     */
+    public $messageType;
+
+    /**
      * The order ID used for the initial transaction
      *
      * @var string
@@ -342,6 +352,11 @@ class ThreeDSecure
      */
     public $xid;
 
+    /**
+     * @var string
+     */
+    public $sessionDataFieldName;
+
     public function __construct()
     {
         $this->paymentDataType = '3DSecure';
@@ -394,6 +409,9 @@ class ThreeDSecure
             $this->version = $this->mergeValue($this->version, $secureEcom->version);
             $this->whitelistStatus = $this->mergeValue($this->whitelistStatus, $secureEcom->whitelistStatus);
             $this->xid = $this->mergeValue($this->xid, $secureEcom->xid);
+            $this->messageType = $this->mergeValue($this->messageType, $secureEcom->messageType);
+            $this->sessionDataFieldName = $this->mergeValue($this->sessionDataFieldName, $secureEcom->sessionDataFieldName);
+            $this->challengeReturnUrl = $this->mergeValue($this->challengeReturnUrl, $secureEcom->challengeReturnUrl);
         }
     }
 

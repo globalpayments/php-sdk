@@ -69,4 +69,36 @@ class ReportingService
         return (new TransactionReportBuilder(ReportType::SETTLEMENT_DISPUTE_DETAIL))
             ->withSettlementDisputeId($settlementDisputeId);
     }
+
+    public static function findTransactionsPaged($page, $pageSize, $transactionId = null)
+    {
+        return (new TransactionReportBuilder(ReportType::FIND_TRANSACTIONS_PAGED))
+            ->withTransactionId($transactionId)
+            ->withPaging($page, $pageSize);
+    }
+
+    public static function findSettlementTransactionsPaged($page, $pageSize, $transactionId = null)
+    {
+        return (new TransactionReportBuilder(ReportType::FIND_SETTLEMENT_TRANSACTIONS_PAGED))
+            ->withTransactionId($transactionId)
+            ->withPaging($page, $pageSize);
+    }
+
+    public static function findDepositsPaged($page, $pageSize)
+    {
+        return (new TransactionReportBuilder(ReportType::FIND_DEPOSITS_PAGED))
+            ->withPaging($page, $pageSize);
+    }
+
+    public static function findDisputesPaged($page, $pageSize)
+    {
+        return (new TransactionReportBuilder(ReportType::FIND_DISPUTES_PAGED))
+            ->withPaging($page, $pageSize);
+    }
+
+    public static function findSettlementDisputesPaged($page, $pageSize)
+    {
+        return (new TransactionReportBuilder(ReportType::FIND_SETTLEMENT_DISPUTES_PAGED))
+            ->withPaging($page, $pageSize);
+    }
 }

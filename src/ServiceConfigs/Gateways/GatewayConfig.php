@@ -41,4 +41,9 @@ abstract class GatewayConfig extends Configuration
 
         // data client validations go here when enabled
     }
+
+    public function getGatewayProvider()
+    {
+        return $this->gatewayProvider;
+    }
 }

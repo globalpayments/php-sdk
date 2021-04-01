@@ -161,48 +161,48 @@ class CardUtils
         $funding = ($paymentMethod->paymentMethodType == PaymentMethodType::DEBIT) ? 'DEBIT' : 'CREDIT';
         $card = new Card();
         if ($paymentMethod instanceof ITrackData) {
-            $card->setTrack($paymentMethod->value);
+            $card->track = $paymentMethod->value;
             if ($transactionType == TransactionType::SALE) {
                 if (empty($paymentMethod->value)) {
-                    $card->setNumber($paymentMethod->pan);
+                    $card->number = $paymentMethod->pan;
                     if (!empty($paymentMethod->expiry)) {
-                        $card->setExpireMonth(substr($paymentMethod->expiry, 2, 2));
-                        $card->setExpireYear(substr($paymentMethod->expiry, 0, 2));
+                        $card->expiry_month = substr($paymentMethod->expiry, 2, 2);
+                        $card->expiry_year = substr($paymentMethod->expiry, 0, 2);
                     }
                 }
                 if (!empty($builder->emvChipCondition)) {
-                    $card->setChipCondition(EmvLastChipRead::$emvLastChipRead[$builder->emvChipCondition][Target::GP_API]);
+                    $card->chip_condition = EmvLastChipRead::$emvLastChipRead[$builder->emvChipCondition][Target::GP_API];
                 }
-                $card->setFunding($funding) ;
+                $card->funding = $funding;
             }
         } elseif ($paymentMethod instanceof ICardData) {
-            $card->setNumber($paymentMethod->number);
-            $card->setExpireMonth(str_pad($paymentMethod->expMonth, 2, '0', STR_PAD_LEFT));
-            $card->setExpireYear(substr(str_pad($paymentMethod->expYear, 4, '0', STR_PAD_LEFT), 2, 2));
+            $card->number = $paymentMethod->number;
+            $card->expiry_month = str_pad($paymentMethod->expMonth, 2, '0', STR_PAD_LEFT);
+            $card->expiry_year = substr(str_pad($paymentMethod->expYear, 4, '0', STR_PAD_LEFT), 2, 2);
             if (!empty($paymentMethod->cvn)) {
-                $card->setCvv($paymentMethod->cvn);
+                $card->cvv = $paymentMethod->cvn;
                 $cvnPresenceIndicator = !empty($paymentMethod->cvn) ? CvnPresenceIndicator::PRESENT :
                     (!empty($paymentMethod->cvnPresenceIndicator) ? $paymentMethod->cvnPresenceIndicator : '');
-                $card->setCvvIndicator(self::getCvvIndicator($cvnPresenceIndicator));
+                $card->cvv_indicator = self::getCvvIndicator($cvnPresenceIndicator);
             }
-            $card->setFunding($funding);
+            $card->funding = $funding;
             //we can't have tag and chip_condition in the same time in the request
             if (!empty($builder->emvLastChipRead) && empty($builder->tagData)) {
-                $card->setChipCondition(EmvLastChipRead::$emvLastChipRead[$builder->emvLastChipRead][Target::GP_API]);
+                $card->chip_condition = EmvLastChipRead::$emvLastChipRead[$builder->emvLastChipRead][Target::GP_API];
             }
         }
 
         $billingAddress = !empty($builder->billingAddress) ? $builder->billingAddress->streetAddress1 : '';
         $postalCode = !empty($builder->billingAddress) ? $builder->billingAddress->postalCode : '';
-        $card->setTag($builder->tagData);
-        $card->setAvsAddress($billingAddress);
-        $card->setAvsPostalCode($postalCode);
-        $card->setAuthCode($builder->offlineAuthCode);
+        $card->tag = $builder->tagData;
+        $card->avs_address = $billingAddress;
+        $card->avs_postal_code = $postalCode;
+        $card->authcode = $builder->offlineAuthCode;
         if ($paymentMethod instanceof IPinProtected) {
-            $card->setPinBlock($paymentMethod->pinBlock);
+            $card->pin_block =$paymentMethod->pinBlock;
         }
 
-        return GenerationUtils::convertObjectToArray($card);
+        return $card;
     }
 
     public static function getCvvIndicator($cvnPresenceIndicator)

@@ -11,7 +11,6 @@ use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\Utils\AccessTokenInfo;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 
@@ -37,11 +36,10 @@ class GpApiSdkCertificationTest extends TestCase
     {
         $config = new GpApiConfig();
         //this is gpapistuff stuff
-        $config->setAppId('i872l4VgZRtSrykvSn8Lkah8RE1jihvT');
-        $config->setAppKey( '9pArW2uWoA8enxKc');
+        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
+        $config->appKey = '9pArW2uWoA8enxKc';
         $config->environment = Environment::TEST;
-        $config->setAccessTokenInfo(new AccessTokenInfo());
-        $config->setChannel(Channels::CardNotPresent);
+        $config->channel = Channels::CardNotPresent;
 
         return $config;
     }
@@ -153,7 +151,7 @@ class GpApiSdkCertificationTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('VISA', $response->cardType);
         $this->assertEquals('101', $response->authorizationCode);
-        $this->assertEquals(TransactionStatus::DECLINED, $response->responseMessage);
+        $this->assertEquals(TransactionStatus::DECLINED, $response->responseCode);
     }
 
     public function testCreditCard_Visa_Declined_102()

@@ -1,10 +1,7 @@
 <?php
 
-
 namespace Certifications;
 
-
-use GlobalPayments\Api\Entities\Enums\CvnPresenceIndicator;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\Environment;
@@ -14,7 +11,6 @@ use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\Utils\AccessTokenInfo;
 use PHPUnit\Framework\TestCase;
 
 class CapabilitiesCardPresentTest extends TestCase
@@ -35,13 +31,10 @@ class CapabilitiesCardPresentTest extends TestCase
     public function setUpConfig()
     {
         $config = new GpApiConfig();
-        $accessTokenManager = new AccessTokenInfo();
-        //this is gpapistuff stuff
-        $config->setAppId('i872l4VgZRtSrykvSn8Lkah8RE1jihvT');
-        $config->setAppKey( '9pArW2uWoA8enxKc');
+        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
+        $config->appKey = '9pArW2uWoA8enxKc';
         $config->environment = Environment::TEST;
-        $config->setAccessTokenInfo($accessTokenManager);
-        $config->setChannel(Channels::CardPresent);
+        $config->channel = Channels::CardPresent;
 
         return $config;
     }

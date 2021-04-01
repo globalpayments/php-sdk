@@ -234,16 +234,21 @@ class TransactionReportBuilder extends ReportBuilder
     {
         switch ($this->reportType) {
             case ReportType::FIND_TRANSACTIONS:
+            case ReportType::FIND_TRANSACTIONS_PAGED:
             case ReportType::FIND_SETTLEMENT_TRANSACTIONS:
+            case ReportType::FIND_SETTLEMENT_TRANSACTIONS_PAGED:
                 $this->transactionOrderBy = $sortProperty;
                 $this->transactionOrder = $sortDirection;
                 break;
             case ReportType::FIND_DEPOSITS:
+            case ReportType::FIND_DEPOSITS_PAGED:
                 $this->depositOrderBy = $sortProperty;
                 $this->depositOrder = $sortDirection;
             break;
             case ReportType::FIND_DISPUTES:
+            case ReportType::FIND_DISPUTES_PAGED:
             case ReportType::FIND_SETTLEMENT_DISPUTES:
+            case ReportType::FIND_SETTLEMENT_DISPUTES_PAGED:
                 $this->disputeOrderBy = $sortProperty;
                 $this->disputeOrder = $sortDirection;
                 break;

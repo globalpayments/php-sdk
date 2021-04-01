@@ -10,7 +10,6 @@ use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\Utils\AccessTokenInfo;
 use PHPUnit\Framework\TestCase;
 
 class CreditCardPresentTest extends TestCase
@@ -23,13 +22,10 @@ class CreditCardPresentTest extends TestCase
     public function setUpConfig()
     {
         $config = new GpApiConfig();
-        $accessTokenInfo = new AccessTokenInfo();
-        //this is gpapistuff stuff
-        $config->setAppId('VuKlC2n1cr5LZ8fzLUQhA7UObVks6tFF');
-        $config->setAppKey('NmGM0kg92z2gA7Og');
+        $config->appId = 'VuKlC2n1cr5LZ8fzLUQhA7UObVks6tFF';
+        $config->appKey = 'NmGM0kg92z2gA7Og';
         $config->environment = Environment::TEST;
-        $config->setAccessTokenInfo($accessTokenInfo);
-        $config->setChannel(Channels::CardPresent);
+        $config->channel = Channels::CardPresent;
 
         return $config;
     }

@@ -9,6 +9,7 @@ use GlobalPayments\Api\Entities\Enums\GpApi\TransactionSortProperty;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
@@ -31,9 +32,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $startDate = (new \DateTime())->modify('-30 days');
         $endDate = (new \DateTime())->modify('-3 days');
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::END_DATE, $endDate)
                 ->execute();
@@ -41,7 +41,7 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
             $this->assertLessThanOrEqual($endDate, $rs->transactionDate);
         }
@@ -51,31 +51,29 @@ class ReportingSettlementTransactionsTest extends TestCase
     {
         $startDate = (new \DateTime())->modify('-30 days');
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertInstanceOf(TransactionSummary::class, $rs);
             $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
         }
 
         try {
-            $responseAsc = ReportingService::findSettlementTransactions()
+            $responseAsc = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::ASC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         /** @var TransactionSummary $rs */
-        foreach ($responseAsc as $rs) {
+        foreach ($responseAsc->result as $rs) {
             $this->assertInstanceOf(TransactionSummary::class, $rs);
             $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
         }
@@ -85,33 +83,37 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_OrderBy_Status()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new \DateTime())->modify('-230 days');
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::STATUS, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
+
+        $this->assertNotNull($response);
+        $this->assertNotEmpty($response->result);
         /** @var TransactionSummary $randomTransaction */
-        $randomTransaction = $response[array_rand($response)];
+        $randomTransaction = $response->result[array_rand($response->result)];
         $this->assertNotNull($randomTransaction);
         $this->assertInstanceOf(TransactionSummary::class, $randomTransaction);
         $this->assertGreaterThanOrEqual($startDate, $randomTransaction->transactionDate);
 
         try {
-            $responseAsc = ReportingService::findSettlementTransactions()
+            $responseAsc = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::STATUS, SortDirection::ASC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
+
+        $this->assertNotNull($responseAsc);
+        $this->assertNotEmpty($responseAsc->result);
         /** @var TransactionSummary $randomTransaction */
-        $randomTransaction = $responseAsc[array_rand($responseAsc)];
+        $randomTransaction = $responseAsc->result[array_rand($responseAsc->result)];
         $this->assertNotNull($randomTransaction);
         $this->assertInstanceOf(TransactionSummary::class, $randomTransaction);
         $this->assertGreaterThanOrEqual($startDate, $randomTransaction->transactionDate);
@@ -123,31 +125,38 @@ class ReportingSettlementTransactionsTest extends TestCase
     {
         $startDate = (new \DateTime())->modify('-30 days');
         try {
-            $response = ReportingService::findSettlementTransactions()
+            /**
+             * @var PagedResult $response
+             */
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TYPE, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
+        $this->assertNotNull($response);
+        $this->assertNotEmpty($response->result);
+
         /** @var TransactionSummary $randomTransaction */
-        $randomTransaction = $response[array_rand($response)];
+        $randomTransaction = $response->result[array_rand($response->result)];
         $this->assertNotNull($randomTransaction);
         $this->assertInstanceOf(TransactionSummary::class, $randomTransaction);
         $this->assertGreaterThanOrEqual($startDate, $randomTransaction->transactionDate);
 
         try {
-            $responseAsc = ReportingService::findSettlementTransactions()
+            $responseAsc = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TYPE, SortDirection::ASC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
+
+        $this->assertNotNull($responseAsc);
+        $this->assertNotEmpty($responseAsc->result);
         /** @var TransactionSummary $randomTransaction */
-        $randomTransaction = $responseAsc[array_rand($responseAsc)];
+        $randomTransaction = $responseAsc->result[array_rand($responseAsc->result)];
         $this->assertNotNull($randomTransaction);
         $this->assertInstanceOf(TransactionSummary::class, $randomTransaction);
         $this->assertGreaterThanOrEqual($startDate, $randomTransaction->transactionDate);
@@ -159,31 +168,33 @@ class ReportingSettlementTransactionsTest extends TestCase
     {
         $startDate = (new \DateTime())->modify('-30 days');
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
+
+        $this->assertNotNull($response);
+        $this->assertNotEmpty($response->result);
         /** @var TransactionSummary $randomTransaction */
-        $randomTransaction = $response[array_rand($response)];
+        $randomTransaction = $response->result[array_rand($response->result)];
         $this->assertNotNull($randomTransaction);
         $this->assertInstanceOf(TransactionSummary::class, $randomTransaction);
         $this->assertGreaterThanOrEqual($startDate, $randomTransaction->transactionDate);
 
         try {
-            $responseType = ReportingService::findSettlementTransactions()
+            $responseType = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TYPE, SortDirection::ASC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
+        $this->assertNotEmpty($responseType->result);
         /** @var TransactionSummary $randomTransaction */
-        $randomTransaction = $responseType[array_rand($responseType)];
+        $randomTransaction = $responseType->result[array_rand($responseType->result)];
         $this->assertNotNull($randomTransaction);
         $this->assertInstanceOf(TransactionSummary::class, $randomTransaction);
         $this->assertGreaterThanOrEqual($startDate, $randomTransaction->transactionDate);
@@ -198,9 +209,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $numberLast4 = "5006";
 
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::CARD_NUMBER_FIRST_SIX, $numberFirst6)
                 ->andWith(SearchCriteria::CARD_NUMBER_LAST_FOUR, $numberLast4)
@@ -209,7 +219,7 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertInstanceOf(TransactionSummary::class, $rs);
             $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
             $this->assertStringStartsWith($numberFirst6, $rs->maskedCardNumber);
@@ -224,19 +234,19 @@ class ReportingSettlementTransactionsTest extends TestCase
         $reflectionClass = new ReflectionClass($depositStatus);
         foreach ($reflectionClass->getConstants() as $value) {
             try {
-                $response = ReportingService::findSettlementTransactions()
+                $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                     ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                    ->withPaging(1, 10)
                     ->where(SearchCriteria::START_DATE, $startDate)
                     ->andWith(SearchCriteria::DEPOSIT_STATUS, $value)
                     ->execute();
             } catch (ApiException $e) {
                 $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
             }
+
             $this->assertNotNull($response);
-            $this->assertTrue(is_array($response));
+            $this->assertTrue(is_array($response->result));
             /** @var TransactionSummary $rs */
-            foreach ($response as $rs) {
+            foreach ($response->result as $rs) {
                 $this->assertInstanceOf(TransactionSummary::class, $rs);
                 $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
                 $this->assertEquals($value, $rs->depositStatus);
@@ -250,9 +260,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $cardBrand = array("VISA", "MASTERCARD", "AMEX", "DINERS", "DISCOVER", "JCB", "CUP");
         foreach ($cardBrand as $value) {
             try {
-                $response = ReportingService::findSettlementTransactions()
+                $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                     ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                    ->withPaging(1, 10)
                     ->where(SearchCriteria::START_DATE, $startDate)
                     ->andWith(SearchCriteria::CARD_BRAND, $value)
                     ->execute();
@@ -261,9 +270,9 @@ class ReportingSettlementTransactionsTest extends TestCase
             }
 
             $this->assertNotNull($response);
-            $this->assertTrue(is_array($response));
+            $this->assertTrue(is_array($response->result));
             /** @var TransactionSummary $rs */
-            foreach ($response as $rs) {
+            foreach ($response->result as $rs) {
                 $this->assertInstanceOf(TransactionSummary::class, $rs);
                 $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
                 $this->assertStringStartsWith($value, $rs->cardType);
@@ -276,18 +285,17 @@ class ReportingSettlementTransactionsTest extends TestCase
         $startDate = (new \DateTime())->modify('-30 days');
         $cardBrand = "Bank of America";
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::CARD_BRAND, $cardBrand)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
-        $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
-        $this->assertEquals(0, count($response));
+        $this->assertNotNull($response->result);
+        $this->assertTrue(is_array($response->result));
+        $this->assertEquals(0, count($response->result));
     }
 
     public function testReportFindSettlementTransactions_FilterBy_ARN()
@@ -296,9 +304,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $arn = "24137550037630153798573";
 
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::AQUIRER_REFERENCE_NUMBER, $arn)
                 ->execute();
@@ -306,7 +313,7 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertInstanceOf(TransactionSummary::class, $rs);
             $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
             $this->assertEquals($arn, $rs->aquirerReferenceNumber);
@@ -319,9 +326,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $arn = GenerationUtils::getGuid();
 
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::AQUIRER_REFERENCE_NUMBER, $arn)
                 ->execute();
@@ -329,8 +335,8 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
-        $this->assertEquals(0, count($response));
+        $this->assertTrue(is_array($response->result));
+        $this->assertEquals(0, count($response->result));
     }
 
     public function testReportFindSettlementTransactions_FilterBy_BrandReference()
@@ -339,9 +345,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $brandReference = "460008653352066";
 
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::BRAND_REFERENCE, $brandReference)
                 ->execute();
@@ -349,7 +354,7 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertInstanceOf(TransactionSummary::class, $rs);
             $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
             $this->assertEquals($brandReference, $rs->brandReference);
@@ -363,9 +368,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $brandReference = trim(str_replace("-", "", $brandReference));
 
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::BRAND_REFERENCE, $brandReference)
                 ->execute();
@@ -373,8 +377,8 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
-        $this->assertEquals(0, count($response));
+        $this->assertTrue(is_array($response->result));
+        $this->assertEquals(0, count($response->result));
     }
 
     public function testReportFindSettlementTransactions_FilterBy_AuthCode()
@@ -383,9 +387,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $authCode = "931951";
 
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::AUTH_CODE, $authCode)
                 ->execute();
@@ -393,7 +396,7 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertInstanceOf(TransactionSummary::class, $rs);
             $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
             $this->assertEquals($authCode, $rs->authCode);
@@ -406,9 +409,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $reference = "50080513769";
 
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::REFERENCE_NUMBER, $reference)
                 ->execute();
@@ -416,7 +418,7 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertInstanceOf(TransactionSummary::class, $rs);
             $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
             $this->assertEquals($reference, $rs->referenceNumber);
@@ -430,9 +432,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $reference = trim(str_replace("-", "", $reference));
 
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::REFERENCE_NUMBER, $reference)
                 ->execute();
@@ -440,8 +441,8 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
-        $this->assertEquals(0, count($response));
+        $this->assertTrue(is_array($response->result));
+        $this->assertEquals(0, count($response->result));
     }
 
     public function testReportFindSettlementTransactions_FilterBy_Status()
@@ -452,9 +453,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $reflectionClass = new ReflectionClass($transactionStatus);
         foreach ($reflectionClass->getConstants() as $value) {
             try {
-                $response = ReportingService::findSettlementTransactions()
+                $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                     ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                    ->withPaging(1, 10)
                     ->where(SearchCriteria::START_DATE, $startDate)
                     ->andWith(SearchCriteria::TRANSACTION_STATUS, $value)
                     ->execute();
@@ -462,10 +462,10 @@ class ReportingSettlementTransactionsTest extends TestCase
                 $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
             }
             $this->assertNotNull($response);
-            $this->assertTrue(is_array($response));
+            $this->assertTrue(is_array($response->result));
 
             /** @var TransactionSummary $rs */
-            foreach ($response as $rs) {
+            foreach ($response->result as $rs) {
                 $this->assertInstanceOf(TransactionSummary::class, $rs);
                 $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
                 $this->assertEquals(TransactionStatus::$mapTransactionStatusResponse[$value], $rs->transactionStatus);
@@ -479,9 +479,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $depositId = "DEP_2342423423";
 
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::DEPOSIT_ID, $depositId)
                 ->execute();
@@ -489,7 +488,7 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertInstanceOf(TransactionSummary::class, $rs);
             $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
             $this->assertEquals($depositId, $rs->depositId);
@@ -503,9 +502,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $depositID = trim(str_replace("-", "", $depositID));
 
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::DEPOSIT_ID, $depositID)
                 ->execute();
@@ -513,8 +511,8 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
-        $this->assertEquals(0, count($response));
+        $this->assertTrue(is_array($response->result));
+        $this->assertEquals(0, count($response->result));
     }
 
     public function testReportFindSettlementTransactions_FilterBy_FromDepositTimeCreated_And_ToDepositTimeCreated()
@@ -522,9 +520,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $startDate = (new \DateTime())->modify('-30 days');
         $endDate = (new \DateTime())->modify('-3 days');
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(DataServiceCriteria::START_DEPOSIT_DATE, $startDate)
                 ->andWith(DataServiceCriteria::END_DEPOSIT_DATE, $endDate)
@@ -533,7 +530,7 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertInstanceOf(TransactionSummary::class, $rs);
             $this->assertGreaterThanOrEqual($startDate, $rs->depositTimeCreated);
             $this->assertLessThanOrEqual($endDate, $rs->depositTimeCreated);
@@ -545,9 +542,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $startDate = (new \DateTime())->modify('-30 days');
         $endDate = (new \DateTime())->modify('-3 days');
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(DataServiceCriteria::START_BATCH_DATE, $startDate)
                 ->andWith(DataServiceCriteria::END_BATCH_DATE, $endDate)
@@ -556,7 +552,7 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertInstanceOf(TransactionSummary::class, $rs);
             $this->assertGreaterThanOrEqual($startDate, $rs->batchCloseDate);
             $this->assertLessThanOrEqual($endDate, $rs->batchCloseDate);
@@ -570,9 +566,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $systemMid = "101023947262";
         $systemHierarchy = "055-70-024-011-019";
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(DataServiceCriteria::MERCHANT_ID, $systemMid)
                 ->andWith(DataServiceCriteria::SYSTEM_HIERARCHY, $systemHierarchy)
@@ -581,7 +576,7 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
             $this->assertLessThanOrEqual($rs->transactionDate, $endDate);
             $this->assertEquals($systemMid, $rs->merchantId);
@@ -595,9 +590,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $merchantID = "111";
 
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(DataServiceCriteria::MERCHANT_ID, $merchantID)
                 ->execute();
@@ -605,8 +599,8 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
-        $this->assertEquals(0, count($response));
+        $this->assertTrue(is_array($response->result));
+        $this->assertEquals(0, count($response->result));
     }
 
     public function testReportFindSettlementTransactions_FilterBy_Random_SystemHierarchy()
@@ -615,9 +609,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $systemHierarchy = "100-00-000-000-001";
 
         try {
-            $response = ReportingService::findSettlementTransactions()
+            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(DataServiceCriteria::SYSTEM_HIERARCHY, $systemHierarchy)
                 ->execute();
@@ -625,8 +618,8 @@ class ReportingSettlementTransactionsTest extends TestCase
             $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
         }
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
-        $this->assertEquals(0, count($response));
+        $this->assertTrue(is_array($response->result));
+        $this->assertEquals(0, count($response->result));
     }
 
     public function testReportFindSettlementTransactions_FilterBy_Invalid_MerchantID()
@@ -636,9 +629,8 @@ class ReportingSettlementTransactionsTest extends TestCase
         $merchantID = trim(str_replace("-", "", $merchantID));
 
         try {
-            ReportingService::findSettlementTransactions()
+            ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(DataServiceCriteria::MERCHANT_ID, $merchantID)
                 ->execute();
@@ -651,14 +643,11 @@ class ReportingSettlementTransactionsTest extends TestCase
     public function setUpConfig()
     {
         $config = new GpApiConfig();
-        $accessTokenInfo = new \GlobalPayments\Api\Utils\AccessTokenInfo();
         //this is gpapistuff stuff
-        $config->setAppId('i872l4VgZRtSrykvSn8Lkah8RE1jihvT');
-        $config->setAppKey('9pArW2uWoA8enxKc');
+        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
+        $config->appKey = '9pArW2uWoA8enxKc';
         $config->environment = Environment::TEST;
-        $config->setAccessTokenInfo($accessTokenInfo);
-//        $klogger = new Logger("C:\\laragon\\www\\PHP-SDK-v3\\logs");
-//        $config->requestLogger = new SampleRequestLogger($klogger);
+
         return $config;
     }
 }

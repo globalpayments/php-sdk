@@ -8,6 +8,7 @@ use GlobalPayments\Api\Entities\EcommerceInfo;
 use GlobalPayments\Api\Entities\Enums\EmvFallbackCondition;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\HostedPaymentData;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\AliasAction;
@@ -503,6 +504,11 @@ class AuthorizationBuilder extends TransactionBuilder
     public $surchargeAmount;
 
     /**
+     * @var PaymentMethodUsageMode $paymentMethodUsageMode
+     */
+    public $paymentMethodUsageMode;
+
+    /**
      * {@inheritdoc}
      *
      * @param TransactionType $type Request transaction type
@@ -931,15 +937,15 @@ class AuthorizationBuilder extends TransactionBuilder
     }
 
     /**
-     * Set the request to request Level II
+     * Set the request to request Level II or III
      *
-     * @param bool $level2Request Request to request Level II
+     * @param bool $level2Request Request to request Level II or III
      *
      * @return AuthorizationBuilder
      */
-    public function withCommercialRequest($level2Request)
+    public function withCommercialRequest($level2or3Request)
     {
-        $this->level2Request = $level2Request;
+        $this->level2Request = $level2or3Request;
         return $this;
     }
 
@@ -1398,6 +1404,20 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withSurchargeAmount($value)
     {
         $this->surchargeAmount = $value;
+
+        return $this;
+    }
+
+    /**
+     * Set the request to use usage_mode
+     *
+     * @param string $value
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withPaymentMethodUsageMode($value)
+    {
+        $this->paymentMethodUsageMode = $value;
 
         return $this;
     }

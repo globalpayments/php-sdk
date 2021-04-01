@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
+namespace GlobalPayments\Api\Tests\Integration\Gateways;
 
 class AcsResponse
 {
@@ -13,6 +13,11 @@ class AcsResponse
      * @var string
      */
     private $merchantData;
+
+    /**
+     * @var string
+     */
+    private $status;
 
     /**
      * @return string
@@ -44,5 +49,15 @@ class AcsResponse
     public function setMerchantData($merchantData)
     {
         $this->merchantData = $merchantData;
+    }
+
+    public function getStatus()
+    {
+        return $this->status;
+    }
+
+    public function setStatus($value)
+    {
+        $this->status = $value;
     }
 }

@@ -85,7 +85,7 @@ abstract class Gateway
 
             $this->headers = array_merge($this->headers, [
                 'Content-Type' => sprintf('%s; charset=UTF-8', $this->contentType),
-                'Content-Length' => $data === null ? 0 : strlen($data),
+                'Content-Length' => empty($data) ? 0 : strlen($data),
             ]);
 
             $headers = [];

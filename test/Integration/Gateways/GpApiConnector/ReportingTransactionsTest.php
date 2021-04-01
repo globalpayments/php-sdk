@@ -59,9 +59,8 @@ class ReportingTransactionsTest extends TestCase
         $startDate = new \DateTime('2020-11-01 midnight');
         $endDate = new \DateTime('2020-12-01 23:59');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::END_DATE, $endDate)
                 ->execute();
@@ -70,9 +69,9 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
+        $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertLessThanOrEqual($endDate, $rs->transactionDate);
             $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
         }
@@ -83,7 +82,7 @@ class ReportingTransactionsTest extends TestCase
         $transactionId = 'TRN_mCBetNCJSP0xdJK1QdlfBsMVzemHHt';
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->withTransactionId($transactionId)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->execute();
@@ -92,9 +91,9 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
-        $this->assertEquals(1, count($response));
-        $this->assertEquals($transactionId, $response[0]->transactionId);
+        $this->assertTrue(is_array($response->result));
+        $this->assertEquals(1, count($response->result));
+        $this->assertEquals($transactionId, $response->result[0]->transactionId);
     }
 
     public function testReportFindTransactionsById_WrongId()
@@ -102,7 +101,7 @@ class ReportingTransactionsTest extends TestCase
         $transactionId = GenerationUtils::getGuid();;
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->withTransactionId($transactionId)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->execute();
@@ -111,8 +110,8 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
-        $this->assertEquals(0, count($response));
+        $this->assertTrue(is_array($response->result));
+        $this->assertEquals(0, count($response->result));
     }
 
     public function testReportFindTransactionsByBatchId()
@@ -120,9 +119,8 @@ class ReportingTransactionsTest extends TestCase
         $batchId = 'BAT_870078';
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::BATCH_ID, $batchId)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
@@ -131,9 +129,9 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
+        $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertEquals($batchId, $rs->batchSequenceNumber);
         }
     }
@@ -143,9 +141,8 @@ class ReportingTransactionsTest extends TestCase
         $paymentType = PaymentType::SALE;
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::PAYMENT_TYPE, $paymentType)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
@@ -154,17 +151,16 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
+        $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertEquals($paymentType, $rs->transactionType);
         }
 
         $paymentTypeRefund = PaymentType::REFUND;
         try {
-            $responseRefund = ReportingService::findTransactions()
+            $responseRefund = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::PAYMENT_TYPE, $paymentTypeRefund)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
@@ -173,13 +169,13 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($responseRefund);
-        $this->assertTrue(is_array($responseRefund));
+        $this->assertTrue(is_array($responseRefund->result));
         /** @var TransactionSummary $rs */
-        foreach ($responseRefund as $rs) {
+        foreach ($responseRefund->result as $rs) {
             $this->assertEquals($paymentTypeRefund, $rs->transactionType);
         }
 
-        $this->assertNotSame($response, $responseRefund);
+        $this->assertNotSame($response->result, $responseRefund->result);
     }
 
     public function testReportFindTransactionsByAmountAndCurrencyAndCountry()
@@ -189,9 +185,8 @@ class ReportingTransactionsTest extends TestCase
         $country = 'US'; //case sensitive
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(DataServiceCriteria::AMOUNT, $amount)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->andWith(DataServiceCriteria::CURRENCY, $currency)
@@ -202,9 +197,9 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
+        $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertEquals($amount, $rs->amount);
             $this->assertEquals($currency, $rs->currency);
             $this->assertEquals($country, $rs->country);
@@ -216,9 +211,8 @@ class ReportingTransactionsTest extends TestCase
         $channel = Channels::CardNotPresent;
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::CHANNEL, $channel)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
@@ -227,17 +221,16 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
+        $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertEquals($channel, $rs->channel);
         }
 
         $channelCP = Channels::CardPresent;
         try {
-            $responseCP = ReportingService::findTransactions()
+            $responseCP = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::CHANNEL, $channelCP)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
@@ -246,13 +239,13 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($responseCP);
-        $this->assertTrue(is_array($responseCP));
+        $this->assertTrue(is_array($responseCP->result));
         /** @var TransactionSummary $rs */
-        foreach ($responseCP as $rs) {
+        foreach ($responseCP->result as $rs) {
             $this->assertEquals($channelCP, $rs->channel);
         }
 
-        $this->assertNotSame($response, $responseCP);
+        $this->assertNotSame($response->result, $responseCP->result);
     }
 
     public function testReportFindTransactionsByStatus()
@@ -260,9 +253,8 @@ class ReportingTransactionsTest extends TestCase
         $transactionStatus = TransactionStatus::CAPTURED;
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::TRANSACTION_STATUS, $transactionStatus)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
@@ -271,9 +263,9 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
+        $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertEquals($transactionStatus, $rs->transactionStatus);
         }
     }
@@ -286,9 +278,8 @@ class ReportingTransactionsTest extends TestCase
         $reflectionClass = new ReflectionClass($transactionStatus);
         foreach ($reflectionClass->getConstants() as $value) {
             try {
-                $response = ReportingService::findTransactions()
+                $response = ReportingService::findTransactionsPaged(1, 10)
                     ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                    ->withPaging(1, 10)
                     ->where(SearchCriteria::TRANSACTION_STATUS, $value)
                     ->andWith(SearchCriteria::START_DATE, $startDate)
                     ->execute();
@@ -297,9 +288,9 @@ class ReportingTransactionsTest extends TestCase
             }
 
             $this->assertNotNull($response);
-            $this->assertTrue(is_array($response));
+            $this->assertTrue(is_array($response->result));
             /** @var TransactionSummary $rs */
-            foreach ($response as $rs) {
+            foreach ($response->result as $rs) {
                 $this->assertEquals(TransactionStatus::$mapTransactionStatusResponse[$value], $rs->transactionStatus);
             }
         }
@@ -311,9 +302,8 @@ class ReportingTransactionsTest extends TestCase
         $authCode = '12345';
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::CARD_BRAND, $cardBrand)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::AUTH_CODE, $authCode)
@@ -323,9 +313,9 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
+        $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertEquals($cardBrand, $rs->cardType);
             $this->assertEquals($authCode, $rs->authCode);
         }
@@ -335,12 +325,11 @@ class ReportingTransactionsTest extends TestCase
     {
         $startDate = new \DateTime('2020-11-01 midnight');
 
-        $cardBrand = array("VISA", "MASTERCARD", "AMEX", "DINERS", "DISCOVER", "JCB", "CUP");
+        $cardBrand = array("VISA", "MC", "AMEX", "DINERS", "DISCOVER", "JCB", "CUP");
         foreach ($cardBrand as $value) {
             try {
-                $response = ReportingService::findTransactions()
+                $response = ReportingService::findTransactionsPaged(1, 10)
                     ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                    ->withPaging(1, 10)
                     ->where(SearchCriteria::CARD_BRAND, $value)
                     ->andWith(SearchCriteria::START_DATE, $startDate)
                     ->execute();
@@ -349,12 +338,9 @@ class ReportingTransactionsTest extends TestCase
             }
 
             $this->assertNotNull($response);
-            $this->assertTrue(is_array($response));
-            if ($value == "MASTERCARD") {
-                $value = "MC";
-            }
+            $this->assertTrue(is_array($response->result));
             /** @var TransactionSummary $rs */
-            foreach ($response as $rs) {
+            foreach ($response->result as $rs) {
                 $this->assertEquals($value, $rs->cardType);
             }
         }
@@ -365,9 +351,8 @@ class ReportingTransactionsTest extends TestCase
         $referenceNumber = '1010000158841908572';
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::REFERENCE_NUMBER, $referenceNumber)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
@@ -376,9 +361,9 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
+        $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertEquals($referenceNumber, $rs->referenceNumber);
         }
     }
@@ -388,9 +373,8 @@ class ReportingTransactionsTest extends TestCase
         $referenceNumber = GenerationUtils::getGuid();;
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::REFERENCE_NUMBER, $referenceNumber)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
@@ -399,8 +383,8 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
-        $this->assertEquals(0, count($response));
+        $this->assertTrue(is_array($response->result));
+        $this->assertEquals(0, count($response->result));
     }
 
     public function testReportFindTransactionsByBrandReference()
@@ -408,9 +392,8 @@ class ReportingTransactionsTest extends TestCase
         $brandReference = 's9RpaDwXq1sPRkbP';
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::BRAND_REFERENCE, $brandReference)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
@@ -419,9 +402,9 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
+        $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertEquals($brandReference, $rs->brandReference);
         }
     }
@@ -431,9 +414,8 @@ class ReportingTransactionsTest extends TestCase
         $brandReference = GenerationUtils::getGuid();;
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::BRAND_REFERENCE, $brandReference)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
@@ -442,8 +424,8 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
-        $this->assertEquals(0, count($response));
+        $this->assertTrue(is_array($response->result));
+        $this->assertEquals(0, count($response->result));
     }
 
     public function testReportFindTransactionsByEntryMode()
@@ -453,9 +435,8 @@ class ReportingTransactionsTest extends TestCase
         $reflectionClass = new ReflectionClass($entryMode);
         foreach ($reflectionClass->getConstants() as $value) {
             try {
-                $response = ReportingService::findTransactions()
+                $response = ReportingService::findTransactionsPaged(1, 10)
                     ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                    ->withPaging(1, 10)
                     ->where(SearchCriteria::PAYMENT_ENTRY_MODE, $value)
                     ->andWith(SearchCriteria::START_DATE, $startDate)
                     ->execute();
@@ -464,9 +445,9 @@ class ReportingTransactionsTest extends TestCase
             }
 
             $this->assertNotNull($response);
-            $this->assertTrue(is_array($response));
+            $this->assertTrue(is_array($response->result));
             /** @var TransactionSummary $rs */
-            foreach ($response as $rs) {
+            foreach ($response->result as $rs) {
                 $this->assertEquals($value, $rs->entryMode);
             }
         }
@@ -479,9 +460,8 @@ class ReportingTransactionsTest extends TestCase
 
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::CARD_NUMBER_FIRST_SIX, $numberFirst6)
                 ->andWith(SearchCriteria::CARD_NUMBER_LAST_FOUR, $numberLast4)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
@@ -491,9 +471,9 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
+        $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertStringStartsWith($numberFirst6, $rs->maskedCardNumber);
             $this->assertStringEndsWith($numberLast4, $rs->maskedCardNumber);
         }
@@ -505,9 +485,8 @@ class ReportingTransactionsTest extends TestCase
         $tokenLast4 = "5507";
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::TOKEN_FIRST_SIX, $tokenFirst6)
                 ->andWith(SearchCriteria::TOKEN_LAST_FOUR, $tokenLast4)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
@@ -516,9 +495,9 @@ class ReportingTransactionsTest extends TestCase
             $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
         }
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
+        $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertStringStartsWith($tokenFirst6, (string)$rs->maskedCardNumber);
             $this->assertStringEndsWith($tokenLast4, $rs->maskedCardNumber);
         }
@@ -529,7 +508,7 @@ class ReportingTransactionsTest extends TestCase
         $name = "NAME NOT PROVIDED";
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->where(SearchCriteria::CARDHOLDER_NAME, $name)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
@@ -537,9 +516,9 @@ class ReportingTransactionsTest extends TestCase
             $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
         }
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
+        $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
-        foreach ($response as $rs) {
+        foreach ($response->result as $rs) {
             $this->assertEquals($name, $rs->cardHolderName);
         }
     }
@@ -548,9 +527,8 @@ class ReportingTransactionsTest extends TestCase
     {
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::STATUS, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
@@ -558,16 +536,15 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
+        $this->assertTrue(is_array($response->result));
     }
 
     public function testReportFindTransactions_OrderBy_Type()
     {
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TYPE, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
@@ -575,12 +552,11 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
+        $this->assertTrue(is_array($response->result));
 
         try {
-            $responseAsc = ReportingService::findTransactions()
+            $responseAsc = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TYPE, SortDirection::ASC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
@@ -588,18 +564,17 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($responseAsc);
-        $this->assertTrue(is_array($responseAsc));
+        $this->assertTrue(is_array($responseAsc->result));
 
-        $this->assertNotSame($response, $responseAsc);
+        $this->assertNotSame($response->result, $responseAsc->result);
     }
 
     public function testReportFindTransactions_OrderBy_TypeAndTimeCreated()
     {
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            $response = ReportingService::findTransactions()
+            $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TYPE, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
@@ -607,12 +582,11 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($response);
-        $this->assertTrue(is_array($response));
+        $this->assertTrue(is_array($response->result));
 
         try {
-            $responseTime = ReportingService::findTransactions()
+            $responseTime = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->withPaging(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
@@ -620,16 +594,16 @@ class ReportingTransactionsTest extends TestCase
         }
 
         $this->assertNotNull($responseTime);
-        $this->assertTrue(is_array($responseTime));
+        $this->assertTrue(is_array($responseTime->result));
 
-        $this->assertNotSame($response, $responseTime);
+        $this->assertNotSame($response->result, $responseTime->result);
     }
 
     public function testReportFindTransactions_InvalidAccountName()
     {
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
-            ReportingService::findTransactions()
+            ReportingService::findTransactionsPaged(1, 10)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::ACCOUNT_NAME, "12345")
                 ->execute();
@@ -642,7 +616,7 @@ class ReportingTransactionsTest extends TestCase
     public function testReportFindTransactions_WithoutStartDate()
     {
         try {
-            ReportingService::findTransactions()
+            ReportingService::findTransactionsPaged(1, 10)
                 ->execute();
         } catch (ApiException $e) {
             $this->assertEquals('40075', $e->responseCode);
@@ -653,14 +627,9 @@ class ReportingTransactionsTest extends TestCase
     public function setUpConfig()
     {
         $config = new GpApiConfig();
-        $accessTokenInfo = new \GlobalPayments\Api\Utils\AccessTokenInfo();
-        //this is gpapistuff stuff
-        $config->setAppId('VuKlC2n1cr5LZ8fzLUQhA7UObVks6tFF');
-        $config->setAppKey('NmGM0kg92z2gA7Og');
+        $config->appId = 'VuKlC2n1cr5LZ8fzLUQhA7UObVks6tFF';
+        $config->appKey = 'NmGM0kg92z2gA7Og';
         $config->environment = Environment::TEST;
-        $config->setAccessTokenInfo($accessTokenInfo);
-//        $klogger = new Logger("C:\\laragon\\www\\PHP-SDK-v3\\logs");
-//        $config->requestLogger = new SampleRequestLogger($klogger);
 
         return $config;
     }

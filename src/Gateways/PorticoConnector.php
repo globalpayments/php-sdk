@@ -13,6 +13,7 @@ use GlobalPayments\Api\Entities\BatchSummary;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Enums\AccountType;
 use GlobalPayments\Api\Entities\Enums\AliasAction;
+use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\CheckType;
 use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
@@ -649,6 +650,184 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 }
 
                 $root->appendChild($cpc);
+            } elseif (
+                $builder->transactionType === TransactionType::EDIT
+                && $builder->transactionModifier === TransactionModifier::LEVEL_III
+            ) {
+                $cpc = $xml->createElement('CPCData');
+
+                if ($builder->commercialData->poNumber !== null) {
+                    $cpc->appendChild(
+                        $xml->createElement('CardHolderPONbr', $builder->commercialData->poNumber)
+                    );
+                }
+
+                if ($builder->commercialData->taxType !== null) {
+                    $cpc->appendChild(
+                        $xml->createElement(
+                            'TaxType',
+                            TaxType::validate($builder->commercialData->taxType)
+                        )
+                    );
+                }
+
+                if ($builder->commercialData->taxAmount !== null) {
+                    $cpc->appendChild($xml->createElement('TaxAmt', $builder->commercialData->taxAmount));
+                }
+
+                $root->appendChild($cpc);
+
+                $commercialDataNode = $xml->createElement('CorporateData');
+
+                if ($builder->cardType == 'Visa') {
+                    $visaCorporateDataNode = $xml->createElement('Visa');
+                    
+                    if (!empty($builder->commercialData->summaryCommodityCode)) {
+                        $visaCorporateDataNode->appendChild($xml->createElement('SummaryCommodityCode', $builder->commercialData->summaryCommodityCode));
+                    }
+
+                    if (!empty($builder->commercialData->discountAmount)) {
+                        $visaCorporateDataNode->appendChild($xml->createElement('DiscountAmt', $builder->commercialData->discountAmount));
+                    }
+
+                    if (!empty($builder->commercialData->freightAmount)) {
+                        $visaCorporateDataNode->appendChild($xml->createElement('FreightAmt', $builder->commercialData->freightAmount));
+                    }
+
+                    if (!empty($builder->commercialData->dutyAmount)) {
+                        $visaCorporateDataNode->appendChild($xml->createElement('DutyAmt', $builder->commercialData->dutyAmount));
+                    }
+
+                    if (!empty($builder->commercialData->destinationPostalCode)) {
+                        $visaCorporateDataNode->appendChild($xml->createElement('DestinationPostalZipCode', $builder->commercialData->destinationPostalCode));
+                    }
+
+                    if (!empty($builder->commercialData->originPostalCode)) {
+                        $visaCorporateDataNode->appendChild($xml->createElement('ShipFromPostalZipCode', $builder->commercialData->originPostalCode));
+                    }
+
+                    if (!empty($builder->commercialData->destinationCountryCode)) {
+                        $visaCorporateDataNode->appendChild($xml->createElement('DestinationCountryCode', $builder->commercialData->destinationCountryCode));
+                    }
+
+                    if (!empty($builder->commercialData->vatInvoiceNumber)) {
+                        $visaCorporateDataNode->appendChild($xml->createElement('InvoiceRefNbr', $builder->commercialData->vatInvoiceNumber));
+                    }
+
+                    if (!empty($builder->commercialData->orderDate)) {
+                        $visaCorporateDataNode->appendChild($xml->createElement('OrderDate', $builder->commercialData->orderDate));
+                    }
+
+                    if (!empty($builder->commercialData->additionalTaxDetails->taxAmount)) {
+                        $visaCorporateDataNode->appendChild($xml->createElement('VATTaxAmtFreight', $builder->commercialData->additionalTaxDetails->taxAmount));
+                    }
+
+                    if (!empty($builder->commercialData->additionalTaxDetails->taxRate)) {
+                        $visaCorporateDataNode->appendChild($xml->createElement('VATTaxRateFreight', $builder->commercialData->additionalTaxDetails->taxRate));
+                    }
+
+                    // if (!empty($builder->commercialData->somethingsome)) {
+                    //     $visaCorporateDataNode->appendChild($xml->createElement('LineItemDiscountTreatmentCode', $builder->commercialData->somethingsome));
+                    // }
+
+                    // if (!empty($builder->commercialData->somethingsome)) {
+                    //     $visaCorporateDataNode->appendChild($xml->createElement('TaxTreatment', $builder->commercialData->somethingsome));
+                    // }
+
+                    if (count($builder->commercialData->lineItems) > 0) {
+                        $linetItemsNode = $xml->createElement('LineItems');
+
+                        foreach ($builder->commercialData->lineItems as $lineItem) {
+                            $linetItemNode = $xml->createElement('LineItemDetail');
+
+                            // if (!empty($lineItem->commodityCode)) {
+                            //     $linetItemNode->appendChild($xml->createElement('ItemCommodityCode', $lineItem->commodityCode));
+                            // }
+
+                            if (!empty($lineItem->description)) {
+                                $linetItemNode->appendChild($xml->createElement('ItemDescription', $lineItem->description));
+                            }
+
+                            if (!empty($lineItem->productCode)) {
+                                $linetItemNode->appendChild($xml->createElement('ProductCode', $lineItem->productCode));
+                            }
+
+                            if (!empty($lineItem->quantity)) {
+                                $linetItemNode->appendChild($xml->createElement('Quantity', $lineItem->quantity));
+                            }
+
+                            if (!empty($lineItem->unitOfMeasure)) {
+                                $linetItemNode->appendChild($xml->createElement('UnitOfMeasure', $lineItem->unitOfMeasure));
+                            }
+
+                            if (!empty($lineItem->unitCost)) {
+                                $linetItemNode->appendChild($xml->createElement('UnitCost', $lineItem->unitCost));
+                            }
+
+                            if (!empty($lineItem->taxAmount)) {
+                                $linetItemNode->appendChild($xml->createElement('VATTaxAmt', $lineItem->taxAmount));
+                            }
+
+                            if (!empty($lineItem->taxPercentage)) {
+                                $linetItemNode->appendChild($xml->createElement('VATTaxRate', $lineItem->taxPercentage));
+                            }
+
+                            if (!empty($lineItem->discountDetails->discountPercentage)) {
+                                $linetItemNode->appendChild($xml->createElement('DiscountAmt', $lineItem->discountDetails->discountPercentage));
+                            }
+
+                            if (!empty($lineItem->totalAmount)) {
+                                $linetItemNode->appendChild($xml->createElement('LineItemTotalAmt', $lineItem->totalAmount));
+                            }
+
+                            // if (!empty($lineItem->somethingsome)) {
+                            //     $visaCorporateDataNode->appendChild($xml->createElement('LineItemTreatmentCode', $builder->commercialData->somethingsome));
+                            // }
+
+                            $linetItemsNode->appendChild($linetItemNode);
+                        };
+                    }
+
+                    $visaCorporateDataNode->appendChild($linetItemsNode);
+                    $commercialDataNode->appendChild($visaCorporateDataNode);
+                    $root->appendChild($commercialDataNode);
+                } elseif ($builder->cardType == 'MC') {
+                    $mastercardCorporateDataNode = $xml->createElement('MC');
+
+                    if (count($builder->commercialData->lineItems) > 0) {
+                        $linetItemsNode = $xml->createElement('LineItems');
+
+                        foreach ($builder->commercialData->lineItems as $lineItem) {
+                            $linetItemNode = $xml->createElement('LineItemDetail');
+
+                            if (!empty($lineItem->description)) {
+                                $linetItemNode->appendChild($xml->createElement('ItemDescription', $lineItem->description));
+                            }
+
+                            if (!empty($lineItem->productCode)) {
+                                $linetItemNode->appendChild($xml->createElement('ProductCode', $lineItem->productCode));
+                            }
+
+                            if (!empty($lineItem->quantity)) {
+                                $linetItemNode->appendChild($xml->createElement('Quantity', $lineItem->quantity));
+                            }
+
+                            if (!empty($lineItem->unitCost)) {
+                                $linetItemNode->appendChild($xml->createElement('ItemTotalAmt', $lineItem->unitCost));
+                            }
+
+                            if (!empty($lineItem->unitOfMeasure)) {
+                                $linetItemNode->appendChild($xml->createElement('UnitOfMeasure', $lineItem->unitOfMeasure));
+                            }
+
+                            $linetItemsNode->appendChild($linetItemNode);
+                        };
+                    }
+
+                    $mastercardCorporateDataNode->appendChild($linetItemsNode);
+                    $commercialDataNode->appendChild($mastercardCorporateDataNode);
+                    $root->appendChild($commercialDataNode);
+                }
             } else {
                 // amount
                 if ($builder->amount !== null) {
@@ -1619,7 +1798,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 }
                 throw new UnsupportedTransactionException('Transaction not supported for this payment method.');
             case TransactionType::EDIT:
-                if ($builder->transactionModifier === TransactionModifier::LEVEL_II) {
+                if (
+                    $builder->transactionModifier === TransactionModifier::LEVEL_II || 
+                    $builder->transactionModifier === TransactionModifier::LEVEL_III
+                    ) {
                     return 'CreditCPCEdit';
                 } else {
                     return 'CreditTxnEdit';

@@ -5,7 +5,6 @@ use GlobalPayments\Api\Entities\Enums\ColorDepth;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\Utils\AccessTokenInfo;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Services\Secure3dService;
@@ -16,16 +15,11 @@ use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\BrowserData;
-use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
+use GlobalPayments\Api\Tests\Integration\Gateways\ThreeDSecureAcsClient;
 use PHPUnit\Framework\TestCase;
 
 class GpApi3DSecureTest extends TestCase
 {
-    /**
-     * @var RecurringPaymentMethod
-     */
-    private $storedCard;
-
     /**
      * @var Address
      */
@@ -41,14 +35,22 @@ class GpApi3DSecureTest extends TestCase
      */
     private $browserData;
 
+    /**
+     * @var string
+     */
+    private $gatewayProvider;
+
+    /**
+     * @var string
+     */
+    private $currency;
+
     public function setup()
     {
-        ServicesContainer::configureService($this->setUpConfig());
-
-        $this->storedCard = new RecurringPaymentMethod(
-            "20190809-Realex",
-            "20190809-Realex-Credit"
-        );
+        $config = $this->setUpConfig();
+        ServicesContainer::configureService($config);
+        $this->gatewayProvider = $config->getGatewayProvider();
+        $this->currency = 'GBP';
 
         $this->shippingAddress = new Address();
         $this->shippingAddress->streetAddress1 = "Apartment 852";
@@ -85,15 +87,13 @@ class GpApi3DSecureTest extends TestCase
     public function setUpConfig()
     {
         $config = new GpApiConfig();
-        $accessTokenManager = new AccessTokenInfo();
-        //this is gpapistuff stuff
-        $config->setAppId('P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg');
-        $config->setAppKey( 'ockJr6pv6KFoGiZA');
+        $config->appId = 'P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg';
+        $config->appKey = 'ockJr6pv6KFoGiZA';
         $config->environment = Environment::TEST;
-        $config->setAccessTokenInfo($accessTokenManager);
-        $config->setChannel(Channels::CardNotPresent);
-        $config->setChallengeNotificationUrl('https://ensi808o85za.x.pipedream.net/');
-        $config->setMethodNotificationUrl('https://ensi808o85za.x.pipedream.net/');
+        $config->country = 'GB';
+        $config->channel = Channels::CardNotPresent;
+        $config->challengeNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
+        $config->methodNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
 
         return $config;
     }
@@ -107,36 +107,37 @@ class GpApi3DSecureTest extends TestCase
         $card->cardHolderName = "James Mason";
 
         $secureEcom = Secure3dService::checkEnrollment($card)
-        ->withCurrency('USD')
+        ->withCurrency($this->currency)
         ->withAmount('10.01')
         ->execute();
 
         $this->assertNotNull($secureEcom);
+        $this->assertEquals('ENROLLED', $secureEcom->enrolled);
+        $this->assertEquals(Secure3dVersion::ONE, $secureEcom->getVersion());
+        $this->assertEquals('CHALLENGE_REQUIRED', $secureEcom->status);
+        $this->assertTrue($secureEcom->challengeMandated);
+        $this->assertNotNull($secureEcom->issuerAcsUrl);
+        $this->assertNotNull($secureEcom->payerAuthenticationRequest);
 
-        if ($secureEcom->enrolled == 'ENROLLED') {
-            $this->assertEquals(Secure3dVersion::ONE, $secureEcom->getVersion());
-            if (strcmp($secureEcom->status, "AVAILABLE") === 0) {
-                $secureEcom =Secure3dService::getAuthenticationData()
-                    ->withServerTransactionId($secureEcom->serverTransactionId)
-                    ->execute();
-                $card->threeDSecure = $secureEcom;
-                if (strcmp($secureEcom->status, 'SUCCESS_AUTHENTICATED') === 0) {
-                    $response = $card->charge(10.01)->withCurrency('USD')->execute();
-                    $this->assertNotNull($response);
-                    $this->assertEquals('SUCCESS', $response->responseCode);
-                    $this->assertEquals( TransactionStatus::CAPTURED, $response->responseMessage);
-                } else {
-                    $this->fail('Signature verification failed.');
-                }
-            } else {
-                $this->fail("Expected status AVAILABLE. Current status: {$secureEcom->status}.");
-            }
-        } else {
-            $this->fail('Card not enrolled.');
-        }
+        $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
+        $authClient->authenticationResultCode = '0';
+        $authClient->setGatewayProvider($this->gatewayProvider);
+        $authResponse = $authClient->authenticate_v1($secureEcom);
+        $this->assertTrue($authResponse->getStatus());
+
+        $secureEcom = Secure3dService::getAuthenticationData()
+            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->withPayerAuthenticationResponse($authResponse->getAuthResponse())
+            ->execute();
+        $card->threeDSecure = $secureEcom;
+        $this->assertEquals('AUTHENTICATION_SUCCESSFUL', $secureEcom->status);
+        $response = $card->charge(10.01)->withCurrency($this->currency)->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals( TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
-    public function testCardHolderEnrolled_ChallengeRequired_v1()
+    public function testFullCycle_v1_WithTokenizedPaymentMethod()
     {
         $card = new CreditCardData();
         $card->number = '4012001037141112';
@@ -144,25 +145,43 @@ class GpApi3DSecureTest extends TestCase
         $card->expYear = date('Y', strtotime('+1 year'));
         $card->cardHolderName = "James Mason";
 
-        $secureEcom = Secure3dService::checkEnrollment($card)
-            ->withCurrency('USD')
+        $response = $card->tokenize()->execute();
+        $tokenId = $response->token;
+
+        $tokenizedCard = new CreditCardData();
+        $tokenizedCard->token = $tokenId;
+        $tokenizedCard->cardHolderName = "James Mason";
+
+        $secureEcom = Secure3dService::checkEnrollment($tokenizedCard)
+            ->withCurrency($this->currency)
             ->withAmount('10.01')
             ->execute();
 
         $this->assertNotNull($secureEcom);
+        $this->assertEquals('ENROLLED', $secureEcom->enrolled);
+        $this->assertEquals(Secure3dVersion::ONE, $secureEcom->getVersion());
+        $this->assertEquals('CHALLENGE_REQUIRED', $secureEcom->status);
+        $this->assertTrue($secureEcom->challengeMandated);
+        $this->assertNotNull($secureEcom->issuerAcsUrl);
+        $this->assertNotNull($secureEcom->payerAuthenticationRequest);
 
-        if ($secureEcom->enrolled == 'ENROLLED') {
-            $this->assertEquals(Secure3dVersion::ONE, $secureEcom->getVersion());
-            if (strcmp($secureEcom->status, 'CHALLENGE_REQUIRED') === 0) {
-                $this->assertTrue($secureEcom->challengeMandated);
-                $this->assertNotNull($secureEcom->issuerAcsUrl);
-                $this->assertNotNull( $secureEcom->challengeValue);
-            } else {
-                $this->fail("Expected status AVAILABLE. Current status: {$secureEcom->status}.");
-            }
-        } else {
-            $this->fail('Card not enrolled.');
-        }
+        $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
+        $authClient->authenticationResultCode = '0';
+        $authClient->setGatewayProvider($this->gatewayProvider);
+        $authResponse = $authClient->authenticate_v1($secureEcom);
+        $this->assertTrue($authResponse->getStatus());
+
+        $secureEcom = Secure3dService::getAuthenticationData()
+            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->withPayerAuthenticationResponse($authResponse->getAuthResponse())
+            ->execute();
+        $tokenizedCard->threeDSecure = $secureEcom;
+        $this->assertEquals('AUTHENTICATION_SUCCESSFUL', $secureEcom->status);
+
+        $response = $tokenizedCard->charge(10.01)->withCurrency($this->currency)->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals( TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
     public function testCardHolderNotEnrolled_v1()
@@ -174,7 +193,7 @@ class GpApi3DSecureTest extends TestCase
         $card->cardHolderName = "James Mason";
 
         $secureEcom = Secure3dService::checkEnrollment($card)
-            ->withCurrency('USD')
+            ->withCurrency($this->currency)
             ->withAmount('10.01')
             ->execute();
 
@@ -198,48 +217,38 @@ class GpApi3DSecureTest extends TestCase
         $card->cardHolderName = "James Mason";
 
         $secureEcom = Secure3dService::checkEnrollment($card)
-            ->withCurrency('USD')
+            ->withCurrency($this->currency)
             ->withAmount('10.01')
             ->execute();
 
         $this->assertNotNull($secureEcom);
+        $this->assertEquals('ENROLLED', $secureEcom->enrolled);
+        $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
+        $this->assertEquals('AVAILABLE', $secureEcom->status);
 
-        if ($secureEcom->enrolled == 'ENROLLED') {
-            $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
-            if (strcmp($secureEcom->status, "AVAILABLE") === 0) {
-                $initAuth = Secure3dService::initiateAuthentication($card, $secureEcom)
-                    ->withAmount(10.01)
-                    ->withCurrency('USD')
-                    ->withAuthenticationSource(AuthenticationSource::BROWSER)
-                    ->withMethodUrlCompletion(MethodUrlCompletion::YES)
-                    ->withOrderCreateDate(date('Y-m-d H:i:s'))
-                    ->withAddress($this->billingAddress, AddressType::BILLING)
-                    ->withAddress($this->shippingAddress, AddressType::SHIPPING)
-                    ->withBrowserData($this->browserData)
-                    ->execute();
-                $this->assertNotNull($initAuth);
-                if (strcmp($initAuth->status, 'SUCCESS_AUTHENTICATED') === 0) {
-                    $secureEcom = Secure3dService::getAuthenticationData()
-                        ->withServerTransactionId($secureEcom->serverTransactionId)
-                        ->execute();
-                    $card->threeDSecure = $initAuth;
-                    if (strcmp($secureEcom->status, 'SUCCESS_AUTHENTICATED') === 0) {
-                        $response = $card->charge(10.01)->withCurrency('USD')->execute();
-                        $this->assertNotNull($response);
-                        $this->assertEquals('SUCCESS', $response->responseCode);
-                        $this->assertEquals( TransactionStatus::CAPTURED, $response->responseMessage);
-                    } else {
-                        $this->fail('Signature verification failed.');
-                    }
-                } else {
-                    $this->fail("Failed initiate authentication. Expected status SUCCESS_AUTHENTICATED. Current status: {$initAuth->status}.");
-                }
-            } else {
-                $this->fail("Expected status AVAILABLE. Current status: {$secureEcom->status}.");
-            }
-        } else {
-            $this->fail('Card not enrolled.');
-        }
+        $initAuth = Secure3dService::initiateAuthentication($card, $secureEcom)
+            ->withAmount(10.01)
+            ->withCurrency($this->currency)
+            ->withAuthenticationSource(AuthenticationSource::BROWSER)
+            ->withMethodUrlCompletion(MethodUrlCompletion::YES)
+            ->withOrderCreateDate(date('Y-m-d H:i:s'))
+            ->withAddress($this->billingAddress, AddressType::BILLING)
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->withBrowserData($this->browserData)
+            ->execute();
+        $this->assertNotNull($initAuth);
+        $this->assertEquals('SUCCESS_AUTHENTICATED', $initAuth->status);
+
+        $secureEcom = Secure3dService::getAuthenticationData()
+            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->execute();
+        $card->threeDSecure = $initAuth;
+        $this->assertEquals('SUCCESS_AUTHENTICATED', $secureEcom->status);
+
+        $response = $card->charge(10.01)->withCurrency($this->currency)->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals( TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
     /**
@@ -250,54 +259,53 @@ class GpApi3DSecureTest extends TestCase
     public function testCardHolderEnrolled_ChallengeRequired_v2()
     {
         $card = new CreditCardData();
-        $card->number = '4222000001227408';
+        $card->number = '4012001038488884';
         $card->expMonth = '12';
         $card->expYear = date('Y', strtotime('+1 year'));
         $card->cardHolderName = "James Mason";
 
         $secureEcom = Secure3dService::checkEnrollment($card)
-            ->withCurrency('USD')
+            ->withCurrency($this->currency)
             ->withAmount('10.01')
             ->execute();
 
         $this->assertNotNull($secureEcom);
+        $this->assertEquals('ENROLLED', $secureEcom->enrolled);
+        $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
+        $this->assertEquals('AVAILABLE', $secureEcom->status);
+        $initAuth = Secure3dService::initiateAuthentication($card, $secureEcom)
+            ->withAmount(10.01)
+            ->withCurrency($this->currency)
+            ->withAuthenticationSource(AuthenticationSource::BROWSER)
+            ->withMethodUrlCompletion(MethodUrlCompletion::YES)
+            ->withOrderCreateDate(date('Y-m-d H:i:s'))
+            ->withAddress($this->billingAddress, AddressType::BILLING)
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->withBrowserData($this->browserData)
+            ->execute();
 
-        if ($secureEcom->enrolled == 'ENROLLED') {
-            $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
-            $this->assertEquals('AVAILABLE', $secureEcom->status);
-            $initAuth = Secure3dService::initiateAuthentication($card, $secureEcom)
-                ->withAmount(10.01)
-                ->withCurrency('USD')
-                ->withAuthenticationSource(AuthenticationSource::BROWSER)
-                ->withMethodUrlCompletion(MethodUrlCompletion::YES)
-                ->withOrderCreateDate(date('Y-m-d H:i:s'))
-                ->withAddress($this->billingAddress, AddressType::BILLING)
-                ->withAddress($this->shippingAddress, AddressType::SHIPPING)
-                ->withBrowserData($this->browserData)
-                ->execute();
+        $this->assertNotNull($initAuth);
+        $this->assertEquals('CHALLENGE_REQUIRED', $initAuth->status);
+        $this->assertTrue($initAuth->challengeMandated);
+        $this->assertNotNull($initAuth->issuerAcsUrl);
+        $this->assertNotNull($initAuth->challengeValue);
 
-            $this->assertNotNull($initAuth);
-            $this->assertEquals('CHALLENGE_REQUIRED', $initAuth->status);
+        $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
+        $authClient->setGatewayProvider($this->gatewayProvider);
+        $authResponse = $authClient->authenticate_v2($initAuth);
+        $this->assertTrue($authResponse->getStatus());
 
-            $this->assertTrue($initAuth->challengeMandated);
-            $this->assertNotNull($initAuth->issuerAcsUrl);
-            $this->assertNotNull($initAuth->challengeValue);
-            $this->assertTrue($this->sendChallenge($initAuth->issuerAcsUrl, $initAuth->challengeValue));
+        $secureEcom = Secure3dService::getAuthenticationData()
+            ->withServerTransactionId($initAuth->serverTransactionId)
+            ->execute();
+        $card->threeDSecure = $secureEcom;
 
-            $secureEcom = Secure3dService::getAuthenticationData()
-                ->withServerTransactionId($initAuth->serverTransactionId)
-                ->execute();
-            $card->threeDSecure = $secureEcom;
+        $this->assertEquals('SUCCESS_AUTHENTICATED', $secureEcom->status);
 
-            $this->assertEquals('SUCCESS_AUTHENTICATED', $secureEcom->status);
-
-            $response = $card->charge(10.01)->withCurrency('USD')->execute();
-            $this->assertNotNull($response);
-            $this->assertEquals('SUCCESS', $response->responseCode);
-            $this->assertEquals( TransactionStatus::CAPTURED, $response->responseMessage);
-        } else {
-            $this->fail('Card not enrolled.');
-        }
+        $response = $card->charge(10.01)->withCurrency($this->currency)->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals( TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
     /**
@@ -308,50 +316,44 @@ class GpApi3DSecureTest extends TestCase
     public function testChallengeRequired_GetResultFailed_v2()
     {
         $card = new CreditCardData();
-        $card->number = '4222000001227408';
+        $card->number = '4012001038488884';
         $card->expMonth = '12';
         $card->expYear = date('Y', strtotime('+1 year'));
         $card->cardHolderName = "James Mason";
 
         $secureEcom = Secure3dService::checkEnrollment($card)
-            ->withCurrency('USD')
+            ->withCurrency($this->currency)
             ->withAmount('10.01')
             ->execute();
 
         $this->assertNotNull($secureEcom);
+        $this->assertEquals('ENROLLED', $secureEcom->enrolled);
+        $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
+        $this->assertEquals('AVAILABLE', $secureEcom->status);
 
-        if ($secureEcom->enrolled == 'ENROLLED') {
-            $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
-            if (strcmp($secureEcom->status, "AVAILABLE") === 0) {
-                $initAuth = Secure3dService::initiateAuthentication($card, $secureEcom)
-                    ->withAmount(10.01)
-                    ->withCurrency('USD')
-                    ->withAuthenticationSource(AuthenticationSource::BROWSER)
-                    ->withMethodUrlCompletion(MethodUrlCompletion::YES)
-                    ->withOrderCreateDate(date('Y-m-d H:i:s'))
-                    ->withAddress($this->billingAddress, AddressType::BILLING)
-                    ->withAddress($this->shippingAddress, AddressType::SHIPPING)
-                    ->withBrowserData($this->browserData)
-                    ->execute();
+        $initAuth = Secure3dService::initiateAuthentication($card, $secureEcom)
+            ->withAmount(10.01)
+            ->withCurrency($this->currency)
+            ->withAuthenticationSource(AuthenticationSource::BROWSER)
+            ->withMethodUrlCompletion(MethodUrlCompletion::YES)
+            ->withOrderCreateDate(date('Y-m-d H:i:s'))
+            ->withAddress($this->billingAddress, AddressType::BILLING)
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->withBrowserData($this->browserData)
+            ->execute();
 
-                $this->assertNotNull($initAuth);
-                if (strcmp($initAuth->status, 'CHALLENGE_REQUIRED') === 0) {
-                    $this->assertTrue($initAuth->challengeMandated);
-                    $this->assertNotNull($initAuth->issuerAcsUrl);
-                    $this->assertNotNull($initAuth->challengeValue);
-                    $secureEcom = Secure3dService::getAuthenticationData()
-                        ->withServerTransactionId($initAuth->serverTransactionId)
-                        ->execute();
-                    $this->assertEquals('FAILED', $secureEcom->status);
-                } else {
-                    $this->fail("Failed initiate authentication. Expected status CHALLENGE_REQUIRED. Current status: {$initAuth->status}.");
-                }
-            } else {
-                $this->fail("Expected status AVAILABLE. Current status: {$secureEcom->status}.");
-            }
-        } else {
-            $this->fail('Card not enrolled.');
-        }
+        $this->assertNotNull($initAuth);
+        $this->assertEquals('CHALLENGE_REQUIRED', $initAuth->status);
+        $this->assertTrue($initAuth->challengeMandated);
+        $this->assertNotNull($initAuth->issuerAcsUrl);
+        $this->assertNotNull($initAuth->challengeValue);
+
+        $secureEcom = Secure3dService::getAuthenticationData()
+            ->withServerTransactionId($initAuth->serverTransactionId)
+            ->execute();
+        $this->assertEquals('FAILED', $secureEcom->status);
+
+
     }
 
     /**
@@ -374,76 +376,38 @@ class GpApi3DSecureTest extends TestCase
         $tokenizedCard->cardHolderName = "James Mason";
 
         $secureEcom = Secure3dService::checkEnrollment($tokenizedCard)
-            ->withCurrency('USD')
+            ->withCurrency($this->currency)
             ->withAmount('10.01')
             ->execute();
 
         $this->assertNotNull($secureEcom);
+        $this->assertEquals('ENROLLED', $secureEcom->enrolled);
+        $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
+        $this->assertEquals('AVAILABLE', $secureEcom->status);
 
-        if ($secureEcom->enrolled == 'ENROLLED') {
-            $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
-            if (strcmp($secureEcom->status, "AVAILABLE") === 0) {
-                $initAuth = Secure3dService::initiateAuthentication($tokenizedCard, $secureEcom)
-                    ->withAmount(10.01)
-                    ->withCurrency('USD')
-                    ->withAuthenticationSource(AuthenticationSource::BROWSER)
-                    ->withMethodUrlCompletion(MethodUrlCompletion::YES)
-                    ->withOrderCreateDate(date('Y-m-d H:i:s'))
-                    ->withAddress($this->billingAddress, AddressType::BILLING)
-                    ->withAddress($this->shippingAddress, AddressType::SHIPPING)
-                    ->withBrowserData($this->browserData)
-                    ->execute();
+        $initAuth = Secure3dService::initiateAuthentication($tokenizedCard, $secureEcom)
+            ->withAmount(10.01)
+            ->withCurrency($this->currency)
+            ->withAuthenticationSource(AuthenticationSource::BROWSER)
+            ->withMethodUrlCompletion(MethodUrlCompletion::YES)
+            ->withOrderCreateDate(date('Y-m-d H:i:s'))
+            ->withAddress($this->billingAddress, AddressType::BILLING)
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->withBrowserData($this->browserData)
+            ->execute();
 
-                $this->assertNotNull($initAuth);
-                if (strcmp($initAuth->status, 'SUCCESS_AUTHENTICATED') === 0) {
-                    $secureEcom = Secure3dService::getAuthenticationData()
-                        ->withServerTransactionId($secureEcom->serverTransactionId)
-                        ->execute();
-                    $tokenizedCard->threeDSecure = $secureEcom;
-                    if (strcmp($secureEcom->status, 'SUCCESS_AUTHENTICATED') === 0) {
-                        $response = $tokenizedCard->charge(10.01)->withCurrency('USD')->execute();
-                        $this->assertNotNull($response);
-                        $this->assertEquals('SUCCESS', $response->responseCode);
-                        $this->assertEquals( TransactionStatus::CAPTURED, $response->responseMessage);
-                    } else {
-                        $this->fail('Signature verification failed.');
-                    }
-                } else {
-                    $this->fail("Failed initiate authentication. Expected status SUCCESS_AUTHENTICATED. Current status: {$initAuth->status}.");
-                }
-            } else {
-                $this->fail("Expected status AVAILABLE. Current status: {$secureEcom->status}.");
-            }
-        } else {
-            $this->fail('Card not enrolled.');
-        }
-    }
+        $this->assertNotNull($initAuth);
+        $this->assertEquals('SUCCESS_AUTHENTICATED', $secureEcom->status);
 
-    private function sendChallenge($url, $challengeValue)
-    {
-        $request = curl_init();
-        $data = 'challenge_value=' . urlencode($challengeValue);
-        curl_setopt_array($request, [
-            CURLOPT_URL => $url . $data,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => $data,
-            CURLOPT_HTTPHEADER => [
-                "Content-Type: application/json; charset=UTF-8",
-                "cache-control: no-cache",
-                "X-GP-Version: {GpApiConnector::GpApiConnector::GP_API_VERSION}"
-            ],
-        ]);
+        $secureEcom = Secure3dService::getAuthenticationData()
+            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->execute();
+        $tokenizedCard->threeDSecure = $secureEcom;
+        $this->assertEquals('SUCCESS_AUTHENTICATED', $secureEcom->status);
 
-        curl_exec($request);
-        $curlInfo = curl_getinfo($request);
-        curl_close($request);
-
-        if ($curlInfo['http_code'] != 200) {
-           return false;
-        }
-
-        return true;
+        $response = $tokenizedCard->charge(10.01)->withCurrency($this->currency)->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals( TransactionStatus::CAPTURED, $response->responseMessage);
     }
 }

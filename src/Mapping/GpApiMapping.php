@@ -5,7 +5,11 @@ namespace GlobalPayments\Api\Mapping;
 
 
 use GlobalPayments\Api\Entities\BatchSummary;
+use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
+use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
+use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\Reporting\DepositSummary;
 use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
@@ -36,9 +40,15 @@ class GpApiMapping
                 $transaction->batchSummary = $batchSummary;
             }
             $transaction->responseCode = $response->action->result_code;
-            $transaction->token = $response->id;
+            $transaction->token = substr($response->id, 0, 4) === PaymentMethod::PAYMENT_METHOD_TOKEN_PREFIX ?
+                $response->id : null;
+            $transaction->clientTransactionId = !empty($response->reference) ? $response->reference : null;
+
             if (!empty($response->payment_method)) {
                 $transaction->authorizationCode = $response->payment_method->result;
+                if (!empty($response->payment_method->id)) {
+                    $transaction->token = $response->payment_method->id;
+                }
                 if (!empty($response->payment_method->card)) {
                     $card = $response->payment_method->card;
                     $transaction->cardLast4 = !empty($card->masked_number_last4) ?
@@ -57,6 +67,49 @@ class GpApiMapping
         return $transaction;
     }
 
+    /**
+     * @param $response
+     * @param string $reportType
+     */
+    public static function mapReportResponse($response, $reportType)
+    {
+        switch ($reportType) {
+            case ReportType::TRANSACTION_DETAIL:
+                $report = self::mapTransactionSummary($response);
+                break;
+            case ReportType::FIND_TRANSACTIONS_PAGED:
+            case ReportType::FIND_SETTLEMENT_TRANSACTIONS_PAGED:
+                $report = self::setPagingInfo($response);
+                foreach ($response->transactions as $transaction) {
+                    array_push($report->result, self::mapTransactionSummary($transaction));
+                }
+                break;
+            case ReportType::DEPOSIT_DETAIL:
+                $report = self::mapDepositSummary($response);
+                break;
+            case ReportType::FIND_DEPOSITS_PAGED:
+                $report = self::setPagingInfo($response);
+                foreach ($response->deposits as $deposit) {
+                    array_push($report->result, self::mapDepositSummary($deposit));
+                }
+                break;
+            case ReportType::DISPUTE_DETAIL:
+            case ReportType::SETTLEMENT_DISPUTE_DETAIL:
+                $report = self::mapDisputeSummary($response);
+                break;
+            case ReportType::FIND_DISPUTES_PAGED:
+            case ReportType::FIND_SETTLEMENT_DISPUTES_PAGED:
+                $report = self::setPagingInfo($response);
+                foreach ($response->disputes as $dispute) {
+                    array_push($report->result, self::mapDisputeSummary($dispute));
+                }
+                break;
+            default:
+                throw new ApiException("Report type not supported!");
+        }
+
+        return $report;
+    }
     /**
      * @param $response
      * @return TransactionSummary
@@ -176,7 +229,7 @@ class GpApiMapping
     {
         $summary = new DisputeSummary();
         $summary->caseId = $response->id;
-        $summary->caseIdTime = !empty($response->stage_time_created) ? new \DateTime($response->stage_time_created) : '';
+        $summary->caseIdTime = !empty($response->stage_time_created) ? new \DateTime($response->stage_time_created) : null;
         $summary->caseStatus = $response->status;
         $summary->caseStage = $response->stage;
         $summary->caseAmount = StringUtils::toAmount($response->amount);
@@ -185,6 +238,7 @@ class GpApiMapping
             $system = $response->system;
             $summary->caseMerchantId = $system->mid;
             $summary->merchantHierarchy = $system->hierarchy;
+            $summary->merchantName = !empty($system->name) ? $system->name : null;
         }
         if (
             isset($response->payment_method) &&
@@ -193,14 +247,20 @@ class GpApiMapping
             $card = $response->payment_method->card;
             $summary->transactionMaskedCardNumber = $card->number;
         }
-        if (
-            isset($response->transaction->payment_method) &&
-            isset($response->transaction->payment_method->card)
-        ) {
-            $card = $response->transaction->payment_method->card;
-            $summary->transactionMaskedCardNumber = !empty($card->masked_number_first6last4) ?
-                $card->masked_number_first6last4 : '';
+        if (isset($response->transaction)) {
+            $summary->transactionTime = $response->transaction->time_created;
+            $summary->transactionType = $response->transaction->type;
+            $summary->transactionAmount = StringUtils::toAmount($response->transaction->amount);
+            $summary->transactionCurrency = $response->transaction->currency;
+            $summary->transactionReferenceNumber = $response->transaction->reference;
+            if (isset($response->transaction->payment_method->card)) {
+                $card = $response->transaction->payment_method->card;
+                $summary->transactionMaskedCardNumber = !empty($card->masked_number_first6last4) ?
+                    $card->masked_number_first6last4 : '';
+                $summary->transactionAuthCode = $card->authcode;
+            }
         }
+
         if (!empty($card)) {
             $summary->transactionARN = $card->arn;
             $summary->transactionCardType = $card->brand;
@@ -223,7 +283,6 @@ class GpApiMapping
     {
         $transaction = new Transaction();
         $threeDSecure = new ThreeDSecure();
-        //@TODO: Complete required mappings
         $threeDSecure->serverTransactionId = !empty($response->id) ? $response->id :
             (!empty($response->three_ds->server_trans_ref) ? $response->three_ds->server_trans_ref : '');
         if (!empty($response->three_ds->message_version)) {
@@ -251,7 +310,7 @@ class GpApiMapping
         $threeDSecure->acsEndVersion = !empty($response->three_ds->acs_protocol_version_end) ?
             $response->three_ds->acs_protocol_version_end : '';
         $threeDSecure->enrolled = !empty($response->three_ds->enrolled_status) ?
-            $response->three_ds->enrolled_status : '';
+            $response->three_ds->enrolled_status : 'NOT_ENROLLED';
         $threeDSecure->eci = !empty($response->three_ds->eci) ? $response->three_ds->eci : '';
         $threeDSecure->acsInfoIndicator = !empty($response->three_ds->acs_info_indicator) ?
             $response->three_ds->acs_info_indicator : null;
@@ -262,9 +321,9 @@ class GpApiMapping
         $threeDSecure->issuerAcsUrl = !empty($response->three_ds->method_url) ? $response->three_ds->method_url : '';
         $threeDSecure->challengeValue = !empty($response->three_ds->challenge_value) ?
             $response->three_ds->challenge_value : '';
-        if (!empty($response->three_ds->redirect_url) && $threeDSecure->challengeMandated === true) {
-            $threeDSecure->issuerAcsUrl = !empty($response->three_ds->redirect_url) ?
-                $response->three_ds->redirect_url : null;
+        if (!empty($response->three_ds->acs_challenge_request_url) && $threeDSecure->challengeMandated === true) {
+            $threeDSecure->issuerAcsUrl = !empty($response->three_ds->acs_challenge_request_url) ?
+                $response->three_ds->acs_challenge_request_url : null;
             $threeDSecure->payerAuthenticationRequest = !empty($response->three_ds->challenge_value) ?
                 $response->three_ds->challenge_value : '';
         }
@@ -281,9 +340,28 @@ class GpApiMapping
             $response->three_ds->status_reason : '';
         $threeDSecure->messageCategory = !empty($response->three_ds->message_category) ?
             $response->three_ds->message_category : '';
+        $threeDSecure->messageType = !empty($response->three_ds->message_type) ?
+            $response->three_ds->message_type : '';
+        $threeDSecure->sessionDataFieldName = !empty($response->three_ds->session_data_field_name) ?
+            $response->three_ds->session_data_field_name : '';
+        $threeDSecure->challengeReturnUrl = !empty($response->notifications->challenge_return_url) ?
+            $response->notifications->challenge_return_url : '';
 
         $transaction->threeDSecure = $threeDSecure;
 
         return $transaction;
+    }
+
+    private static function setPagingInfo($response)
+    {
+        $pageInfo = new PagedResult();
+        $pageInfo->totalRecordCount = !empty($response->total_count) ? $response->total_count :
+            (!empty($response->total_record_count) ? $response->total_record_count : null);
+        $pageInfo->pageSize = !empty($response->paging->page_size) ? $response->paging->page_size :  null;
+        $pageInfo->page = !empty($response->paging->page) ? $response->paging->page :  null;
+        $pageInfo->order = !empty($response->paging->order) ? $response->paging->order :  null;
+        $pageInfo->oderBy = !empty($response->paging->order_by) ? $response->paging->order_by :  null;
+
+        return $pageInfo;
     }
 }

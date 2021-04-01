@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Builders;
 
 use GlobalPayments\Api\Entities\Enums\DecoupledFlowRequest;
 use GlobalPayments\Api\Entities\Enums\WhiteListStatus;
+use GlobalPayments\Api\Gateways\GpApiConnector;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
@@ -1345,6 +1346,9 @@ class Secure3dBuilder extends BaseBuilder
                 if ($exc->responseCode != null) {
                     if ($exc->responseCode == '110' && $provider->getVersion() === Secure3dVersion::ONE) {
                         return $rvalue;
+                    }
+                    if ($provider instanceof GpApiConnector) {
+                        throw $exc;
                     }
                 } elseif ((bool)$canDowngrade && $this->transactionType === TransactionType::VERIFY_ENROLLED) { // check if we can downgrade
                     return $this->execute($configName, Secure3dVersion::ONE);
