@@ -127,6 +127,48 @@ final class CommercialCardTest extends TestCase {
         }
     }
 
+    // test w/o line items, which seem to be optional
+    public function test02aVisaLevel3() {
+        $response = $this->getVisaManual()->charge(112.34) // amount results in commercialIndicator val of 'B'
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->withCommercialRequest(true)
+            ->withAddress($this->getAddy())
+            ->execute();
+
+        if ($response->commercialIndicator === 'B') {
+            $commercialData = new CommercialData(TaxType::SALES_TAX, CommercialIndicator::LEVEL_III);
+            $commercialData->poNumber = 1784951399984509620;
+            $commercialData->taxAmount = 0;
+            $commercialData->destinationPostalCode = '85212';
+            $commercialData->destinationCountryCode = "USA";
+            $commercialData->originPostalCode = "22193";
+            $commercialData->summaryCommodityCode = "SCC";
+            $commercialData->customerVatNumber = "123456789";
+            $commercialData->vatInvoiceNumber = "UVATREF162";
+            $datetime = new DateTime();
+            $formattedDateTime = str_replace(",", "T", date_format($datetime, 'Y-m-d,H:i:s'));
+            $commercialData->orderDate = $formattedDateTime;
+            $commercialData->freightAmount = 0.01;
+            $commercialData->dutyAmount = 0.01;
+            $commercialData->additionalTaxDetails = new AdditionalTaxDetails(
+                .01,
+                TaxCategory::VAT,
+                .04,
+                "VAT"
+            );
+
+            $cpcEditResponse = $response->edit()
+                ->withCommercialData($commercialData)
+                ->withTaxType(TaxType::NOT_USED)
+                ->execute();
+
+            $this->assertEquals('00', $cpcEditResponse->responseCode);
+        } else {
+            $this->assertTrue(false);
+        }
+    }
+
     public function test03MasterCardLevel3() {
         $response = $this->getMasterCardManual()->charge(111.06) // amount results in commercialIndicator val of 'S'
             ->withCurrency('USD')

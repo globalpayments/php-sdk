@@ -735,7 +735,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                     // }
 
                     if (count($builder->commercialData->lineItems) > 0) {
-                        $linetItemsNode = $xml->createElement('LineItems');
+                        $lineItemsNode = $xml->createElement('LineItems');
 
                         foreach ($builder->commercialData->lineItems as $lineItem) {
                             $linetItemNode = $xml->createElement('LineItemDetail');
@@ -784,18 +784,21 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                             //     $visaCorporateDataNode->appendChild($xml->createElement('LineItemTreatmentCode', $builder->commercialData->somethingsome));
                             // }
 
-                            $linetItemsNode->appendChild($linetItemNode);
+                            $lineItemsNode->appendChild($linetItemNode);
                         };
                     }
 
-                    $visaCorporateDataNode->appendChild($linetItemsNode);
+                    if (!empty($lineItemsNode)) {
+                        $visaCorporateDataNode->appendChild($lineItemsNode);
+                    }
+                    
                     $commercialDataNode->appendChild($visaCorporateDataNode);
                     $root->appendChild($commercialDataNode);
                 } elseif ($builder->cardType == 'MC') {
                     $mastercardCorporateDataNode = $xml->createElement('MC');
 
                     if (count($builder->commercialData->lineItems) > 0) {
-                        $linetItemsNode = $xml->createElement('LineItems');
+                        $lineItemsNode = $xml->createElement('LineItems');
 
                         foreach ($builder->commercialData->lineItems as $lineItem) {
                             $linetItemNode = $xml->createElement('LineItemDetail');
@@ -820,11 +823,11 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                                 $linetItemNode->appendChild($xml->createElement('UnitOfMeasure', $lineItem->unitOfMeasure));
                             }
 
-                            $linetItemsNode->appendChild($linetItemNode);
+                            $lineItemsNode->appendChild($linetItemNode);
                         };
                     }
 
-                    $mastercardCorporateDataNode->appendChild($linetItemsNode);
+                    $mastercardCorporateDataNode->appendChild($lineItemsNode);
                     $commercialDataNode->appendChild($mastercardCorporateDataNode);
                     $root->appendChild($commercialDataNode);
                 }
