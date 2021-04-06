@@ -210,7 +210,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
     public function signIn()
     {
         $accessTokenInfo = $this->gpApiConfig->accessTokenInfo;
-        if (!empty($accessTokenInfo) && !empty($accessTokenInfo->getAccessToken())) {
+        if (!empty($accessTokenInfo) && !empty($accessTokenInfo->accessToken)) {
             return;
         }
         $response = $this->getAccessToken();
