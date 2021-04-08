@@ -1,5 +1,5 @@
 {
-  "name": "globalpayments/php-sdk",
+  "name": "anurit/php-sdk",
   "description": "PHP SDK for processing payments with Global Payments, including Heartland Payment Systems and Realex Payments",
   "keywords": [
   ],
