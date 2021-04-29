@@ -37,6 +37,22 @@ class ReportingDepositsTest extends TestCase
         $this->assertEquals($depositId, $response->depositId);
     }
 
+    public function testReportDepositDetailWrongId()
+    {
+        $depositId = 'DEP_0000000001';
+        $exceptionCaught = false;
+        try {
+            ReportingService::depositDetail($depositId)
+                ->execute();
+        } catch (ApiException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40118', $e->responseCode);
+            $this->assertEquals("Status Code: RESOURCE_NOT_FOUND - Deposits " . $depositId . " not found at this /ucp/settlement/deposits/" . $depositId, $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
     public function testReportFindDepositsByStartDateAndOrderByTimeCreated()
     {
         $startDate = new \DateTime('2020-11-01 midnight');

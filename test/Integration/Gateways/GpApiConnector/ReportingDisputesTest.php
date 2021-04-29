@@ -3,8 +3,8 @@
 namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\DisputeDocument;
+use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\AdjustmentFunding;
 use GlobalPayments\Api\Entities\Enums\GpApi\DisputeSortProperty;
 use GlobalPayments\Api\Entities\Enums\GpApi\DisputeStage;
 use GlobalPayments\Api\Entities\Enums\GpApi\DisputeStatus;
@@ -71,7 +71,7 @@ class ReportingDisputesTest extends TestCase
 
         $this->assertNotNull($disputes);
         foreach ($disputes->result as $dispute) {
-            $this->assertEquals($dispute->transactionARN, $arn);
+            $this->assertEquals($arn, $dispute->transactionARN);
         }
     }
 
@@ -104,7 +104,7 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
         foreach ($disputes->result as $dispute) {
-            $this->assertEquals($dispute->transactionCardType, $cardBrand);
+            $this->assertEquals($cardBrand, $dispute->transactionCardType);
         }
     }
 
@@ -119,7 +119,7 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
         foreach ($disputes->result as $dispute) {
-            $this->assertEquals($dispute->caseStatus, DisputeStatus::UNDER_REVIEW);
+            $this->assertEquals(DisputeStatus::UNDER_REVIEW, $dispute->caseStatus);
         }
     }
 
@@ -135,7 +135,7 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
         foreach ($disputes->result as $dispute) {
-            $this->assertEquals($dispute->caseStage, $disputeStage);
+            $this->assertEquals($disputeStage, $dispute->caseStage);
         }
     }
 
@@ -153,8 +153,8 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
         foreach ($disputes->result as $dispute) {
-            $this->assertEquals($dispute->caseMerchantId, $merchantId);
-            $this->assertEquals($dispute->merchantHierarchy, $systemHierarchy);
+            $this->assertEquals($merchantId, $dispute->caseMerchantId);
+            $this->assertEquals($systemHierarchy, $dispute->merchantHierarchy);
         }
     }
 
@@ -174,35 +174,6 @@ class ReportingDisputesTest extends TestCase
         }
     }
 
-    public function testReportFindDisputes_Filter_By_From_And_To_Adjustment_Time_Created()
-    {
-
-        $endDate = new \DateTime();
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
-        $disputes = ReportingService::findDisputesPaged(1, 10)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->andWith(DataServiceCriteria::START_ADJUSTMENT_DATE, $startDate)
-            ->andWith(DataServiceCriteria::END_ADJUSTMENT_DATE, $endDate)
-            ->execute();
-
-        $this->assertNotNull($disputes);
-        $this->assertInstanceOf(PagedResult::class, $disputes);
-        $this->assertTrue(sizeof($disputes->result) > 0);
-    }
-
-    public function testReportFindDisputes_By_Adjustment_Funding()
-    {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $disputes = ReportingService::findDisputesPaged(1, 10)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->andWith(DataServiceCriteria::ADJUSTMENT_FUNDING, AdjustmentFunding::DEBIT)
-            ->execute();
-
-        $this->assertNotNull($disputes);
-        $this->assertInstanceOf(PagedResult::class, $disputes);
-        $this->assertTrue(sizeof($disputes->result) > 0);
-    }
-
     public function testReportFindDisputes_Order_By_Id()
     {
         $startDate = new \DateTime('2020-02-01 midnight');
@@ -213,14 +184,22 @@ class ReportingDisputesTest extends TestCase
 
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
+        $disputesList = $disputes->result;
+        uasort($disputesList, function($a, $b) {return strcmp($a->caseId, $b->caseId);});
+        /**
+         * @var DisputeSummary $dispute
+         */
+        foreach ($disputes->result as $index => $dispute) {
+            $this->assertSame($disputesList[$index], $dispute);
+        }
     }
 
     public function testReportFindDisputes_Order_By_ARN()
     {
-        $startDate = new \DateTime('2020-06-09 midnight');
-        $endDate = new \DateTime('2020-06-22 midnight');
+        $startDate = (new \DateTime())->modify('-1 year');
+        $endDate = (new \DateTime())->modify('-30 days');
         // EndStageDate is mandatory in order to be able to sort by ARN
-        $disputes = ReportingService::findDisputesPaged(1, 10)
+        $disputes = ReportingService::findDisputesPaged(1, 25)
             ->orderBy(DisputeSortProperty::ARN, SortDirection::DESC)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
             ->andWith(DataServiceCriteria::END_STAGE_DATE, $endDate)
@@ -228,11 +207,19 @@ class ReportingDisputesTest extends TestCase
 
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
+        $disputesList = $disputes->result;
+        uasort($disputesList, function($a, $b) {return strcmp($a->transactionARN, $b->transactionARN);});
+        /**
+         * @var DisputeSummary $dispute
+         */
+        foreach ($disputes->result as $index => $dispute) {
+            $this->assertSame($disputesList[$index], $dispute);
+        }
     }
 
     public function testReportFindDisputes_Order_By_Brand()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $disputes = ReportingService::findDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::BRAND, SortDirection::DESC)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
@@ -240,11 +227,19 @@ class ReportingDisputesTest extends TestCase
 
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
+        $disputesList = $disputes->result;
+        uasort($disputesList, function($a, $b) {return strcmp($a->transactionCardType, $b->transactionCardType);});
+        /**
+         * @var DisputeSummary $dispute
+         */
+        foreach ($disputes->result as $index => $dispute) {
+            $this->assertSame($disputesList[$index], $dispute);
+        }
     }
 
     public function testReportFindDisputes_Order_By_Status()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $disputes = ReportingService::findDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::STATUS, SortDirection::DESC)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
@@ -252,97 +247,62 @@ class ReportingDisputesTest extends TestCase
 
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
+        $disputesList = $disputes->result;
+        uasort($disputesList, function($a, $b) {return strcmp($a->caseStatus, $b->caseStatus);});
+        /**
+         * @var DisputeSummary $dispute
+         */
+        foreach ($disputes->result as $index => $dispute) {
+            $this->assertSame($disputesList[$index], $dispute);
+        }
     }
 
     public function testReportFindDisputes_Order_By_Stage()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $disputes = ReportingService::findDisputesPaged(1, 10)
+        $startDate = (new \DateTime())->modify('-2 year +1 day');
+        $disputes = ReportingService::findDisputesPaged(1, 20)
             ->orderBy(DisputeSortProperty::STAGE, SortDirection::DESC)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
             ->execute();
 
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
-    }
-
-    public function testReportFindDisputes_Order_By_FromStageTimeCreated()
-    {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $disputes = ReportingService::findDisputesPaged(1, 10)
-            ->orderBy(DisputeSortProperty::FROM_STAGE_TIME_CREATED, SortDirection::DESC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->execute();
-
-        $this->assertNotNull($disputes);
-        $this->assertInstanceOf(PagedResult::class, $disputes);
-    }
-
-    public function testReportFindDisputes_Order_By_ToStageTimeCreated()
-    {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $disputes = ReportingService::findDisputesPaged(1, 10)
-            ->orderBy(DisputeSortProperty::TO_STAGE_TIME_CREATED, SortDirection::DESC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->execute();
-
-        $this->assertNotNull($disputes);
-        $this->assertInstanceOf(PagedResult::class, $disputes);
-    }
-
-    public function testReportFindDisputes_Order_By_AdjustmentFunding()
-    {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $disputes = ReportingService::findDisputesPaged(1, 10)
-            ->orderBy(DisputeSortProperty::ADJUSTMENT_FUNDING, SortDirection::DESC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->execute();
-
-        $this->assertNotNull($disputes);
-        $this->assertInstanceOf(PagedResult::class, $disputes);
-    }
-
-    public function testReportFindDisputes_Order_By_FromAdjustmentTimeCreated()
-    {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $disputes = ReportingService::findDisputesPaged(1, 10)
-            ->orderBy(DisputeSortProperty::FROM_ADJUSTMENT_TIME_CREATED, SortDirection::DESC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->execute();
-
-        $this->assertNotNull($disputes);
-        $this->assertInstanceOf(PagedResult::class, $disputes);
-    }
-
-    public function testReportFindDisputes_Order_By_ToAdjustmentTimeCreated()
-    {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $disputes = ReportingService::findDisputesPaged(1, 10)
-            ->orderBy(DisputeSortProperty::TO_ADJUSTMENT_TIME_CREATED, SortDirection::DESC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->execute();
-
-        $this->assertNotNull($disputes);
-        $this->assertInstanceOf(PagedResult::class, $disputes);
+        $disputesList = $disputes->result;
+        uasort($disputesList, function($a, $b) {return strcmp($a->caseStage, $b->caseStage);});
+        /**
+         * @var DisputeSummary $dispute
+         */
+        foreach ($disputes->result as $index => $dispute) {
+            $this->assertSame($disputesList[$index], $dispute);
+        }
     }
 
     public function testReportFindDisputes_Order_By_Id_With_Brand_VISA()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $disputes = ReportingService::findDisputesPaged(1, 10)
+        $startDate = (new \DateTime())->modify('-2 year +1 day');
+        $disputes = ReportingService::findDisputesPaged(1, 30)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->andWith(SearchCriteria::DISPUTE_STATUS, DisputeStatus::UNDER_REVIEW)
+            ->andWith(SearchCriteria::CARD_BRAND, CardType::VISA)
             ->execute();
 
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
+        $disputesList = $disputes->result;
+        uasort($disputesList, function($a, $b) {return strcmp($a->caseId, $b->caseId);});
+        /**
+         * @var DisputeSummary $dispute
+         */
+        foreach ($disputes->result as $index => $dispute) {
+            $this->assertEquals(CardType::VISA, $dispute->transactionCardType);
+            $this->assertSame($disputesList[$index], $dispute);
+        }
     }
 
     public function testReportFindDisputes_Order_By_Id_With_Stage_Chargeback()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $disputes = ReportingService::findDisputesPaged(1, 10)
+        $startDate = (new \DateTime())->modify('-2 year +1 day');
+        $disputes = ReportingService::findDisputesPaged(1, 30)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
             ->andWith(SearchCriteria::DISPUTE_STAGE, DisputeStage::CHARGEBACK)
@@ -350,6 +310,15 @@ class ReportingDisputesTest extends TestCase
 
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
+        $disputesList = $disputes->result;
+        uasort($disputesList, function($a, $b) {return strcmp($a->caseId, $b->caseId);});
+        /**
+         * @var DisputeSummary $dispute
+         */
+        foreach ($disputes->result as $index => $dispute) {
+            $this->assertEquals(DisputeStage::CHARGEBACK, $dispute->caseStage);
+            $this->assertSame($disputesList[$index], $dispute);
+        }
     }
 
     /***************************************
@@ -383,23 +352,23 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportSettlementDispute_Order_By_Id_With_Status_UnderReview()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->andWith(SearchCriteria::DISPUTE_STATUS, DisputeStatus::UNDER_REVIEW)
+            ->andWith(SearchCriteria::DISPUTE_STATUS, DisputeStatus::WITH_MERCHANT)
             ->execute();
 
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
         foreach ($summary->result as $dispute) {
-            $this->assertEquals($dispute->caseStatus, DisputeStatus::UNDER_REVIEW);
+            $this->assertEquals(DisputeStatus::UNDER_REVIEW, $dispute->caseStatus);
         }
     }
 
     public function testReportFindSettlementDisputes_Order_By_Id()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
@@ -407,107 +376,80 @@ class ReportingDisputesTest extends TestCase
 
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
+        $disputesList = $summary->result;
+        uasort($disputesList, function($a, $b) {return strcmp($a->caseId, $b->caseId);});
+        /**
+         * @var DisputeSummary $dispute
+         */
+        foreach ($summary->result as $index => $dispute) {
+            $this->assertSame($disputesList[$index], $dispute);
+        }
     }
 
     public function testReportFindSettlementDisputes_Order_By_ARN()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
-            ->orderBy(DisputeSortProperty::ARN, SortDirection::DESC)
+            ->orderBy(DisputeSortProperty::ARN, SortDirection::ASC)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
             ->execute();
 
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
+        $disputesList = $summary->result;
+        uasort($disputesList, function($a, $b) {return strcmp($a->transactionARN, $b->transactionARN);});
+        /**
+         * @var DisputeSummary $dispute
+         */
+        foreach ($summary->result as $index => $dispute) {
+            $this->assertSame($disputesList[$index], $dispute);
+        }
     }
 
     public function testReportFindSettlementDisputes_Order_By_Brand()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
-            ->orderBy(DisputeSortProperty::BRAND, SortDirection::DESC)
+            ->orderBy(DisputeSortProperty::BRAND, SortDirection::ASC)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
             ->execute();
 
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
+        $disputesList = $summary->result;
+        uasort($disputesList, function($a, $b) {return strcmp($a->transactionCardType, $b->transactionCardType);});
+        /**
+         * @var DisputeSummary $dispute
+         */
+        foreach ($summary->result as $index => $dispute) {
+            $this->assertSame($disputesList[$index], $dispute);
+        }
     }
 
     public function testReportFindSettlementDisputes_Order_By_Stage()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
-            ->orderBy(DisputeSortProperty::STAGE, SortDirection::DESC)
+            ->orderBy(DisputeSortProperty::STAGE, SortDirection::ASC)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
             ->execute();
 
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
-    }
+        $disputesList = $summary->result;
+        uasort($disputesList, function($a, $b) {return strcmp($a->caseStage, $b->caseStage);});
+        /**
+         * @var DisputeSummary $dispute
+         */
+        foreach ($summary->result as $index => $dispute) {
+            $this->assertSame($disputesList[$index], $dispute);
+        }
 
-    public function testReportFindSettlementDisputes_Order_By_FromStageTimeCreated()
-    {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $summary = ReportingService::findSettlementDisputesPaged(1, 10)
-            ->orderBy(DisputeSortProperty::FROM_STAGE_TIME_CREATED, SortDirection::DESC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->execute();
-
-        $this->assertNotNull($summary);
-        $this->assertInstanceOf(PagedResult::class, $summary);
-    }
-
-    public function testReportFindSettlementDisputes_Order_By_ToStageTimeCreated()
-    {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $summary = ReportingService::findSettlementDisputesPaged(1, 10)
-            ->orderBy(DisputeSortProperty::TO_STAGE_TIME_CREATED, SortDirection::DESC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->execute();
-
-        $this->assertNotNull($summary);
-        $this->assertInstanceOf(PagedResult::class, $summary);
-    }
-
-    public function testReportFindSettlementDisputes_Order_By_AdjustmentFunding()
-    {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $summary = ReportingService::findSettlementDisputesPaged(1, 10)
-            ->orderBy(DisputeSortProperty::ADJUSTMENT_FUNDING, SortDirection::DESC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->execute();
-
-        $this->assertNotNull($summary);
-        $this->assertInstanceOf(PagedResult::class, $summary);
-    }
-
-    public function testReportFindSettlementDisputes_Order_By_FromAdjustmentTimeCreated()
-    {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $summary = ReportingService::findSettlementDisputesPaged(1, 10)
-            ->orderBy(DisputeSortProperty::FROM_ADJUSTMENT_TIME_CREATED, SortDirection::DESC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->execute();
-
-        $this->assertNotNull($summary);
-        $this->assertInstanceOf(PagedResult::class, $summary);
-    }
-
-    public function testReportFindSettlementDisputes_Order_By_ToAdjustmentTimeCreated()
-    {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $summary = ReportingService::findSettlementDisputesPaged(1, 10)
-            ->orderBy(DisputeSortProperty::TO_ADJUSTMENT_TIME_CREATED, SortDirection::DESC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->execute();
-
-        $this->assertNotNull($summary);
-        $this->assertInstanceOf(PagedResult::class, $summary);
     }
 
     public function testReportFindSettlementDisputes_FilterBy_ARN()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $arn = '74500010037624410827759';
 
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
@@ -519,13 +461,13 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
         foreach ($summary->result as $dispute) {
-            $this->assertEquals($dispute->transactionARN, $arn);
+            $this->assertEquals($arn, $dispute->transactionARN);
         }
     }
 
     public function testReportFindSettlementDisputes_FilterBy_ARN_NotFound()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $arn = '00000010037624410827111';
 
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
@@ -541,7 +483,7 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindSettlementDisputes_FilterBy_Brand()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $brand = 'VISA';
 
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
@@ -553,13 +495,13 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
         foreach ($summary->result as $dispute) {
-            $this->assertEquals($dispute->transactionCardType, $brand);
+            $this->assertEquals($brand, $dispute->transactionCardType);
         }
     }
 
     public function testReportFindSettlementDisputes_FilterBy_Brand_NotFound()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $brand = 'MASTERCAR';
 
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
@@ -575,26 +517,24 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindSettlementDisputes_FilterBy_Stage()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $stage = 'CHARGEBACK';
-
+        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->andWith(SearchCriteria::DISPUTE_STAGE, $stage)
+            ->andWith(SearchCriteria::DISPUTE_STAGE, DisputeStage::CHARGEBACK)
             ->execute();
 
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
         foreach ($summary->result as $dispute) {
-            $this->assertEquals($dispute->caseStage, $stage);
+            $this->assertEquals(DisputeStage::CHARGEBACK, $dispute->caseStage);
         }
     }
 
     public function testReportFindSettlementDisputes_FilterBy_FromAndToStageTimeCreated()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $endDate = new \DateTime('2021-01-22 midnight');
+        $startDate = (new \DateTime())->modify('-1 year +1 day');
+        $endDate = (new \DateTime())->modify('-30 days');
 
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
@@ -609,40 +549,9 @@ class ReportingDisputesTest extends TestCase
         }
     }
 
-    public function testReportFindSettlementDisputes_FilterBy_AdjustmentFunding()
-    {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $adjustmentFunding = AdjustmentFunding::CREDIT;
-
-        $summary = ReportingService::findSettlementDisputesPaged(1, 10)
-            ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->andWith(DataServiceCriteria::ADJUSTMENT_FUNDING, $adjustmentFunding)
-            ->execute();
-
-        $this->assertNotNull($summary);
-        $this->assertInstanceOf(PagedResult::class, $summary);
-    }
-
-    public function testReportFindSettlementDisputes_FilterBy_FromAndToAdjustmentTimeCreated()
-    {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $endDate = new \DateTime('2021-01-21 midnight');
-
-        $summary = ReportingService::findSettlementDisputesPaged(1, 10)
-            ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->andWith(DataServiceCriteria::START_ADJUSTMENT_DATE, $endDate)
-            ->andWith(DataServiceCriteria::END_ADJUSTMENT_DATE, $endDate)
-            ->execute();
-
-        $this->assertNotNull($summary);
-        $this->assertInstanceOf(PagedResult::class, $summary);
-    }
-
     public function testReportFindSettlementDisputes_FilterBy_SystemMidAndHierarchy()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $systemMid = '101023947262';
         $systemHierarchy = '055-70-024-011-019';
 
@@ -656,14 +565,14 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
         foreach ($summary->result as $dispute) {
-            $this->assertEquals($dispute->merchantHierarchy, $systemHierarchy);
-            $this->assertEquals($dispute->caseMerchantId, $systemMid);
+            $this->assertEquals($systemHierarchy, $dispute->merchantHierarchy);
+            $this->assertEquals($systemMid, $dispute->caseMerchantId);
         }
     }
 
     public function testReportFindSettlementDisputes_FilterBy_WrongSystemMid()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $systemHierarchy = '000-70-024-011-111';
 
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
@@ -679,7 +588,7 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindSettlementDisputes_FilterBy_WrongSystemHierarchy()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $systemMid = '000023947222';
 
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)

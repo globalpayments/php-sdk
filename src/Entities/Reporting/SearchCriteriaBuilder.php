@@ -3,7 +3,6 @@ namespace GlobalPayments\Api\Entities\Reporting;
 
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use GlobalPayments\Api\Entities\Enums\CardType;
-use GlobalPayments\Api\Entities\Enums\GpApi\AdjustmentFunding;
 use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
 use GlobalPayments\Api\Entities\Enums\GpApi\DepositStatus;
 use GlobalPayments\Api\Entities\Enums\GpApi\DisputeStage;
@@ -13,7 +12,6 @@ use GlobalPayments\Api\Entities\Enums\GpApi\PaymentType;
 use GlobalPayments\Api\Entities\Enums\GpApi\TransactionStatus;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 
 class SearchCriteriaBuilder
@@ -32,11 +30,6 @@ class SearchCriteriaBuilder
      * @var string
      */
     public $accountNumberLastFour;
-
-    /**
-     * @var AdjustmentFunding
-     */
-    public $adjustmentFunding;
     
     /**
      * @var string
@@ -211,17 +204,22 @@ class SearchCriteriaBuilder
     /**
      * @var \DateTime
      */
-    public $endAdjustmentDate;
-
-    /**
-     * @var \DateTime
-     */
     public $endBatchDate;
     
     /**
      * @var \DateTime
      */
     public $endDate;
+
+    /**
+     * @var \DateTime
+     */
+    public $fromTimeLastUpdated;
+
+    /**
+     * @var \DateTime
+     */
+    public $toTimeLastUpdated;
 
     /**
      * @var \DateTime
@@ -337,6 +335,16 @@ class SearchCriteriaBuilder
      * @var string
      */
     public $settlementDisputeId;
+
+    /**
+     * @var string
+     */
+    public $storedPaymentMethodId;
+
+    /**
+     * @var string
+     */
+    public $storedPaymentMethodStatus;
     
     /**
      * @var string
@@ -347,11 +355,6 @@ class SearchCriteriaBuilder
      * @var string
      */
     public $siteTrace;
-
-    /**
-     * @var \DateTime
-     */
-    public $startAdjustmentDate;
 
     /**
      * @var \DateTime
@@ -407,6 +410,56 @@ class SearchCriteriaBuilder
      * @var string
      */
     public $timezone;
+
+    /**
+     * @var string
+     */
+    public $actionId;
+
+    /**
+     * @var string
+     */
+    public $actionType;
+
+    /**
+     * @var string
+     */
+    public $resource;
+
+    /**
+     * @var string
+     */
+    public $resourceStatus;
+
+    /**
+     * @var string
+     */
+    public $resourceId;
+
+    /**
+     * @var string
+     */
+    public $merchantName;
+
+    /**
+     * @var string
+     */
+    public $appName;
+
+    /**
+     * @var string
+     */
+    public $version;
+
+    /**
+     * @var string
+     */
+    public $responseCode;
+
+    /**
+     * @var string
+     */
+    public $httpResponseCode;
     
     public function __construct(TransactionReportBuilder $reportBuilder = null)
     {

@@ -3,6 +3,8 @@
 namespace GlobalPayments\Api\Gateways;
 
 use GlobalPayments\Api\Builders\Secure3dBuilder;
+use GlobalPayments\Api\Entities\Enums\ExemptionReason;
+use GlobalPayments\Api\Entities\Enums\ExemptStatus;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
@@ -146,6 +148,7 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             $request = $this->maybeSetKey($request, 'decoupled_flow_request', $builder->getDecoupledFlowRequest());
             $request = $this->maybeSetKey($request, 'decoupled_flow_timeout', $builder->getDecoupledFlowTimeout());
             $request = $this->maybeSetKey($request, 'decoupled_notification_url', $builder->getDecoupledNotificationUrl());
+            $request = $this->maybeSetKey($request, 'enable_exemption_optimization', $builder->enableExemptionOptimization);
 
             // card details
             $hashValue = '';
@@ -381,6 +384,12 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
         $secureEcom->decoupledResponseIndicator = isset($doc['decoupled_response_indicator']) ?
                                                     $doc['decoupled_response_indicator'] : null;
         $secureEcom->whitelistStatus = isset($doc['whitelist_status']) ? $doc['whitelist_status'] : null;
+        //exemption optimization
+        if (!empty($doc['eos_reason'])) {
+            $secureEcom->exemptReason = $doc['eos_reason'];
+            $secureEcom->exemptStatus = ($doc['eos_reason'] == ExemptionReason::APPLY_EXEMPTION ?
+                ExemptStatus::TRANSACTION_RISK_ANALYSIS : null);
+        }
 
         // challenge mandated
         if (array_key_exists('challenge_mandated', $doc)) {

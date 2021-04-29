@@ -28,6 +28,9 @@ class GpApiReportRequestBuilder implements IRequestBuilder
     public function buildRequest(BaseBuilder $builder, $config)
     {
         $queryParams = [];
+        /**
+         * @var TransactionReportBuilder $builder
+         */
         switch ($builder->reportType)
         {
             case ReportType::TRANSACTION_DETAIL:
@@ -44,7 +47,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $this->addBasicParams($queryParams, $builder);
                 $queryParams['account_name'] = $config->accessTokenInfo->dataAccountName;
                 $queryParams['order_by'] = $builder->depositOrderBy;
-                $queryParams['order'] = $builder->depositOrder;
+                $queryParams['order'] = $builder->order;
                 $queryParams['amount'] = StringUtils::toNumeric($builder->searchBuilder->amount);
                 $queryParams['from_time_created'] = !empty($builder->startDate) ?
                     $builder->startDate->format('Y-m-d') : null;
@@ -115,6 +118,58 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $queryParams['account_name'] = $config->accessTokenInfo->dataAccountName;
                 $queryParams = array_merge($queryParams, $this->getDisputesParams($builder));
                 break;
+            case ReportType::FIND_STORED_PAYMENT_METHODS_PAGED:
+                $endpoint = GpApiRequest::PAYMENT_METHODS_ENDPOINT;
+                $verb = 'GET';
+                $this->addBasicParams($queryParams, $builder);
+                $queryParams = $queryParams + [
+                    'order_by' => $builder->storedPaymentMethodOrderBy,
+                    'order' => $builder->order,
+                    'number_last4' => $builder->searchBuilder->cardNumberLastFour,
+                    'reference' => $builder->searchBuilder->referenceNumber,
+                    'status' => $builder->searchBuilder->storedPaymentMethodStatus,
+                    'from_time_created' => !empty($builder->searchBuilder->startDate) ?
+                        $builder->searchBuilder->startDate->format('Y-m-d') : null,
+                    'to_time_created' => !empty($builder->searchBuilder->endDate) ?
+                        $builder->searchBuilder->endDate->format('Y-m-d') : null,
+                    'from_time_last_updated' => !empty($builder->searchBuilder->fromTimeLastUpdated) ?
+                        $builder->searchBuilder->fromTimeLastUpdated->format('Y-m-d') : null,
+                    'to_time_last_updated' => !empty($builder->searchBuilder->toTimeLastUpdated) ?
+                        $builder->searchBuilder->toTimeLastUpdated->format('Y-m-d') : null,
+                ];
+                break;
+            case ReportType::STORED_PAYMENT_METHOD_DETAIL:
+                $endpoint = GpApiRequest::PAYMENT_METHODS_ENDPOINT . '/' . $builder->searchBuilder->storedPaymentMethodId;
+                $verb = 'GET';
+                break;
+            case ReportType::ACTION_DETAIL:
+                $endpoint = GpApiRequest::ACTIONS_ENDPOINT . '/' . $builder->searchBuilder->actionId;
+                $verb = 'GET';
+                break;
+            case ReportType::FIND_ACTIONS_PAGED:
+                $endpoint = GpApiRequest::ACTIONS_ENDPOINT;
+                $verb = 'GET';
+                $this->addBasicParams($queryParams, $builder);
+                $queryParams = $queryParams + [
+                        'order_by' => $builder->actionOrderBy,
+                        'order' => $builder->order,
+                        'id' => $builder->searchBuilder->actionId,
+                        'type' => $builder->searchBuilder->actionType,
+                        'resource' => $builder->searchBuilder->resource,
+                        'resource_status' => $builder->searchBuilder->resourceStatus,
+                        'resource_id' => $builder->searchBuilder->resourceId,
+                        'from_time_created' => !empty($builder->searchBuilder->startDate) ?
+                            $builder->searchBuilder->startDate->format('Y-m-d') : null,
+                        'to_time_created' => !empty($builder->searchBuilder->endDate) ?
+                            $builder->searchBuilder->endDate->format('Y-m-d') : null,
+                        'merchant_name' => $builder->searchBuilder->merchantName,
+                        'account_name' => $builder->searchBuilder->accountName,
+                        'app_name' => $builder->searchBuilder->appName,
+                        'version' => $builder->searchBuilder->version,
+                        'response_code' => $builder->searchBuilder->responseCode,
+                        'http_response_code' => $builder->searchBuilder->httpResponseCode
+                    ];
+                break;
             default:
                 return null;
         }
@@ -132,7 +187,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
     {
         return [
             'order_by' => $builder->disputeOrderBy,
-            'order' => $builder->disputeOrder,
+            'order' => $builder->order,
             'arn' => $builder->searchBuilder->aquirerReferenceNumber,
             'brand' => $builder->searchBuilder->cardBrand,
             'status' => $builder->searchBuilder->disputeStatus,
@@ -141,11 +196,6 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $builder->searchBuilder->startStageDate->format('Y-m-d') : null,
             'to_stage_time_created' => !empty($builder->searchBuilder->endStageDate) ?
                 $builder->searchBuilder->endStageDate->format('Y-m-d') : null,
-            'adjustment_funding' => $builder->searchBuilder->adjustmentFunding,
-            'from_adjustment_time_created' => !empty($builder->searchBuilder->startAdjustmentDate) ?
-                $builder->searchBuilder->startAdjustmentDate->format('Y-m-d') : null,
-            'to_adjustment_time_created' => !empty($builder->searchBuilder->endAdjustmentDate) ?
-                $builder->searchBuilder->endAdjustmentDate->format('Y-m-d') : null,
             'system.mid' => $builder->searchBuilder->merchantId,
             'system.hierarchy' => $builder->searchBuilder->systemHierarchy
         ];
@@ -154,7 +204,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
     private function getTransactionParams($builder)
     {
         $queryParams['order_by'] = $builder->transactionOrderBy;
-        $queryParams['order'] = $builder->transactionOrder;
+        $queryParams['order'] = $builder->order;
         $queryParams['number_first6'] = $builder->searchBuilder->cardNumberFirstSix;
         $queryParams['number_last4'] = $builder->searchBuilder->cardNumberLastFour;
         $queryParams['brand'] = $builder->searchBuilder->cardBrand;
@@ -165,7 +215,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
         $queryParams['from_time_created'] = !empty($builder->searchBuilder->startDate) ?
             $builder->searchBuilder->startDate->format('Y-m-d') : null;
         $queryParams['to_time_created'] = !empty($builder->searchBuilder->endDate) ?
-            $builder->searchBuilder->endDate->format('Y-m-d') : (new \DateTime())->format('Y-m-d');
+            $builder->searchBuilder->endDate->format('Y-m-d') : null;
 
         return $queryParams;
     }

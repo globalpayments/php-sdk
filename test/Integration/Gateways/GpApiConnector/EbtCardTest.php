@@ -14,10 +14,13 @@ class EbtCardTest extends TestCase
 {
     private $card;
 
+    private $track;
+
     public function setup()
     {
         ServicesContainer::configureService($this->setUpConfig());
-        $this->card = TestCards::asEBTManual(TestCards::visaManual(), '32539F50C245A6A93D123412324000AA');
+        $this->card = TestCards::asEBTManual(TestCards::visaManual(true), '32539F50C245A6A93D123412324000AA');
+        $this->track = TestCards::asEBTTrack(TestCards::visaSwipe(), '32539F50C245A6A93D123412324000AA');
     }
 
     public function setUpConfig()
@@ -32,10 +35,24 @@ class EbtCardTest extends TestCase
         return $config;
     }
 
-    public function testEbtSale()
+    public function testEbtSale_Manual()
     {
+        $this->card->cardHolderName = 'Jane Doe';
+
         $response = $this->card->charge(10)
             ->withCurrency('USD')
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+    }
+
+    public function testEbtSale_Swipe()
+    {
+        $response = $this->track->charge(10)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
             ->execute();
 
         $this->assertNotNull($response);
@@ -54,4 +71,22 @@ class EbtCardTest extends TestCase
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
+    public function testEbtTransactionRefund()
+    {
+        $transaction = $this->card->charge(10)
+            ->withCurrency('USD')
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
+
+        $response = $transaction->refund()
+            ->withCurrency('USD')
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+    }
 }

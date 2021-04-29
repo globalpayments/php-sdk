@@ -2,6 +2,8 @@
 
 namespace GlobalPayments\Api\Entities;
 
+use GlobalPayments\Api\Entities\Enums\ExemptionReason;
+
 class ThreeDSecure
 {
     /**
@@ -162,6 +164,13 @@ class ThreeDSecure
      * @var string
      */
     public $exemptStatus;
+
+    /**
+     * The exempt reason
+     *
+     * @var ExemptionReason
+     */
+    public $exemptReason;
 
     /**
      * The URL of the Issuing Bank's ACS
@@ -412,6 +421,8 @@ class ThreeDSecure
             $this->messageType = $this->mergeValue($this->messageType, $secureEcom->messageType);
             $this->sessionDataFieldName = $this->mergeValue($this->sessionDataFieldName, $secureEcom->sessionDataFieldName);
             $this->challengeReturnUrl = $this->mergeValue($this->challengeReturnUrl, $secureEcom->challengeReturnUrl);
+            $this->exemptStatus = $this->mergeValue($this->exemptStatus, $secureEcom->exemptStatus);
+            $this->exemptReason = $this->mergeValue($this->exemptStatus, $secureEcom->exemptReason);
         }
     }
 

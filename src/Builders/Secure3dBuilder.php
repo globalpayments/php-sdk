@@ -3,7 +3,9 @@
 namespace GlobalPayments\Api\Builders;
 
 use GlobalPayments\Api\Entities\Enums\DecoupledFlowRequest;
+use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Enums\WhiteListStatus;
+use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Gateways\GpApiConnector;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
@@ -187,6 +189,15 @@ class Secure3dBuilder extends BaseBuilder
      * @var string
      */
     public $idempotencyKey;
+    /**
+     * @var bool
+     */
+    public $enableExemptionOptimization;
+
+    /**
+     * @var StoredCredential
+     */
+    public $storedCredential;
 
     public function __construct($transactionType)
     {
@@ -1296,6 +1307,28 @@ class Secure3dBuilder extends BaseBuilder
     public function withIdempotencyKey($value)
     {
         $this->idempotencyKey = $value;
+
+        return $this;
+    }
+
+    /**
+     * @return Secure3dBuilder
+     */
+    public function withStoredCredential($storedCredential)
+    {
+        $this->storedCredential = $storedCredential;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $value
+     *
+     * @return Secure3dBuilder
+     */
+    public function withEnableExemptionOptimization($value)
+    {
+        $this->enableExemptionOptimization = $value;
 
         return $this;
     }

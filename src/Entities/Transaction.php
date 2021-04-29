@@ -409,6 +409,21 @@ class Transaction
     }
 
     /**
+     * Refresh the authorization associated with a transaction to get a more recent authcode or
+     * reauthorize a transaction reversed in error.
+     *
+     * @param string|float $amount
+     *
+     * @return ManagementBuilder
+     */
+    public function reauthorized($amount = null)
+    {
+        return (new ManagementBuilder(TransactionType::REAUTH))
+            ->withPaymentMethod($this->transactionReference)
+            ->withAmount($amount);
+    }
+
+    /**
      * Releases the original transaction from a hold.
      *
      * @return ManagementBuilder

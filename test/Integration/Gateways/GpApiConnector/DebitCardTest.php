@@ -11,6 +11,7 @@ use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
+use GlobalPayments\Api\Services\BatchService;
 use GlobalPayments\Api\ServicesContainer;
 use PHPUnit\Framework\TestCase;
 
@@ -131,6 +132,55 @@ class DebitCardTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+    }
+
+    public function testBatchClose_ContactlessTransaction()
+    {
+        $tag = '9F4005F000F0A0019F02060000000025009F03060000000000009F2608D90A06501B48564E82027C005F3401019F360200029F0702FF009F0802008C9F0902008C9F34030403029F2701809F0D05F0400088009F0E0508000000009F0F05F0400098005F280208409F390105FFC605DC4000A800FFC7050010000000FFC805DC4004F8009F3303E0B8C89F1A0208409F350122950500000080005F2A0208409A031409109B02E8009F21030811539C01009F37045EED3A8E4F07A00000000310109F0607A00000000310108407A00000000310109F100706010A03A400029F410400000001';
+
+        $card = new DebitTrackData();
+        $card->setValue(';4024720012345671=18125025432198712345?');
+        $card->entryMethod = EntryMethod::PROXIMITY;
+
+        $transaction = $card->charge(2.11)
+            ->withCurrency('USD')
+            ->withTagData($tag)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
+
+        sleep(1);
+
+        $batch = BatchService::closeBatch($transaction->batchSummary->batchReference);
+        $this->assertNotNull($batch);
+        $this->assertEquals('CLOSED', $batch->responseMessage);
+        $this->assertGreaterThanOrEqual(2.11, $batch->batchSummary->totalAmount);
+        $this->assertGreaterThanOrEqual(1, $batch->batchSummary->transactionCount);
+    }
+
+    public function testBatchClose_DebitTrackData()
+    {
+        $card = new DebitTrackData();
+        $card->setValue('%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?');
+        $card->entryMethod = EntryMethod::SWIPE;
+        $card->pinBlock = '32539F50C245A6A93D123412324000AA';
+
+        $transaction = $card->charge(2.11)
+            ->withCurrency('USD')
+            ->execute();
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
+
+        sleep(1);
+
+        $batch = BatchService::closeBatch($transaction->batchSummary->batchReference);
+        $this->assertNotNull($batch);
+        $this->assertEquals('CLOSED', $batch->responseMessage);
+        $this->assertGreaterThanOrEqual(2.11, $batch->batchSummary->totalAmount);
+        $this->assertGreaterThanOrEqual(1, $batch->batchSummary->transactionCount);
     }
 
     public function setUpConfig()

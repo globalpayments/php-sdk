@@ -63,11 +63,18 @@ abstract class RestGateway extends Gateway
                 }
                 throw $gatewayException;
             } else {
+                $errMsgProperty = ['error_description', 'message' , 'eos_reason'];
+                foreach ($errMsgProperty as $propertyName) {
+                    if (property_exists($error, $propertyName)) {
+                        $errorMessage = $error->{$propertyName};
+                        break;
+                    }
+                }
                 throw new GatewayException(
                     sprintf(
                         'Status Code: %s - %s',
                         $response->statusCode,
-                        isset($error->error_description) ? $error->error_description : (isset($error->message) ? $error->message : (string)$error)
+                        !empty($errorMessage) ? $errorMessage : (string)$error
                     )
                 );
             }

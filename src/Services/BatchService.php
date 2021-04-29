@@ -8,9 +8,13 @@ use GlobalPayments\Api\Entities\Enums\TransactionType;
 
 class BatchService
 {
-    public static function closeBatch()
+    public static function closeBatch($batchReference = null)
     {
-        $response = (new ManagementBuilder(TransactionType::BATCH_CLOSE))->execute();
-        return $response;
+        $response = (new ManagementBuilder(TransactionType::BATCH_CLOSE));
+        if (!empty($batchReference)) {
+            $response->withBatchReference($batchReference);
+        }
+
+        return $response->execute();
     }
 }

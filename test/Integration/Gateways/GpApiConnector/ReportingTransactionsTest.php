@@ -523,80 +523,49 @@ class ReportingTransactionsTest extends TestCase
         }
     }
 
-    public function testReportFindTransactions_OrderBy_Status()
-    {
-        $startDate = new \DateTime('2020-11-01 midnight');
-        try {
-            $response = ReportingService::findTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::STATUS, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
-        }
-
-        $this->assertNotNull($response);
-        $this->assertTrue(is_array($response->result));
-    }
-
     public function testReportFindTransactions_OrderBy_Type()
     {
-        $startDate = new \DateTime('2020-11-01 midnight');
-        try {
-            $response = ReportingService::findTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::TYPE, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
-        }
+        $response = ReportingService::findTransactionsPaged(1, 20)
+            ->orderBy(TransactionSortProperty::TYPE, SortDirection::ASC)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-
-        try {
-            $responseAsc = ReportingService::findTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::TYPE, SortDirection::ASC)
-                ->where(SearchCriteria::START_DATE, $startDate)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
+        $transactionList = $response->result;
+        uasort($transactionList, function($a, $b) {return strcmp($a->transactionType, $b->transactionType);});
+        foreach ($response->result as $index => $tr) {
+            $this->assertSame($transactionList[$index], $tr);
         }
-
-        $this->assertNotNull($responseAsc);
-        $this->assertTrue(is_array($responseAsc->result));
-
-        $this->assertNotSame($response->result, $responseAsc->result);
     }
 
-    public function testReportFindTransactions_OrderBy_TypeAndTimeCreated()
+    public function testReportFindTransactions_OrderBy_ID()
     {
-        $startDate = new \DateTime('2020-11-01 midnight');
-        try {
-            $response = ReportingService::findTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::TYPE, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
-        }
+        $response = ReportingService::findTransactionsPaged(1, 10)
+            ->orderBy(TransactionSortProperty::ID, SortDirection::ASC)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-
-        try {
-            $responseTime = ReportingService::findTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
+        $transactionList = $response->result;
+        uasort($transactionList, function($a, $b) {return strcmp($a->transactionId, $b->transactionId);});
+        foreach ($response->result as $index => $tr) {
+            $this->assertSame($transactionList[$index], $tr);
         }
+    }
 
-        $this->assertNotNull($responseTime);
-        $this->assertTrue(is_array($responseTime->result));
+    public function testReportFindTransactions_OrderBy_TimeCreated()
+    {
+        $response = ReportingService::findTransactionsPaged(1, 10)
+            ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->execute();
 
-        $this->assertNotSame($response->result, $responseTime->result);
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response->result));
+        $transactionList = $response->result;
+        uasort($transactionList, function($a, $b) {return strcmp(($a->transactionDate)->format('Y-m-d H:i:s'), ($b->transactionDate)->format('Y-m-d H:i:s'));});
+        foreach ($response->result as $index => $tr) {
+            $this->assertSame($transactionList[$index], $tr);
+        }
     }
 
     public function testReportFindTransactions_InvalidAccountName()

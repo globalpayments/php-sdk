@@ -21,4 +21,8 @@ class ReportType extends Enum
     const FIND_DEPOSITS_PAGED = 131072; // 1 << 17
     const FIND_DISPUTES_PAGED = 262144; // 1 << 18
     const FIND_SETTLEMENT_DISPUTES_PAGED = 524288; // 1 << 19
+    const FIND_STORED_PAYMENT_METHODS_PAGED = 1048576; // 1 << 20
+    const STORED_PAYMENT_METHOD_DETAIL = 2097152; // 1 << 21
+    const FIND_ACTIONS_PAGED = 4194304; // 1 << 22
+    const ACTION_DETAIL = 8388608; // 1 << 23
 }

@@ -61,4 +61,5 @@ class TransactionType extends Enum
     const DETOKENIZE = 4503599627370496; //1 << 52
     const DISPUTE_ACCEPTANCE = 9007199254740992; // 1 << 53
     const DISPUTE_CHALLENGE = 18014398509481984; // 1 << 54
+    const REAUTH = 36028797018963968; // 1 << 55
 }

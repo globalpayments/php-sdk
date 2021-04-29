@@ -2,9 +2,11 @@
 
 namespace GlobalPayments\Api\Builders;
 
+use GlobalPayments\Api\Entities\Enums\GpApi\ActionSortProperty;
 use GlobalPayments\Api\Entities\Enums\GpApi\DepositSortProperty;
 use GlobalPayments\Api\Entities\Enums\GpApi\DisputeSortProperty;
 use GlobalPayments\Api\Entities\Enums\GpApi\SortDirection;
+use GlobalPayments\Api\Entities\Enums\GpApi\StoredPaymentMethodSortProperty;
 use GlobalPayments\Api\Entities\Enums\GpApi\TransactionSortProperty;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\TimeZoneConversion;
@@ -56,19 +58,9 @@ class TransactionReportBuilder extends ReportBuilder
     public $transactionOrderBy;
 
     /**
-     * @var SortDirection
-     */
-    public $transactionOrder;
-
-    /**
      * @var DepositSortProperty
      */
     public $depositOrderBy;
-
-    /**
-     * @var SortDirection
-     */
-    public $depositOrder;
 
     /**
      * @var DisputeSortProperty
@@ -76,9 +68,19 @@ class TransactionReportBuilder extends ReportBuilder
     public $disputeOrderBy;
 
     /**
+     * @var  StoredPaymentMethodSortProperty
+     */
+    public $storedPaymentMethodOrderBy;
+
+    /**
+     * @var  ActionSortProperty
+     */
+    public $actionOrderBy;
+
+    /**
      * @var SortDirection
      */
-    public $disputeOrder;
+    public $order;
 
     /**
      * @internal
@@ -225,6 +227,31 @@ class TransactionReportBuilder extends ReportBuilder
     }
 
     /**
+     * Sets the gateway stored payment method id as criteria for the report.
+     *
+     * @param string $storedPaymentMethodId
+     * @return $this
+     */
+    public function withStoredPaymentMethodId($storedPaymentMethodId)
+    {
+        $this->searchBuilder->storedPaymentMethodId = $storedPaymentMethodId;
+        return $this;
+    }
+
+    /**
+     * Sets the gateway stored action id as criteria for the report.
+     *
+     * @param string $actionId
+     *
+     * @return $this
+     */
+    public function withActionId($actionId)
+    {
+        $this->searchBuilder->actionId = $actionId;
+        return $this;
+    }
+
+    /**
      * Set the gateway order for the criteria
      * @param string $sortProperty sorting property
      * @param string $sortDirection sorting direction
@@ -238,19 +265,27 @@ class TransactionReportBuilder extends ReportBuilder
             case ReportType::FIND_SETTLEMENT_TRANSACTIONS:
             case ReportType::FIND_SETTLEMENT_TRANSACTIONS_PAGED:
                 $this->transactionOrderBy = $sortProperty;
-                $this->transactionOrder = $sortDirection;
+                $this->order = $sortDirection;
                 break;
             case ReportType::FIND_DEPOSITS:
             case ReportType::FIND_DEPOSITS_PAGED:
                 $this->depositOrderBy = $sortProperty;
-                $this->depositOrder = $sortDirection;
+                $this->order = $sortDirection;
             break;
             case ReportType::FIND_DISPUTES:
             case ReportType::FIND_DISPUTES_PAGED:
             case ReportType::FIND_SETTLEMENT_DISPUTES:
             case ReportType::FIND_SETTLEMENT_DISPUTES_PAGED:
                 $this->disputeOrderBy = $sortProperty;
-                $this->disputeOrder = $sortDirection;
+                $this->order = $sortDirection;
+                break;
+            case ReportType::FIND_STORED_PAYMENT_METHODS_PAGED:
+                $this->storedPaymentMethodOrderBy = $sortProperty;
+                $this->order = $sortDirection;
+                break;
+            case ReportType::FIND_ACTIONS_PAGED:
+                $this->actionOrderBy = $sortProperty;
+                $this->order = $sortDirection;
                 break;
             default:
                 throw new \InvalidArgumentException("Invalid order found");

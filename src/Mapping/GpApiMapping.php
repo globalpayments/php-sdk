@@ -10,8 +10,10 @@ use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
+use GlobalPayments\Api\Entities\Reporting\ActionSummary;
 use GlobalPayments\Api\Entities\Reporting\DepositSummary;
 use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
+use GlobalPayments\Api\Entities\Reporting\StoredPaymentMethodSummary;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Transaction;
@@ -28,40 +30,44 @@ class GpApiMapping
     {
         $transaction = new Transaction();
 
-        if (!empty($response)) {
-            $transaction->transactionId = $response->id;
-            $transaction->balanceAmount = !empty($response->amount) ? StringUtils::toAmount($response->amount) : null;
-            $transaction->timestamp = !empty($response->time_created) ? $response->time_created : '';
-            $transaction->responseMessage = $response->status;
-            $transaction->referenceNumber = !empty($response->reference) ? $response->reference : null;
-            if (!empty($response->batch_id)) {
-                $batchSummary = new BatchSummary();
-                $batchSummary->sequenceNumber = $response->batch_id;
-                $transaction->batchSummary = $batchSummary;
-            }
-            $transaction->responseCode = $response->action->result_code;
-            $transaction->token = substr($response->id, 0, 4) === PaymentMethod::PAYMENT_METHOD_TOKEN_PREFIX ?
-                $response->id : null;
-            $transaction->clientTransactionId = !empty($response->reference) ? $response->reference : null;
+        if (empty($response)) {
+            return $transaction;
+        }
 
-            if (!empty($response->payment_method)) {
-                $transaction->authorizationCode = $response->payment_method->result;
-                if (!empty($response->payment_method->id)) {
-                    $transaction->token = $response->payment_method->id;
-                }
-                if (!empty($response->payment_method->card)) {
-                    $card = $response->payment_method->card;
-                    $transaction->cardLast4 = !empty($card->masked_number_last4) ?
-                        $card->masked_number_last4 : null;
-                    $transaction->cardType = !empty($card->brand) ? $card->brand : null;
-                }
+        $transaction->transactionId = $response->id;
+        $transaction->balanceAmount = !empty($response->amount) ? StringUtils::toAmount($response->amount) : null;
+        $transaction->timestamp = !empty($response->time_created) ? $response->time_created : '';
+        $transaction->responseMessage = $response->status;
+        $transaction->referenceNumber = !empty($response->reference) ? $response->reference : null;
+        $batchSummary = new BatchSummary();
+        $batchSummary->batchReference = !empty($response->batch_id) ? $response->batch_id : null;
+        $batchSummary->totalAmount = !empty($response->amount) ? $response->amount : null;
+        $batchSummary->transactionCount = !empty($response->transaction_count) ? $response->transaction_count : null;
+        $transaction->batchSummary = $batchSummary;
+        $transaction->responseCode = $response->action->result_code;
+        $transaction->token = substr($response->id, 0, 4) === PaymentMethod::PAYMENT_METHOD_TOKEN_PREFIX ?
+            $response->id : null;
+        $transaction->clientTransactionId = !empty($response->reference) ? $response->reference : null;
+
+        if (!empty($response->payment_method)) {
+            $transaction->authorizationCode = $response->payment_method->result;
+            if (!empty($response->payment_method->id)) {
+                $transaction->token = $response->payment_method->id;
             }
-            if (!empty($response->card)) {
-                $transaction->cardNumber = !empty($response->card->number) ? $response->card->number : null;
-                $transaction->cardType = !empty($response->card->brand) ? $response->card->brand : '';
-                $transaction->cardExpMonth = $response->card->expiry_month;
-                $transaction->cardExpYear = $response->card->expiry_year;
+            if (!empty($response->payment_method->card)) {
+                $card = $response->payment_method->card;
+                $transaction->cardLast4 = !empty($card->masked_number_last4) ?
+                    $card->masked_number_last4 : null;
+                $transaction->cardType = !empty($card->brand) ? $card->brand : null;
+                $transaction->cvnResponseCode = !empty($card->cvv) ? $card->cvv : null;
             }
+        }
+        if (!empty($response->card)) {
+            $transaction->cardNumber = !empty($response->card->number) ? $response->card->number : null;
+            $transaction->cardType = !empty($response->card->brand) ? $response->card->brand : '';
+            $transaction->cardExpMonth = $response->card->expiry_month;
+            $transaction->cardExpYear = $response->card->expiry_year;
+            $transaction->cvnResponseCode = !empty($response->card->cvv) ? $response->card->cvv : null;
         }
 
         return $transaction;
@@ -104,6 +110,24 @@ class GpApiMapping
                     array_push($report->result, self::mapDisputeSummary($dispute));
                 }
                 break;
+            case ReportType::FIND_STORED_PAYMENT_METHODS_PAGED:
+                $report = self::setPagingInfo($response);
+                foreach ($response->payment_methods as $spm) {
+                    array_push($report->result, self::mapStoredPaymentMethodSummary($spm));
+                }
+                break;
+            case ReportType::STORED_PAYMENT_METHOD_DETAIL:
+                $report = self::mapStoredPaymentMethodSummary($response);
+                break;
+            case ReportType::ACTION_DETAIL:
+                $report = self::mapActionsSummary($response);
+                break;
+            case ReportType::FIND_ACTIONS_PAGED:
+                $report = self::setPagingInfo($response);
+                foreach ($response->actions as $action) {
+                    array_push($report->result, self::mapActionsSummary($action));
+                }
+                break;
             default:
                 throw new ApiException("Report type not supported!");
         }
@@ -128,14 +152,16 @@ class GpApiMapping
         $summary->currency = $response->currency;
         $summary->referenceNumber = $response->reference;
         $summary->clientTransactionId = $response->reference;
-        // $summary->unknown = $response->time_created_reference;
+        $summary->transactionLocalDate = !empty($response->time_created_reference) ?
+            new \DateTime($response->time_created_reference) : '';
         $summary->batchSequenceNumber = $response->batch_id;
         $summary->country = !empty($response->country) ? $response->country : null;
         // $summary->unknown = $response->action_create_id;
         $summary->originalTransactionId = !empty($response->parent_resource_id) ? $response->parent_resource_id : null;
-        $summary->depositId = !empty($response->deposit_id) ? $response->deposit_id : '';
+        $summary->depositReference = !empty($response->deposit_id) ? $response->deposit_id : '';
         $summary->depositStatus = !empty($response->deposit_status) ? $response->deposit_status : '';
-        $summary->depositTimeCreated = !empty($response->deposit_time_created) ? new \DateTime($response->deposit_time_created) : '';
+        $summary->depositTimeCreated = !empty($response->deposit_time_created) ?
+            new \DateTime($response->deposit_time_created) : '';
         $summary->batchCloseDate = !empty($response->batch_time_created) ? new \DateTime($response->batch_time_created) : '';
         if (isset($response->system)) {
             $system = $response->system;
@@ -229,7 +255,8 @@ class GpApiMapping
     {
         $summary = new DisputeSummary();
         $summary->caseId = $response->id;
-        $summary->caseIdTime = !empty($response->stage_time_created) ? new \DateTime($response->stage_time_created) : null;
+        $summary->caseIdTime = !empty($response->time_created) ? new \DateTime($response->time_created) :
+            (!empty($response->stage_time_created) ? $response->stage_time_created : '');
         $summary->caseStatus = $response->status;
         $summary->caseStage = $response->stage;
         $summary->caseAmount = StringUtils::toAmount($response->amount);
@@ -272,6 +299,54 @@ class GpApiMapping
         $summary->lastAdjustmentAmount = StringUtils::toAmount($response->last_adjustment_amount);
         $summary->lastAdjustmentCurrency = $response->last_adjustment_currency;
         $summary->lastAdjustmentFunding = $response->last_adjustment_funding;
+
+        return $summary;
+    }
+
+    /**
+     * Map the store payment methods report response
+     *
+     * @param $response
+     *
+     * @return StoredPaymentMethodSummary
+     */
+    public static function mapStoredPaymentMethodSummary($response)
+    {
+        $summary = new StoredPaymentMethodSummary();
+        $summary->paymentMethodId = $response->id;
+        $summary->timeCreated = !empty($response->time_created) ? new \DateTime($response->time_created) : '';
+        $summary->status = !empty($response->status) ? $response->status : '';
+        $summary->reference = !empty($response->reference) ? $response->reference : '';
+        $summary->cardHolderName = !empty($response->name) ? $response->name : '';
+        if (!empty($response->card)) {
+            $card = $response->card;
+            $summary->cardType = !empty($card->brand) ? $card->brand : '';
+            $summary->cardNumberLastFour = !empty($card->number_last4) ? $card->number_last4 : '';
+            $summary->cardExpMonth = !empty($card->expiry_month) ? $card->expiry_month : '';
+            $summary->cardExpYear = !empty($card->expiry_year) ? $card->expiry_year : '';
+        }
+
+        return $summary;
+    }
+
+    public static function mapActionsSummary($response)
+    {
+        $summary = new ActionSummary();
+
+        $summary->id = $response->id;
+        $summary->timeCreated = !empty($response->time_created) ? new \DateTime($response->time_created) : null;
+        $summary->type = !empty($response->type) ? $response->type : null;
+        $summary->resource = !empty($response->resource) ? $response->resource : null;
+        $summary->resourceId = !empty($response->resource_id) ? $response->resource_id : null;
+        $summary->resourceStatus = !empty($response->resource_status) ? $response->resource_status : null;
+        $summary->version = !empty($response->version) ? $response->version : null;
+        $summary->httpResponseCode = !empty($response->http_response_code) ? $response->http_response_code : null;
+        $summary->responseCode = !empty($response->response_code) ? $response->response_code : null;
+        $summary->appId = !empty($response->app_id) ? $response->app_id : null;
+        $summary->appName = !empty($response->app_name) ? $response->app_name : null;
+        $summary->merchantName = !empty($response->merchant_name) ? $response->merchant_name : null;
+        $summary->accountName = !empty($response->account_name) ? $response->account_name : null;
+        $summary->accountId = !empty($response->account_id) ? $response->account_id : null;
 
         return $summary;
     }

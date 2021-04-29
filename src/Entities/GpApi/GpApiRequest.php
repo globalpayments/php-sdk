@@ -13,6 +13,8 @@ class GpApiRequest
     const SETTLEMENT_DISPUTES_ENDPOINT = '/settlement/disputes';
     const SETTLEMENT_TRANSACTIONS_ENDPOINT = '/settlement/transactions';
     const AUTHENTICATIONS_ENDPOINT = '/authentications';
+    const BATCHES_ENDPOINT = '/batches';
+    const ACTIONS_ENDPOINT = '/actions';
 
     public $endpoint;
     public $requestBody;

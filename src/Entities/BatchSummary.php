@@ -37,4 +37,9 @@ class BatchSummary
 
     /** @var string */
     public $status;
+
+    /**
+     * @var string
+     */
+    public $batchReference;
 }

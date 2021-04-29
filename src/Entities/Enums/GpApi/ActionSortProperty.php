@@ -1,13 +1,10 @@
 <?php
 
-
 namespace GlobalPayments\Api\Entities\Enums\GpApi;
-
 
 use GlobalPayments\Api\Entities\Enum;
 
-class AdjustmentFunding extends Enum
+class ActionSortProperty extends Enum
 {
-    const CREDIT = 'CREDIT';
-    const DEBIT = 'DEBIT';
+    const TIME_CREATED = 'TIME_CREATED';
 }

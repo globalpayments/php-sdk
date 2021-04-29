@@ -163,6 +163,11 @@ class ManagementBuilder extends TransactionBuilder
     public $idempotencyKey;
 
     /**
+     * @var string
+     */
+    public $batchReference;
+
+    /**
      * {@inheritdoc}
      *
      * @param TransactionType $type Request transaction type
@@ -507,6 +512,13 @@ class ManagementBuilder extends TransactionBuilder
     public function withIdempotencyKey($value)
     {
         $this->idempotencyKey = $value;
+
+        return $this;
+    }
+
+    public function withBatchReference($value)
+    {
+        $this->batchReference = $value;
 
         return $this;
     }

@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Utils;
 
 use GlobalPayments\Api\Entities\Enums\TrackNumber;
+use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use Locale;
 use NumberFormatter;
 
@@ -48,6 +49,9 @@ class StringUtils
         }
         if ((string) $value == "0") {
             return "000";
+        }
+        if (!is_numeric($value)) {
+            throw new ArgumentException("A non well formed numeric value encountered!");
         }
         $locale = Locale::getDefault();
         $formatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);

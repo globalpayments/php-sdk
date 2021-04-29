@@ -371,6 +371,11 @@ class TransactionSummary
     public $transactionDate;
 
     /**
+     * @var DateTime
+     */
+    public $transactionLocalDate;
+
+    /**
      * @var string
      */
     public $transactionDescriptor;
@@ -426,7 +431,7 @@ class TransactionSummary
     /**
      * @var string
      */
-    public $depositId;
+    public $depositReference;
 
     /**
      * @var string

@@ -5,7 +5,6 @@ namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\CustomWebProxy;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
@@ -17,7 +16,6 @@ use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
-use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
@@ -226,19 +224,21 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         try {
-            $partialRefund = $transaction->refund('22')
+            $partialAmount = '4.75';
+            $partialRefund = $transaction->refund($partialAmount)
                 ->withCurrency($this->currency)
                 ->execute();
             $defaultRefund = $transaction->refund()
                 ->withCurrency($this->currency)
                 ->execute();
         } catch (ApiException $e) {
-            $this->fail("Card not present managed refund failed " . $e->getMessage());
+            $this->fail("Card not present managed refund failed: " . $e->getMessage());
         }
 
         $this->assertNotNull($partialRefund);
         $this->assertEquals('SUCCESS', $partialRefund->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $partialRefund->responseMessage);
+        $this->assertEquals($partialAmount, $partialRefund->balanceAmount);
 
         $this->assertNotNull($defaultRefund);
         $this->assertEquals('SUCCESS', $defaultRefund->responseCode);
@@ -435,6 +435,11 @@ class CreditCardNotPresentTest extends TestCase
         $tokenizedCard->token = $tokenId;
         $tokenizedCard->cardHolderName = "James Mason";
 
+        $detokenizedCard = $tokenizedCard->detokenize();
+        $this->assertNotNull($detokenizedCard);
+        $this->assertEquals($this->card->number, $detokenizedCard->cardNumber);
+        $this->assertEquals($this->card->cvn, $detokenizedCard->cvnResponseCode);
+
         $response = $tokenizedCard->charge(10)
             ->withCurrency("USD")
             ->execute();
@@ -443,14 +448,11 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertEquals('SUCCESS', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
 
-        try {
-            $response = $tokenizedCard->charge(10)
-                ->withCurrency("USD")
-                ->execute();
-        } catch (ApiException $e) {
-            //@TODO assert error code and message
-            $this->assertEquals('40005', $e->responseCode);
-        }
+        $detokenizedCard = $tokenizedCard->detokenize();
+
+        $this->assertNotNull($detokenizedCard);
+        $this->assertEquals($this->card->number, $detokenizedCard->cardNumber);
+        $this->assertNull($detokenizedCard->cvnResponseCode);
     }
 
     public function testCardTokenizationThenPayingWithToken_SingleToMultiUse()
@@ -476,8 +478,8 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertStringStartsWith('PMT_', $response->token);
         $tokenizedCard->token = $response->token;
         $response = $tokenizedCard->charge(10)
-                ->withCurrency("USD")
-                ->execute();
+            ->withCurrency("USD")
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
@@ -996,6 +998,128 @@ class CreditCardNotPresentTest extends TestCase
         } catch (GatewayException $e) {
             $this->assertEquals('40085', $e->responseCode);
             $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Security Code/CVV2/CVC must be 3 digits', $e->getMessage());
+        }
+    }
+
+    public function testCaptureHigherAmount()
+    {
+        try {
+            $transaction = $this->card->authorize(55)
+                ->withCurrency($this->currency)
+                ->withAllowDuplicates(true)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail("Card Authorization Failed");
+        }
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+
+        $capture = $transaction->capture('60')
+            ->execute();
+
+        $this->assertNotNull($capture);
+        $this->assertEquals('SUCCESS', $capture->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
+
+        $transaction = $this->card->authorize(30)
+            ->withCurrency($this->currency)
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+
+        try {
+            $capture = $transaction->capture('40')
+                ->execute();
+        } catch (GatewayException $e) {
+            $this->assertEquals('50020', $e->responseCode);
+            $this->assertContains("INVALID_REQUEST_DATA - Can't settle for more than 115% of that which you authorised.", $e->getMessage());
+        }
+    }
+
+    public function testCaptureLowerAmount()
+    {
+        try {
+            $transaction = $this->card->authorize('55')
+                ->withCurrency($this->currency)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail("Card Authorization Failed");
+        }
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+
+        $capture = $transaction->capture('20')
+            ->execute();
+
+        $this->assertNotNull($capture);
+        $this->assertEquals('SUCCESS', $capture->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
+    }
+
+    public function testChargeThenRefundHigherAmount()
+    {
+        try {
+            $transaction = $this->card->charge(50)
+                ->withCurrency($this->currency)
+                ->withAllowDuplicates(true)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail("Card not present with ECOM transaction failed");
+        }
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
+
+        try {
+            $response = $transaction->refund(60)
+                ->withCurrency($this->currency)
+                ->withAllowDuplicates(true)
+                ->execute();
+        } catch (GatewayException $e) {
+            $this->assertEquals('40087', $e->responseCode);
+            $this->assertContains("INVALID_REQUEST_DATA - You may only refund up to 100% of the original amount.", $e->getMessage());
+        }
+    }
+
+    public function testCaptureThenRefundHigherAmount()
+    {
+        $transaction = $this->card->authorize('55')
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+
+        $capture = $transaction->capture('55')
+            ->execute();
+
+        $this->assertNotNull($capture);
+        $this->assertEquals('SUCCESS', $capture->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
+
+        try {
+            $response = $transaction->refund(60)
+                ->withCurrency($this->currency)
+                ->withAllowDuplicates(true)
+                ->execute();
+        } catch (GatewayException $e) {
+            $this->assertEquals('40087', $e->responseCode);
+            $this->assertContains("INVALID_REQUEST_DATA - You may only refund up to 100% of the original amount.", $e->getMessage());
+        }
+
+        if (!empty($response)) {
+            $this->assertNotNull($response);
+            $this->assertEquals('SUCCESS', $capture->responseCode);
+            $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
         }
     }
 

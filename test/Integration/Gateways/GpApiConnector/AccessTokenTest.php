@@ -6,8 +6,10 @@ namespace Gateways\GpApiConnector;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
+use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\GpApiService;
+use GlobalPayments\Api\ServicesContainer;
 use PHPUnit\Framework\TestCase;
 
 class AccessTokenTest extends TestCase
@@ -28,23 +30,22 @@ class AccessTokenTest extends TestCase
     public function testGenerateAccessToken()
     {
         $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
-
         $this->assertAccessTokenResponse($accessTokenInfo);
     }
 
     public function testCreateAccessTokenWithSpecific_SecondsToExpire()
     {
         $this->config->secondsToExpire = 200;
-        $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
 
+        $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
         $this->assertAccessTokenResponse($accessTokenInfo);
     }
 
     public function testCreateAccessTokenWithSpecific_IntervalToExpire()
     {
         $this->config->intervalToExpire = '1_HOUR';
-        $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
 
+        $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
         $this->assertAccessTokenResponse($accessTokenInfo);
     }
 
@@ -52,8 +53,8 @@ class AccessTokenTest extends TestCase
     {
         $this->config->secondsToExpire = 200;
         $this->config->intervalToExpire = 'WEEK';
-        $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
 
+        $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
         $this->assertAccessTokenResponse($accessTokenInfo);
     }
 
@@ -76,6 +77,33 @@ class AccessTokenTest extends TestCase
         } catch (GatewayException $e) {
             $this->assertEquals('40004', $e->responseCode);
             $this->assertEquals('Status Code: ACTION_NOT_AUTHORIZED - Credentials not recognized to create access token.', $e->getMessage());
+        }
+    }
+
+    public function testUseExpiredAccessToken()
+    {
+        $accessTokenInfo = new AccessTokenInfo();
+        $accessTokenInfo->accessToken = "r1SzGAx2K9z5FNiMHkrapfRh8BC8";
+        $accessTokenInfo->dataAccountName = "Settlement Reporting";
+        $accessTokenInfo->disputeManagementAccountName = "Dispute Management";
+        $accessTokenInfo->tokenizationAccountName = "Tokenization";
+        $accessTokenInfo->transactionProcessingAccountName = "Transaction_Processing";
+        $config = new GpApiConfig();
+        $config->accessTokenInfo = $accessTokenInfo;
+
+        ServicesContainer::configureService($config);
+
+        $card = new CreditCardData();
+        $card->number = "4263970000005262";
+        $card->expMonth = "05";
+        $card->expYear = "2025";
+        $card->cvn = "852";
+
+        try {
+            $card->verify()->execute();
+        } catch (GatewayException $e) {
+            $this->assertEquals('40001', $e->responseCode);
+            $this->assertEquals('Status Code: NOT_AUTHENTICATED - Invalid access token', $e->getMessage());
         }
     }
 

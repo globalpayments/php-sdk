@@ -57,4 +57,17 @@ class SearchCriteria extends Enum
     const USER_NAME = 'username';
     const CARDHOLDER_NAME = 'name';
     const DEPOSIT_ID = 'depositId';
+    const FROM_TIME_LAST_UPDATED = 'fromTimeLastUpdated';
+    const TO_TIME_LAST_UPDATED = 'fromTimeLastUpdated';
+    const STORED_PAYMENT_METHOD_STATUS = 'storedPaymentMethodStatus';
+    const ACTION_TYPE = 'actionType';
+    const ACTION_ID = 'actionId';
+    const RESOURCE = 'resource';
+    const RESOURCE_STATUS = 'resourceStatus';
+    const RESOURCE_ID = 'resourceId';
+    const MERCHANT_NAME = 'merchantName';
+    const APP_NAME = 'appName';
+    const VERSION = 'version';
+    const RESPONSE_CODE = 'responseCode';
+    const HTTP_RESPONSE_CODE = 'httpResponseCode';
 }

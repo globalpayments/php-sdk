@@ -49,157 +49,70 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_OrderBy_TimeCreated()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
-        try {
-            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
+        $response = ReportingService::findSettlementTransactionsPaged(1, 25)
+            ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->execute();
+        $transactionList = $response->result;
+        uasort($transactionList, function($a, $b) {return $a->transactionDate->format('U') - $b->transactionDate->format('U');});
+        foreach ($response->result as $index => $tr) {
+            $this->assertSame($transactionList[$index], $tr);
         }
-        /** @var TransactionSummary $rs */
-        foreach ($response->result as $rs) {
-            $this->assertInstanceOf(TransactionSummary::class, $rs);
-            $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
-        }
-
-        try {
-            $responseAsc = ReportingService::findSettlementTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::ASC)
-                ->where(SearchCriteria::START_DATE, $startDate)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
-        }
-        /** @var TransactionSummary $rs */
-        foreach ($responseAsc->result as $rs) {
-            $this->assertInstanceOf(TransactionSummary::class, $rs);
-            $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
-        }
-
-        $this->assertNotSame($response, $responseAsc);
     }
 
     public function testReportFindSettlementTransactions_OrderBy_Status()
     {
-        $startDate = (new \DateTime())->modify('-230 days');
-        try {
-            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::STATUS, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
-        }
+        $response = ReportingService::findSettlementTransactionsPaged(1, 10)
+            ->orderBy(TransactionSortProperty::STATUS, SortDirection::ASC)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
-        /** @var TransactionSummary $randomTransaction */
-        $randomTransaction = $response->result[array_rand($response->result)];
-        $this->assertNotNull($randomTransaction);
-        $this->assertInstanceOf(TransactionSummary::class, $randomTransaction);
-        $this->assertGreaterThanOrEqual($startDate, $randomTransaction->transactionDate);
-
-        try {
-            $responseAsc = ReportingService::findSettlementTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::STATUS, SortDirection::ASC)
-                ->where(SearchCriteria::START_DATE, $startDate)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
+        $transactionList = $response->result;
+        uasort($transactionList, function($a, $b) {return strcmp($a->transactionStatus, $b->transactionStatus);});
+        /** @var TransactionSummary $tr */
+        foreach ($response->result as $index => $tr) {
+            $this->assertSame($transactionList[$index], $tr);
         }
-
-        $this->assertNotNull($responseAsc);
-        $this->assertNotEmpty($responseAsc->result);
-        /** @var TransactionSummary $randomTransaction */
-        $randomTransaction = $responseAsc->result[array_rand($responseAsc->result)];
-        $this->assertNotNull($randomTransaction);
-        $this->assertInstanceOf(TransactionSummary::class, $randomTransaction);
-        $this->assertGreaterThanOrEqual($startDate, $randomTransaction->transactionDate);
-
-        $this->assertNotSame($response, $responseAsc);
     }
 
     public function testReportFindSettlementTransactions_OrderBy_Type()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
-        try {
-            /**
-             * @var PagedResult $response
-             */
-            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::TYPE, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
-        }
+        /**
+         * @var PagedResult $response
+         */
+        $response = ReportingService::findSettlementTransactionsPaged(1, 10)
+            ->orderBy(TransactionSortProperty::TYPE, SortDirection::ASC)
+            ->execute();
+
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
 
-        /** @var TransactionSummary $randomTransaction */
-        $randomTransaction = $response->result[array_rand($response->result)];
-        $this->assertNotNull($randomTransaction);
-        $this->assertInstanceOf(TransactionSummary::class, $randomTransaction);
-        $this->assertGreaterThanOrEqual($startDate, $randomTransaction->transactionDate);
-
-        try {
-            $responseAsc = ReportingService::findSettlementTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::TYPE, SortDirection::ASC)
-                ->where(SearchCriteria::START_DATE, $startDate)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
+        $transactionList = $response->result;
+        uasort($transactionList, function($a, $b) {return strcmp($a->transactionType, $b->transactionType);});
+        /** @var TransactionSummary $tr */
+        foreach ($response->result as $index => $tr) {
+            $this->assertSame($transactionList[$index], $tr);
         }
-
-        $this->assertNotNull($responseAsc);
-        $this->assertNotEmpty($responseAsc->result);
-        /** @var TransactionSummary $randomTransaction */
-        $randomTransaction = $responseAsc->result[array_rand($responseAsc->result)];
-        $this->assertNotNull($randomTransaction);
-        $this->assertInstanceOf(TransactionSummary::class, $randomTransaction);
-        $this->assertGreaterThanOrEqual($startDate, $randomTransaction->transactionDate);
-
-        $this->assertNotSame($response, $responseAsc);
     }
 
-    public function testReportFindSettlementTransactions_OrderBy_TypeAndTimeCreated()
+    public function testReportFindSettlementTransactions_OrderBy_DepositId()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
-        try {
-            $response = ReportingService::findSettlementTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
-        }
+        /**
+         * @var PagedResult $response
+         */
+        $response = ReportingService::findSettlementTransactionsPaged(1, 15)
+            ->orderBy(TransactionSortProperty::DEPOSIT_ID, SortDirection::ASC)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
-        /** @var TransactionSummary $randomTransaction */
-        $randomTransaction = $response->result[array_rand($response->result)];
-        $this->assertNotNull($randomTransaction);
-        $this->assertInstanceOf(TransactionSummary::class, $randomTransaction);
-        $this->assertGreaterThanOrEqual($startDate, $randomTransaction->transactionDate);
 
-        try {
-            $responseType = ReportingService::findSettlementTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::TYPE, SortDirection::ASC)
-                ->where(SearchCriteria::START_DATE, $startDate)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Find settlement transactions failed with: ' . $e->getMessage());
+        $transactionList = $response->result;
+        uasort($transactionList, function($a, $b) {return strcmp($a->depositReference, $b->depositReference);});
+        /** @var TransactionSummary $tr */
+        foreach ($response->result as $index => $tr) {
+            $this->assertSame($transactionList[$index], $tr);
         }
-        $this->assertNotEmpty($responseType->result);
-        /** @var TransactionSummary $randomTransaction */
-        $randomTransaction = $responseType->result[array_rand($responseType->result)];
-        $this->assertNotNull($randomTransaction);
-        $this->assertInstanceOf(TransactionSummary::class, $randomTransaction);
-        $this->assertGreaterThanOrEqual($startDate, $randomTransaction->transactionDate);
-
-        $this->assertNotSame($response, $responseType);
     }
 
     public function testReportFindSettlementTransactions_FilterBy_NumberFirst6_And_NumberLast4()
@@ -491,7 +404,7 @@ class ReportingSettlementTransactionsTest extends TestCase
         foreach ($response->result as $rs) {
             $this->assertInstanceOf(TransactionSummary::class, $rs);
             $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
-            $this->assertEquals($depositId, $rs->depositId);
+            $this->assertEquals($depositId, $rs->depositReference);
         }
     }
 

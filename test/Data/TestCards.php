@@ -47,6 +47,7 @@ class TestCards
         $data->number = $card->number;
         $data->expMonth = $card->expMonth;
         $data->expYear = $card->expYear;
+        $data->cardPresent = $card->cardPresent;
         $data->pinBlock = $pinBlock;
         return $data;
     }

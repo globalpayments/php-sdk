@@ -98,8 +98,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $requestBody['reference'] = !empty($builder->clientTransactionId) ?
             $builder->clientTransactionId : GenerationUtils::getGuid();
         $requestBody['currency'] = $builder->currency;
-        $requestBody['country'] = !empty($builder->billingAddress->country) ?
-            $builder->billingAddress->country : $config->country;
+        $requestBody['country'] = $config->country;
         $requestBody['payment_method'] = $this->createPaymentMethodParam($builder);
 
         return $requestBody;
@@ -112,8 +111,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $requestBody = [];
         $requestBody['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
         $requestBody['channel'] = $config->channel;
-        $requestBody['country'] = !empty($builder->billingAddress->country) ?
-            $builder->billingAddress->country : $config->country;
+        $requestBody['country'] = $config->country;
         $requestBody['type'] = ($builder->transactionType == TransactionType::REFUND ? 'REFUND' : 'SALE');
         $requestBody['capture_mode'] = !empty($captureMode) ? $captureMode : CaptureMode::AUTO;
         $requestBody['authorization_mode'] = !empty($builder->allowPartialAuth) ? 'PARTIAL' : null;
@@ -155,10 +153,10 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $paymentMethodContainer = $builder->paymentMethod;
         $paymentMethod = new PaymentMethod();
         $paymentMethod->entry_mode = $this->getEntryMode($builder);
-
+        $paymentMethod->name = !empty($paymentMethodContainer->cardHolderName) ?
+            $paymentMethodContainer->cardHolderName : null;
         //authentication
         if ($paymentMethodContainer instanceof CreditCardData) {
-            $paymentMethod->name = $paymentMethodContainer->cardHolderName;
             $secureEcom = $paymentMethodContainer->threeDSecure;
             if (!empty($secureEcom)) {
                 $threeDS = [

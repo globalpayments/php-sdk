@@ -4,6 +4,8 @@ namespace GlobalPayments\Api\Entities\GpApi;
 
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
+use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
+use GlobalPayments\Api\Entities\Enums\Target;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\IRequestBuilder;
@@ -76,7 +78,19 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
         $threeDS['notifications'] = [
             'challenge_return_url' => $config->challengeNotificationUrl,
             'three_ds_method_return_url' => $config->methodNotificationUrl
+
         ];
+
+        if (!empty($builder->storedCredential)) {
+            $threeDS['initiator'] =
+                !empty(StoredCredentialInitiator::$mapInitiator[$builder->storedCredential->initiator]) ?
+                    strtoupper(StoredCredentialInitiator::$mapInitiator[$builder->storedCredential->initiator][Target::GP_API]) : '';
+            $threeDS['stored_credential'] = [
+                'model' => strtoupper($builder->storedCredential->type),
+                'reason' => strtoupper($builder->storedCredential->reason),
+                'sequence' => strtoupper($builder->storedCredential->sequence)
+            ];
+        }
 
         return $threeDS;
     }
@@ -84,15 +98,9 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
     private function initiateAuthenticationData(Secure3dBuilder $builder, GpApiConfig $config)
     {
         $threeDS = [];
-        $threeDS['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
-        $threeDS['channel'] = $config->channel;
-        $threeDS['country'] = $config->country;
-        $threeDS['amount'] = StringUtils::toNumeric($builder->amount);
-        $threeDS['currency'] = $builder->currency;
         $threeDS['preference'] = $builder->challengeRequestIndicator;
         $threeDS['method_url_completion_status'] = (string) $builder->methodUrlCompletion;
         $threeDS['source'] = (string) $builder->authenticationSource;
-//        $threeDS->message_category = (string) $builder->messageCategory; ???
         $threeDS['merchant_contact_url'] = 'https://enp4qhvjseljg.x.pipedream.net/'; // @TODO
         $order = [
             'time_created_reference' => !empty($builder->orderCreateDate) ?
@@ -204,7 +212,7 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
         $paymentMethod = new PaymentMethod();
         if ($cardData instanceof ITokenizable && !empty($cardData->token)) {
             $paymentMethod->id = $cardData->token;
-            $paymentMethod->name = $cardData->cardHolderName;
+
         }
         if ($cardData instanceof ICardData) {
             $paymentMethod->card = (object) [
@@ -214,6 +222,7 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
                     substr(str_pad($cardData->expYear, 4, '0', STR_PAD_LEFT), 2, 2) : ''
             ];;
         }
+        $paymentMethod->name = !empty($cardData->cardHolderName) ? $cardData->cardHolderName : null;
 
         return $paymentMethod;
     }
