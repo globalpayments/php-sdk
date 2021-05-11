@@ -511,9 +511,15 @@ class CreditCardPresentTest extends TestCase
         $transaction = new Transaction();
         $transaction->transactionId = $result->transactionId;
 
-        $response = $transaction->reauthorized($result->amount)->execute();
+        $reverse = $transaction->reverse()->execute();
+
+        $this->assertNotNull($reverse);
+        $this->assertEquals('SUCCESS', $reverse->responseCode);
+        $this->assertEquals(TransactionStatus::REVERSED, $reverse->responseMessage);
+
+        $response = $reverse->reauthorized()->execute();
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $response->responseMessage);
     }
 }

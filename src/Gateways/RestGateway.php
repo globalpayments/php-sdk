@@ -47,6 +47,9 @@ abstract class RestGateway extends Gateway
         if (!in_array($response->statusCode, [200, 204])) {
             $parsed = json_decode($response->rawResponse);
             $error = isset($parsed->error) ? $parsed->error : $parsed;
+            if (empty($error)) {
+                throw new GatewayException(sprintf('Status Code: %s', $response->statusCode));
+            }
             if ($this->isGpApi()) {
                 $gatewayException = new GatewayException(
                     sprintf(

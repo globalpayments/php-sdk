@@ -118,13 +118,14 @@ class GpApi3DSecureTest extends TestCase
         $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate_v1($secureEcom);
         $this->assertTrue($authResponse->getStatus());
+        $this->assertNotEmpty($authResponse->getMerchantData());
 
         $secureEcom = Secure3dService::getAuthenticationData()
-            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->withServerTransactionId($authResponse->getMerchantData())
             ->withPayerAuthenticationResponse($authResponse->getAuthResponse())
             ->execute();
         $this->card->threeDSecure = $secureEcom;
-        $this->assertEquals('AUTHENTICATION_SUCCESSFUL', $secureEcom->status);
+        $this->assertEquals('SUCCESS_AUTHENTICATED', $secureEcom->status);
 
         $response = $this->card->charge($this->amount)->withCurrency($this->currency)->execute();
         $this->assertNotNull($response);
@@ -155,13 +156,14 @@ class GpApi3DSecureTest extends TestCase
         $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate_v1($secureEcom);
         $this->assertTrue($authResponse->getStatus());
+        $this->assertNotEmpty($authResponse->getMerchantData());
 
         $secureEcom = Secure3dService::getAuthenticationData()
-            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->withServerTransactionId($authResponse->getMerchantData())
             ->withPayerAuthenticationResponse($authResponse->getAuthResponse())
             ->execute();
         $tokenizedCard->threeDSecure = $secureEcom;
-        $this->assertEquals('AUTHENTICATION_SUCCESSFUL', $secureEcom->status);
+        $this->assertEquals('SUCCESS_AUTHENTICATED', $secureEcom->status);
 
         $response = $tokenizedCard->charge($this->amount)->withCurrency($this->currency)->execute();
         $this->assertNotNull($response);
@@ -191,9 +193,10 @@ class GpApi3DSecureTest extends TestCase
         $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate_v1($secureEcom);
         $this->assertTrue($authResponse->getStatus());
+        $this->assertNotEmpty($authResponse->getMerchantData());
 
         $secureEcom = Secure3dService::getAuthenticationData()
-            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->withServerTransactionId($authResponse->getMerchantData())
             ->withPayerAuthenticationResponse($authResponse->getAuthResponse())
             ->execute();
         $this->card->threeDSecure = $secureEcom;
@@ -221,11 +224,12 @@ class GpApi3DSecureTest extends TestCase
         $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate_v1($secureEcom);
         $this->assertTrue($authResponse->getStatus());
+        $this->assertNotEmpty($authResponse->getMerchantData());
 
         $exceptionCaught = false;
         try {
             Secure3dService::getAuthenticationData()
-                ->withServerTransactionId($secureEcom->serverTransactionId)
+                ->withServerTransactionId($authResponse->getMerchantData())
                 ->withPayerAuthenticationResponse(GenerationUtils::getGuid())
                 ->execute();
         } catch (ApiException $e) {
@@ -391,9 +395,10 @@ class GpApi3DSecureTest extends TestCase
         $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate_v2($initAuth);
         $this->assertTrue($authResponse->getStatus());
+        $this->assertNotEmpty($authResponse->getMerchantData());
 
         $secureEcom = Secure3dService::getAuthenticationData()
-            ->withServerTransactionId($initAuth->serverTransactionId)
+            ->withServerTransactionId($authResponse->getMerchantData())
             ->execute();
         $this->card->threeDSecure = $secureEcom;
 
@@ -440,18 +445,11 @@ class GpApi3DSecureTest extends TestCase
         $this->assertNotNull($initAuth->issuerAcsUrl);
         $this->assertNotNull($initAuth->challengeValue);
 
-        $exceptionCaught = false;
-        try {
-            Secure3dService::getAuthenticationData()
+        $secureEcom = Secure3dService::getAuthenticationData()
                 ->withServerTransactionId($initAuth->serverTransactionId)
                 ->execute();
-        } catch (ApiException $e) {
-            $exceptionCaught = true;
-            $this->assertEquals('50012', $e->responseCode);
-            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Undefined element in Message before PARes', $e->getMessage());
-        } finally {
-            $this->assertTrue($exceptionCaught);
-        }
+        $this->assertEquals('NOT_ENROLLED', $secureEcom->enrolled);
+        $this->assertEquals('CHALLENGE_REQUIRED', $secureEcom->status);
     }
 
     /**
@@ -585,14 +583,16 @@ class GpApi3DSecureTest extends TestCase
         $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate_v2($initAuth);
         $this->assertTrue($authResponse->getStatus());
+        $this->assertNotEmpty($authResponse->getMerchantData());
 
         $authClient2 = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
         $authClient2->setGatewayProvider($this->gatewayProvider);
         $authResponse2 = $authClient2->authenticate_v2($initAuth);
         $this->assertTrue($authResponse2->getStatus());
+        $this->assertNotEmpty($authResponse2->getMerchantData());
 
         $secureEcom = Secure3dService::getAuthenticationData()
-            ->withServerTransactionId($initAuth->serverTransactionId)
+            ->withServerTransactionId($authResponse2->getMerchantData())
             ->execute();
         $this->card->threeDSecure = $secureEcom;
 
@@ -615,9 +615,9 @@ class GpApi3DSecureTest extends TestCase
     public function ChallengeRequiredFailed3DSV1CardTests()
     {
         return [
-            'Acs Client result code 5' => [5, 'AUTHENTICATION_COULD_NOT_BE_PERFORMED'],
-            'Acs Client result code 7' => [7, 'FAILED'],
-            'Acs Client result code 9' => [9, 'AUTHENTICATION_FAILED']
+            'Acs Client result code 5' => [5, 'FAILED'],
+            'Acs Client result code 7' => [7, 'SUCCESS_ATTEMPT_MADE'],
+            'Acs Client result code 9' => [9, 'NOT_AUTHENTICATED']
         ];
     }
 
@@ -634,12 +634,12 @@ class GpApi3DSecureTest extends TestCase
     public function FrictionlessFailed3DSV2CardTests()
     {
         return [
-            'Frictionless failed 1' => [GpApi3DSTestCards::CARD_AUTH_ATTEMPTED_BUT_NOT_SUCCESSFUL_V2_1, 'NOT_AUTHENTICATED'],
-            'Frictionless failed 2' => [GpApi3DSTestCards::CARD_AUTH_FAILED_V2_1, 'FAILED'],
+            'Frictionless failed 1' => [GpApi3DSTestCards::CARD_AUTH_ATTEMPTED_BUT_NOT_SUCCESSFUL_V2_1, 'SUCCESS_ATTEMPT_MADE'],
+            'Frictionless failed 2' => [GpApi3DSTestCards::CARD_AUTH_FAILED_V2_1, 'NOT_AUTHENTICATED'],
             'Frictionless failed 3' => [GpApi3DSTestCards::CARD_AUTH_ISSUER_REJECTED_V2_1, 'FAILED'],
             'Frictionless failed 4' => [GpApi3DSTestCards::CARD_AUTH_COULD_NOT_BE_PREFORMED_V2_1, 'FAILED'],
-            'Frictionless failed 5' => [GpApi3DSTestCards::CARD_AUTH_ATTEMPTED_BUT_NOT_SUCCESSFUL_V2_2, 'NOT_AUTHENTICATED'],
-            'Frictionless failed 6' => [GpApi3DSTestCards::CARD_AUTH_FAILED_V2_2, 'FAILED'],
+            'Frictionless failed 5' => [GpApi3DSTestCards::CARD_AUTH_ATTEMPTED_BUT_NOT_SUCCESSFUL_V2_2, 'SUCCESS_ATTEMPT_MADE'],
+            'Frictionless failed 6' => [GpApi3DSTestCards::CARD_AUTH_FAILED_V2_2, 'NOT_AUTHENTICATED'],
             'Frictionless failed 7' => [GpApi3DSTestCards::CARD_AUTH_ISSUER_REJECTED_V2_2, 'FAILED'],
             'Frictionless failed 8' => [GpApi3DSTestCards::CARD_AUTH_COULD_NOT_BE_PREFORMED_V2_2, 'FAILED']
         ];

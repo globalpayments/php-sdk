@@ -264,13 +264,14 @@ class GpApi3DS1Test extends TestCase
         $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate_v1($secureEcom);
         $this->assertTrue($authResponse->getStatus());
+        $this->assertNotEmpty($authResponse->getMerchantData());
 
         $secureEcom = Secure3dService::getAuthenticationData()
-            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->withServerTransactionId($authResponse->getMerchantData())
             ->withPayerAuthenticationResponse($authResponse->getAuthResponse())
             ->execute();
 
-        $this->assertEquals('AUTHENTICATION_SUCCESSFUL', $secureEcom->status);
+        $this->assertEquals('SUCCESS_AUTHENTICATED', $secureEcom->status);
         $this->assertTrue($secureEcom->challengeMandated);
         $this->assertNotNull($secureEcom->issuerAcsUrl);
         $this->assertNotNull($secureEcom->payerAuthenticationRequest);
@@ -295,14 +296,15 @@ class GpApi3DS1Test extends TestCase
         $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate_v1($secureEcom);
         $this->assertTrue($authResponse->getStatus());
+        $this->assertNotEmpty($authResponse->getMerchantData());
 
         $secureEcom = Secure3dService::getAuthenticationData()
-            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->withServerTransactionId($authResponse->getMerchantData())
             ->withPayerAuthenticationResponse($authResponse->getAuthResponse())
             ->withIdempotencyKey($idempotencyKey)
             ->execute();
 
-        $this->assertEquals('AUTHENTICATION_SUCCESSFUL', $secureEcom->status);
+        $this->assertEquals('SUCCESS_AUTHENTICATED', $secureEcom->status);
         $this->assertTrue($secureEcom->challengeMandated);
         $this->assertNotNull($secureEcom->issuerAcsUrl);
         $this->assertNotNull($secureEcom->payerAuthenticationRequest);

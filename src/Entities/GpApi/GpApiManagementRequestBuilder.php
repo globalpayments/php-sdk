@@ -35,10 +35,6 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
     {
         $payload = [];
         switch ($builder->transactionType) {
-            case TransactionType::DETOKENIZE:
-                $endpoint = GpApiRequest::PAYMENT_METHODS_ENDPOINT . '/' . $builder->paymentMethod->token . '/detokenize';
-                $verb = 'POST';
-                break;
             case TransactionType::TOKEN_DELETE:
                 $endpoint = GpApiRequest::PAYMENT_METHODS_ENDPOINT . '/' . $builder->paymentMethod->token;
                 $verb = 'DELETE';

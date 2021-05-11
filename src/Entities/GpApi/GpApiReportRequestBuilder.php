@@ -136,6 +136,8 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                         $builder->searchBuilder->fromTimeLastUpdated->format('Y-m-d') : null,
                     'to_time_last_updated' => !empty($builder->searchBuilder->toTimeLastUpdated) ?
                         $builder->searchBuilder->toTimeLastUpdated->format('Y-m-d') : null,
+                    'id' => !empty($builder->searchBuilder->storedPaymentMethodId) ?
+                            $builder->searchBuilder->storedPaymentMethodId : null
                 ];
                 break;
             case ReportType::STORED_PAYMENT_METHOD_DETAIL:

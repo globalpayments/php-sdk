@@ -423,38 +423,6 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertEquals('ACTIVE', $response->responseMessage);
     }
 
-    public function testCardTokenizationThenPayingWithToken_UsageModeSingle()
-    {
-        // process an auto-capture authorization
-        $response = $this->card->tokenize()
-            ->withPaymentMethodUsageMode(PaymentMethodUsageMode::SINGLE)
-            ->execute();
-        $tokenId = $response->token;
-
-        $tokenizedCard = new CreditCardData();
-        $tokenizedCard->token = $tokenId;
-        $tokenizedCard->cardHolderName = "James Mason";
-
-        $detokenizedCard = $tokenizedCard->detokenize();
-        $this->assertNotNull($detokenizedCard);
-        $this->assertEquals($this->card->number, $detokenizedCard->cardNumber);
-        $this->assertEquals($this->card->cvn, $detokenizedCard->cvnResponseCode);
-
-        $response = $tokenizedCard->charge(10)
-            ->withCurrency("USD")
-            ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
-
-        $detokenizedCard = $tokenizedCard->detokenize();
-
-        $this->assertNotNull($detokenizedCard);
-        $this->assertEquals($this->card->number, $detokenizedCard->cardNumber);
-        $this->assertNull($detokenizedCard->cvnResponseCode);
-    }
-
     public function testCardTokenizationThenPayingWithToken_SingleToMultiUse()
     {
         // process an auto-capture authorization
@@ -611,35 +579,6 @@ class CreditCardNotPresentTest extends TestCase
         }
     }
 
-    public function testDetokenizePaymentMethodWithIdempotencyKey()
-    {
-        try {
-            // process an auto-capture authorization
-            $response = $this->card->tokenize()
-                ->execute();
-
-        } catch (ApiException $e) {
-            $this->fail('Credit Card Tokenization failed ' . $e->getMessage());
-        }
-        $tokenizedCard = new CreditCardData();
-        $tokenizedCard->token = $response->token;
-
-        $detokenizedCard = (new ManagementBuilder(TransactionType::DETOKENIZE, $tokenizedCard))
-            ->withIdempotencyKey($this->idempotencyKey)
-            ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals($this->card->number, $detokenizedCard->cardNumber);
-        $this->assertEquals($this->card->expMonth, $detokenizedCard->cardExpMonth);
-
-        try {
-            $tokenizedCard->detokenize();
-        } catch (GatewayException $e) {
-            $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains('Idempotency Key seen before', $e->getMessage());
-        }
-    }
-
     public function testCreditVerifyx()
     {
         $response = $this->card->verify()
@@ -661,44 +600,6 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
         $this->assertEquals('VERIFIED', $response->responseMessage);
-    }
-
-    public function testCardTokenizationThenCardDetokenization()
-    {
-        try {
-            // process an auto-capture authorization
-            $response = $this->card->tokenize()
-                ->execute();
-
-        } catch (ApiException $e) {
-            $this->fail('Credit Card Tokenization failed ' . $e->getMessage());
-        }
-
-        $tokenId = $response->token;
-
-        $tokenizedCard = new CreditCardData();
-        $tokenizedCard->token = $tokenId;
-
-        try {
-            $response = $tokenizedCard->detokenize();
-        } catch (ApiException $e) {
-            $this->fail('Credit Card detokenization failed ' . $e->getMessage());
-        }
-
-        $this->assertEquals('SUCCESS', $response->responseCode);
-    }
-
-    public function testCardDetokenization_WrongId()
-    {
-        $tokenizedCard = new CreditCardData();
-        $tokenizedCard->token = "PMT_" . GenerationUtils::getGuid();
-
-        try {
-            $tokenizedCard->detokenize();
-        } catch (ApiException $e) {
-            $this->assertEquals('40116', $e->responseCode);
-            $this->assertEquals('Status Code: RESOURCE_NOT_FOUND - payment_method ' . $tokenizedCard->token . ' not found at this location.', $e->getMessage());
-        }
     }
 
     public function testCardTokenizationThenDeletion()

@@ -38,15 +38,14 @@ class ThreeDSecureAcsClient
         switch ($this->gatewayProvider)
         {
             case GatewayProvider::GP_API:
-                array_push($kvps, ['key' => 'creq', 'value' => urlencode($secureEcom->payerAuthenticationRequest)]);
-                array_push($kvps, ['key' => 'threeDSSessionData', 'value' => urlencode($secureEcom->serverTransactionId)]);
+                array_push($kvps, ['key' => $secureEcom->messageType, 'value' => urlencode($secureEcom->payerAuthenticationRequest)]);
                 $postData = $this->buildData($kvps);
                 $header = [
                     "Content-Type: application/x-www-form-urlencoded",
                     "cache-control: no-cache"
                 ];
                 $verb = 'POST';
-                $rawResponse = $this->sendRequest($verb, $postData, $header);
+                $this->sendRequest($verb, $postData, $header);
                 $kvps = [];
                 array_push($kvps, ['key' => 'get-status-type', 'value' => "true"]);
                 do {
@@ -57,7 +56,9 @@ class ThreeDSecureAcsClient
                 $rawResponse = $this->sendRequest($verb, '', $header);
 
                 $kvps = [];
-                array_push($kvps, ['key' => 'cres', 'value' => urlencode($this->getInputValue($rawResponse, 'cres'))]);
+                $cres = $this->getInputValue($rawResponse, 'cres');
+                array_push($kvps, ['key' => 'cres', 'value' => urlencode($cres)]);
+                $acsDecodedRS = json_decode(base64_decode($cres), true);
                 $postData = $this->buildData($kvps);
                 $this->serviceUrl = $this->getInputValue($rawResponse, null, 'ResForm');
                 $rawResponse = $this->sendRequest($verb, $postData, $header);
@@ -68,6 +69,9 @@ class ThreeDSecureAcsClient
                     $status = !empty($rawResponse->success) ? $rawResponse->success : false;
                 }
                 $rValue->setStatus($status);
+                if (!empty($acsDecodedRS['threeDSServerTransID'])) {
+                    $rValue->setMerchantData($acsDecodedRS['threeDSServerTransID']);
+                }
                 break;
             default:
                 return false;
@@ -100,57 +104,15 @@ class ThreeDSecureAcsClient
                 array_push($kvps, ['key' => 'MD', 'value' => $this->getInputValue($rawResponse, 'MD')]);
                 $postData = $this->buildData($kvps);
                 $this->serviceUrl = $this->getInputValue($rawResponse, null, 'PAResForm');
-                $rawResponse = $this->sendRequest($verb, $postData, $header);
+                $rawResponse2 = $this->sendRequest($verb, $postData, $header);
 
                 $rValue = new AcsResponse();
-                if ($this->isJson($rawResponse)) {
-                    $rawResponse = json_decode($rawResponse);
-                    $rValue->setStatus(!empty($rawResponse->success) ? $rawResponse->success : false);
+                if ($this->isJson($rawResponse2)) {
+                    $rawResponse2 = json_decode($rawResponse2);
+                    $rValue->setStatus(!empty($rawResponse2->success) ? $rawResponse2->success : false);
                     $rValue->setAuthResponse($paRes);
+                    $rValue->setMerchantData($this->getInputValue($rawResponse, 'MD'));
                 }
-                break;
-            default:
-                return false;
-        }
-
-        return $rValue;
-    }
-
-    public function authenticate_2($payerAuthRequest)
-    {
-        $kvps = [];
-        switch ($this->gatewayProvider)
-        {
-            case GatewayProvider::GP_API:
-                array_push($kvps, ['key' => 'challenge_value', 'value' => urlencode($payerAuthRequest)]);
-                $postData = $this->buildData($kvps);
-                $header = [
-                    "Content-Type: application/x-www-form-urlencoded",
-                    "cache-control: no-cache"
-                ];
-                $verb = 'POST';
-                $rawResponse = $this->sendRequest($verb, $postData, $header);
-                $kvps = [];
-                array_push($kvps, ['key' => 'get-status-type', 'value' => "true"]);
-                do {
-                    $postData = $this->buildData($kvps);
-                    $rawResponse = $this->sendRequest($verb, $postData, $header);
-                    sleep(5);
-                } while (trim($rawResponse) == 'IN_PROGRESS');
-                $rawResponse = $this->sendRequest($verb, '', $header);
-
-                $kvps = [];
-                array_push($kvps, ['key' => 'cres', 'value' => urlencode($this->getInputValue($rawResponse, 'cres'))]);
-                $postData = $this->buildData($kvps);
-                $this->serviceUrl = $this->getInputValue($rawResponse, null, 'ResForm');
-                $rawResponse = $this->sendRequest($verb, $postData, $header);
-                $rValue = new AcsResponse();
-                $status = false;
-                if ($this->isJson($rawResponse)) {
-                    $rawResponse = json_decode($rawResponse);
-                    $status = !empty($rawResponse->success) ? $rawResponse->success : false;
-                }
-                $rValue->setStatus($status);
                 break;
             default:
                 return false;
@@ -182,38 +144,6 @@ class ThreeDSecureAcsClient
                 $rValue = new AcsResponse();
                 $rValue->setAuthResponse($this->getInputValue($rawResponse, 'PaRes'));
                 $rValue->setMerchantData($this->getInputValue($rawResponse, 'MD'));
-                break;
-            case GatewayProvider::GP_API:
-                array_push($kvps, ['key' => 'challenge_value', 'value' => urlencode($payerAuthRequest)]);
-                $postData = $this->buildData($kvps);
-                $header = [
-                    "Content-Type: application/x-www-form-urlencoded",
-                    "cache-control: no-cache"
-                ];
-                $verb = 'POST';
-                $rawResponse = $this->sendRequest($verb, $postData, $header);
-
-                $kvps = [];
-                array_push($kvps, ['key' => 'TermUrl', 'value' => urlencode($this->getInputValue($rawResponse, 'TermUrl'))]);
-                array_push($kvps, ['key' => 'MD', 'value' => $this->getInputValue($rawResponse, 'MD')]);
-                array_push($kvps, ['key' => 'PaReq', 'value' => urlencode($this->getInputValue($rawResponse, 'PaReq'))]);
-                array_push($kvps, ['key' => 'AuthenticationResultCode', 'value' => "0"]);
-                $postData = $this->buildData($kvps);
-                $this->serviceUrl = $this->getInputValue($rawResponse, null, 'PAResFormSim');
-                $rawResponse = $this->sendRequest($verb, $postData, $header);
-
-                $kvps = [];
-                array_push($kvps, ['key' => 'PaRes', 'value' => urlencode($this->getInputValue($rawResponse, 'PaRes'))]);
-                array_push($kvps, ['key' => 'MD', 'value' => $this->getInputValue($rawResponse, 'MD')]);
-                $postData = $this->buildData($kvps);
-
-                $this->serviceUrl = $this->getInputValue($rawResponse, null, 'PAResForm');
-                $rawResponse = $this->sendRequest($verb, $postData, $header);
-                $rValue = new AcsResponse();
-                if ($this->isJson($rawResponse)) {
-                    $rawResponse = json_decode($rawResponse);
-                    $rValue->setStatus(!empty($rawResponse->success) ? $rawResponse->success : false);
-                }
                 break;
             default:
                 return false;

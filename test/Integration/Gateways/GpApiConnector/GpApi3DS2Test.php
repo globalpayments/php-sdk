@@ -177,13 +177,13 @@ class GpApi3DS2Test extends TestCase
             ->execute();
 
         $this->assertNotNull($initAuth);
-        $this->assertEquals('FAILED', $initAuth->status);
+        $this->assertEquals('NOT_AUTHENTICATED', $initAuth->status);
 
         $secureEcom = Secure3dService::getAuthenticationData()
             ->withServerTransactionId($secureEcom->serverTransactionId)
             ->execute();
         $this->card->threeDSecure = $initAuth;
-        $this->assertEquals('FAILED', $secureEcom->status);
+        $this->assertEquals('NOT_AUTHENTICATED', $secureEcom->status);
 
         $response = $this->card->charge($this->amount)->withCurrency($this->currency)->execute();
         $this->assertNotNull($response);
@@ -270,9 +270,10 @@ class GpApi3DS2Test extends TestCase
         $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate_v2($initAuth);
         $this->assertTrue($authResponse->getStatus());
+        $this->assertNotEmpty($authResponse->getMerchantData());
 
         $secureEcom = Secure3dService::getAuthenticationData()
-            ->withServerTransactionId($initAuth->serverTransactionId)
+            ->withServerTransactionId($authResponse->getMerchantData())
             ->execute();
         $this->card->threeDSecure = $secureEcom;
 
@@ -595,9 +596,10 @@ class GpApi3DS2Test extends TestCase
         $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate_v2($initAuth);
         $this->assertTrue($authResponse->getStatus());
+        $this->assertNotEmpty($authResponse->getMerchantData());
 
         $secureEcom = Secure3dService::getAuthenticationData()
-            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->withServerTransactionId($authResponse->getMerchantData())
             ->execute();
 
         $this->assertEquals('SUCCESS_AUTHENTICATED', $secureEcom->status);
@@ -637,9 +639,10 @@ class GpApi3DS2Test extends TestCase
         $authClient->setGatewayProvider($this->gatewayProvider);
         $authResponse = $authClient->authenticate_v2($initAuth);
         $this->assertTrue($authResponse->getStatus());
+        $this->assertNotEmpty($authResponse->getMerchantData());
 
         $secureEcom = Secure3dService::getAuthenticationData()
-            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->withServerTransactionId($authResponse->getMerchantData())
             ->withIdempotencyKey($idempotencyKey)
             ->execute();
 

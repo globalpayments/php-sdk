@@ -58,7 +58,8 @@ class SearchCriteria extends Enum
     const CARDHOLDER_NAME = 'name';
     const DEPOSIT_ID = 'depositId';
     const FROM_TIME_LAST_UPDATED = 'fromTimeLastUpdated';
-    const TO_TIME_LAST_UPDATED = 'fromTimeLastUpdated';
+    const TO_TIME_LAST_UPDATED = 'toTimeLastUpdated';
+    const STORED_PAYMENT_METHOD_ID = 'storedPaymentMethodId';
     const STORED_PAYMENT_METHOD_STATUS = 'storedPaymentMethodStatus';
     const ACTION_TYPE = 'actionType';
     const ACTION_ID = 'actionId';

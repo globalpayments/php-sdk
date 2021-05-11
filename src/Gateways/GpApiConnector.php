@@ -25,7 +25,7 @@ use GlobalPayments\Api\Mapping\GpApiMapping;
 
 class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dProvider
 {
-    const GP_API_VERSION = '2020-12-22';
+    const GP_API_VERSION = '2021-03-22';
     const IDEMPOTENCY_HEADER = 'x-gp-idempotency';
     /**
      * @var $gpApiConfig GpApiConfig
@@ -222,16 +222,25 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
 
         $this->accessToken = $response->getToken();
         $this->headers['Authorization'] = sprintf('Bearer %s', $this->accessToken);
-        if (empty($accessTokenInfo)) {
+        if (!$accessTokenInfo instanceof AccessTokenInfo) {
             $accessTokenInfo = new AccessTokenInfo();
         }
-        $accessTokenInfo->accessToken = $response->getToken();
-        $accessTokenInfo->dataAccountName = $response->getDataAccountName();
-        $accessTokenInfo->tokenizationAccountName = $response->getTokenizationAccountName();
-        $accessTokenInfo->transactionProcessingAccountName = $response->getTransactionProcessingAccountName();
-        $accessTokenInfo->disputeManagementAccountName = $response->getDisputeManagementAccountName();
+        if (empty($accessTokenInfo->accessToken)) {
+            $accessTokenInfo->accessToken = $response->getToken();
+        }
+        if (empty($accessTokenInfo->dataAccountName)) {
+            $accessTokenInfo->dataAccountName = $response->getDataAccountName();
+        }
+        if (empty($accessTokenInfo->tokenizationAccountName)) {
+            $accessTokenInfo->tokenizationAccountName = $response->getTokenizationAccountName();
+        }
+        if (empty($accessTokenInfo->transactionProcessingAccountName)) {
+            $accessTokenInfo->transactionProcessingAccountName = $response->getTransactionProcessingAccountName();
+        }
+        if (empty($accessTokenInfo->disputeManagementAccountName)) {
+            $accessTokenInfo->disputeManagementAccountName = $response->getDisputeManagementAccountName();
+        }
         $this->gpApiConfig->accessTokenInfo = $accessTokenInfo;
-
     }
 
     /**
