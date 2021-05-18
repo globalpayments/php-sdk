@@ -271,9 +271,9 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             // recurring authorization data
             if ($builder->hasRecurringAuthData()) {
                 $request['recurring_authorization_data'] = [];
-                $request['recurring_authorization_data'] = $this->maybeSetKey($request['recurring_authorization_data'], 'max_number_of_installments', $builder->getMaxNumberOfInstallments());
+                $request['recurring_authorization_data'] = $this->maybeSetKey($request['recurring_authorization_data'], 'max_number_of_instalments', $builder->getMaxNumberOfInstallments());
                 $request['recurring_authorization_data'] = $this->maybeSetKey($request['recurring_authorization_data'], 'frequency', $builder->getRecurringAuthorizationFrequency());
-                $request['recurring_authorization_data'] = $this->maybeSetKey($request['recurring_authorization_data'], 'expiry_date', date('Y-m-d\TH:i:s.u\Z', strtotime($builder->getRecurringAuthorizationExpiryDate())));
+                $request['recurring_authorization_data'] = $this->maybeSetKey($request['recurring_authorization_data'], 'expiry_date', date('Y-m-d', strtotime($builder->getRecurringAuthorizationExpiryDate())));
             }
 
             // billing details

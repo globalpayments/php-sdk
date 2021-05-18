@@ -683,6 +683,7 @@ class Secure3dServiceTests extends TestCase
                 ->withMaxNumberOfInstallments(5)
                 ->withRecurringAuthorizationFrequency(25)
                 ->withRecurringAuthorizationExpiryDate('20190825')
+                ->withAuthenticationRequestType(AuthenticationRequestType::INSTALMENT_TRANSACTION)
 
                 ->execute();
             $this->assertNotNull($initAuth);
