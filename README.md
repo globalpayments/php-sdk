@@ -2,7 +2,7 @@
     <img src="https://globalpayments.github.io/images/globapaymentsLogo.png" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-# Heartland & Global Payments PHP SDK
+# Global Payments & Heartland PHP SDK
 
 This SDK makes it easy to integrate your PHP application with our Card Not Present and Card Present APIs. 
 
