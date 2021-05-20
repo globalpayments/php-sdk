@@ -284,4 +284,24 @@ class CreditTest extends TestCase
             ->withOrderId($orderId)
             ->execute();
     }
+
+    public function testCreditAuthorizationWithDynamicDescriptor()
+    {
+        $dynamicDescriptor = 'My company';
+        $authorize = $this->card->authorize(10)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->withDynamicDescriptor($dynamicDescriptor)
+            ->execute();
+
+        $this->assertNotNull($authorize);
+        $this->assertEquals('00', $authorize->responseCode, $authorize->responseMessage);
+
+        $capture = $authorize->capture(5)
+            ->withDynamicDescriptor($dynamicDescriptor)
+            ->execute();
+
+        $this->assertNotNull($capture);
+        $this->assertEquals('00', $capture->responseCode, $capture->responseMessage);
+    }
 }

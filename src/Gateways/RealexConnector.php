@@ -277,6 +277,19 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $request->appendChild($dccinfo);
         }
 
+        if (
+            (
+                $builder->transactionType === TransactionType::AUTH ||
+                $builder->transactionType === TransactionType::CAPTURE ||
+                $builder->transactionType === TransactionType::REFUND
+            ) &&
+            !empty($builder->dynamicDescriptor)
+        ) {
+            $narrative = $xml->createElement("narrative");
+            $narrative->appendChild($xml->createElement("chargedescription", strtoupper($builder->dynamicDescriptor)));
+            $request->appendChild($narrative);
+        }
+
         // Hydrate the payment data fields
         if ($builder->paymentMethod instanceof CreditCardData) {
             $card = $builder->paymentMethod;
@@ -683,7 +696,9 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         if ($this->hostedPaymentConfig->fraudFilterMode !== FraudFilterMode::NONE) {
             $toHash[] = $this->hostedPaymentConfig->fraudFilterMode;
         }
-        
+        if (!empty($builder->dynamicDescriptor)) {
+            $this->serializeData["CHARGE_DESCRIPTION"] = $builder->dynamicDescriptor;
+        }
         $this->serializeData["SHA1HASH"] = GenerationUtils::generateHash($this->sharedSecret, implode('.', $toHash));
         return GenerationUtils::convertArrayToJson($this->serializeData, $this->hostedPaymentConfig->version);
     }
@@ -762,6 +777,18 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                 ($builder->currency !== null ? $builder->currency : ''),
                 ($builder->alternativePaymentType !== null ? $builder->alternativePaymentType : '')
             ];
+
+        if (
+            (
+                $builder->transactionType === TransactionType::CAPTURE ||
+                $builder->transactionType === TransactionType::REFUND
+            ) &&
+            !empty($builder->dynamicDescriptor)
+        ) {
+            $narrative = $xml->createElement("narrative");
+            $narrative->appendChild($xml->createElement("chargedescription", strtoupper($builder->dynamicDescriptor)));
+            $request->appendChild($narrative);
+        }
 
         $request->appendChild(
             $xml->createElement(

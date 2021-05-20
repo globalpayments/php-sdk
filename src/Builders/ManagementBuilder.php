@@ -168,6 +168,14 @@ class ManagementBuilder extends TransactionBuilder
     public $batchReference;
 
     /**
+     * Request dynamic descriptor
+     *
+     * @internal
+     * @var string
+     */
+    public $dynamicDescriptor;
+
+    /**
      * {@inheritdoc}
      *
      * @param TransactionType $type Request transaction type
@@ -519,6 +527,20 @@ class ManagementBuilder extends TransactionBuilder
     public function withBatchReference($value)
     {
         $this->batchReference = $value;
+
+        return $this;
+    }
+
+    /**
+     * Set the request dynamic descriptor
+     *
+     * @param string $dynamicDescriptor Request dynamic descriptor
+     *
+     * @return $this
+     */
+    public function withDynamicDescriptor($dynamicDescriptor)
+    {
+        $this->dynamicDescriptor = $dynamicDescriptor;
 
         return $this;
     }
