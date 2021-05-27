@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Test\Integration\Gateways\RealexConnector;
 
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
@@ -550,13 +551,13 @@ class ApiTestCase extends TestCase
     public function testauthMobileGooglePay()
     {
         try {
-            $config = new ServicesConfig();
+            $config = new GpEcomConfig();
             $config->merchantId = 'heartlandgpsandbox';
             $config->accountId = 'apitest';
             $config->sharedSecret = 'secret';
             $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
 
-            ServicesContainer::configure($config);
+            ServicesContainer::configureService($config);
 
             // create the card object
             $card = new CreditCardData();
@@ -591,13 +592,13 @@ class ApiTestCase extends TestCase
     public function testauthMobileApplePay()
     {
         try {
-            $config = new ServicesConfig();
+            $config = new GpEcomConfig();
             $config->merchantId = 'heartlandgpsandbox';
             $config->accountId = 'apitest';
             $config->sharedSecret = 'secret';
             $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
 
-            ServicesContainer::configure($config);
+            ServicesContainer::configureService($config);
 
             // create the card object
             $card = new CreditCardData();
@@ -605,8 +606,9 @@ class ApiTestCase extends TestCase
             $card->mobileType = EncyptedMobileType::APPLE_PAY;
 
             // process an auto-settle authorization
-            $response = $card->charge()
+            $response = $card->charge(19.99)
                     ->withModifier(TransactionModifier::ENCRYPTED_MOBILE)
+                    ->withCurrency('EUR')
                     ->execute();
 
             $responseCode = $response->responseCode; // 00 == Success
@@ -634,13 +636,13 @@ class ApiTestCase extends TestCase
      */
     public function testauthMobileWithoutToken()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'apitest';
         $config->sharedSecret = 'secret';
         $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
 
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create the card object
         $card = new CreditCardData();
@@ -660,13 +662,13 @@ class ApiTestCase extends TestCase
      */
     public function testauthMobileWithoutType()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'apitest';
         $config->sharedSecret = 'secret';
         $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
 
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create the card object
         $card = new CreditCardData();
@@ -686,13 +688,13 @@ class ApiTestCase extends TestCase
      */
     public function testauthMobileWithoutAmount()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'apitest';
         $config->sharedSecret = 'secret';
         $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
 
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create the card object
         $card = new CreditCardData();
@@ -713,13 +715,13 @@ class ApiTestCase extends TestCase
      */
     public function testauthMobileWithoutCurrency()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'apitest';
         $config->sharedSecret = 'secret';
         $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
 
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
 
         // create the card object
         $card = new CreditCardData();
