@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
 
+use GlobalPayments\Api\Entities\CustomWebProxy;
 use GlobalPayments\Api\Entities\Enums\DecoupledFlowRequest;
 use GlobalPayments\Api\Entities\Enums\MerchantInitiatedRequestType;
 use GlobalPayments\Api\Entities\Enums\WhiteListStatus;
@@ -13,6 +14,8 @@ use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use GlobalPayments\Api\Tests\Integration\Gateways\ThreeDSecureAcsClient;
+use GlobalPayments\Api\Utils\Logging\Logger;
+use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\BrowserData;
@@ -105,6 +108,8 @@ class Secure3dServiceTests extends TestCase
         $config->challengeNotificationUrl = 'https://www.example.com/challengeNotificationUrl';
         $config->secure3dVersion = Secure3dVersion::ANY;
         $config->merchantContactUrl = 'https://www.example.com';
+//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
+//        $config->webProxy = new CustomWebProxy('127.0.0.1:8866');
 
         return $config;
     }

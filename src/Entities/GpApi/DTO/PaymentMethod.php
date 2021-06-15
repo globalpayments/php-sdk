@@ -12,7 +12,7 @@ class PaymentMethod
     public $authentication;
     public $encryption;
     public $name;
-    public $storage_model;
+    public $storage_mode;
 
     /** @var Card $card  */
     public $card;

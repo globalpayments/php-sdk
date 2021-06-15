@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Gateways;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
 use GlobalPayments\Api\Entities\Enums\ExemptionReason;
 use GlobalPayments\Api\Entities\Enums\ExemptStatus;
+use GlobalPayments\Api\Entities\MessageExtension;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
@@ -12,8 +13,6 @@ use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ISecure3d;
 use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\Utils\GenerationUtils;
 
@@ -409,15 +408,17 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
 
         // message_extension
         if (array_key_exists('message_extension', $doc)) {
-            $secureEcom->criticalityIndicator =
-                isset($doc['message_extension']['criticality_indicator']) ?
-                    $doc['message_extension']['criticality_indicator'] : null;
-            $secureEcom->messageExtensionData = isset($doc['message_extension']['data']) ?
-                $doc['message_extension']['data'] : null;
-            $secureEcom->messageExtensionId =
-                isset($doc['message_extension']['id']) ? $doc['message_extension']['id'] : null;
-            $secureEcom->messageExtensionName =
-                isset($doc['message_extension']['name']) ? $doc['message_extension']['name'] : null;
+            foreach ($doc['message_extension'] as $messageExtension) {
+                $msgItem = new MessageExtension();
+                $msgItem->criticalityIndicator =
+                    isset($messageExtension['criticality_indicator']) ?
+                        $messageExtension['criticality_indicator'] : null;
+                $msgItem->messageExtensionData = isset($messageExtension['data']) ?
+                    json_encode($messageExtension['data']) : null;
+                $msgItem->messageExtensionId = isset($messageExtension['id']) ? $messageExtension['id'] : null;
+                $msgItem->messageExtensionName = isset($messageExtension['name']) ? $messageExtension['name'] : null;
+                $secureEcom->messageExtension[] = $msgItem;
+            }
         }
 
         // versions

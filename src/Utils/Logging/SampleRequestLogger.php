@@ -19,26 +19,28 @@ class SampleRequestLogger implements IRequestLogger
 
     public function requestSent($verb, $endpoint, $headers, $queryStringParams, $data)
     {
-        // TODO: Implement requestSent() method.
         $this->logger->info("Request/Response START");
         $this->logger->info("Request START");
         $this->logger->info("Request verb: " . $verb);
         $this->logger->info("Request endpoint: " . $endpoint);
         $this->logger->info("Request headers: ", $headers);
-        $this->logger->info("Request query string: ", !empty($queryStringParams) ? $queryStringParams : array());
-        $this->logger->info("Request body: ", !empty($data) ? json_decode($data, true) : array());
+        $this->logger->info("Request body: " . $data);
         $this->logger->info("REQUEST END");
     }
 
 
     public function responseReceived(GatewayResponse $response)
     {
-        // TODO: Implement responseReceived() method.
         $this->logger->info("Response START");
         $this->logger->info("Status code: " . $response->statusCode);
-        $this->logger->info("Response body: ", json_decode(gzdecode($response->rawResponse), true));
+        $rs = clone $response;
+        if (strpos($rs->header, ': gzip') !== false) {
+            $rs->rawResponse = gzdecode($rs->rawResponse);
+        }
+        $this->logger->info("Response body: " . $rs->rawResponse);
         $this->logger->info("Response END");
         $this->logger->info("Request/Response END");
+        $this->logger->info("=============================================");
     }
 
     public function responseError(\Exception $e)
@@ -48,6 +50,7 @@ class SampleRequestLogger implements IRequestLogger
         $this->logger->info("Exception type: " . get_class($e));
         $this->logger->info("Exception message: " . $e->getMessage());
         $this->logger->info("Exception END");
+        $this->logger->info("=============================================");
     }
 
 

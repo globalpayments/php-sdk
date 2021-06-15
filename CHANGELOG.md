@@ -1,10 +1,19 @@
 <a href="https://github.com/globalpayments" target="_blank">
-    <img src="https://globalpayments.github.io/images/globapaymentsLogo.png" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
+    <img src="https://developer.globalpay.com/static/media/logo.dab7811d.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
 # Changelog
 
 ## Latest version
+
+#### Enhancements:
+- Add RequestLogger to GP-ECOM
+- Fix message_extension issue for 3DS2 on GP-ECOM
+- Update logo image on Readme and Changelog files
+- Add depositDate and depositReference mappings for settlement disputes report on GP-API
+- Change property name from "storage_model" to "storage_mode" on GP-API
+
+## v2.3.3 (05/27/2021)
 
 #### Enhancements:
 

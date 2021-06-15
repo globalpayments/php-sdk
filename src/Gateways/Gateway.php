@@ -94,7 +94,7 @@ abstract class Gateway
             }
 
             if (isset($this->requestLogger)) {
-                $this->requestLogger->requestSent($verb, $endpoint, $headers, $queryStringParams, $data);
+                $this->requestLogger->requestSent($verb, $this->serviceUrl . $endpoint . $queryString,  $headers, null,  $data);
             }
 
             curl_setopt($request, CURLOPT_CONNECTTIMEOUT, $this->timeout);

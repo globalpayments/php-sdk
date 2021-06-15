@@ -200,7 +200,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         if (is_null($paymentMethod->id)) {
             $paymentMethod->card = CardUtils::generateCard($builder);
         }
-        $paymentMethod->storage_model = $builder->requestMultiUseToken == true ? 'ON_SUCCESS' : null;
+        $paymentMethod->storage_mode = $builder->requestMultiUseToken == true ? 'ON_SUCCESS' : null;
 
         return $paymentMethod;
     }

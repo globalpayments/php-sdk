@@ -299,6 +299,8 @@ class GpApiMapping
         $summary->lastAdjustmentAmount = StringUtils::toAmount($response->last_adjustment_amount);
         $summary->lastAdjustmentCurrency = $response->last_adjustment_currency;
         $summary->lastAdjustmentFunding = $response->last_adjustment_funding;
+        $summary->depositDate = !empty($response->deposit_time_created) ? $response->deposit_time_created : null;
+        $summary->depositReference = !empty($response->deposit_id) ? $response->deposit_id : null;
 
         return $summary;
     }

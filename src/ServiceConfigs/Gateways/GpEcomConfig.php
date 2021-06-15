@@ -53,6 +53,7 @@ class GpEcomConfig extends GatewayConfig
         $gateway->serviceUrl = $this->serviceUrl;
         $gateway->refundPassword = $this->refundPassword;
         $gateway->hostedPaymentConfig = $this->hostedPaymentConfig;
+        $gateway->requestLogger = $this->requestLogger;
         $gateway->webProxy = $this->webProxy;
 
         $services->gatewayConnector = $gateway;
@@ -76,6 +77,8 @@ class GpEcomConfig extends GatewayConfig
             $secure3d2->setMethodNotificationUrl($this->methodNotificationUrl);
             $secure3d2->setChallengeNotificationUrl($this->challengeNotificationUrl);
             $secure3d2->timeout = $gateway->timeout;
+            $secure3d2->requestLogger = $this->requestLogger;
+            $secure3d2->webProxy = $this->webProxy;
 
             $services->setSecure3dProvider(Secure3dVersion::TWO, $secure3d2);
         }

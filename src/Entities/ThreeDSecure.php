@@ -98,9 +98,9 @@ class ThreeDSecure
     public $challengeReturnUrl;
 
     /**
-     * @var string
+     * @var MessageExtension[]
      */
-    public $criticalityIndicator;
+    public $messageExtension;
 
     /**
      * @var string
@@ -225,21 +225,6 @@ class ThreeDSecure
      * @var string
      */
     public $messageCategory;
-
-    /**
-     * @var string
-     */
-    public $messageExtensionData;
-
-    /**
-     * @var string
-     */
-    public $messageExtensionId;
-
-    /**
-     * @var string
-     */
-    public $messageExtensionName;
 
     /**
      * @var string
@@ -392,7 +377,7 @@ class ThreeDSecure
             $this->cavv = $this->mergeValue($this->cavv, $secureEcom->cavv);
             $this->challengeMandated = $this->mergeValue($this->challengeMandated, $secureEcom->challengeMandated);
             $this->challengeValue = $this->mergeValue($this->challengeValue, $secureEcom->challengeValue);
-            $this->criticalityIndicator = $this->mergeValue($this->criticalityIndicator, $secureEcom->criticalityIndicator);
+            $this->messageExtension = $this->mergeValue($this->messageExtension, $secureEcom->messageExtension);
             $this->currency = $this->mergeValue($this->currency, $secureEcom->currency);
             $this->decoupledResponseIndicator = $this->mergeValue($this->decoupledResponseIndicator, $secureEcom->decoupledResponseIndicator);
             $this->directoryServerTransactionId = $this->mergeValue($this->directoryServerTransactionId, $secureEcom->directoryServerTransactionId);
@@ -402,9 +387,6 @@ class ThreeDSecure
             $this->enrolled = $this->mergeValue($this->enrolled, $secureEcom->enrolled);
             $this->issuerAcsUrl = $this->mergeValue($this->issuerAcsUrl, $secureEcom->issuerAcsUrl);
             $this->messageCategory = $this->mergeValue($this->messageCategory, $secureEcom->messageCategory);
-            $this->messageExtensionData = $this->mergeValue($this->messageExtensionData, $secureEcom->messageExtensionData);
-            $this->messageExtensionId = $this->mergeValue($this->messageExtensionId, $secureEcom->messageExtensionId);
-            $this->messageExtensionName = $this->mergeValue($this->messageExtensionName, $secureEcom->messageExtensionName);
             $this->messageVersion = $this->mergeValue($this->messageVersion, $secureEcom->messageVersion);
             $this->orderId = $this->mergeValue($this->orderId, $secureEcom->orderId);
             $this->payerAuthenticationRequest = $this->mergeValue($this->payerAuthenticationRequest, $secureEcom->payerAuthenticationRequest);
