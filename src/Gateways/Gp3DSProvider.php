@@ -15,6 +15,7 @@ use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Utils\StringUtils;
 
 class Gp3DSProvider extends RestGateway implements ISecure3dProvider
 {
@@ -239,15 +240,15 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             // home phone
             if (!empty($builder->getHomeNumber())) {
                 $request['payer']['home_phone'] = [];
-                $request['payer']['home_phone'] = $this->maybeSetKey($request['payer']['home_phone'], 'country_code', $builder->getHomeCountryCode());
-                $request['payer']['home_phone'] = $this->maybeSetKey($request['payer']['home_phone'], 'subscriber_number', $builder->getHomeNumber());
+                $request['payer']['home_phone'] = $this->maybeSetKey($request['payer']['home_phone'], 'country_code', StringUtils::validateToNumber($builder->getHomeCountryCode()));
+                $request['payer']['home_phone'] = $this->maybeSetKey($request['payer']['home_phone'], 'subscriber_number', StringUtils::validateToNumber($builder->getHomeNumber()));
             }
 
             // work phone
             if (!empty($builder->getWorkNumber())) {
                 $request['payer']['work_phone'] = [];
-                $request['payer']['work_phone'] = $this->maybeSetKey($request['payer']['work_phone'], 'country_code', $builder->getWorkCountryCode());
-                $request['payer']['work_phone'] = $this->maybeSetKey($request['payer']['work_phone'], 'subscriber_number', $builder->getWorkNumber());
+                $request['payer']['work_phone'] = $this->maybeSetKey($request['payer']['work_phone'], 'country_code', StringUtils::validateToNumber($builder->getWorkCountryCode()));
+                $request['payer']['work_phone'] = $this->maybeSetKey($request['payer']['work_phone'], 'subscriber_number', StringUtils::validateToNumber($builder->getWorkNumber()));
             }
 
             // payer login data
@@ -291,8 +292,8 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             // mobile phone
             if (!empty($builder->getMobileNumber())) {
                 $request['payer']['mobile_phone'] = [];
-                $request['payer']['mobile_phone'] = $this->maybeSetKey($request['payer']['mobile_phone'], 'country_code', $builder->getMobileCountryCode());
-                $request['payer']['mobile_phone'] = $this->maybeSetKey($request['payer']['mobile_phone'], 'subscriber_number', $builder->getMobileNumber());
+                $request['payer']['mobile_phone'] = $this->maybeSetKey($request['payer']['mobile_phone'], 'country_code', StringUtils::validateToNumber($builder->getMobileCountryCode()));
+                $request['payer']['mobile_phone'] = $this->maybeSetKey($request['payer']['mobile_phone'], 'subscriber_number', StringUtils::validateToNumber($builder->getMobileNumber()));
             }
 
             // browser_data

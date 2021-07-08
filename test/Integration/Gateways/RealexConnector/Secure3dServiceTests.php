@@ -177,6 +177,9 @@ class Secure3dServiceTests extends TestCase
                 ->withBrowserData($this->browserData)
                 ->withMethodUrlCompletion(MethodUrlCompletion::NO)
                 ->withChallengeRequestIndicator(ChallengeRequestIndicator::NO_PREFERENCE)
+                ->withMobileNumber('+44','11 33 44 44')
+                ->withHomeNumber('44', '12444555')
+                ->withWorkNumber('+44','345 6667')
                 ->execute();
             $this->assertNotNull($initAuth);
 

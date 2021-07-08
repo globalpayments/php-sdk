@@ -164,6 +164,7 @@ class IsoCountries
         ["name" => "Nauru", "numeric" => "520", "alpha2" => "NR", "alpha3" => "NRU"],
         ["name" => "Nepal", "numeric" => "524", "alpha2" => "NP", "alpha3" => "NPL"],
         ["name" => "Netherlands", "numeric" => "528", "alpha2" => "NL", "alpha3" => "NLD"],
+        ["name" => "Netherlands Antilles", "numeric" => "530", "alpha2" => "AN", "alpha3" => "ANT"],
         ["name" => "New Caledonia", "numeric" => "540", "alpha2" => "NC", "alpha3" => "NCL"],
         ["name" => "New Zealand", "numeric" => "554", "alpha2" => "NZ", "alpha3" => "NZL"],
         ["name" => "Nicaragua", "numeric" => "558", "alpha2" => "NI", "alpha3" => "NIC"],

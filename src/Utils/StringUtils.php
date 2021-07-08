@@ -73,4 +73,16 @@ class StringUtils
 
         return $str / 100;
     }
+
+    /**
+     * Strip all non-numeric characters
+     *
+     * @param string $value
+     *
+     * @return mixed
+     */
+    public static function validateToNumber($value)
+    {
+        return preg_replace("/[^0-9]/", "", $value);
+    }
 }
