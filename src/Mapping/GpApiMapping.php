@@ -6,6 +6,7 @@ namespace GlobalPayments\Api\Mapping;
 
 use GlobalPayments\Api\Entities\BatchSummary;
 use GlobalPayments\Api\Entities\Enums\ReportType;
+use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
@@ -377,7 +378,7 @@ class GpApiMapping
             $threeDSecure->messageVersion = $messageVersion;
             $threeDSecure->setVersion($version);
         }
-
+        $threeDSecure->status = $response->status;
         $threeDSecure->directoryServerStartVersion = !empty($response->three_ds->ds_protocol_version_start) ?
             $response->three_ds->ds_protocol_version_start : '';
         $threeDSecure->directoryServerEndVersion = !empty($response->three_ds->ds_protocol_version_end) ?
@@ -398,7 +399,10 @@ class GpApiMapping
         $threeDSecure->issuerAcsUrl = !empty($response->three_ds->method_url) ? $response->three_ds->method_url : '';
         $threeDSecure->challengeValue = !empty($response->three_ds->challenge_value) ?
             $response->three_ds->challenge_value : '';
-        if (!empty($response->three_ds->acs_challenge_request_url) && $threeDSecure->challengeMandated === true) {
+        if (
+            !empty($response->three_ds->acs_challenge_request_url) &&
+            $threeDSecure->status == Secure3dStatus::CHALLENGE_REQUIRED
+        ) {
             $threeDSecure->issuerAcsUrl = !empty($response->three_ds->acs_challenge_request_url) ?
                 $response->three_ds->acs_challenge_request_url : null;
             $threeDSecure->payerAuthenticationRequest = !empty($response->three_ds->challenge_value) ?
@@ -406,7 +410,6 @@ class GpApiMapping
         }
         $threeDSecure->setCurrency($response->currency);
         $threeDSecure->setAmount(StringUtils::toAmount($response->amount));
-        $threeDSecure->status = $response->status;
         $threeDSecure->authenticationValue = !empty($response->three_ds->authenticationValue) ?
             $response->three_ds->authenticationValue : '';
         $threeDSecure->directoryServerTransactionId = !empty($response->three_ds->ds_trans_ref) ?
@@ -437,7 +440,7 @@ class GpApiMapping
         $pageInfo->pageSize = !empty($response->paging->page_size) ? $response->paging->page_size :  null;
         $pageInfo->page = !empty($response->paging->page) ? $response->paging->page :  null;
         $pageInfo->order = !empty($response->paging->order) ? $response->paging->order :  null;
-        $pageInfo->oderBy = !empty($response->paging->order_by) ? $response->paging->order_by :  null;
+        $pageInfo->orderBy = !empty($response->paging->order_by) ? $response->paging->order_by :  null;
 
         return $pageInfo;
     }

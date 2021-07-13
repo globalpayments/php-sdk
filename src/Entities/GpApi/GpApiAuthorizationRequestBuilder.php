@@ -160,7 +160,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             $secureEcom = $paymentMethodContainer->threeDSecure;
             if (!empty($secureEcom)) {
                 $threeDS = [
-                    'message_version' => $secureEcom->getVersion(),
+                    'message_version' => $secureEcom->messageVersion,
                     'eci' => $secureEcom->eci,
                     'value' => $secureEcom->authenticationValue,
                     'server_trans_ref' => $secureEcom->serverTransactionId,

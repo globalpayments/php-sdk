@@ -7,6 +7,18 @@
 ## Latest version
 
 #### Enhancements:
+- Send the numeric version in the three_ds.message_version in the create transaction request
+- Map the ACS challenge redirect url only if the status is "CHALLENGE_REQUIRED"
+
+## v2.3.5 (07/08/2021)
+
+#### Enhancements:
+- Add "Netherlands Antilles" to our mapping for country codes
+- Strip all non-numeric characters for phone number and phone country code on 3DS2 flow GP-ECOM
+
+## v2.3.4 (06/15/2021)
+
+#### Enhancements:
 - Add RequestLogger to GP-ECOM
 - Fix message_extension issue for 3DS2 on GP-ECOM
 - Update logo image on Readme and Changelog files
