@@ -59,6 +59,11 @@ class GpApiConfig extends GatewayConfig
     public $challengeNotificationUrl;
 
     /**
+     * @var string
+     */
+    public $merchantContactUrl;
+
+    /**
      * @var array
      */
     public $permissions;

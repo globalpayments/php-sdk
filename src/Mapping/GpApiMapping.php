@@ -19,6 +19,7 @@ use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Utils\StringUtils;
+use GlobalPayments\Api\Entities\MessageExtension;
 
 class GpApiMapping
 {
@@ -362,7 +363,7 @@ class GpApiMapping
         $transaction = new Transaction();
         $threeDSecure = new ThreeDSecure();
         $threeDSecure->serverTransactionId = !empty($response->id) ? $response->id :
-            (!empty($response->three_ds->server_trans_ref) ? $response->three_ds->server_trans_ref : '');
+            (!empty($response->three_ds->server_trans_ref) ? $response->three_ds->server_trans_ref : null);
         if (!empty($response->three_ds->message_version)) {
             $messageVersion = $response->three_ds->message_version;
             switch (substr($messageVersion, 0, 2)) {
@@ -380,52 +381,71 @@ class GpApiMapping
         }
         $threeDSecure->status = $response->status;
         $threeDSecure->directoryServerStartVersion = !empty($response->three_ds->ds_protocol_version_start) ?
-            $response->three_ds->ds_protocol_version_start : '';
+            $response->three_ds->ds_protocol_version_start : null;
         $threeDSecure->directoryServerEndVersion = !empty($response->three_ds->ds_protocol_version_end) ?
-            $response->three_ds->ds_protocol_version_end : '';
+            $response->three_ds->ds_protocol_version_end : null;
         $threeDSecure->acsStartVersion = !empty($response->three_ds->acs_protocol_version_start) ?
-            $response->three_ds->acs_protocol_version_start : '';
+            $response->three_ds->acs_protocol_version_start : null;
         $threeDSecure->acsEndVersion = !empty($response->three_ds->acs_protocol_version_end) ?
-            $response->three_ds->acs_protocol_version_end : '';
+            $response->three_ds->acs_protocol_version_end : null;
         $threeDSecure->enrolled = !empty($response->three_ds->enrolled_status) ?
-            $response->three_ds->enrolled_status : 'NOT_ENROLLED';
-        $threeDSecure->eci = !empty($response->three_ds->eci) ? $response->three_ds->eci : '';
+            $response->three_ds->enrolled_status : null;
+        $threeDSecure->eci = !empty($response->three_ds->eci) ? $response->three_ds->eci : null;
         $threeDSecure->acsInfoIndicator = !empty($response->three_ds->acs_info_indicator) ?
             $response->three_ds->acs_info_indicator : null;
         $threeDSecure->challengeMandated = !empty($response->three_ds->challenge_status) ?
             ($response->three_ds->challenge_status == 'MANDATED') : false;
         $threeDSecure->payerAuthenticationRequest = !empty($response->three_ds->method_data->encoded_method_data) ?
             $response->three_ds->method_data->encoded_method_data : null;
-        $threeDSecure->issuerAcsUrl = !empty($response->three_ds->method_url) ? $response->three_ds->method_url : '';
-        $threeDSecure->challengeValue = !empty($response->three_ds->challenge_value) ?
-            $response->three_ds->challenge_value : '';
+        $threeDSecure->issuerAcsUrl = !empty($response->three_ds->method_url) ? $response->three_ds->method_url : null;
         if (
             !empty($response->three_ds->acs_challenge_request_url) &&
             $threeDSecure->status == Secure3dStatus::CHALLENGE_REQUIRED
         ) {
-            $threeDSecure->issuerAcsUrl = !empty($response->three_ds->acs_challenge_request_url) ?
-                $response->three_ds->acs_challenge_request_url : null;
+            $threeDSecure->issuerAcsUrl = $response->three_ds->acs_challenge_request_url;
             $threeDSecure->payerAuthenticationRequest = !empty($response->three_ds->challenge_value) ?
-                $response->three_ds->challenge_value : '';
+                $response->three_ds->challenge_value : null;
         }
         $threeDSecure->setCurrency($response->currency);
         $threeDSecure->setAmount(StringUtils::toAmount($response->amount));
-        $threeDSecure->authenticationValue = !empty($response->three_ds->authenticationValue) ?
-            $response->three_ds->authenticationValue : '';
+        $threeDSecure->authenticationValue = !empty($response->three_ds->authentication_value) ?
+            $response->three_ds->authentication_value : null;
         $threeDSecure->directoryServerTransactionId = !empty($response->three_ds->ds_trans_ref) ?
-            $response->three_ds->ds_trans_ref : '';
+            $response->three_ds->ds_trans_ref : null;
         $threeDSecure->acsTransactionId = !empty($response->three_ds->acs_trans_ref) ?
-            $response->three_ds->acs_trans_ref : '';
+            $response->three_ds->acs_trans_ref : null;
         $threeDSecure->statusReason = !empty($response->three_ds->status_reason) ?
-            $response->three_ds->status_reason : '';
+            $response->three_ds->status_reason : null;
         $threeDSecure->messageCategory = !empty($response->three_ds->message_category) ?
-            $response->three_ds->message_category : '';
+            $response->three_ds->message_category : null;
         $threeDSecure->messageType = !empty($response->three_ds->message_type) ?
-            $response->three_ds->message_type : '';
+            $response->three_ds->message_type : null;
         $threeDSecure->sessionDataFieldName = !empty($response->three_ds->session_data_field_name) ?
-            $response->three_ds->session_data_field_name : '';
+            $response->three_ds->session_data_field_name : null;
         $threeDSecure->challengeReturnUrl = !empty($response->notifications->challenge_return_url) ?
-            $response->notifications->challenge_return_url : '';
+            $response->notifications->challenge_return_url : null;
+        $threeDSecure->liabilityShift = !empty($response->three_ds->liability_shift) ?
+            $response->three_ds->liability_shift : null;
+        $threeDSecure->authenticationSource = !empty($response->three_ds->authentication_source) ?
+            $response->three_ds->authentication_source : null;
+        $threeDSecure->authenticationType = !empty($response->three_ds->authentication_request_type) ?
+            $response->three_ds->authentication_request_type : null;
+        $threeDSecure->acsInfoIndicator = !empty($response->three_ds->acs_decoupled_response_indicator) ?
+            $response->three_ds->acs_decoupled_response_indicator : null;
+        $threeDSecure->whitelistStatus = !empty($response->three_ds->whitelist_status) ?
+            $response->three_ds->whitelist_status : null;
+        if (!empty($response->three_ds->message_extension)) {
+            foreach ($response->three_ds->message_extension as $messageExtension) {
+                $msgItem = new MessageExtension();
+                $msgItem->criticalityIndicator = !empty($messageExtension->criticality_indicator) ?
+                        $messageExtension->criticality_indicator : null;
+                $msgItem->messageExtensionData = !empty($messageExtension->data) ?
+                    json_encode($messageExtension->data) : null;
+                $msgItem->messageExtensionId = !empty($messageExtension->id) ? $messageExtension->id : null;
+                $msgItem->messageExtensionName = !empty($messageExtension->name) ? $messageExtension->name : null;
+                $threeDSecure->messageExtension[] = $msgItem;
+            }
+        }
 
         $transaction->threeDSecure = $threeDSecure;
 

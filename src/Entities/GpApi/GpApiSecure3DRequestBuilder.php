@@ -72,7 +72,6 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
         $threeDS['amount'] = StringUtils::toNumeric($builder->amount);
         $threeDS['currency'] = $builder->currency;
         $threeDS['preference'] = $builder->challengeRequestIndicator;
-        $threeDS['transaction_type'] = $builder->orderTransactionType;
         $threeDS['source'] = (string) $builder->authenticationSource;
         $threeDS['payment_method'] = $this->setPaymentMethodParam($builder->paymentMethod);
         $threeDS['notifications'] = [
@@ -104,7 +103,7 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
             'message_version' => $builder->messageVersion
         ];
         $threeDS['method_url_completion_status'] = (string) $builder->methodUrlCompletion;
-        $threeDS['merchant_contact_url'] = 'https://enp4qhvjseljg.x.pipedream.net/'; // @TODO
+        $threeDS['merchant_contact_url'] = $config->merchantContactUrl;
         $order = [
             'time_created_reference' => !empty($builder->orderCreateDate) ?
                 (new \DateTime($builder->orderCreateDate))->format('Y-m-d\TH:i:s.u\Z') : null,

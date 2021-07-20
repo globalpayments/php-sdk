@@ -88,11 +88,6 @@ class ThreeDSecure
     public $challengeMandated;
 
     /**
-     * @var string
-     */
-    public $challengeValue;
-
-    /**
      * string
      */
     public $challengeReturnUrl;
@@ -351,6 +346,11 @@ class ThreeDSecure
      */
     public $sessionDataFieldName;
 
+    /**
+     * @var string
+     */
+    public $liabilityShift;
+
     public function __construct()
     {
         $this->paymentDataType = '3DSecure';
@@ -376,7 +376,6 @@ class ThreeDSecure
             $this->cardHolderResponseInfo = $this->mergeValue($this->cardHolderResponseInfo, $secureEcom->cardHolderResponseInfo);
             $this->cavv = $this->mergeValue($this->cavv, $secureEcom->cavv);
             $this->challengeMandated = $this->mergeValue($this->challengeMandated, $secureEcom->challengeMandated);
-            $this->challengeValue = $this->mergeValue($this->challengeValue, $secureEcom->challengeValue);
             $this->messageExtension = $this->mergeValue($this->messageExtension, $secureEcom->messageExtension);
             $this->currency = $this->mergeValue($this->currency, $secureEcom->currency);
             $this->decoupledResponseIndicator = $this->mergeValue($this->decoupledResponseIndicator, $secureEcom->decoupledResponseIndicator);
@@ -405,6 +404,7 @@ class ThreeDSecure
             $this->challengeReturnUrl = $this->mergeValue($this->challengeReturnUrl, $secureEcom->challengeReturnUrl);
             $this->exemptStatus = $this->mergeValue($this->exemptStatus, $secureEcom->exemptStatus);
             $this->exemptReason = $this->mergeValue($this->exemptStatus, $secureEcom->exemptReason);
+            $this->liabilityShift = $this->mergeValue($this->liabilityShift, $secureEcom->liabilityShift);
         }
     }
 
