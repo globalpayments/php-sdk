@@ -7,6 +7,20 @@
 ## Latest version
 
 #### Enhancements:
+- Add new HPP example for GP-ECOM
+- Add file medatada.xml
+
+
+## v2.3.7 (07/20/2021)
+
+#### Enhancements:
+- Replace in create transaction request authentication.three_ds with authentication.id)
+- Add liability shift checks in the 3DS GP-API flow / update unit tests
+- add new mappings on 3DS GP-API: authenticationSource, authenticationType, acsInfoIndicator, whitelistStatus, messageExtension
+
+## v2.3.6 (07/13/2021)
+
+#### Enhancements:
 - Send the numeric version in the three_ds.message_version in the create transaction request
 - Map the ACS challenge redirect url only if the status is "CHALLENGE_REQUIRED"
 

@@ -1,0 +1,20 @@
+
+<button id="payButtonId">Click here to pay</button>
+
+<script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+<script src="rxp-hpp.js"></script>
+<script>
+    $(document).ready(function() {
+        $.getJSON("get-json.php", function(jsonFromRequestEndpoint) {
+            console.log(jsonFromRequestEndpoint);
+            RealexHpp.setHppUrl("https://pay.sandbox.realexpayments.com/pay");
+            /*
+             * if running this from localhost, for your response endpoint,
+             * you will need to expose your local server to the outside world
+             * you can use something like ngrok for it then access your local host via
+             * the ngrok link
+             */
+            RealexHpp.lightbox.init("payButtonId", "response-endpoint.php", jsonFromRequestEndpoint);
+        });
+    });
+</script>
