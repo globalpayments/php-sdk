@@ -777,7 +777,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                             }
 
                             if (!empty($lineItem->totalAmount)) {
-                                $linetItemNode->appendChild($xml->createElement('LineItemTotalAmt', $lineItem->totalAmount));
+                                $linetItemNode->appendChild($xml->createElement('ItemTotalAmt', $lineItem->totalAmount));
                             }
 
                             // if (!empty($lineItem->somethingsome)) {
