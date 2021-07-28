@@ -544,4 +544,17 @@ class ManagementBuilder extends TransactionBuilder
 
         return $this;
     }
+    
+    /**
+     * Set the cardType data value for LEVEL_II & LEVEL_III transactions
+     *
+     * @param string $cardType Request Card Brand
+     *
+     * @return $this
+     */
+    public function withCardType($cardType)
+    {
+        $this->cardTypeType = $cardType;
+        return $this;
+    }
 }
