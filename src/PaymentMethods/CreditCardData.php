@@ -7,12 +7,13 @@ use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Enums\CvnPresenceIndicator;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ICardData;
+use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
 use GlobalPayments\Api\Entities\Enums\DccProcessor;
 use GlobalPayments\Api\Entities\Enums\DccRateType;
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 
-class CreditCardData extends Credit implements ICardData
+class CreditCardData extends Credit implements ITokenizable, ICardData
 {
     /**
      * Card number

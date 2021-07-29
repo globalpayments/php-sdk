@@ -2,10 +2,11 @@
 
 namespace GlobalPayments\Api\PaymentMethods;
 
+use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITrackData;
 use GlobalPayments\Api\Utils\CardUtils;
 
-class CreditTrackData extends Credit implements ITrackData
+class CreditTrackData extends Credit implements ITokenizable, ITrackData
 {
     public $entryMethod;
     public $value;
