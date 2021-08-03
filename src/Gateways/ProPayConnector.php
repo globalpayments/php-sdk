@@ -17,6 +17,7 @@ use GlobalPayments\Api\Entities\PayFac\PayFacResponseData;
 use GlobalPayments\Api\Entities\PayFac\RenewAccountData;
 use GlobalPayments\Api\Entities\PayFac\SingleSignOnData;
 use GlobalPayments\Api\Entities\PayFac\OwnerDetailsResponseData;
+use GlobalPayments\Api\Entities\PayFac\DeviceDetails;
 
 class ProPayConnector extends XmlGateway implements IPayFacProvider
 {
@@ -62,16 +63,16 @@ class ProPayConnector extends XmlGateway implements IPayFacProvider
             $this->hydrateFlashFundsData($xml, $xmlTrans, $builder->flashFundsPaymentCardData);
         } elseif ($builder->transactionType === TransactionType::GET_ACCOUNT_DETAILS
                  && empty($builder->accountNumber)) {
-            if(!empty($builder->externalId)){
+            if (!empty($builder->externalId)) {
                 $xmlTrans->appendChild($xml->createElement('externalId', $builder->externalId));
-            } elseif(!empty($builder->sourceEmail)){
+            } elseif (!empty($builder->sourceEmail)) {
                 $xmlTrans->appendChild($xml->createElement('sourceEmail', $builder->sourceEmail));
             }
         }
         
         $transaction->appendChild($xmlTrans);
         
-        $requestXML = $xml->saveXML($transaction);                
+        $requestXML = $xml->saveXML($transaction);
         $response = $this->doTransaction($requestXML);
         
         return $this->mapResponse($builder, $response);
@@ -186,6 +187,10 @@ class ProPayConnector extends XmlGateway implements IPayFacProvider
         if (!empty($builder->grossBillingInformation)) {
             $this->hydrateGrossBillingData($xml, $xmlTrans, $builder->grossBillingInformation);
         }
+        
+        if (!empty($builder->deviceDetails)) {
+            $this->hydrateDeviceQuantity($xml, $xmlTrans, $builder->deviceDetails);            
+        }
                 
         $this->hydrateBankDetails($xml, $xmlTrans, $builder);
         $this->hydratOtherDetails($xml, $xmlTrans, $builder);
@@ -205,6 +210,8 @@ class ProPayConnector extends XmlGateway implements IPayFacProvider
             $this->hydrateBusinessData($xml, $xmlTrans, $builder->businessData);
         } elseif (!empty($builder->grossBillingInformation)) {
             $this->hydrateGrossBillingData($xml, $xmlTrans, $builder->grossBillingInformation);
+        } elseif (!empty($builder->deviceQuantity)) {
+            $this->hydrateDeviceQuantity($xml, $xmlTrans, $builder->deviceQuantity);
         }
         //update bank details if any
         $this->hydrateBankDetails($xml, $xmlTrans, $builder);
@@ -248,7 +255,7 @@ class ProPayConnector extends XmlGateway implements IPayFacProvider
                     'City' => !empty($ownerInfo->ownerAddress->city) ? $ownerInfo->ownerAddress->city : '',
                     'State' => !empty($ownerInfo->ownerAddress->state) ? $ownerInfo->ownerAddress->state : '',
                     'Zip' => !empty($ownerInfo->ownerAddress->postalCode) ? $ownerInfo->ownerAddress->postalCode : '',
-                    'Country' => !empty($ownerInfo->ownerAddress->country) ? $ownerInfo->ownerAddress->country : '',
+                    'Country' => !is_null($ownerInfo->ownerAddress->country) ? $ownerInfo->ownerAddress->country : '',
                     'Title' => !empty($ownerInfo->title) ? $ownerInfo->title : '',
                     'Percentage' => !empty($ownerInfo->percentage) ? $ownerInfo->percentage : ''
                 ];
@@ -277,7 +284,7 @@ class ProPayConnector extends XmlGateway implements IPayFacProvider
             'BusinessAddress' => !empty($businessData->businessAddress->streetAddress1) ? $businessData->businessAddress->streetAddress1 : '',
             'BusinessAddress2' => !empty($businessData->businessAddress->streetAddress2) ? $businessData->businessAddress->streetAddress2 : '',
             'BusinessCity' => !empty($businessData->businessAddress->city) ? $businessData->businessAddress->city : '',
-            'BusinessCountry' => !empty($businessData->businessAddress->country) ? $businessData->businessAddress->country : '',
+            'BusinessCountry' => !is_null($businessData->businessAddress->country) ? $businessData->businessAddress->country : '',
             'BusinessState' => !empty($businessData->businessAddress->state) ? $businessData->businessAddress->state : '',
             'BusinessZip' => !empty($businessData->businessAddress->postalCode) ? $businessData->businessAddress->postalCode : ''
         ];
@@ -310,13 +317,13 @@ class ProPayConnector extends XmlGateway implements IPayFacProvider
             'city' => !empty($merchantAddress->city) ? $merchantAddress->city : '',
             'state' => !empty($merchantAddress->state) ? $merchantAddress->state : '',
             'zip' => !empty($merchantAddress->postalCode) ? $merchantAddress->postalCode : '',
-            'country' => !empty($merchantAddress->country) ? $merchantAddress->country : '',
+            'country' => !is_null($merchantAddress->country) ? $merchantAddress->country : '',
                       
             'mailAddr' => !empty($mailingAddress->streetAddress1) ? $mailingAddress->streetAddress1 : '',
             'mailApt' => !empty($mailingAddress->streetAddress2) ? $mailingAddress->streetAddress2: '',
             'mailAddr3' => !empty($mailingAddress->streetAddress3) ? $mailingAddress->streetAddress3 : '',
             'mailCity' => !empty($mailingAddress->city) ? $mailingAddress->city : '',
-            'mailCountry' => !empty($mailingAddress->country) ? $mailingAddress->country : '',
+            'mailCountry' => !is_null($mailingAddress->country) ? $mailingAddress->country : '',
             'mailState' => !empty($mailingAddress->state) ? $mailingAddress->state : '' ,
             'mailZip' => !empty($mailingAddress->postalCode) ? $mailingAddress->postalCode : '',
         ];
@@ -401,7 +408,7 @@ class ProPayConnector extends XmlGateway implements IPayFacProvider
                 'SignificantOwnerCityName' => !empty($significantOwnerData->ownerAddress->city) ? $significantOwnerData->ownerAddress->city : '',
                 'SignificantOwnerRegionCode' => !empty($significantOwnerData->ownerAddress->state) ? $significantOwnerData->ownerAddress->state : '',
                 'SignificantOwnerPostalCode' => !empty($significantOwnerData->ownerAddress->postalCode) ? $significantOwnerData->ownerAddress->postalCode : '',
-                'SignificantOwnerCountryCode' => !empty($significantOwnerData->ownerAddress->country) ? $significantOwnerData->ownerAddress->country : '',
+                'SignificantOwnerCountryCode' => !is_null($significantOwnerData->ownerAddress->countryCode) ? $significantOwnerData->ownerAddress->countryCode : '',
                 'SignificantOwnerTitle' => !empty($significantOwnerData->title) ? $significantOwnerData->title : '',
                 'SignificantOwnerPercentage' => !empty($significantOwnerData->percentage) ? $significantOwnerData->percentage : '',
             ]);
@@ -417,13 +424,13 @@ class ProPayConnector extends XmlGateway implements IPayFacProvider
             'GrossSettleCity' => !empty($grossBilling->grossSettleAddress->city) ? $grossBilling->grossSettleAddress->city : '',
             'GrossSettleState' => !empty($grossBilling->grossSettleAddress->state) ? $grossBilling->grossSettleAddress->state : '',
             'GrossSettleZipCode' => !empty($grossBilling->grossSettleAddress->postalCode) ? $grossBilling->grossSettleAddress->postalCode : '',
-            'GrossSettleCountry' => !empty($grossBilling->grossSettleAddress->country) ? $grossBilling->grossSettleAddress->country : '',
+            'GrossSettleCountry' => !is_null($grossBilling->grossSettleAddress->country) ? $grossBilling->grossSettleAddress->country : '',
             
             'GrossSettleCreditCardNumber' => !empty($grossBilling->grossSettleCreditCardData->number) ? $grossBilling->grossSettleCreditCardData->number : '',
             'GrossSettleNameOnCard' => !empty($grossBilling->grossSettleCreditCardData->cardHolderName) ? $grossBilling->grossSettleCreditCardData->cardHolderName : '',
             'GrossSettleCreditCardExpDate' => $grossBilling->grossSettleCreditCardData->getShortExpiry(),
             
-            'GrossSettleAccountCountryCode' => !empty($grossBilling->grossSettleBankData->accountCountryCode) ? $grossBilling->grossSettleBankData->accountCountryCode : '',
+            'GrossSettleAccountCountryCode' => !is_null($grossBilling->grossSettleBankData->accountCountryCode) ? $grossBilling->grossSettleBankData->accountCountryCode : '',
             'GrossSettleAccountHolderName' => !empty($grossBilling->grossSettleBankData->accountName) ? $grossBilling->grossSettleBankData->accountName : '',
             'GrossSettleAccountNumber' => !empty($grossBilling->grossSettleBankData->accountNumber) ? $grossBilling->grossSettleBankData->accountNumber : '',
             'GrossSettleAccountType' => !empty($grossBilling->grossSettleBankData->accountType) ? $grossBilling->grossSettleBankData->accountType : '',
@@ -533,7 +540,7 @@ class ProPayConnector extends XmlGateway implements IPayFacProvider
                     'City' => !empty($ownerInfo->ownerAddress->city) ? $ownerInfo->ownerAddress->city : '',
                     'StateProvince' => !empty($ownerInfo->ownerAddress->state) ? $ownerInfo->ownerAddress->state : '',
                     'PostalCode' => !empty($ownerInfo->ownerAddress->postalCode) ? $ownerInfo->ownerAddress->postalCode : '',
-                    'Country' => !empty($ownerInfo->ownerAddress->country) ? $ownerInfo->ownerAddress->country : '',
+                    'Country' => !is_null($ownerInfo->ownerAddress->country) ? $ownerInfo->ownerAddress->country : '',
                     'Phone' => !empty($ownerInfo->phone) ? $ownerInfo->phone : '',
                 ];
                 
@@ -633,7 +640,7 @@ class ProPayConnector extends XmlGateway implements IPayFacProvider
         
         if (!empty($root->beneficialOwnerDataResult->Owner)) {
             foreach ($root->beneficialOwnerDataResult->Owner as $owner) {
-                $ownerDetails = new OwnerDetailsResponseData();                
+                $ownerDetails = new OwnerDetailsResponseData();
                 $ownerDetails->firstName = (string) $owner->FirstName;
                 $ownerDetails->lastName = (string) $owner->LastName;
                 $ownerDetails->validationStatus = (string) $owner->Status;
@@ -642,5 +649,17 @@ class ProPayConnector extends XmlGateway implements IPayFacProvider
         }
         
         return $propayResponse;
+    }
+    
+    private function hydrateDeviceQuantity($xml, $xmlTrans, DeviceDetails $deviceDetails)
+    {
+        $devicesList = $xml->createElement('Devices');
+        $device = $xml->createElement('Device');
+        $device->appendChild($xml->createElement('Quantity', $deviceDetails->quantity));
+        $devicesList->appendChild($device);
+                
+        $xmlTrans->appendChild($devicesList);
+        
+        $xmlTrans->appendChild($xml->createElement('TimeZone', $deviceDetails->timezone));
     }
 }

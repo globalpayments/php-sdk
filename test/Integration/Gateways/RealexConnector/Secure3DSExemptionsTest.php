@@ -266,7 +266,7 @@ class Secure3DSExemptionsTest extends TestCase
                 ->withEnableExemptionOptimization(true)
                 ->execute();
         } catch (GatewayException $exception) {
-            $this->assertEquals('Status Code: 202 - Blocked by Transaction Risk Analysis.' , $exception->getMessage());
+            $this->assertContains('Status Code: 202 - Blocked by Transaction Risk Analysis' , $exception->getMessage());
         }
     }
 }

@@ -3,9 +3,7 @@
 namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
 
 use GlobalPayments\Api\Entities\CustomWebProxy;
-use GlobalPayments\Api\Entities\Enums\DecoupledFlowRequest;
 use GlobalPayments\Api\Entities\Enums\MerchantInitiatedRequestType;
-use GlobalPayments\Api\Entities\Enums\WhiteListStatus;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\MerchantDataCollection;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
@@ -37,7 +35,7 @@ use GlobalPayments\Api\Entities\Enums\SdkUiType;
 use GlobalPayments\Api\Entities\Enums\ChallengeRequestIndicator;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 
-class Secure3dServiceTests extends TestCase
+class Secure3dServiceTest extends TestCase
 {
     private $card;
     private $stored;
@@ -145,7 +143,7 @@ class Secure3dServiceTests extends TestCase
                 ->withMerchantData($md)
                 ->execute();
             $card->threeDSecure = $secureEcom;
-            if ($secureEcom->status == 'Y') {
+            if (in_array($secureEcom->status, ['Y', 'A'])) {
                 $response = $card->charge()->execute();
                 $this->assertNotNull($response);
                 $this->assertEquals('00', $response->responseCode);

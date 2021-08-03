@@ -2940,7 +2940,7 @@ class RealexSdkCertification extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->expMonth = 12;
-        $card->expYear = 20; // magic number?
+        $card->expYear = TestCards::validCardExpYear();
 
         // request
         $response = $card->charge(100.01)
@@ -10945,6 +10945,9 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     */
     public function testCredit014d()
     {
         $config = $this->getBaseConfig();
@@ -16388,6 +16391,9 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     */
     public function testManual031c1()
     {
         $config = $this->getBaseConfig();
@@ -16414,6 +16420,9 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     */
     public function testManual031c2()
     {
         $config = $this->getBaseConfig();
@@ -16572,6 +16581,9 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     */
     public function testManual033c1()
     {
         $config = $this->getBaseConfig();
@@ -16602,6 +16614,9 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     */
     public function testManual033c2()
     {
         $config = $this->getBaseConfig();
@@ -16727,6 +16742,9 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     */
     public function testManual034c1()
     {
         $config = $this->getBaseConfig();
@@ -16757,6 +16775,9 @@ class RealexSdkCertification extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
+    /**
+     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
+     */
     public function testManual034c2()
     {
         $config = $this->getBaseConfig();

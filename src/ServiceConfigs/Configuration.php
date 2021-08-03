@@ -36,6 +36,11 @@ abstract class Configuration
     /** @var bool */
     public $forceGatewayTimeout;
 
+    /**
+     * @var array
+     */
+    public $dynamicHeaders = [];
+
     public function validate()
     {
         $this->validated = true;

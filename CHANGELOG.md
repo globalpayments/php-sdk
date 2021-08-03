@@ -5,11 +5,18 @@
 # Changelog
 
 ## Latest version
+- Send "x-gp-sdk" in the header with the SDK programming language and release version used
+- Send headers to GP-API that are dynamically set through configuration, like:
+     - x-gp-platform: "prestashop;version=1.7.2"
+     - x-gp-extension: "coccinet;version=2.4.1"
+- Fix some GP-ECOM unit tests for APM, certifications and add Secure3dServiceTest to realex test suite
+- Add support for Propay timezone and device details
+
+## v2.3.8 (07/27/2021)
 
 #### Enhancements:
 - Add new HPP example for GP-ECOM
 - Add file medatada.xml
-
 
 ## v2.3.7 (07/20/2021)
 

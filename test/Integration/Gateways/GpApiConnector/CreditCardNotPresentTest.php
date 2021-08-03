@@ -1034,6 +1034,11 @@ class CreditCardNotPresentTest extends TestCase
         $config->environment = Environment::TEST;
         $config->channel = Channels::CardNotPresent;
         $config->country = 'GB';
+        //DO NO DELETE - usage example for some settings
+//        $config->dynamicHeaders = [
+//            'x-gp-platform' => 'prestashop;version=1.7.2',
+//            'x-gp-extension' => 'coccinet;version=2.4.1',
+//        ];
 //        $config->permissions = ['TRN_POST_Authorize'];
 //        $config->webProxy = new CustomWebProxy('127.0.0.1:8866');
 //        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));

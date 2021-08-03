@@ -10,6 +10,8 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\Entities\PayFac\UploadDocumentData;
 use GlobalPayments\Api\Entities\PayFac\SingleSignOnData;
 use GlobalPayments\Api\Tests\Integration\Gateways\ProPay\TestData\TestAccountData;
+use GlobalPayments\Api\Entities\Enums\TimeZone;
+use GlobalPayments\Api\Entities\PayFac\DeviceDetails;
 
 class ProPayAccountTests extends TestCase
 {
@@ -286,5 +288,40 @@ class ProPayAccountTests extends TestCase
         
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->responseCode);
+    }
+    
+    public function testCreateAccountWithTimeZone()
+    {
+        $bankAccountInformation = TestAccountData::getBankAccountData();
+        $userBusinessInformation = TestAccountData::getBusinessData();
+        $accountPersonalInformation = TestAccountData::getUserPersonalData();
+        $threatRiskData = TestAccountData::getThreatRiskData();
+        $significantOwnerData = TestAccountData::getSignificantOwnerData();
+        $ownersInformation = TestAccountData::getBeneficialOwnerData();
+        $creditCardInformation = TestAccountData::getCreditCardData();
+        $achInformation = TestAccountData::getACHData();
+        $secondaryBankInformation = TestAccountData::getSecondaryBankAccountData();
+        $deviceDetails = new DeviceDetails();
+        $deviceDetails->quantity = 2;
+        $deviceDetails->timezone = TimeZone::ET;
+        
+        $response = PayFacService::createAccount()
+        ->withBankAccountData($bankAccountInformation)
+        ->withBusinessData($userBusinessInformation)
+        ->withUserPersonalData($accountPersonalInformation)
+        ->withThreatRiskData($threatRiskData)
+        ->withSignificantOwnerData($significantOwnerData)
+        ->withBeneficialOwnerData($ownersInformation)
+        ->withCreditCardData($creditCardInformation)
+        ->withACHData($achInformation)
+        ->withSecondaryBankAccountData($secondaryBankInformation)
+        ->withDeviceDetails($deviceDetails)
+        ->execute();
+        
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode);
+        $this->assertNotNull($response->payFacData->accountNumber);
+        $this->assertNotNull($response->payFacData->password);
+        $this->assertNotNull($response->payFacData->sourceEmail);
     }
 }

@@ -44,6 +44,11 @@ abstract class Gateway
     public $webProxy;
 
     /**
+     * @var array
+     */
+    public $dynamicHeaders;
+
+    /**
      * @param string $contentType
      *
      * @return
@@ -51,6 +56,7 @@ abstract class Gateway
     public function __construct($contentType)
     {
         $this->headers = [];
+        $this->dynamicHeaders = [];
         $this->contentType = $contentType;
     }
 
@@ -83,7 +89,7 @@ abstract class Gateway
             $queryString = $this->buildQueryString($queryStringParams);
             $request = curl_init($this->serviceUrl . $endpoint . $queryString);
 
-            $this->headers = array_merge($this->headers, [
+            $this->headers = array_merge($this->dynamicHeaders, $this->headers, [
                 'Content-Type' => sprintf('%s; charset=UTF-8', $this->contentType),
                 'Content-Length' => empty($data) ? 0 : strlen($data),
             ]);

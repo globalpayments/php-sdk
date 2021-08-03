@@ -144,15 +144,13 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $request->setAttribute("type", $transactionType);
 
         $request->appendChild($xml->createElement("merchantid", $this->merchantId));
-        
+
         if ($this->accountId !== null) {
             $request->appendChild($xml->createElement("account", $this->accountId));
         }
         if ($this->channel !== null) {
             $request->appendChild($xml->createElement("channel", $this->channel));
         }
-        
-        $request->appendChild($xml->createElement("orderid", $orderId));
 
         if (isset($builder->amount)) {
             $amount = $xml->createElement("amount", preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount)));
@@ -167,6 +165,8 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $element->setAttribute("flag", $autoSettle);
             $request->appendChild($element);
         }
+
+        $request->appendChild($xml->createElement("orderid", $orderId));
 
         // For Fraud Decision Manager
         if (!empty($builder->customerData)) {
@@ -463,8 +463,8 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         }
 
         // mpi
-        $secureEcom = $builder->paymentMethod->threeDSecure;
-        if (!empty($secureEcom)) {
+        if (!empty($builder->paymentMethod->threeDSecure)) {
+            $secureEcom = $builder->paymentMethod->threeDSecure;
             $mpi = $xml->createElement("mpi");
             $mpi->appendChild($xml->createElement("eci", $secureEcom->eci));
             $mpi->appendChild($xml->createElement("cavv", $secureEcom->cavv));
@@ -596,6 +596,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $this->setSerializeData('CUST_NUM', $builder->customerId);
         }
         if (!empty($builder->shippingAddress)) {
+
             $countryCode = CountryUtils::getCountryCodeByCountry($builder->shippingAddress->country);
             $shippingCode = $this->generateCode($builder->shippingAddress);
 
@@ -1451,7 +1452,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             case "3ds-verifysig":
             case "3ds-verifyenrolled":
                 return ["00", "110"];
-            case PaymentMethodType::APM:
+            case "payment-set":
                 return ["01"];
             default:
                 return ["00"];

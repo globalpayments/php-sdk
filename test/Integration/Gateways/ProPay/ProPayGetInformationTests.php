@@ -69,5 +69,4 @@ class ProPayGetInformationTests extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->responseCode);
     }
-    
 }

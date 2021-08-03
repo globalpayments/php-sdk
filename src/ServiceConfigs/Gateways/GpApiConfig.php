@@ -88,6 +88,7 @@ class GpApiConfig extends GatewayConfig
         $gateway->serviceUrl = $this->serviceUrl;
         $gateway->requestLogger = $this->requestLogger;
         $gateway->webProxy = $this->webProxy;
+        $gateway->dynamicHeaders = $this->dynamicHeaders;
 
         $services->gatewayConnector = $gateway;
         $services->reportingService = $gateway;

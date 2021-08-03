@@ -42,6 +42,7 @@ class PayFacBuilder extends BaseBuilder
     public $flashFundsPaymentCardData;
     public $externalId;
     public $sourceEmail;
+    public $deviceDetails;
     
     const UPLOAD_FILE_TYPES = [
         'tif', 'tiff', 'bmp', 'jpg', 'jpeg', 'gif', 'png', 'doc', 'docx'
@@ -166,7 +167,6 @@ class PayFacBuilder extends BaseBuilder
             ->check('transNum')->isNotNull()
             ->check('requireCCRefund')->isNotNull()
             ->check('ccAmount')->isNotNull();
-              
     }
 
     /*
@@ -384,4 +384,11 @@ class PayFacBuilder extends BaseBuilder
         $this->sourceEmail = $sourceEmail;
         return $this;
     }
+    
+    public function withDeviceDetails($deviceDetails)
+    {
+        $this->deviceDetails = $deviceDetails;
+        return $this;
+    }
+    
 }

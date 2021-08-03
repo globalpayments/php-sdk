@@ -40,6 +40,23 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         $this->headers['X-GP-Version'] = self::GP_API_VERSION;
         $this->headers['Accept'] = 'application/json';
         $this->headers['Accept-Encoding'] = 'gzip';
+        $this->headers['x-gp-sdk'] = 'php;version=' . $this->getReleaseVersion();
+    }
+
+    /**
+     * Get the SDK release version
+     *
+     * @return string|null
+     */
+    private function getReleaseVersion()
+    {
+        $filename = dirname(__FILE__) . "/../../metadata.xml";
+        if (!file_exists($filename)) {
+            return null;
+        }
+        $xml = simplexml_load_string(file_get_contents($filename));
+
+        return !empty($xml->releaseNumber) ? $xml->releaseNumber : null;
     }
 
     public function getVersion()
