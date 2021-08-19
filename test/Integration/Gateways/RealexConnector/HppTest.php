@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Test\Integration\Gateways\RealexConnector;
 
 use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\FraudRuleCollection;
 use GlobalPayments\Api\Services\HostedService;
 use GlobalPayments\Api\HostedPaymentConfig;
 use GlobalPayments\Api\Entities\HostedPaymentData;
@@ -18,12 +19,33 @@ use PHPUnit\Framework\TestCase;
 
 class HppTest extends TestCase
 {
+    private $billingAddress;
+
+    private $shippingAddress;
+
 
     private $hppVersionList = [
         HppVersion::VERSION_1,
         HppVersion::VERSION_2,
         ''
     ];
+
+    public function setup()
+    {
+        // billing address
+        $this->billingAddress = new Address();
+        $this->billingAddress->streetAddress1 = 'Flat 123';
+        $this->billingAddress->streetAddress2 = 'House 456';
+        $this->billingAddress->postalCode = "50001";
+        $this->billingAddress->country = "US";
+
+        // shipping address
+        $this->shippingAddress = new Address();
+        $this->shippingAddress->streetAddress1 = 'Flat 456';
+        $this->shippingAddress->streetAddress2 = 'House 123';
+        $this->shippingAddress->postalCode = "WB3 A21";
+        $this->shippingAddress->country = "GB";
+    }
 
     public function basicSetup()
     {
@@ -390,7 +412,7 @@ class HppTest extends TestCase
                 ->serialize();
         
         $this->assertNotNull($json);
-        $this->assertEquals($json, '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1900","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","DCC_ENABLE":"0","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","HPP_VERSION":"2","SHA1HASH":"448d742db89b05ce97152beb55157c904f3839cc"}');
+        $this->assertEquals($json,  '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1900","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","DCC_ENABLE":"0","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","HPP_VERSION":"2","SHA1HASH":"448d742db89b05ce97152beb55157c904f3839cc"}');
     }
 
     /* 11. FraudManagementRequest */
@@ -407,24 +429,10 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->language = "GB";
         $config->hostedPaymentConfig->responseUrl = "http://requestb.in/10q2bjb1";
         $config->hostedPaymentConfig->version = 2;
-        $config->hostedPaymentConfig->FraudFilterMode = FraudFilterMode::PASSIVE;
+        $config->hostedPaymentConfig->fraudFilterMode = FraudFilterMode::PASSIVE;
 
         $service = new HostedService($config);
         $client = new RealexHppClient("secret");
-
-        // billing address
-        $billingAddress = new Address();
-        $billingAddress->streetAddress1 = 'Flat 123';
-        $billingAddress->streetAddress2 = 'House 456';
-        $billingAddress->postalCode = "50001";
-        $billingAddress->country = "US";
-
-        // shipping address
-        $shippingAddress = new Address();
-        $shippingAddress->streetAddress1 = 'Flat 456';
-        $shippingAddress->streetAddress2 = 'House 123';
-        $shippingAddress->postalCode = "WB3 A21";
-        $shippingAddress->country = "GB";
         
         // data to be passed to the HPP along with transaction level settings
         $hostedPaymentData = new HostedPaymentData();
@@ -434,13 +442,10 @@ class HppTest extends TestCase
         //serialize the request
         $json = $service->charge(19)
                 ->withCurrency("EUR")
-                ->withAddress($billingAddress, AddressType::BILLING)
-                ->withAddress($shippingAddress, AddressType::SHIPPING)
-                //->withProductId("SID9838383") // prodid
+                ->withAddress($this->billingAddress, AddressType::BILLING)
+                ->withAddress($this->shippingAddress, AddressType::SHIPPING)
                 ->withClientTransactionId("Car Part HV") // varref
-                //->withCustomerId("E8953893489") // custnum
                 ->withCustomerIpAddress("123.123.123.123")
-                //->withFraudFilter(FraudFilterMode::PASSIVE)
                 ->withHostedPaymentData($hostedPaymentData)
                 ->serialize();
 
@@ -453,6 +458,62 @@ class HppTest extends TestCase
         $parsedResponse = $service->parseResponse($response);
         $this->assertNotNull($parsedResponse);
         $this->assertEquals("00", $parsedResponse->responseCode);
+    }
+
+    /* 11. FraudManagementRequest with fraud rules */
+
+    public function testFraudManagementRequestWithRules()
+    {
+        $config = new GpEcomConfig();
+        $config->merchantId = 'myMerchantId';
+        $config->accountId = 'internet';
+        $config->sharedSecret = "secret";
+        $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
+
+        $config->hostedPaymentConfig = new HostedPaymentConfig();
+        $config->hostedPaymentConfig->language = "GB";
+        $config->hostedPaymentConfig->responseUrl = "https://www.example.com/response";
+        $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
+        $config->hostedPaymentConfig->fraudFilterMode = FraudFilterMode::PASSIVE;
+
+        $rules = new FraudRuleCollection();
+        $rule1 = '2603986b-3a17-410f-b05a-003f9d955a0f';
+        $rule2 = 'a7a0918d-20d7-444f-bf07-65f7d320be91';
+        $rules->addRule($rule1, FraudFilterMode::ACTIVE);
+        $rules->addRule($rule2, FraudFilterMode::OFF);
+        $config->hostedPaymentConfig->fraudFilterRules = $rules;
+
+        $service = new HostedService($config);
+        $client = new RealexHppClient("secret");
+
+        // data to be passed to the HPP along with transaction level settings
+        $hostedPaymentData = new HostedPaymentData();
+        $hostedPaymentData->customerNumber = "E8953893489"; // display the save card tick box
+        $hostedPaymentData->productId = "SID9838383"; // new customer
+
+        //serialize the request
+        $json = $service->charge(19.99)
+            ->withCurrency("EUR")
+            ->withAddress($this->billingAddress, AddressType::BILLING)
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->withClientTransactionId("Car Part HV") // varref
+            ->withCustomerIpAddress("123.123.123.123")
+            ->withHostedPaymentData($hostedPaymentData)
+            ->serialize();
+
+        $this->assertNotNull($json);
+
+        //make API call
+        $response = $client->sendRequest($json, $config->hostedPaymentConfig->version);
+        $this->assertNotNull($response);
+
+        $parsedResponse = $service->parseResponse($response);
+        $this->assertNotNull($parsedResponse);
+        $this->assertEquals("00", $parsedResponse->responseCode);
+        $this->assertEquals(FraudFilterMode::PASSIVE, $parsedResponse->responseValues['HPP_FRAUDFILTER_MODE']);
+        $this->assertEquals('PASS', $parsedResponse->responseValues['HPP_FRAUDFILTER_RESULT']);
+        $this->assertEquals('NOT_EXECUTED', $parsedResponse->responseValues['HPP_FRAUDFILTER_RULE_' . $rule2]);
+        $this->assertEquals('PASS', $parsedResponse->responseValues['HPP_FRAUDFILTER_RULE_' . $rule1]);
     }
 
     /* Serialize methods Test case */
@@ -774,21 +835,14 @@ class HppTest extends TestCase
 
         $service = new HostedService($config);
 
-        // billing address
-        $billingAddress = new Address();
-        $billingAddress->streetAddress1 = 'Flat 123';
-        $billingAddress->streetAddress2 = 'House 456';
-        $billingAddress->postalCode = "50001";
-        $billingAddress->country = "AN";
-
         $hostedPaymentData = new HostedPaymentData();
         $hostedPaymentData->customerNumber = 'a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa';
         $hostedPaymentData->productId = 'a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f';
-
+        $this->billingAddress->country = 'AN';
         $json = $service->charge(19.99)
             ->withCurrency("EUR")
             ->withHostedPaymentData($hostedPaymentData)
-            ->withAddress($billingAddress, AddressType::BILLING)
+            ->withAddress($this->billingAddress, AddressType::BILLING)
             ->serialize();
 
         $response = json_decode($json, true);

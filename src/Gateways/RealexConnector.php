@@ -17,6 +17,7 @@ use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\HostedPaymentConfig;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\Utils\CountryUtils;
@@ -95,7 +96,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
     public $supportsUpdatePaymentDetails = true;
 
     /**
-     * @var boolean
+     * @var HostedPaymentConfig
      */
     public $hostedPaymentConfig;
     
@@ -657,8 +658,16 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                 $builder->transactionType === TransactionType::VERIFY ? '1' : '0'
             );
         }
-        if (!empty($this->hostedPaymentConfig->FraudFilterMode)) {
-            $this->setSerializeData('HPP_FRAUD_FILTER_MODE', $this->hostedPaymentConfig->FraudFilterMode);
+        if (!empty($this->hostedPaymentConfig->fraudFilterMode)) {
+            $this->setSerializeData('HPP_FRAUDFILTER_MODE', $this->hostedPaymentConfig->fraudFilterMode);
+            if ($this->hostedPaymentConfig->fraudFilterMode !== FraudFilterMode::NONE && !empty($this->hostedPaymentConfig->fraudFilterRules)) {
+                foreach ($this->hostedPaymentConfig->fraudFilterRules->rules as $fraudRule) {
+                    $this->setSerializeData(
+                        'HPP_FRAUDFILTER_RULE_' . $fraudRule->key,
+                        $fraudRule->mode
+                    );
+                }
+            }
         }
         
         if ($builder->recurringType !== null || $builder->recurringSequence !== null) {
@@ -694,13 +703,15 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                         null;
         }
 
-        if ($this->hostedPaymentConfig->fraudFilterMode !== FraudFilterMode::NONE) {
+        if (!empty($this->hostedPaymentConfig->fraudFilterMode) && $this->hostedPaymentConfig->fraudFilterMode !== FraudFilterMode::NONE) {
             $toHash[] = $this->hostedPaymentConfig->fraudFilterMode;
         }
         if (!empty($builder->dynamicDescriptor)) {
             $this->serializeData["CHARGE_DESCRIPTION"] = $builder->dynamicDescriptor;
         }
+
         $this->serializeData["SHA1HASH"] = GenerationUtils::generateHash($this->sharedSecret, implode('.', $toHash));
+
         return GenerationUtils::convertArrayToJson($this->serializeData, $this->hostedPaymentConfig->version);
     }
 
@@ -1363,6 +1374,16 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         if (!empty($builder->fraudFilter)) {
             $fraudFilter = $xml->createElement("fraudfilter");
             $fraudFilter->setAttribute("mode", $builder->fraudFilter);
+            if (!empty($builder->fraudRules)) {
+                $rules = $xml->createElement("rules");
+                foreach ($builder->fraudRules as $fraudRule) {
+                    $rule = $xml->createElement("rule");
+                    $rule->setAttribute("id", $fraudRule->key);
+                    $rule->setAttribute("mode", $fraudRule->mode);
+                    $rules->appendChild($rule);
+                }
+                $fraudFilter->appendChild($rules);
+            }
             $request->appendChild($fraudFilter);
         }
         if ($builder->customerId !== null || $builder->productId !== null ||

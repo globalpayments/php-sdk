@@ -1,26 +1,20 @@
 <?php
 
-namespace GlobalPayments\Api\Test\Integration\Gateways\RealexConnector;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
 
+use GlobalPayments\Api\Entities\FraudRuleCollection;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Enums\AddressType;
-use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Entities\EcommerceInfo;
-use GlobalPayments\Api\Entities\Exceptions\BuilderException;
-use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
-use GlobalPayments\Api\Entities\Enums\RecurringSequence;
-use GlobalPayments\Api\Entities\Enums\RecurringType;
 use GlobalPayments\Api\Entities\Enums\ReasonCode;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Tests\Data\TestCards;
-use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use PHPUnit\Framework\TestCase;
@@ -28,20 +22,25 @@ use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
 use GlobalPayments\Api\Entities\DecisionManager;
 use GlobalPayments\Api\Entities\Enums\Risk;
 
-class ApiTestCase extends TestCase
+class ApiCaseTest extends TestCase
 {
     /* 01. Process Payment Authorisation */
 
-    public function testprocessPaymentAuthorisation()
+    public function setup()
     {
-        $config = new ServicesConfig();
+        $config = new GpEcomConfig();
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'api';
         $config->sharedSecret = 'secret';
+        $config->refundPassword = 'refund';
+        $config->rebatePassword = 'rebate';
         $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
 
-        ServicesContainer::configure($config);
+        ServicesContainer::configureService($config);
+    }
 
+    public function testprocessPaymentAuthorisation()
+    {
         // create the card object
         $card = new CreditCardData();
         $card->number = '4263970000005262';
@@ -75,15 +74,6 @@ class ApiTestCase extends TestCase
 
     public function testprocessPaymentRefund()
     {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->refundPassword = 'refund';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
         // create the card object
         $card = new CreditCardData();
         $card->number = '4263970000005262';
@@ -109,14 +99,6 @@ class ApiTestCase extends TestCase
 
     public function testprocessPaymentOtb()
     {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
         // create the card object
         $card = new CreditCardData();
         $card->number = '4263970000005262';
@@ -160,14 +142,6 @@ class ApiTestCase extends TestCase
 
     public function testthreeDSecureAuth()
     {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
         // create the card object
         $card = new CreditCardData();
         $card->number = '4263970000005262';
@@ -207,14 +181,6 @@ class ApiTestCase extends TestCase
 
     public function testtransactionManagementDelayedAuth()
     {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
         // create the card object
         $card = new CreditCardData();
         $card->number = '4263970000005262';
@@ -247,14 +213,6 @@ class ApiTestCase extends TestCase
 
     public function testtransactionManagementSettle()
     {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
         // a settle request requires the original order id
         $orderId = "QAhN4YFrJEWP6Vc-N68u-w";
         // and the payments reference (pasref) from the authorization response
@@ -282,15 +240,6 @@ class ApiTestCase extends TestCase
 
     public function testTransactionManagementRebate()
     {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->rebatePassword = 'rebate';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-        
         // create the card object
         $card = new CreditCardData();
         $card->number = '4263970000005262';
@@ -332,14 +281,6 @@ class ApiTestCase extends TestCase
 
     public function testtransactionManagementVoid()
     {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
         // a void request requires the original order id
         $orderId = "xd4JTHE0ZEqudur_q1pB1w";
         // and the payments reference (pasref) from the transaction response
@@ -366,14 +307,6 @@ class ApiTestCase extends TestCase
 
     public function testfraudManagementDataSubmission()
     {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
         // create the card object
         $card = new CreditCardData();
         $card->number = '4263970000005262';
@@ -416,18 +349,69 @@ class ApiTestCase extends TestCase
         $this->assertNotNull($response->fraudFilterResponse);
     }
 
+    public function testfraudManagementDataSubmissionWithRules()
+    {
+        $rule1 = '853c1d37-6e9f-467e-9ffc-182210b40c6b';
+        $rule2 = 'f9b93363-4f4e-4d31-b7a2-1f816f461ada';
+        $rules = new FraudRuleCollection();
+        $rules->addRule($rule1, FraudFilterMode::OFF);
+        $rules->addRule($rule2, FraudFilterMode::ACTIVE);
+
+        // create the card object
+        $card = new CreditCardData();
+        $card->number = '4263970000005262';
+        $card->expMonth = 12;
+        $card->expYear = TestCards::validCardExpYear();
+        $card->cvn = '131';
+        $card->cardHolderName = 'James Mason';
+
+        // supply the customer's billing country and post code for avs checks
+        $billingAddress = new Address();
+        $billingAddress->postalCode = "50001|Flat 123";
+        $billingAddress->country = "US";
+
+        // supply the customer's shipping country and post code
+        $shippingAddress = new Address();
+        $shippingAddress->postalCode = "654|123";
+        $shippingAddress->country = "FR";
+
+        // create the delayed settle authorization
+        $response = $card->charge(10)
+            ->withCurrency("EUR")
+            ->withAddress($billingAddress, AddressType::BILLING)
+            ->withAddress($shippingAddress, AddressType::SHIPPING)
+            ->withProductId("SID9838383") // prodid
+            ->withClientTransactionId("Car Part HV") // varref
+            ->withCustomerId("E8953893489") // custnum
+            ->withCustomerIpAddress("123.123.123.123")
+            ->withFraudFilter(FraudFilterMode::PASSIVE)
+            ->withFraudRules($rules)
+            ->execute();
+
+        $responseCode = $response->responseCode; // 00 == Success
+        $message = $response->responseMessage; // [ test system ] AUTHORISED
+        // get the reponse details to save to the DB for future transaction management requests
+        $orderId = $response->orderId;
+        $authCode = $response->authorizationCode;
+        $paymentsReference = $response->transactionId; // pasref
+
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $responseCode);
+        $this->assertNotNull($response->fraudFilterResponse);
+        $this->assertEquals(FraudFilterMode::PASSIVE, $response->fraudFilterResponse->fraudResponseMode);
+        $this->assertEquals('PASS', $response->fraudFilterResponse->fraudResponseResult);
+        if (($index = array_search($rule1, array_column($response->fraudFilterResponse->fraudResponseRules, 'id'))) !== false) {
+            $this->assertEquals('NOT_EXECUTED', $response->fraudFilterResponse->fraudResponseRules[$index]['action']);
+        }
+        if (($index = array_search($rule2, array_column($response->fraudFilterResponse->fraudResponseRules, 'id'))) !== false) {
+            $this->assertEquals('PASS', $response->fraudFilterResponse->fraudResponseRules[$index]['action']);
+        }
+    }
+
     /* 24. Fraud Management Hold */
 
     public function testfraudManagementHold()
     {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
         // a hold request requires the original order id
         $card = new CreditCardData();
         $card->number = '4263970000005262';
@@ -469,14 +453,6 @@ class ApiTestCase extends TestCase
 
     public function testfraudManagementRelease()
     {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
         // a hold request requires the original order id
         $card = new CreditCardData();
         $card->number = '4263970000005262';
@@ -551,14 +527,6 @@ class ApiTestCase extends TestCase
     public function testauthMobileGooglePay()
     {
         try {
-            $config = new GpEcomConfig();
-            $config->merchantId = 'heartlandgpsandbox';
-            $config->accountId = 'apitest';
-            $config->sharedSecret = 'secret';
-            $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-            ServicesContainer::configureService($config);
-
             // create the card object
             $card = new CreditCardData();
             $card->token = '{"signature":"MEUCIQDapDDJyf9lH3ztEWksgAjNe...AXjW+ZM+Ut2BWoTExppDDPc1a9Z7U\u003d","protocolVersion":"ECv1","signedMessage":"{\"encryptedMessage\":\"VkqwkFuMdXp...TZQxVMnkTeJjwyc4\\u003d\",\"ephemeralPublicKey\":\"BMglUoKZWxgB...YCiBNkLaMTD9G4sec\\u003d\",\"tag\":\"4VYypqW2Q5FN7UP87QNDGsLgc48vAe5+AcjR+BxQ2Zo\\u003d\"}"}';
@@ -592,14 +560,6 @@ class ApiTestCase extends TestCase
     public function testauthMobileApplePay()
     {
         try {
-            $config = new GpEcomConfig();
-            $config->merchantId = 'heartlandgpsandbox';
-            $config->accountId = 'apitest';
-            $config->sharedSecret = 'secret';
-            $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-            ServicesContainer::configureService($config);
-
             // create the card object
             $card = new CreditCardData();
             $card->token = '{"version":"EC_v1","data":"dvMNzlcy6WNB","header":{"ephemeralPublicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E","transactionId":"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3","publicKeyHash":"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk"}}';
@@ -636,14 +596,6 @@ class ApiTestCase extends TestCase
      */
     public function testauthMobileWithoutToken()
     {
-        $config = new GpEcomConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'apitest';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configureService($config);
-
         // create the card object
         $card = new CreditCardData();
         $card->mobileType = EncyptedMobileType::GOOGLE_PAY;
@@ -662,14 +614,6 @@ class ApiTestCase extends TestCase
      */
     public function testauthMobileWithoutType()
     {
-        $config = new GpEcomConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'apitest';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configureService($config);
-
         // create the card object
         $card = new CreditCardData();
         $card->token = '{"version":"EC_v1","data":"dvMNzlcy6WNB","header":{"ephemeralPublicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E","transactionId":"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3","publicKeyHash":"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk"}}';
@@ -688,14 +632,6 @@ class ApiTestCase extends TestCase
      */
     public function testauthMobileWithoutAmount()
     {
-        $config = new GpEcomConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'apitest';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configureService($config);
-
         // create the card object
         $card = new CreditCardData();
         $card->token = '{"version":"EC_v1","data":"dvMNzlcy6WNB","header":{"ephemeralPublicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E","transactionId":"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3","publicKeyHash":"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk"}}';
@@ -715,14 +651,6 @@ class ApiTestCase extends TestCase
      */
     public function testauthMobileWithoutCurrency()
     {
-        $config = new GpEcomConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'apitest';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configureService($config);
-
         // create the card object
         $card = new CreditCardData();
         $card->token = '{"version":"EC_v1","data":"dvMNzlcy6WNB","header":{"ephemeralPublicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E","transactionId":"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3","publicKeyHash":"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk"}}';
@@ -735,14 +663,6 @@ class ApiTestCase extends TestCase
     
     public function testfraudManagementAVSMatch()
     {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
         // create the card object
         $card = new CreditCardData();
         $card->number = '4263970000005262';
@@ -778,14 +698,6 @@ class ApiTestCase extends TestCase
     
     public function testfraudManagementOffMode()
     {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
         // create the card object
         $card = new CreditCardData();
         $card->number = '4263970000005262';
@@ -832,14 +744,6 @@ class ApiTestCase extends TestCase
 
     public function testfraudManagementDecisionManager()
     {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->accountId = 'api';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
         // create the card object
         $card = new CreditCardData();
         $card->number = '4263970000005262';
@@ -922,7 +826,6 @@ class ApiTestCase extends TestCase
                     'risk' => 'High'
                 );
 
-        $custom = [];
         $custom[] = array(
                     'field01' => 'fieldValue01',
                     'field02' => 'fieldValue02',
@@ -949,13 +852,6 @@ class ApiTestCase extends TestCase
     
     public function testAuthorisationWithoutAccountId()
     {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->sharedSecret = 'secret';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
         // create the card object
         $card = new CreditCardData();
         $card->number = '4263970000005262';
@@ -975,14 +871,6 @@ class ApiTestCase extends TestCase
     
     public function testRefundWithoutAccountId()
     {
-        $config = new ServicesConfig();
-        $config->merchantId = 'heartlandgpsandbox';
-        $config->sharedSecret = 'secret';
-        $config->refundPassword = 'refund';
-        $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
-
-        ServicesContainer::configure($config);
-
         // create the card object
         $card = new CreditCardData();
         $card->number = '4263970000005262';

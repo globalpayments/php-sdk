@@ -13,48 +13,48 @@
     <body>
         <div class="container">
             <h1>PHP SecureSubmit Example</h1>
-            <form class="payment_form form-horizontal" id="payment_form" action="charge.php">
+            <form class="payment_form form-horizontal" id="payment-form" action="charge.php" method="get">
                 <h2>Billing Information</h2>
                 <div class="form-group">
-                    <label for="FirstName" class="col-sm-2 control-label">First Name</label>
+                    <label for="first-name" class="col-sm-2 control-label">First Name</label>
                     <div class="col-sm-10">
-                        <input type="text" name="FirstName" />
+                        <input id="first-name" type="text" name="first-name" />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="LastName" class="col-sm-2 control-label">Last Name</label>
+                    <label for="last-name" class="col-sm-2 control-label">Last Name</label>
                     <div class="col-sm-10">
-                        <input type="text" name="LastName" />
+                        <input id="last-name" type="text" name="last-name" />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="PhoneNumber" class="col-sm-2 control-label">Phone Number</label>
+                    <label for="phone-number" class="col-sm-2 control-label">Phone Number</label>
                     <div class="col-sm-10">
-                        <input type="text" name="PhoneNumber" />
+                        <input id="phone-number" type="text" name="phone-number" />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="Email" class="col-sm-2 control-label">Email</label>
+                    <label for="email" class="col-sm-2 control-label">Email</label>
                     <div class="col-sm-10">
-                        <input type="text" name="Email" />
+                        <input id="email" type="text" name="email" />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="Address" class="col-sm-2 control-label">Address</label>
+                    <label for="address" class="col-sm-2 control-label">Address</label>
                     <div class="col-sm-10">
-                        <input type="text" name="Address" />
+                        <input id="address" type="text" name="address" />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="City" class="col-sm-2 control-label">City</label>
+                    <label for="city" class="col-sm-2 control-label">City</label>
                     <div class="col-sm-10">
-                        <input type="text" name="City" />
+                        <input id="city" type="text" name="city" />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="State" class="col-sm-2 control-label">State</label>
+                    <label for="state" class="col-sm-2 control-label">State</label>
                     <div class="col-sm-10">
-                        <select Name="State">
+                        <select Name="state">
                             <option value="AL">Alabama</option>
                             <option value="AK">Alaska</option>
                             <option value="AZ">Arizona</option>
@@ -110,60 +110,39 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="Zip" class="col-sm-2 control-label">Zip</label>
+                    <label for="billing-zip" class="col-sm-2 control-label">Billing Zip Code</label>
                     <div class="col-sm-10">
-                        <input type="text" name="Zip" />
+                        <input id="billing-zip" type="tel" name="billing-zip" />
                     </div>
                 </div>
 
+                <!-- Target for the credit card form -->
+
                 <h2>Payment Information</h2>
                 <div class="form-group">
-                    <label for="payment_amount" class="col-sm-2 control-label">Payment Amount</label>
+                    <label for="payment-amount" class="col-sm-2 control-label">Payment Amount</label>
                     <div class="col-sm-10">
-                        <input type="text" name="payment_amount" id="payment_amount" />
+                        <input type="text" name="payment-amount" id="payment-amount" />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="invoice_number" class="col-sm-2 control-label">Invoice Number</label>
+                    <label for="invoice-number" class="col-sm-2 control-label">Invoice Number</label>
                     <div class="col-sm-10">
-                        <input type="text" name="invoice_number" id="invoice_number" />
+                        <input type="text" name="invoice-number" id="invoice-number" />
                     </div>
                 </div>
 
                 <h2>Card Information</h2>
                 <div class="form-group">
-                    <div class="form-wrapper">
-
-                        <div id="ss-banner"></div>
-
-                        <div class="form-row">
-                            <label for="iframesCardNumber">Card Number:</label>
-                            <div id="iframesCardNumber"></div>
-                        </div>
-
-                        <div class="form-row">
-                            <label for="iframesCardExpiration">Card Expiration:</label>
-                            <div id="iframesCardExpiration"></div>
-                        </div>
-
-                        <div class="form-row">
-                            <label for="iframesCardCvv">Card CVV:</label>
-                            <div id="iframesCardCvv"></div>
-                        </div>
-
-                        <br />
-                        <div id="iframesSubmit"></div>
-
+                        <div class="form-wrapper">
+                    <div class="form-group" id="credit-card"></div>
                     </div>
-
                 </div>
 
-                <br />
-                <input type="hidden" name="token_value">
-            </form>
+              </form>
         </div>
         <!-- The SecureSubmit Javascript Library -->
-        <script type="text/javascript" src="https://api2.heartlandportico.com/SecureSubmit.v1/token/2.1/securesubmit.js"></script>
+        <script type="text/javascript" src="https://js.globalpay.com/v1/globalpayments.js"></script>
         <script src="assets/main.js"></script>
     </body>
 </html>

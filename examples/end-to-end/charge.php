@@ -31,8 +31,6 @@ try {
         ->withAllowDuplicates(true)
         ->execute();
 
-    // print_r($response);
-
     $body = '<h1>Success!</h1>';
     $body .= '<p>Thank you, ' . $_GET['FirstName'] . ', for your order of $15.</p>';
 

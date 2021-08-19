@@ -17,41 +17,41 @@ $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
 ServicesContainer::configureService($config);
 
 $card = new CreditCardData();
-$card->token = $_GET['token_value'];
+$card->token = $_GET['payment-reference'];
 
 $address = new Address();
-$address->streetAddress1 = $_GET["Address"];
-$address->city = $_GET["City"];
-$address->state = $_GET["State"];
-$address->postalCode = preg_replace('/[^0-9]/', '', $_GET["Zip"]);
+$address->streetAddress1 = $_GET["address"];
+$address->city = $_GET["city"];
+$address->state = $_GET["state"];
+$address->postalCode = preg_replace('/[^0-9]/', '', $_GET["billing-zip"]);
 $address->country = "United States";
 
 /*
   $validCardHolder = new HpsCardHolder();
-  $validCardHolder->firstName = $_GET["FirstName"];
-  $validCardHolder->lastName = $_GET["LastName"];
+  $validCardHolder->first-name = $_GET["first-name"];
+  $validCardHolder->last-name = $_GET["last-name"];
   $validCardHolder->address = $address;
-  $validCardHolder->phoneNumber = preg_replace('/[^0-9]/', '', $_GET["PhoneNumber"]);
+  $validCardHolder->phone-number = preg_replace('/[^0-9]/', '', $_GET["phone-number"]);
  */
 
 try {
     $response = $card->charge(15)
             ->withCurrency('USD')
             ->withAddress($address)
-            ->withInvoiceNumber($_GET["invoice_number"])
+            ->withInvoiceNumber($_GET["invoice-number"])
             ->withAllowDuplicates(true)
             ->execute();
 
     $body = '<h1>Success!</h1>';
-    $body .= '<p>Thank you, ' . $_GET['FirstName'] . ', for your order of $' . $_GET["payment_amount"] . '.</p>';
+    $body .= '<p>Thank you, ' . $_GET['first-name'] . ', for your order of $' . $_GET["payment-amount"] . '.</p>';
 
     echo "Transaction Id: " . $response->transactionId;
-    echo "<br />Invoice Number: " . $_GET["invoice_number"];
+    echo "<br />Invoice Number: " . $_GET["invoice-number"];
 
     // i'm running windows, so i had to update this:
     //ini_set("SMTP", "my-mail-server");
 
-    sendEmail($_GET['EMAIL'], 'donotreply@e-hps.com', 'Successful Charge!', $body, true);
+    sendEmail($_GET['email'], 'donotreply@e-hps.com', 'Successful Charge!', $body, true);
 } catch (Exception $e) {
     echo 'Failure: ' . $e->getMessage();
     exit;

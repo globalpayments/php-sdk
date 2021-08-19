@@ -9,6 +9,7 @@ use GlobalPayments\Api\Entities\Enums\EmvFallbackCondition;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
+use GlobalPayments\Api\Entities\FraudRuleCollection;
 use GlobalPayments\Api\Entities\HostedPaymentData;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\AliasAction;
@@ -429,6 +430,11 @@ class AuthorizationBuilder extends TransactionBuilder
     public $fraudFilter;
 
     /**
+     * @var FraudRuleCollection
+     */
+    public $fraudRules;
+
+    /**
      * For AVS (Address verification System) request
      *
      * @internal
@@ -551,6 +557,7 @@ class AuthorizationBuilder extends TransactionBuilder
         if ($client->supportsHostedPayments()) {
             return $client->serializeRequest($this);
         }
+
         throw new UnsupportedTransactionException("Your current gateway does not support hosted payments.");
     }
 
@@ -1211,6 +1218,17 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withFraudFilter($fraudFilter)
     {
         $this->fraudFilter = $fraudFilter;
+        return $this;
+    }
+
+    /**
+     * @param FraudRuleCollection $fraudRules
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withFraudRules($fraudRules)
+    {
+        $this->fraudRules = $fraudRules->rules;
         return $this;
     }
 

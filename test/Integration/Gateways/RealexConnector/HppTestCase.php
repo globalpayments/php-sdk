@@ -1,9 +1,8 @@
 <?php
 
-namespace GlobalPayments\Api\Test\Integration\Gateways\RealexConnector;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
 
 use GlobalPayments\Api\Services\HostedService;
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\HostedPaymentConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use PHPUnit\Framework\TestCase;
@@ -52,7 +51,7 @@ class HppTestCase extends TestCase
 
         //response
         // TODO: grab the response JSON from the client-side for example:
-        $responseJson = '{"MERCHANT_ID":"heartlandgpsandbox","ACCOUNT":"hpp","ORDER_ID":"OTA4NUEzOEEtMkE3RjU2RQ","TIMESTAMP":"20180724124150","RESULT":"00","PASREF":"15324325098818233","AUTHCODE":"12345","AVSPOSTCODERESULT":"U","CVNRESULT":"U","HPP_LANG":"GB","SHIPPING_CODE":null,"SHIPPING_CO":null,"BILLING_CODE":"123|56","BILLING_CO":"IRELAND","ECI":null,"CAVV":null,"XID":null,"MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","CARD_PAYMENT_BUTTON":null,"MESSAGE":"[ test system ] Authorised","AMOUNT":null,"SHA1HASH":"d1ff806b449b86375dbda74e2611760c348fcdeb","DCC_INFO_REQUST":null,"DCC_INFO_RESPONSE":null,"HPP_FRAUD_FILTER_MODE":null,"TSS_INFO":null}';
+        $responseJson = '{"MERCHANT_ID":"heartlandgpsandbox","ACCOUNT":"hpp","ORDER_ID":"OTA4NUEzOEEtMkE3RjU2RQ","TIMESTAMP":"20180724124150","RESULT":"00","PASREF":"15324325098818233","AUTHCODE":"12345","AVSPOSTCODERESULT":"U","CVNRESULT":"U","HPP_LANG":"GB","SHIPPING_CODE":null,"SHIPPING_CO":null,"BILLING_CODE":"123|56","BILLING_CO":"IRELAND","ECI":null,"CAVV":null,"XID":null,"MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","CARD_PAYMENT_BUTTON":null,"MESSAGE":"[ test system ] Authorised","AMOUNT":null,"SHA1HASH":"d1ff806b449b86375dbda74e2611760c348fcdeb","DCC_INFO_REQUST":null,"DCC_INFO_RESPONSE":null,"HPP_FRAUDFILTER_MODE":null,"TSS_INFO":null}';
 
         $parsedResponse = $service->parseResponse($responseJson);
         $responseCode = $parsedResponse->responseCode; // 00
@@ -80,7 +79,7 @@ class HppTestCase extends TestCase
 
         $service = new HostedService($config);
 
-        $responseJson = '{"MERCHANT_ID":"heartlandgpsandbox","ACCOUNT":"hpp","ORDER_ID":"NjMwNkMxMTAtMTA5RUNDRQ","TIMESTAMP":"20180720104340","RESULT":"00","PASREF":"15320798200414985","AUTHCODE":"12345","AVSPOSTCODERESULT":"U","CVNRESULT":"U","HPP_LANG":"GB","SHIPPING_CODE":null,"SHIPPING_CO":null,"BILLING_CODE":"123|56","BILLING_CO":"IRELAND","ECI":null,"CAVV":null,"XID":null,"MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","CARD_PAYMENT_BUTTON":null,"MESSAGE":"[ test system ] Authorised","AMOUNT":"100","SHA1HASH":"32628cf3f887ab9f4f1c547a10ac365c2168f0e2","DCC_INFO":null,"HPP_FRAUD_FILTER_MODE":null,"TSS_INFO":null}';
+        $responseJson = '{"MERCHANT_ID":"heartlandgpsandbox","ACCOUNT":"hpp","ORDER_ID":"NjMwNkMxMTAtMTA5RUNDRQ","TIMESTAMP":"20180720104340","RESULT":"00","PASREF":"15320798200414985","AUTHCODE":"12345","AVSPOSTCODERESULT":"U","CVNRESULT":"U","HPP_LANG":"GB","SHIPPING_CODE":null,"SHIPPING_CO":null,"BILLING_CODE":"123|56","BILLING_CO":"IRELAND","ECI":null,"CAVV":null,"XID":null,"MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","CARD_PAYMENT_BUTTON":null,"MESSAGE":"[ test system ] Authorised","AMOUNT":"100","SHA1HASH":"32628cf3f887ab9f4f1c547a10ac365c2168f0e2","DCC_INFO":null,"HPP_FRAUDFILTER_MODE":null,"TSS_INFO":null}';
 
         // create the response object from the response JSON
         $parsedResponse = $service->parseResponse($responseJson);
@@ -111,7 +110,7 @@ class HppTestCase extends TestCase
 
         // TODO: grab the response JSON from the client-side for example:
         //sample response JSON:
-        $responseJson = '{"MERCHANT_ID":"heartlandgpsandbox","ACCOUNT":"3dsecure","ORDER_ID":"NTgxMkMzODUtNTEwMkNCMw","TIMESTAMP":"20180723110112","RESULT":"00","PASREF":"15323400720177562","AUTHCODE":"12345","AVSPOSTCODERESULT":"U","CVNRESULT":"U","HPP_LANG":"GB","SHIPPING_CODE":null,"SHIPPING_CO":null,"BILLING_CODE":null,"BILLING_CO":null,"ECI":null,"CAVV":null,"XID":null,"MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","CARD_PAYMENT_BUTTON":null,"MESSAGE":"[ test system ] Authorised","AMOUNT":"1500","SHA1HASH":"4c7a635401c57371a0931bb3a21a849181cc963d","DCC_INFO":null,"HPP_FRAUD_FILTER_MODE":null,"TSS_INFO":null}';
+        $responseJson = '{"MERCHANT_ID":"heartlandgpsandbox","ACCOUNT":"3dsecure","ORDER_ID":"NTgxMkMzODUtNTEwMkNCMw","TIMESTAMP":"20180723110112","RESULT":"00","PASREF":"15323400720177562","AUTHCODE":"12345","AVSPOSTCODERESULT":"U","CVNRESULT":"U","HPP_LANG":"GB","SHIPPING_CODE":null,"SHIPPING_CO":null,"BILLING_CODE":null,"BILLING_CO":null,"ECI":null,"CAVV":null,"XID":null,"MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","CARD_PAYMENT_BUTTON":null,"MESSAGE":"[ test system ] Authorised","AMOUNT":"1500","SHA1HASH":"4c7a635401c57371a0931bb3a21a849181cc963d","DCC_INFO":null,"HPP_FRAUDFILTER_MODE":null,"TSS_INFO":null}';
 
         $parsedResponse = $service->parseResponse($responseJson);
         $responseCode = $parsedResponse->responseCode; // 00
@@ -218,7 +217,7 @@ class HppTestCase extends TestCase
 
         // TODO: grab the response JSON from the client-side for example:
         //sample response JSON:
-        $responseJson = '{"MERCHANT_ID":"heartlandgpsandbox","ACCOUNT":"apidcc","ORDER_ID":"NTQyQzgxREMtMzVFQzlDNw","TIMESTAMP":"20180724095953","RESULT":"00","PASREF":"15324227932436743","AUTHCODE":"12345","AVSPOSTCODERESULT":"U","CVNRESULT":"U","HPP_LANG":"GB","SHIPPING_CODE":null,"SHIPPING_CO":null,"BILLING_CODE":null,"BILLING_CO":null,"ECI":null,"CAVV":null,"XID":null,"MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","CARD_PAYMENT_BUTTON":null,"MESSAGE":"[ test system ] Authorised","AMOUNT":"100100","SHA1HASH":"320c7ddc49d292f5900c676168d5cc1f2a55306c","DCC_INFO_REQUST":{"CCP":"Fexco","TYPE":1,"RATE":"1.7203","RATE_TYPE":"S","AMOUNT":"172202","CURRENCY":"AUD"},"DCC_INFO_RESPONSE":{"cardHolderCurrency":"AUD","cardHolderAmount":"172202","cardHolderRate":"1.7203","merchantCurrency":"EUR","merchantAmount":"100100","marginRatePercentage":"","exchangeRateSourceName":"","commissionPercentage":"","exchangeRateSourceTimestamp":""},"HPP_FRAUD_FILTER_MODE":null,"TSS_INFO":null}';
+        $responseJson = '{"MERCHANT_ID":"heartlandgpsandbox","ACCOUNT":"apidcc","ORDER_ID":"NTQyQzgxREMtMzVFQzlDNw","TIMESTAMP":"20180724095953","RESULT":"00","PASREF":"15324227932436743","AUTHCODE":"12345","AVSPOSTCODERESULT":"U","CVNRESULT":"U","HPP_LANG":"GB","SHIPPING_CODE":null,"SHIPPING_CO":null,"BILLING_CODE":null,"BILLING_CO":null,"ECI":null,"CAVV":null,"XID":null,"MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","CARD_PAYMENT_BUTTON":null,"MESSAGE":"[ test system ] Authorised","AMOUNT":"100100","SHA1HASH":"320c7ddc49d292f5900c676168d5cc1f2a55306c","DCC_INFO_REQUST":{"CCP":"Fexco","TYPE":1,"RATE":"1.7203","RATE_TYPE":"S","AMOUNT":"172202","CURRENCY":"AUD"},"DCC_INFO_RESPONSE":{"cardHolderCurrency":"AUD","cardHolderAmount":"172202","cardHolderRate":"1.7203","merchantCurrency":"EUR","merchantAmount":"100100","marginRatePercentage":"","exchangeRateSourceName":"","commissionPercentage":"","exchangeRateSourceTimestamp":""},"HPP_FRAUDFILTER_MODE":null,"TSS_INFO":null}';
         $parsedResponse = $service->parseResponse($responseJson);
 
         $responseCode = $parsedResponse->responseCode; // 00

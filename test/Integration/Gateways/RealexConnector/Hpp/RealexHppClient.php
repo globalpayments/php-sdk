@@ -1,6 +1,7 @@
 <?php
 namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\Hpp;
 
+use GlobalPayments\Api\Entities\FraudRuleCollection;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
@@ -72,12 +73,15 @@ class RealexHppClient
         ];
 
         //for stored card
-
         if (!empty($this->paymentData['OFFER_SAVE_CARD'])) {
             $hashParam[] = (!empty($this->paymentData['PAYER_REF'])) ?
                     $this->paymentData['PAYER_REF'] : null;
             $hashParam[] = (!empty($this->paymentData['PMT_REF'])) ?
                     $this->paymentData['PMT_REF'] : null;
+        }
+
+        if (!empty($this->paymentData['HPP_FRAUDFILTER_MODE'])) {
+            $hashParam[] = $this->paymentData['HPP_FRAUDFILTER_MODE'];
         }
         
         $newHash = GenerationUtils::generateHash(
@@ -160,7 +164,7 @@ class RealexHppClient
 
     public function addFraudManagementInfo($gatewayRequest, $orderId)
     {
-        if (!empty($this->paymentData['HPP_FRAUD_FILTER_MODE'])) {
+        if (!empty($this->paymentData['HPP_FRAUDFILTER_MODE'])) {
             $tssInfo = $this->getValue('TSS_INFO');
 
             $this->addAddressDetails(
@@ -176,13 +180,32 @@ class RealexHppClient
                 $tssInfo['SHIPPING_ADDRESS']['COUNTRY'],
                 AddressType::SHIPPING
             );
+            $this->addFraudRules($gatewayRequest);
 
             $gatewayRequest
                     ->withProductId($tssInfo['PRODID']) // prodid
                     ->withClientTransactionId($tssInfo['VARREF']) // varref
                     ->withCustomerId($tssInfo['CUSTNUM']) // custnum
                     ->withCustomerIpAddress($tssInfo['CUSTIPADDRESS'])
-                    ->withFraudFilter($this->paymentData['HPP_FRAUD_FILTER_MODE']);
+                    ->withFraudFilter($this->paymentData['HPP_FRAUDFILTER_MODE']);
+        }
+    }
+
+    public function addFraudRules($gatewayRequest)
+    {
+        $hppFraudRules = array_filter($this->paymentData, function($key) {
+            return strpos($key, 'HPP_FRAUDFILTER_RULE_') === 0;
+        }, ARRAY_FILTER_USE_KEY);
+        if (!empty($hppFraudRules)) {
+            $fraudFilterRules = new FraudRuleCollection();
+            foreach ($hppFraudRules as $hppFraudRuleKey => $hppFraudRuleMode) {
+                $fraudFilterRules->addRule(
+                    substr($hppFraudRuleKey, strlen('HPP_FRAUDFILTER_RULE_')),
+                    $hppFraudRuleMode
+                );
+            }
+            $gatewayRequest
+                ->withFraudRules($fraudFilterRules);
         }
     }
 
@@ -242,9 +265,15 @@ class RealexHppClient
             'SHA1HASH' => $newHash,
             'DCC_INFO_REQUST' => $this->getValue('DCC_INFO'),
             'DCC_INFO_RESPONSE' => $gatewayResponse->dccResponseResult,
-            'HPP_FRAUD_FILTER_MODE' => $this->getValue('HPP_FRAUD_FILTER_MODE'),
-            'TSS_INFO' => $this->getValue('TSS_INFO')
+            'HPP_FRAUDFILTER_MODE' => $this->getValue('HPP_FRAUDFILTER_MODE'),
+            'HPP_FRAUDFILTER_RESULT' => $gatewayResponse->fraudFilterResponse->fraudResponseResult
         ];
+        $hppFraudRules = [];
+        foreach ($gatewayResponse->fraudFilterResponse->fraudResponseRules as $fraudResponseRule) {
+            $hppFraudRules['HPP_FRAUDFILTER_RULE_' .$fraudResponseRule['id']] = $fraudResponseRule['action'];
+        }
+        $response = array_merge($response, $hppFraudRules);
+        $response['TSS_INFO'] = $this->getValue('TSS_INFO');
 
         return json_encode($response);
     }

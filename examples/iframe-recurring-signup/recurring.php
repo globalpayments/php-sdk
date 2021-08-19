@@ -44,17 +44,17 @@ function getIdentifier($id) {
 function createCustomer() {
     $customer = new Customer();
     $customer->id = getIdentifier('Person');
-    $customer->firstName = $_GET["FirstName"];
-    $customer->lastName = $_GET["LastName"];
+    $customer->firstName = $_GET["first-name"];
+    $customer->lastName = $_GET["last-name"];
     $customer->status = 'Active';
-    $customer->email = $_GET['Email'];
+    $customer->email = $_GET['email'];
     $customer->address = new Address();
-    $customer->address->streetAddress1 = $_GET["Address"];
-    $customer->address->city = $_GET["City"];
-    $customer->address->province = $_GET["State"];
-    $customer->address->postalCode = $_GET["Zip"];
+    $customer->address->streetAddress1 = $_GET["address"];
+    $customer->address->city = $_GET["city"];
+    $customer->address->province = $_GET["state"];
+    $customer->address->postalCode = $_GET["billing-zip"];
     $customer->address->country = 'USA';
-    $customer->workPhone = $_GET["PhoneNumber"];
+    $customer->workPhone = $_GET["phone-number"];
 
     $newCustomer = $customer->create();
 
@@ -63,7 +63,7 @@ function createCustomer() {
 
 function createPaymentMethod($customer) {
     $card = new CreditCardData();
-    $card->token = $_GET['token_value'];
+    $card->token = $_GET['payment-reference'];
 
     $paymentMethod = $customer->addPaymentMethod(
                     getIdentifier('CreditV'), $card
@@ -97,7 +97,7 @@ function createSchedule($customerKey, $paymentMethodKey, $amount) {
 try {
     $customer = createCustomer();
     $paymentMethod = createPaymentMethod($customer);
-    $schedule = createSchedule($customer->key, $paymentMethod->key, $_GET['payment_amount']);
+    $schedule = createSchedule($customer->key, $paymentMethod->key, $_GET['payment-amount']);
 
     echo '<b>Your payment scheduled successfully </b><br />';
     printf('Customer Key: %s<br />', $customer->key);
@@ -109,7 +109,7 @@ try {
 
 
 $body = '<h1>Success!</h1>';
-$body .= '<p>Thank you, ' . $_GET['FirstName'] . ', for your subscription.';
+$body .= '<p>Thank you, ' . $_GET['first-name'] . ', for your subscription.';
 
 
 

@@ -1,11 +1,11 @@
-(function (document, Heartland) {
-    // Create a new `HPS` object with the necessary configuration
-    var hps = new Heartland.HPS({
-        publicKey: 'pkapi_cert_jKc1FtuyAydZhZfbB3',
-        type: 'iframe',
-        // Configure the iframe fields to tell the library where
-        // the iframe should be inserted into the DOM and some
-        // basic options
+// Configure account
+GlobalPayments.configure({
+    publicApiKey: "pkapi_cert_P6dRqs1LzfWJ6HgGVZ"
+  });
+  
+  // Create Form
+  const cardForm = GlobalPayments.creditCard.form("#payment-form", 
+    { 
         fields: {
             cardNumber: {
                 target: 'iframesCardNumber',
@@ -173,34 +173,30 @@
                 'display': 'none'
             }
         },
-        // Callback when a token is received from the service
-        onTokenSuccess: function (resp) {
-            document.querySelector("input[name=token_value]").value = resp.token_value;
-            Heartland.Events.removeHandler(document.getElementById('payment_form'), 'submit');
-            document.getElementById('payment_form').submit();
-        },
-        // Callback when an error is received from the service
-        onTokenError: function (resp) {
-            alert('There was an error: ' + resp.error.message);
-        },
-        // Callback when an event is fired within an iFrame
-        onEvent: function (ev) {
-            console.log(ev);
-        }
-    });
-
-    // Attach a handler to interrupt the form submission
-    Heartland.Events.addHandler(document.getElementById('iframes'), 'submit', function (e) {
-        // Prevent the form from continuing to the `action` address
-        e.preventDefault();
-        // Tell the iframes to tokenize the data
-        hps.Messages.post(
-                {
-                    accumulateData: true,
-                    action: 'tokenize',
-                    message: 'pkapi_cert_jKc1FtuyAydZhZfbB3'
-                },
-                'cardNumber'
-                );
-    });
-}(document, Heartland));
+    }
+  );
+  
+  // form-level event handlers. examples:
+cardForm.ready(() => {
+    console.log("Registration of all credit card fields occurred");
+  });
+  cardForm.on("token-success", (resp) => {
+    // add payment token to form as a hidden input
+    const token = document.createElement("input");
+    token.type = "hidden";
+    token.name = "payment-reference";
+    token.value = resp.paymentReference;
+  
+    // submit data to the integration's backend for processing
+    const form = document.getElementById("payment-form");
+    form.appendChild(token);
+    form.submit();
+  });
+  cardForm.on("token-error", (resp) => {
+    // show error to the consumer
+  });
+  
+  // field-level event handlers. example:
+  cardForm.on("card-number", "register", () => {
+    console.log("Registration of Card Number occurred");
+  });

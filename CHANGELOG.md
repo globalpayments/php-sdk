@@ -5,6 +5,11 @@
 # Changelog
 
 ## Latest version
+
+- Set Fraud Management Rules for GP-ECOM
+
+## v2.3.9 (08/03/2021)
+
 - Send "x-gp-sdk" in the header with the SDK programming language and release version used
 - Send headers to GP-API that are dynamically set through configuration, like:
      - x-gp-platform: "prestashop;version=1.7.2"
