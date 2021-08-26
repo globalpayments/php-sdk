@@ -384,8 +384,7 @@ class ApiCaseTest extends TestCase
             ->withClientTransactionId("Car Part HV") // varref
             ->withCustomerId("E8953893489") // custnum
             ->withCustomerIpAddress("123.123.123.123")
-            ->withFraudFilter(FraudFilterMode::PASSIVE)
-            ->withFraudRules($rules)
+            ->withFraudFilter(FraudFilterMode::PASSIVE, $rules)
             ->execute();
 
         $responseCode = $response->responseCode; // 00 == Success
@@ -566,9 +565,9 @@ class ApiCaseTest extends TestCase
             $card->mobileType = EncyptedMobileType::APPLE_PAY;
 
             // process an auto-settle authorization
-            $response = $card->charge(19.99)
+            $response = $card->charge(10)
                     ->withModifier(TransactionModifier::ENCRYPTED_MOBILE)
-                    ->withCurrency('EUR')
+                    ->withCurrency('USD')
                     ->execute();
 
             $responseCode = $response->responseCode; // 00 == Success

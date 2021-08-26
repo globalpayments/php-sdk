@@ -209,6 +209,33 @@ class CreditCardNotPresentTest extends TestCase
             $this->assertContains('Idempotency Key seen before', $e->getMessage());
         }
     }
+	
+    public function testCreditSale_WithoutPermissions()
+    {
+        $config = new GpApiConfig();
+        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
+        $config->appKey = '9pArW2uWoA8enxKc';
+        $config->environment = Environment::TEST;
+        $config->channel = Channels::CardNotPresent;
+        $config->country = 'GB';
+        $config->permissions = ["TRN_POST_Capture"];
+
+        ServicesContainer::configureService($config);
+
+        $exceptionCaught = false;
+        try {
+            $this->card->charge(50)
+                ->withCurrency($this->currency)
+                ->withAllowDuplicates(true)
+                ->execute();
+        } catch (ApiException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40212', $e->responseCode);
+            $this->assertEquals('Status Code: ACTION_NOT_AUTHORIZED - Permission not enabled to execute action', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
 
     public function testTransactionThenRefund()
     {
@@ -225,26 +252,26 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertEquals('SUCCESS', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
-        try {
-            $partialAmount = '4.75';
-            $partialRefund = $transaction->refund($partialAmount)
-                ->withCurrency($this->currency)
-                ->execute();
-            $defaultRefund = $transaction->refund()
-                ->withCurrency($this->currency)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail("Card not present managed refund failed: " . $e->getMessage());
-        }
+        $partialAmount = '4.75';
+        $partialRefund = $transaction->refund($partialAmount)
+            ->withCurrency($this->currency)
+            ->execute();
+
+
 
         $this->assertNotNull($partialRefund);
         $this->assertEquals('SUCCESS', $partialRefund->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $partialRefund->responseMessage);
         $this->assertEquals($partialAmount, $partialRefund->balanceAmount);
 
-        $this->assertNotNull($defaultRefund);
-        $this->assertEquals('SUCCESS', $defaultRefund->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $defaultRefund->responseMessage);
+        try {
+            $transaction->refund()
+                ->withCurrency($this->currency)
+                ->execute();
+        } catch (GatewayException $e) {
+            $this->assertEquals('40087', $e->responseCode);
+            $this->assertContains("INVALID_REQUEST_DATA - You may only refund up to 100% of the original amount", $e->getMessage());
+        }
     }
 
     public function testTransactionThenReversal()
@@ -428,8 +455,7 @@ class CreditCardNotPresentTest extends TestCase
     public function testCardTokenizationThenPayingWithToken_SingleToMultiUse()
     {
         // process an auto-capture authorization
-        $response = $this->card->tokenize()
-            ->withPaymentMethodUsageMode(PaymentMethodUsageMode::SINGLE)
+        $response = $this->card->tokenize(true, PaymentMethodUsageMode::SINGLE)
             ->execute();
         $tokenId = $response->token;
 
@@ -753,7 +779,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->withAllowDuplicates(true)
                 ->execute();
         } catch (GatewayException $e) {
-            $this->assertEquals('40118', $e->responseCode);
+            $this->assertEquals('40008', $e->responseCode);
             $this->assertContains('RESOURCE_NOT_FOUND', $e->getMessage());
         }
     }
@@ -782,7 +808,7 @@ class CreditCardNotPresentTest extends TestCase
         }
     }
 
-    public function testCreditSale_WithStoredCredentials()
+    public function testCreditSale_Tokenized_WithStoredCredentials()
     {
         $storeCredentials = new StoredCredential();
         $storeCredentials->initiator = StoredCredentialInitiator::MERCHANT;
@@ -806,6 +832,24 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
+    public function testCreditSale_WithStoredCredentials()
+    {
+        $storeCredentials = new StoredCredential();
+        $storeCredentials->initiator = StoredCredentialInitiator::MERCHANT;
+        $storeCredentials->type = StoredCredentialType::INSTALLMENT;
+        $storeCredentials->sequence = StoredCredentialSequence::SUBSEQUENT;
+        $storeCredentials->reason = StoredCredentialReason::INCREMENTAL;
+
+        $response = $this->card->charge(50)
+            ->withCurrency("EUR")
+            ->withStoredCredential($storeCredentials)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+    }
+
     public function testCreditReverseTransactionWrongId()
     {
         $transaction = new Transaction();
@@ -816,7 +860,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->withAllowDuplicates(true)
                 ->execute();
         } catch (GatewayException $e) {
-            $this->assertEquals('40118', $e->responseCode);
+            $this->assertEquals('40008', $e->responseCode);
             $this->assertContains('RESOURCE_NOT_FOUND', $e->getMessage());
         }
     }
@@ -904,6 +948,20 @@ class CreditCardNotPresentTest extends TestCase
         }
     }
 
+    public function testCreditVerification_NotNumericCVV()
+    {
+        $this->card->cvn = "SMA";
+
+        try {
+            $this->card->verify()
+                ->withCurrency($this->currency)
+                ->execute();
+        } catch (GatewayException $e) {
+            $this->assertEquals('50018', $e->responseCode);
+            $this->assertEquals('Status Code: SYSTEM_ERROR_DOWNSTREAM - The line number 12 which contains \'         [number] XXX [/number] \' does not conform to the schema', $e->getMessage());
+        }
+    }
+
     public function testCaptureHigherAmount()
     {
         try {
@@ -940,7 +998,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('50020', $e->responseCode);
-            $this->assertContains("INVALID_REQUEST_DATA - Can't settle for more than 115% of that which you authorised.", $e->getMessage());
+            $this->assertContains("INVALID_REQUEST_DATA - Can't settle for more than 115% of that which you authorised", $e->getMessage());
         }
     }
 
@@ -988,7 +1046,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('40087', $e->responseCode);
-            $this->assertContains("INVALID_REQUEST_DATA - You may only refund up to 100% of the original amount.", $e->getMessage());
+            $this->assertContains("INVALID_REQUEST_DATA - You may only refund up to 100% of the original amount", $e->getMessage());
         }
     }
 
@@ -1016,7 +1074,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('40087', $e->responseCode);
-            $this->assertContains("INVALID_REQUEST_DATA - You may only refund up to 100% of the original amount.", $e->getMessage());
+            $this->assertContains("INVALID_REQUEST_DATA - You may only refund up to 100% of the original amount", $e->getMessage());
         }
 
         if (!empty($response)) {
@@ -1029,8 +1087,8 @@ class CreditCardNotPresentTest extends TestCase
     public function setUpConfig()
     {
         $config = new GpApiConfig();
-        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
-        $config->appKey = '9pArW2uWoA8enxKc';
+        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
+        $config->appKey = 'DHUGdzpjXfTbjZeo';
         $config->environment = Environment::TEST;
         $config->channel = Channels::CardNotPresent;
         $config->country = 'GB';

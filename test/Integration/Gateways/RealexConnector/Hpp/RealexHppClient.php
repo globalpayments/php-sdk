@@ -180,18 +180,17 @@ class RealexHppClient
                 $tssInfo['SHIPPING_ADDRESS']['COUNTRY'],
                 AddressType::SHIPPING
             );
-            $this->addFraudRules($gatewayRequest);
 
             $gatewayRequest
                     ->withProductId($tssInfo['PRODID']) // prodid
                     ->withClientTransactionId($tssInfo['VARREF']) // varref
                     ->withCustomerId($tssInfo['CUSTNUM']) // custnum
                     ->withCustomerIpAddress($tssInfo['CUSTIPADDRESS'])
-                    ->withFraudFilter($this->paymentData['HPP_FRAUDFILTER_MODE']);
+                    ->withFraudFilter($this->paymentData['HPP_FRAUDFILTER_MODE'], $this->getFraudRules());
         }
     }
 
-    public function addFraudRules($gatewayRequest)
+    public function getFraudRules()
     {
         $hppFraudRules = array_filter($this->paymentData, function($key) {
             return strpos($key, 'HPP_FRAUDFILTER_RULE_') === 0;
@@ -204,9 +203,10 @@ class RealexHppClient
                     $hppFraudRuleMode
                 );
             }
-            $gatewayRequest
-                ->withFraudRules($fraudFilterRules);
+
         }
+
+        return !empty($fraudFilterRules) ? $fraudFilterRules : null;
     }
 
     public function addAddressDetails($gatewayRequest, $code, $country, $addressType = AddressType::BILLING)

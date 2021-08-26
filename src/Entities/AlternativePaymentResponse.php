@@ -46,7 +46,6 @@ class AlternativePaymentResponse
     
     /**
      *
-     *
      * @var string
      */
     public $paymentMethod;

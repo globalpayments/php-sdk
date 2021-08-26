@@ -6,6 +6,7 @@ use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Builders\ReportBuilder;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
@@ -19,7 +20,8 @@ use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Entities\Reporting\DepositSummary;
 use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
 use GlobalPayments\Api\Entities\Transaction;
-use GlobalPayments\Api\Entities\TransactionSummary;
+use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
+use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Mapping\GpApiMapping;
 
@@ -76,7 +78,6 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         if (empty($this->accessToken)) {
             $this->signIn();
         }
-
         $response = $this->executeProcess($builder);
 
         return GpApiMapping::mapResponse($response);
@@ -87,7 +88,6 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         if (empty($this->accessToken)) {
             $this->signIn();
         }
-
         $response = $this->executeProcess($builder);
 
         return GpApiMapping::mapResponseSecure3D($response);
@@ -105,7 +105,6 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         if (empty($this->accessToken)) {
             $this->signIn();
         }
-
         $response = $this->executeProcess($builder);
 
         return GpApiMapping::mapResponse($response);
@@ -125,7 +124,6 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         if (empty($this->accessToken)) {
             $this->signIn();
         }
-
         $response = $this->executeProcess($builder);
 
         return GpApiMapping::mapReportResponse($response, $builder->reportType);

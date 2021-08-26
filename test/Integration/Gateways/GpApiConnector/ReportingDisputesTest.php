@@ -21,6 +21,9 @@ use PHPUnit\Framework\TestCase;
 
 class ReportingDisputesTest extends TestCase
 {
+    private $arn;
+    private $depositReference;
+
     public function setup()
     {
         ServicesContainer::configureService($this->setUpConfig());
@@ -29,8 +32,8 @@ class ReportingDisputesTest extends TestCase
     public function setUpConfig()
     {
         $config = new GpApiConfig();
-        $config->appId = 'GkwdYGzQrEy1SdTz7S10P8uRjFMlEsJg';
-        $config->appKey = 'zvXE2DmmoxPbQ6d0';
+        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
+        $config->appKey = 'DHUGdzpjXfTbjZeo';
         $config->environment = Environment::TEST;
 
         return $config;
@@ -44,6 +47,8 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($response);
         $this->assertInstanceOf(DisputeSummary::class, $response);
         $this->assertEquals($disputeId, $response->caseId);
+        $this->arn = $response->transactionARN;
+        $this->depositReference = $response->depositReference;
     }
 
     public function testReportDisputeDetailWrongId()
@@ -62,22 +67,20 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindDisputes_By_ARN()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $arn = "135091790340196";
+        $this->testReportDisputeDetail();
         $disputes = ReportingService::findDisputesPaged(1,10)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->andWith(SearchCriteria::AQUIRER_REFERENCE_NUMBER, $arn)
+            ->where(SearchCriteria::AQUIRER_REFERENCE_NUMBER, $this->arn)
             ->execute();
 
         $this->assertNotNull($disputes);
         foreach ($disputes->result as $dispute) {
-            $this->assertEquals($arn, $dispute->transactionARN);
+            $this->assertEquals($this->arn, $dispute->transactionARN);
         }
     }
 
     public function testReportFindDisputes_By_ARN_NotFound()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $arn = "874091790340471";
         try {
             ReportingService::findDisputesPaged(1, 10)
@@ -185,7 +188,9 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
         $disputesList = $disputes->result;
-        uasort($disputesList, function($a, $b) {return strcmp($a->caseId, $b->caseId);});
+        uasort($disputesList, function ($a, $b) {
+            return strcmp($a->caseId, $b->caseId);
+        });
         /**
          * @var DisputeSummary $dispute
          */
@@ -208,7 +213,9 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
         $disputesList = $disputes->result;
-        uasort($disputesList, function($a, $b) {return strcmp($a->transactionARN, $b->transactionARN);});
+        uasort($disputesList, function ($a, $b) {
+            return strcmp($a->transactionARN, $b->transactionARN);
+        });
         /**
          * @var DisputeSummary $dispute
          */
@@ -228,7 +235,9 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
         $disputesList = $disputes->result;
-        uasort($disputesList, function($a, $b) {return strcmp($a->transactionCardType, $b->transactionCardType);});
+        uasort($disputesList, function ($a, $b) {
+            return strcmp($a->transactionCardType, $b->transactionCardType);
+        });
         /**
          * @var DisputeSummary $dispute
          */
@@ -248,7 +257,9 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
         $disputesList = $disputes->result;
-        uasort($disputesList, function($a, $b) {return strcmp($a->caseStatus, $b->caseStatus);});
+        uasort($disputesList, function ($a, $b) {
+            return strcmp($a->caseStatus, $b->caseStatus);
+        });
         /**
          * @var DisputeSummary $dispute
          */
@@ -268,7 +279,9 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
         $disputesList = $disputes->result;
-        uasort($disputesList, function($a, $b) {return strcmp($a->caseStage, $b->caseStage);});
+        uasort($disputesList, function ($a, $b) {
+            return strcmp($a->caseStage, $b->caseStage);
+        });
         /**
          * @var DisputeSummary $dispute
          */
@@ -289,7 +302,9 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
         $disputesList = $disputes->result;
-        uasort($disputesList, function($a, $b) {return strcmp($a->caseId, $b->caseId);});
+        uasort($disputesList, function ($a, $b) {
+            return strcmp($a->caseId, $b->caseId);
+        });
         /**
          * @var DisputeSummary $dispute
          */
@@ -311,7 +326,9 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
         $disputesList = $disputes->result;
-        uasort($disputesList, function($a, $b) {return strcmp($a->caseId, $b->caseId);});
+        uasort($disputesList, function ($a, $b) {
+            return strcmp($a->caseId, $b->caseId);
+        });
         /**
          * @var DisputeSummary $dispute
          */
@@ -350,19 +367,19 @@ class ReportingDisputesTest extends TestCase
         }
     }
 
-    public function testReportSettlementDispute_Order_By_Id_With_Status_UnderReview()
+    public function testReportSettlementDispute_Order_By_Id_With_Status_Funded()
     {
         $startDate = (new \DateTime())->modify('-2 year +1 day');
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->andWith(SearchCriteria::DISPUTE_STATUS, DisputeStatus::WITH_MERCHANT)
+            ->where(DataServiceCriteria::START_DEPOSIT_DATE, $startDate)
+            ->andWith(SearchCriteria::DISPUTE_STATUS, DisputeStatus::SETTLE_DISPUTE_FUNDED)
             ->execute();
 
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
         foreach ($summary->result as $dispute) {
-            $this->assertEquals(DisputeStatus::UNDER_REVIEW, $dispute->caseStatus);
+            $this->assertEquals(DisputeStatus::SETTLE_DISPUTE_FUNDED, $dispute->caseStatus);
         }
     }
 
@@ -377,7 +394,9 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
         $disputesList = $summary->result;
-        uasort($disputesList, function($a, $b) {return strcmp($a->caseId, $b->caseId);});
+        uasort($disputesList, function ($a, $b) {
+            return strcmp($a->caseId, $b->caseId);
+        });
         /**
          * @var DisputeSummary $dispute
          */
@@ -397,7 +416,9 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
         $disputesList = $summary->result;
-        uasort($disputesList, function($a, $b) {return strcmp($a->transactionARN, $b->transactionARN);});
+        uasort($disputesList, function ($a, $b) {
+            return strcmp($a->transactionARN, $b->transactionARN);
+        });
         /**
          * @var DisputeSummary $dispute
          */
@@ -417,7 +438,9 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
         $disputesList = $summary->result;
-        uasort($disputesList, function($a, $b) {return strcmp($a->transactionCardType, $b->transactionCardType);});
+        uasort($disputesList, function ($a, $b) {
+            return strcmp($a->transactionCardType, $b->transactionCardType);
+        });
         /**
          * @var DisputeSummary $dispute
          */
@@ -437,7 +460,9 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
         $disputesList = $summary->result;
-        uasort($disputesList, function($a, $b) {return strcmp($a->caseStage, $b->caseStage);});
+        uasort($disputesList, function ($a, $b) {
+            return strcmp($a->caseStage, $b->caseStage);
+        });
         /**
          * @var DisputeSummary $dispute
          */
@@ -677,6 +702,52 @@ class ReportingDisputesTest extends TestCase
         $this->assertEquals('SUCCESS', $response->responseCode);
     }
 
+    public function testReportDisputeChallenge_MultipleDocuments_ClosedStatus()
+    {
+        $dispute = new DisputeSummary();
+        $dispute->caseId = "DIS_SAND_abcd1234";
+        $document = new DisputeDocument();
+        $document->type = 'SALES_RECEIPT';
+        $document->b64_content = 'R0lGODlhigPCAXAAACwAAAAAigPCAYf///8AQnv';
+
+        $secondDocument = new DisputeDocument();
+        $secondDocument->type = 'SALES_RECEIPT';
+        $secondDocument->b64_content = 'R0lGODlhigPCAXAAACwAAAAAigPCAYf///8AQnv';
+
+        $documents[] = $document;
+        $documents[] = $secondDocument;
+
+        $exceptionCaught = false;
+        try {
+            $dispute->challenge($documents)->execute();
+        } catch (GatewayException $ex) {
+            $exceptionCaught = true;
+            $this->assertEquals("40072", $ex->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - 131,The dispute stage, Retrieval, can be challenged with a single document only. Please correct the request and resubmit', $ex->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testReportDisputeChallenge_MissingDocument()
+    {
+        $dispute = new DisputeSummary();
+        $dispute->caseId = "DIS_SAND_abcd1234";
+        $document = new DisputeDocument();
+        $documents[] = $document;
+
+        $exceptionCaught = false;
+        try {
+            $dispute->challenge($documents)->execute();
+        } catch (GatewayException $ex) {
+            $exceptionCaught = true;
+            $this->assertEquals("40065", $ex->responseCode);
+            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Unable to challenge as No document provided with the request', $ex->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
     public function testReportDisputeChallengeWrongId()
     {
         $dispute = new DisputeSummary();
@@ -695,6 +766,23 @@ class ReportingDisputesTest extends TestCase
             $this->assertContains("INVALID_DISPUTE_ACTION", $ex->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testFindSettlementDisputesPaged_FilterBy_DepositId()
+    {
+	 $this->markTestSkipped('GP-API sandbox limitation');
+        $startDate = (new \DateTime())->modify('-2 year +1 day');
+
+        $disputes = ReportingService::findSettlementDisputesPaged(1, 10)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->andWith(DataServiceCriteria::DEPOSIT_REFERENCE, $this->depositReference)
+            ->execute();
+
+        $this->assertNotNull($disputes);
+        $this->assertNotEquals(0 , count($disputes->result));
+        foreach ($disputes->result as $dispute) {
+            $this->assertEquals($this->depositReference, $dispute->depositReference);
         }
     }
 }

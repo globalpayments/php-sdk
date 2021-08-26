@@ -199,8 +199,8 @@ class ReportingDepositsTest extends TestCase
     public function setUpConfig()
     {
         $config = new GpApiConfig();
-        $config->appId = 'VuKlC2n1cr5LZ8fzLUQhA7UObVks6tFF';
-        $config->appKey = 'NmGM0kg92z2gA7Og';
+        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
+        $config->appKey = 'DHUGdzpjXfTbjZeo';
         $config->environment = Environment::TEST;
 
         return $config;

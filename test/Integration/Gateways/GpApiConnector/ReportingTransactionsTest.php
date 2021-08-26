@@ -5,9 +5,10 @@ namespace Gateways\GpApiConnector;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
 use GlobalPayments\Api\Entities\Enums\GpApi\EntryMode;
-use GlobalPayments\Api\Entities\Enums\GpApi\PaymentType;
+use GlobalPayments\Api\Entities\Enums\PaymentType;
 use GlobalPayments\Api\Entities\Enums\GpApi\SortDirection;
 use GlobalPayments\Api\Entities\Enums\GpApi\TransactionSortProperty;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
@@ -325,7 +326,8 @@ class ReportingTransactionsTest extends TestCase
     {
         $startDate = new \DateTime('2020-11-01 midnight');
 
-        $cardBrand = array("VISA", "MC", "AMEX", "DINERS", "DISCOVER", "JCB", "CUP");
+        //"MC", "DINERS", "JCB" not supported in sandbox env
+        $cardBrand = array("VISA", "AMEX", "DISCOVER", "CUP");
         foreach ($cardBrand as $value) {
             try {
                 $response = ReportingService::findTransactionsPaged(1, 10)
@@ -593,11 +595,32 @@ class ReportingTransactionsTest extends TestCase
         }
     }
 
+    public function testReportFindTransactionsByPaymentMethod()
+    {
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactionsPaged(1, 10)
+                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->where(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::PAYMENT_METHOD, PaymentMethodName::BANK_TRANSFER)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by type failed: ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response->result));
+        /** @var TransactionSummary $rs */
+        foreach ($response->result as $rs) {
+            $this->assertEquals(PaymentMethodName::BANK_TRANSFER, $rs->paymentType);
+        }
+    }
+
     public function setUpConfig()
     {
         $config = new GpApiConfig();
-        $config->appId = 'VuKlC2n1cr5LZ8fzLUQhA7UObVks6tFF';
-        $config->appKey = 'NmGM0kg92z2gA7Og';
+        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
+        $config->appKey = 'DHUGdzpjXfTbjZeo';
         $config->environment = Environment::TEST;
 
         return $config;

@@ -4,9 +4,31 @@
 
 # Changelog
 
+
 ## Latest version
 
+- Add the amount and currency to hash generation (GP-ECOM)
+- Digital wallets unencrypted and encrypted for GP-API with Google Pay and Apple Pay:
+    - sale
+    - linked refund
+    - reverse
+- GP-API ACH feature: 
+     - sale
+     - refund
+     - linked refund
+     - reauthorize
+- Add recurring payment with stored credentials functionality to GP-API
+- Add unit tests for multi-config on GP-API
+- Add payment_method filter on report transaction 
+- Add depositDate and depositReference mapping response for settlement disputes
+- Support findSettlementDisputes by deposit_id, from_deposit_time_created and to_deposit_time_created
+- Add optional parameters to tokenize() method
+- Add amount and currency to hash generation for Apple PAY (GP-ECOM)
+
+## v2.3.10 (08/26/2021)
+
 - Set Fraud Management Rules for GP-ECOM
+- Portico tokenization example update
 
 ## v2.3.9 (08/03/2021)
 
@@ -34,7 +56,7 @@
 
 #### Enhancements:
 - Send the numeric version in the three_ds.message_version in the create transaction request
-- Map the ACS challenge redirect url only if the status is "CHALLENGE_REQUIRED"
+- Map the ACS challenge redirect URL only if the status is "CHALLENGE_REQUIRED"
 
 ## v2.3.5 (07/08/2021)
 
@@ -45,11 +67,13 @@
 ## v2.3.4 (06/15/2021)
 
 #### Enhancements:
+ 
 - Add RequestLogger to GP-ECOM
 - Fix message_extension issue for 3DS2 on GP-ECOM
 - Update logo image on Readme and Changelog files
 - Add depositDate and depositReference mappings for settlement disputes report on GP-API
 - Change property name from "storage_model" to "storage_mode" on GP-API
+
 
 ## v2.3.3 (05/27/2021)
 
@@ -58,11 +82,13 @@
 - enhance GP-ECOM error handling
 - update GP-ECOM unit test for APPLE PAY and GOOGLE PAY
 
+
 ## v2.2.16 (05/20/2021)
 
 #### Enhancements:
 
-Add GP-ECOM dynamic descriptor functionaSlity
+Add GP-ECOM dynamic descriptor functionality
+
 
 ## v2.2.15 (05/18/2021)
 

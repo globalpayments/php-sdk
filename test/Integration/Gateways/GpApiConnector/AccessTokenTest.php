@@ -10,6 +10,7 @@ use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\GpApiService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Utils\GenerationUtils;
 use PHPUnit\Framework\TestCase;
 
 class AccessTokenTest extends TestCase
@@ -31,6 +32,40 @@ class AccessTokenTest extends TestCase
     {
         $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
         $this->assertAccessTokenResponse($accessTokenInfo);
+    }
+
+    public function testGenerateAccessToken_WithPermissions()
+    {
+        $this->config->permissions = ["PMT_POST_Create", "TRN_POST_Authorize", "DIS_POST_Accept", "TRN_GET_List_Funded"];
+
+        $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
+        $this->assertAccessTokenResponse($accessTokenInfo);
+    }
+
+    public function testGenerateAccessToken_WithLimitedPermissions()
+    {
+        $this->config->permissions = ["PMT_POST_Create", "TRN_POST_Authorize"];
+
+        $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
+
+        $this->assertNotNull($accessTokenInfo);
+        $this->assertNotNull($accessTokenInfo->accessToken);
+        $this->assertEquals("Tokenization", $accessTokenInfo->tokenizationAccountName);
+        $this->assertEquals("Transaction_Processing", $accessTokenInfo->transactionProcessingAccountName);
+        $this->assertNull($accessTokenInfo->dataAccountName);
+        $this->assertNull($accessTokenInfo->disputeManagementAccountName);
+    }
+
+    public function testGenerateAccessToken_WithWrongPermissions()
+    {
+        $this->config->permissions = ["TEST_1", "TEST_2"];
+
+        try {
+            GpApiService::generateTransactionKey($this->config);
+        } catch (GatewayException $e) {
+            $this->assertEquals('40119', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Invalid permissions [ TEST_1,TEST_2 ] provided in the input field - permissions', $e->getMessage());
+        }
     }
 
     public function testCreateAccessTokenWithSpecific_SecondsToExpire()
@@ -84,6 +119,33 @@ class AccessTokenTest extends TestCase
     {
         $accessTokenInfo = new AccessTokenInfo();
         $accessTokenInfo->accessToken = "r1SzGAx2K9z5FNiMHkrapfRh8BC8";
+        $accessTokenInfo->dataAccountName = "Settlement Reporting";
+        $accessTokenInfo->disputeManagementAccountName = "Dispute Management";
+        $accessTokenInfo->tokenizationAccountName = "Tokenization";
+        $accessTokenInfo->transactionProcessingAccountName = "Transaction_Processing";
+        $config = new GpApiConfig();
+        $config->accessTokenInfo = $accessTokenInfo;
+
+        ServicesContainer::configureService($config);
+
+        $card = new CreditCardData();
+        $card->number = "4263970000005262";
+        $card->expMonth = "05";
+        $card->expYear = "2025";
+        $card->cvn = "852";
+
+        try {
+            $card->verify()->execute();
+        } catch (GatewayException $e) {
+            $this->assertEquals('40001', $e->responseCode);
+            $this->assertEquals('Status Code: NOT_AUTHENTICATED - Invalid access token', $e->getMessage());
+        }
+    }
+
+    public function testUseInvalidAccessToken()
+    {
+        $accessTokenInfo = new AccessTokenInfo();
+        $accessTokenInfo->accessToken = GenerationUtils::getGuid();
         $accessTokenInfo->dataAccountName = "Settlement Reporting";
         $accessTokenInfo->disputeManagementAccountName = "Dispute Management";
         $accessTokenInfo->tokenizationAccountName = "Tokenization";

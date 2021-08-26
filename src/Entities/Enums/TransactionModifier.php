@@ -21,4 +21,5 @@ class TransactionModifier extends Enum
     const SECURE3D = 12;
     const ALTERNATIVE_PAYMENT_METHOD = 12;
     const LEVEL_III = 13;
+    const DECRYPTED_MOBILE = 14;
 }

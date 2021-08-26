@@ -3,6 +3,8 @@
 namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
+use GlobalPayments\Api\Builders\ManagementBuilder;
+use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IChargable;
@@ -30,6 +32,13 @@ class ECheck implements
     public $secCode;
     public $ssnLast4;
     public $token;
+    public $checkReference;
+    public $merchantNotes;
+    public $bankName;
+    /**
+     * @var Address
+     */
+    public $bankAddress;
 
     /**
      * Authorizes the payment method and captures the entire authorized amount
@@ -41,6 +50,19 @@ class ECheck implements
     public function charge($amount = null)
     {
         return (new AuthorizationBuilder(TransactionType::SALE, $this))
+            ->withAmount($amount);
+    }
+
+    /**
+     * Refunds the payment method
+     *
+     * @param string|float $amount Amount to refund
+     *
+     * @return AuthorizationBuilder
+     */
+    public function refund($amount = null)
+    {
+        return (new AuthorizationBuilder(TransactionType::REFUND, $this))
             ->withAmount($amount);
     }
 }

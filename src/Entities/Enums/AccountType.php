@@ -8,4 +8,5 @@ class AccountType extends Enum
 {
     const CHECKING = 0;
     const SAVINGS = 1;
+    const CREDIT = 2;
 }

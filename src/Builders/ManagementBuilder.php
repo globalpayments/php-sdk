@@ -8,6 +8,7 @@ use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\PaymentMethods\ECheck;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
@@ -176,6 +177,11 @@ class ManagementBuilder extends TransactionBuilder
     public $dynamicDescriptor;
 
     /**
+     * @var ECheck
+     */
+    public $eCheck;
+
+    /**
      * {@inheritdoc}
      *
      * @param TransactionType $type Request transaction type
@@ -249,7 +255,8 @@ class ManagementBuilder extends TransactionBuilder
             TransactionType::CAPTURE |
             TransactionType::EDIT |
             TransactionType::HOLD |
-            TransactionType::RELEASE
+            TransactionType::RELEASE |
+            TransactionType::REAUTH
         )
             ->check('transactionId')->isNotNull();
 
@@ -541,6 +548,20 @@ class ManagementBuilder extends TransactionBuilder
     public function withDynamicDescriptor($dynamicDescriptor)
     {
         $this->dynamicDescriptor = $dynamicDescriptor;
+
+        return $this;
+    }
+
+    /**
+     * Set the election check information
+     *
+     * @param ECheck $eCheck
+     *
+     * @return $this
+     */
+    public function withBankTransferData($eCheck)
+    {
+        $this->eCheck = $eCheck;
 
         return $this;
     }

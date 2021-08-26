@@ -1,6 +1,7 @@
 <?php
 namespace GlobalPayments\Api\Entities\Reporting;
 
+use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\Enums\GpApi\EntryMode;
 
 class TransactionSummary
@@ -462,4 +463,19 @@ class TransactionSummary
      * @var string
      */
     public $merchantDbaName;
+
+    /**
+     * @var string
+     */
+    public $accountNumberLast4;
+
+    /**
+     * @var string
+     */
+    public $accountType;
+
+    /**
+     * @var AlternativePaymentResponse
+     */
+    public $alternativePaymentResponse;
 }

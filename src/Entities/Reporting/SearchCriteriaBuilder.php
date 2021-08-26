@@ -8,8 +8,9 @@ use GlobalPayments\Api\Entities\Enums\GpApi\DepositStatus;
 use GlobalPayments\Api\Entities\Enums\GpApi\DisputeStage;
 use GlobalPayments\Api\Entities\Enums\GpApi\DisputeStatus;
 use GlobalPayments\Api\Entities\Enums\GpApi\EntryMode;
-use GlobalPayments\Api\Entities\Enums\GpApi\PaymentType;
-use GlobalPayments\Api\Entities\Enums\GpApi\TransactionStatus;
+use GlobalPayments\Api\Entities\Enums\PaymentType;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
+use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
@@ -460,6 +461,11 @@ class SearchCriteriaBuilder
      * @var string
      */
     public $httpResponseCode;
+
+    /**
+     * @var PaymentMethodName
+     */
+    public $paymentMethod;
     
     public function __construct(TransactionReportBuilder $reportBuilder = null)
     {

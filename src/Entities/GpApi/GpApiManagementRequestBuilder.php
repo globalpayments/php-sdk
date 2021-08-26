@@ -4,9 +4,13 @@ namespace GlobalPayments\Api\Entities\GpApi;
 
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
+use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\GpApi\DTO\Card;
 use GlobalPayments\Api\Entities\IRequestBuilder;
+use GlobalPayments\Api\Mapping\EnumMapping;
+use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Utils\StringUtils;
 
@@ -34,6 +38,9 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
     public function buildRequest(BaseBuilder $builder, $config)
     {
         $payload = [];
+        /**
+         * @var ManagementBuilder $builder
+         */
         switch ($builder->transactionType) {
             case TransactionType::TOKEN_DELETE:
                 $endpoint = GpApiRequest::PAYMENT_METHODS_ENDPOINT . '/' . $builder->paymentMethod->token;
@@ -81,6 +88,24 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/reauthorization';
                 $verb = 'POST';
                 $payload['amount'] = StringUtils::toNumeric($builder->amount);
+                if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::ACH) {
+                    $payload['description'] = $builder->description;
+                    if (!empty($builder->eCheck)) {
+                        $eCheck = $builder->eCheck;
+                        $payload['payment_method'] = [
+                            'narrative' => $eCheck->merchantNotes,
+                            'bank_transfer' => [
+                                'account_number' => $eCheck->accountNumber,
+                                'account_type' => EnumMapping::mapAccountType(GatewayProvider::GP_API, $eCheck->accountType),
+                                'check_reference' => $eCheck->checkReference,
+                                'bank' => [
+                                    'code' => $eCheck->routingNumber,
+                                    'name' => $eCheck->bankName
+                                ]
+                            ]
+                        ];
+                    }
+                }
                 break;
             default:
                 return null;

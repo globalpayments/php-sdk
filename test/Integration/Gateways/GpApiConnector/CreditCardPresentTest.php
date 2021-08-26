@@ -9,10 +9,10 @@ use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
 use GlobalPayments\Api\Entities\Enums\GpApi\SortDirection;
 use GlobalPayments\Api\Entities\Enums\GpApi\TransactionSortProperty;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
-use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
-use GlobalPayments\Api\Entities\Transaction;
-use GlobalPayments\Api\Entities\TransactionSummary;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
+use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
+use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
@@ -32,8 +32,8 @@ class CreditCardPresentTest extends TestCase
     public function setUpConfig()
     {
         $config = new GpApiConfig();
-        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
-        $config->appKey = '9pArW2uWoA8enxKc';
+        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
+        $config->appKey = 'DHUGdzpjXfTbjZeo';
         $config->environment = Environment::TEST;
         $config->channel = Channels::CardPresent;
 
@@ -154,7 +154,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
         $this->assertTransactionResponse($transaction, TransactionStatus::CAPTURED);
 
-        sleep(1);
+        sleep(2);
 
         $batch = BatchService::closeBatch($transaction->batchSummary->batchReference);
         $this->assertBatchCloseResponse($batch, 2.11);
@@ -195,6 +195,8 @@ class CreditCardPresentTest extends TestCase
             ->withCurrency('USD')
             ->execute();
         $this->assertTransactionResponse($transaction, TransactionStatus::CAPTURED);
+
+        sleep(2);
 
         $batch = BatchService::closeBatch($transaction->batchSummary->batchReference);
         $this->assertBatchCloseResponse($batch, 4.22);
@@ -332,7 +334,7 @@ class CreditCardPresentTest extends TestCase
             BatchService::closeBatch($transaction->batchSummary->batchReference);
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('40017', $e->responseCode);
+            $this->assertEquals('40212', $e->responseCode);
             $this->assertEquals('Status Code: INVALID_BATCH_ACTION - 9,No transaction associated with batch', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
@@ -461,12 +463,7 @@ class CreditCardPresentTest extends TestCase
 
     public function testReauthAReversedSale()
     {
-        $card = new CreditCardData();
-        $card->number = "5425230000004415";
-        $card->expMonth = date('m');
-        $card->expYear = date('Y', strtotime('+1 year'));
-        $card->cvn = "852";
-        $card->cardHolderName = "James Mason";
+        $card = $this->initCreditCardData();
 
         $transaction = $card->charge(42)
             ->withCurrency('USD')
@@ -489,17 +486,40 @@ class CreditCardPresentTest extends TestCase
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
+    public function testReauthAReversedAuthorizedTransaction()
+    {
+        $card = $this->initCreditCardData();
+
+        $transaction = $card->authorize(42)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+
+        $reverse = $transaction->reverse()->withCurrency('USD')->execute();
+
+        $this->assertNotNull($reverse);
+        $this->assertEquals('SUCCESS', $reverse->responseCode);
+        $this->assertEquals(TransactionStatus::REVERSED, $reverse->responseMessage);
+
+        $reauthorized = $reverse->reauthorized()->execute();
+        $this->assertNotNull($reauthorized);
+        $this->assertEquals('SUCCESS', $reauthorized->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $reauthorized->responseMessage);
+    }
+
     public function testReauthorizedAnExistingTransaction()
     {
-        $startDate = (new \DateTime())->modify('-29 days')->setTime(0,0,0);
-        $endDate = (new \DateTime())->modify('-25 days')->setTime(23,59,59);
+        $startDate = (new \DateTime())->modify('-29 days')->setTime(0, 0, 0);
 
-        $response = ReportingService::findTransactionsPaged(1, 1)
+        $response = ReportingService::findTransactionsPaged(1, 100)
             ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
             ->where(SearchCriteria::TRANSACTION_STATUS, TransactionStatus::PREAUTHORIZED)
             ->andWith(SearchCriteria::CHANNEL, Channels::CardPresent)
             ->andWith(SearchCriteria::START_DATE, $startDate)
-            ->andWith(SearchCriteria::END_DATE, $endDate)
             ->execute();
 
         $this->assertNotNull($response);
@@ -507,19 +527,167 @@ class CreditCardPresentTest extends TestCase
         /**
          * @var TransactionSummary $result
          */
-        $result = $response->result[0];
+        $result = $response->result[rand(0, count($response->result) - 1)];
         $transaction = new Transaction();
         $transaction->transactionId = $result->transactionId;
+
+        $reverse = $transaction->reverse()->withCurrency('USD')->execute();
+
+        $this->assertNotNull($reverse);
+        $this->assertEquals('SUCCESS', $reverse->responseCode);
+        $this->assertEquals(TransactionStatus::REVERSED, $reverse->responseMessage);
+
+        $response = $reverse->reauthorized($result->amount)->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $response->responseMessage);
+    }
+
+    public function testReauthAReversedAuthorizedTransaction_WithIdempotencyKey()
+    {
+        $idempotencyKey = GenerationUtils::getGuid();
+        $card = $this->initCreditCardData();
+
+        $transaction = $card->authorize(42)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+
+        $reverse = $transaction->reverse()->withCurrency('USD')->execute();
+
+        $this->assertNotNull($reverse);
+        $this->assertEquals('SUCCESS', $reverse->responseCode);
+        $this->assertEquals(TransactionStatus::REVERSED, $reverse->responseMessage);
+
+        $reauthorized = $reverse->reauthorized()
+            ->withIdempotencyKey($idempotencyKey)
+            ->execute();
+        $this->assertNotNull($reauthorized);
+        $this->assertEquals('SUCCESS', $reauthorized->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $reauthorized->responseMessage);
+
+        $exceptionCaught = false;
+        try {
+            $reverse->reauthorized()
+                ->withIdempotencyKey($idempotencyKey)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40039', $e->responseCode);
+            $this->assertContains(sprintf('Status Code: DUPLICATE_ACTION - Idempotency Key seen before: id=%s, status=PREAUTHORIZED', $reauthorized->transactionId), $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testReauthAReversedSale_WithAmount()
+    {
+        $card = $this->initCreditCardData();
+
+        $transaction = $card->charge(42)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         $reverse = $transaction->reverse()->execute();
 
         $this->assertNotNull($reverse);
         $this->assertEquals('SUCCESS', $reverse->responseCode);
         $this->assertEquals(TransactionStatus::REVERSED, $reverse->responseMessage);
+        $this->assertEquals($reverse->transactionId, $transaction->transactionId);
 
-        $response = $reverse->reauthorized()->execute();
+        $response = $reverse->reauthorized(15)->execute();
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $response->responseMessage);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+        $this->assertEquals(15, $response->balanceAmount);
+        $this->assertNotEquals($reverse->transactionId, $response->transactionId);
     }
+
+    public function testReauthAReversedRefund()
+    {
+        $card = $this->initCreditCardData();
+
+        $refund = $card->refund(42)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->execute();
+        $this->assertNotNull($refund);
+        $this->assertEquals('SUCCESS', $refund->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $refund->responseMessage);
+
+        $exceptionCaught = false;
+        try {
+            $refund->reauthorized()->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40213', $e->responseCode);
+            $this->assertContains('Status Code: INVALID_REQUEST_DATA', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testReauthASale_WithCapturedStatus()
+    {
+        $card = $this->initCreditCardData();
+
+        $transaction = $card->charge(42)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
+
+        $exceptionCaught = false;
+        try {
+            $transaction->reauthorized()->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40044', $e->responseCode);
+            $this->assertContains('Status Code: INVALID_REQUEST_DATA - 36, Invalid original transaction for reauthorization-This error is returned from a CreditAuth or CreditSale if the original transaction referenced by GatewayTxnId cannot be found. This is typically because the original does not meet the criteria for the sale or authorization by GatewayTxnID. This error can also be returned if the original transaction is found, but the card number has been written over with nulls after 30 days.', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testReauthASale_NonExistentId()
+    {
+        $exceptionCaught = false;
+
+        try {
+            $transaction = new Transaction();
+            $transaction->transactionId = GenerationUtils::getGuid();
+            $transaction->reauthorized()->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40008', $e->responseCode);
+            $this->assertContains(sprintf('Status Code: RESOURCE_NOT_FOUND - Transaction %s not found at this location.', $transaction->transactionId), $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    private function initCreditCardData()
+    {
+        $card = new CreditCardData();
+        $card->number = "5425230000004415";
+        $card->expMonth = date('m');
+        $card->expYear = date('Y', strtotime('+1 year'));
+        $card->cvn = "852";
+        $card->cardHolderName = "James Mason";
+
+        return $card;
+    }
+
 }

@@ -16,6 +16,9 @@ class EbtCardTest extends TestCase
 
     private $track;
 
+    private $amount = 10;
+    private $currency = 'USD';
+
     public function setup()
     {
         ServicesContainer::configureService($this->setUpConfig());
@@ -39,54 +42,109 @@ class EbtCardTest extends TestCase
     {
         $this->card->cardHolderName = 'Jane Doe';
 
-        $response = $this->card->charge(10)
-            ->withCurrency('USD')
+        $response = $this->card->charge($this->amount)
+            ->withCurrency($this->currency)
             ->execute();
 
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+        $this->assertEbtTransactionResponse($response, TransactionStatus::CAPTURED);
     }
 
     public function testEbtSale_Swipe()
     {
-        $response = $this->track->charge(10)
-            ->withCurrency('USD')
+        $response = $this->track->charge($this->amount)
+            ->withCurrency($this->currency)
             ->withAllowDuplicates(true)
             ->execute();
 
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+        $this->assertEbtTransactionResponse($response, TransactionStatus::CAPTURED);
     }
 
     public function testEbtRefund()
     {
-        $response = $this->card->refund(10)
-            ->withCurrency('USD')
+        $this->card->cardHolderName = 'Jane Doe';
+
+        $response = $this->card->refund($this->amount)
+            ->withCurrency($this->currency)
             ->execute();
 
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+        $this->assertEbtTransactionResponse($response, TransactionStatus::CAPTURED);
+    }
+
+    public function testEbtSale_Refund_Swipe()
+    {
+        $response = $this->track->refund($this->amount)
+            ->withCurrency($this->currency)
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $this->assertEbtTransactionResponse($response, TransactionStatus::CAPTURED);
     }
 
     public function testEbtTransactionRefund()
     {
-        $transaction = $this->card->charge(10)
-            ->withCurrency('USD')
+        $transaction = $this->card->charge($this->amount)
+            ->withCurrency($this->currency)
             ->execute();
 
-        $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
+        $this->assertEbtTransactionResponse($transaction, TransactionStatus::CAPTURED);
 
         $response = $transaction->refund()
-            ->withCurrency('USD')
+            ->withCurrency($this->currency)
             ->execute();
 
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+        $this->assertEbtTransactionResponse($response, TransactionStatus::CAPTURED);
     }
+
+    public function testEbtTransactionRefund_TrackData()
+    {
+        $transaction = $this->track->charge($this->amount)
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertEbtTransactionResponse($transaction, TransactionStatus::CAPTURED);
+
+        $response = $transaction->refund()
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertEbtTransactionResponse($response, TransactionStatus::CAPTURED);
+    }
+
+    public function testEbtTransaction_Reverse()
+    {
+        $transaction = $this->card->charge($this->amount)
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertEbtTransactionResponse($transaction, TransactionStatus::CAPTURED);
+
+        $response = $transaction->reverse()
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertEbtTransactionResponse($response, TransactionStatus::REVERSED);
+    }
+
+    public function testEbtTransaction_Reverse_TrackData()
+    {
+        $transaction = $this->track->charge($this->amount)
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertEbtTransactionResponse($transaction, TransactionStatus::CAPTURED);
+
+        $response = $transaction->reverse()
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertEbtTransactionResponse($response, TransactionStatus::REVERSED);
+    }
+
+    private function assertEbtTransactionResponse($transactionResponse, $transactionStatus)
+    {
+        $this->assertNotNull($transactionResponse);
+        $this->assertEquals('SUCCESS', $transactionResponse->responseCode);
+        $this->assertEquals($transactionStatus, $transactionResponse->responseMessage);
+    }
+
 }

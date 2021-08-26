@@ -7,8 +7,9 @@ use GlobalPayments\Api\Entities\AutoSubstantiation;
 use GlobalPayments\Api\Entities\EcommerceInfo;
 use GlobalPayments\Api\Entities\Enums\EmvFallbackCondition;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
+use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 use GlobalPayments\Api\Entities\FraudRuleCollection;
 use GlobalPayments\Api\Entities\HostedPaymentData;
 use GlobalPayments\Api\Entities\Enums\AddressType;
@@ -18,6 +19,8 @@ use GlobalPayments\Api\Entities\Enums\RecurringSequence;
 use GlobalPayments\Api\Entities\Enums\RecurringType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\Entities\PhoneNumber;
+use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\EBTCardData;
 use GlobalPayments\Api\PaymentMethods\GiftCard;
@@ -509,10 +512,17 @@ class AuthorizationBuilder extends TransactionBuilder
      */
     public $surchargeAmount;
 
-    /**
-     * @var PaymentMethodUsageMode $paymentMethodUsageMode
-     */
+    /** @var PaymentMethodUsageMode $paymentMethodUsageMode */
     public $paymentMethodUsageMode;
+
+    /** @var PhoneNumber */
+    public $homePhone;
+
+    /** @var PhoneNumber */
+    public $workPhone;
+
+    /** @var PhoneNumber */
+    public $shippingPhone;
 
     /**
      * {@inheritdoc}
@@ -1019,7 +1029,7 @@ class AuthorizationBuilder extends TransactionBuilder
     /**
      * Set the request productData
      *
-     * @param string $productData Request productData
+     * @param array $productData Request productData
      *
      * @return AuthorizationBuilder
      */
@@ -1200,6 +1210,7 @@ class AuthorizationBuilder extends TransactionBuilder
     }
 
     /**
+     * @param StoredCredential $storedCredential
      * @return AuthorizationBuilder
      */
     public function withStoredCredential($storedCredential)
@@ -1209,26 +1220,17 @@ class AuthorizationBuilder extends TransactionBuilder
     }
 
     /**
-     * Set the request customer IP address
-     *
-     * @param string|float $customerIpAddress Request customer IP address
-     *
-     * @return AuthorizationBuilder
-     */
-    public function withFraudFilter($fraudFilter)
-    {
-        $this->fraudFilter = $fraudFilter;
-        return $this;
-    }
-
-    /**
+     * @param FraudFilterMode $fraudFilter
      * @param FraudRuleCollection $fraudRules
      *
-     * @return AuthorizationBuilder
+     * @return $this
      */
-    public function withFraudRules($fraudRules)
+    public function withFraudFilter($fraudFilter, $fraudRules = null)
     {
-        $this->fraudRules = $fraudRules->rules;
+        $this->fraudFilter = $fraudFilter;
+        if (!empty($fraudRules)) {
+            $this->fraudRules = $fraudRules->rules;
+        }
         return $this;
     }
 
@@ -1437,6 +1439,32 @@ class AuthorizationBuilder extends TransactionBuilder
     {
         $this->paymentMethodUsageMode = $value;
 
+        return $this;
+    }
+
+    /**
+     * @param string $phoneCountryCode
+     * @param string $number
+     * @param string $type
+     *
+     * @return $this
+     */
+    public function withPhoneNumber($phoneCountryCode, $number, $type)
+    {
+        $phoneNumber = new PhoneNumber($phoneCountryCode, $number, $type);
+        switch ($phoneNumber->type) {
+            case PhoneNumberType::HOME:
+                $this->homePhone = $phoneNumber;
+                break;
+            case PhoneNumberType::WORK:
+                $this->workPhone = $phoneNumber;
+                break;
+            case PhoneNumberType::SHIPPING:
+                $this->shippingPhone = $phoneNumber;
+                break;
+            default:
+                break;
+        }
         return $this;
     }
 }

@@ -11,8 +11,13 @@ use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
 use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
 use GlobalPayments\Api\Entities\Enums\OrderTransactionType;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
+use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
+use GlobalPayments\Api\Entities\Enums\StoredCredentialSequence;
+use GlobalPayments\Api\Entities\Enums\StoredCredentialType;
+use GlobalPayments\Api\Entities\Enums\StoredCredentialReason;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
@@ -623,6 +628,71 @@ class GpApi3DSecureTest extends TestCase
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
+    public function testCreditSaleTokenized_WithStoredCredentials_Recurring()
+    {
+        $this->card->number = GpApi3DSTestCards::CARD_AUTH_SUCCESSFUL_V2_1;
+
+        $storeCredentials = new StoredCredential();
+        $storeCredentials->initiator = StoredCredentialInitiator::MERCHANT;
+        $storeCredentials->type = StoredCredentialType::RECURRING;
+        $storeCredentials->sequence = StoredCredentialSequence::SUBSEQUENT;
+        $storeCredentials->reason = StoredCredentialReason::INCREMENTAL;
+
+        $response = $this->card->tokenize()->execute();
+        $tokenId = $response->token;
+
+        $tokenizedCard = new CreditCardData();
+        $tokenizedCard->token = $tokenId;
+
+        $secureEcom = Secure3dService::checkEnrollment($tokenizedCard)
+            ->withCurrency($this->currency)
+            ->withAmount($this->amount)
+            ->withAuthenticationSource(AuthenticationSource::BROWSER)
+            ->execute();
+
+        $this->assertNotNull($secureEcom);
+        $this->assertEquals(Secure3dStatus::ENROLLED, $secureEcom->enrolled);
+        $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
+        $this->assertEquals(Secure3dStatus::AVAILABLE, $secureEcom->status);
+
+        $initAuth = Secure3dService::initiateAuthentication($tokenizedCard, $secureEcom)
+            ->withAmount($this->amount)
+            ->withCurrency($this->currency)
+            ->withAuthenticationSource(AuthenticationSource::BROWSER)
+            ->withMethodUrlCompletion(MethodUrlCompletion::YES)
+            ->withOrderCreateDate(date('Y-m-d H:i:s'))
+            ->withBrowserData($this->browserData)
+            ->execute();
+
+        $this->assertNotNull($initAuth);
+        $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $initAuth->status);
+
+        $secureEcom = Secure3dService::getAuthenticationData()
+            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->execute();
+
+        $tokenizedCard->threeDSecure = $secureEcom;
+        $this->assertEquals("SUCCESS_AUTHENTICATED", $secureEcom->status);
+        $this->assertEquals('YES', $secureEcom->liabilityShift);
+
+        $response = $tokenizedCard->charge($this->amount)->withCurrency($this->currency)->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+        $this->assertNotNull($response->cardBrandTransactionId);
+
+        $recurringPayment = $tokenizedCard->charge($this->amount)
+            ->withCurrency($this->currency)
+            ->withStoredCredential($storeCredentials)
+            ->withCardBrandStorage($response->cardBrandTransactionId)
+            ->execute();
+
+        $this->assertNotNull($recurringPayment);
+        $this->assertEquals('SUCCESS', $recurringPayment->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $recurringPayment->responseMessage);
+    }
+
     public function ChallengeSuccessful3DSV2CardTests()
     {
         return [
@@ -663,6 +733,7 @@ class GpApi3DSecureTest extends TestCase
             'Frictionless failed 8' => [GpApi3DSTestCards::CARD_AUTH_COULD_NOT_BE_PREFORMED_V2_2, Secure3dStatus::FAILED]
         ];
     }
+
 
     private function assertCheckEnrollmentChallengeV1(ThreeDSecure $secureEcom)
     {

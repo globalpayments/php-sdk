@@ -4,6 +4,8 @@ namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
+use GlobalPayments\Api\Entities\Enums\DigitalWalletTokenFormat;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
@@ -50,6 +52,20 @@ abstract class Credit implements
      * transactions.
      */
     public $mobileType;
+
+    /**
+     * The authentication value use to verify the validity of the digit wallet transaction.
+     *
+     * @var string
+     */
+    public $cryptogram;
+
+    /**
+     * Electronic commerce indicator
+     *
+     * @var string
+     */
+    public $eci;
 
     /**
      * Secure 3d Data attached to the card
@@ -164,12 +180,21 @@ abstract class Credit implements
     /**
      * Tokenizes the payment method
      *
+     * @param bool $verifyCard
+     * @param string $usageMode
+     *
      * @return AuthorizationBuilder
      */
-    public function tokenize()
+    public function tokenize($verifyCard = true, $usageMode = PaymentMethodUsageMode::MULTIPLE)
     {
-        return $this->verify()
-            ->withRequestMultiUseToken(true);
+        if ($verifyCard !== false) {
+            $verifyCard = true;
+        }
+        $type = $verifyCard ? TransactionType::VERIFY : TransactionType::TOKENIZE;
+
+        return (new AuthorizationBuilder($type, $this))
+            ->withRequestMultiUseToken(true)
+            ->withPaymentMethodUsageMode($usageMode);
     }
 
     /**

@@ -61,6 +61,28 @@ class AchTest extends TestCase
         $this->assertEquals('00', $response->responseCode);
     }
 
+    public function testCheckSaleWithSingleUseToken() {
+        $this->eCheck = new ECheck();
+        $this->eCheck->token = $this->getACHToken();
+        $this->eCheck->checkType = CheckType::PERSONAL;
+        $this->eCheck->secCode = SecCode::PPD;
+        $this->eCheck->accountType = AccountType::CHECKING;
+        $this->eCheck->entryMode = EntryMethod::MANUAL;
+        $this->eCheck->checkHolderName = "John Doe";
+        $this->eCheck->driversLicenseNumber = "09876543210";
+        $this->eCheck->driversLicenseState = "TX";
+        $this->eCheck->phoneNumber = "8003214567";
+        $this->eCheck->birthYear = '1997';
+        $this->eCheck->ssnLast4 = '4321';
+
+        $response = $this->eCheck->charge(11)
+            ->withCurrency('USD')
+            ->withAddress($this->address)
+            ->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode);
+    }
+
     public function testSUPTCheckSale()
     {
         $response = $this->SUPTeCheck->charge('11.01')

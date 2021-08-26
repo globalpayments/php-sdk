@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Entities\GpApi;
 
 use GlobalPayments\Api\Builders\BaseBuilder;
+use GlobalPayments\Api\Builders\ReportBuilder;
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\IRequestBuilder;
@@ -75,6 +76,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $queryParams['batch_id'] = $builder->searchBuilder->batchId;
                 $queryParams['entry_mode'] = $builder->searchBuilder->paymentEntryMode;
                 $queryParams['name'] = $builder->searchBuilder->name;
+                $queryParams['payment_method'] = $builder->searchBuilder->paymentMethod;
                 $queryParams = array_merge($queryParams,  $this->getTransactionParams($builder));
                 break;
             case ReportType::FIND_SETTLEMENT_TRANSACTIONS_PAGED:
@@ -185,6 +187,10 @@ class GpApiReportRequestBuilder implements IRequestBuilder
         $data['page_size'] = $builder->pageSize;
     }
 
+    /**
+     * @param ReportBuilder $builder
+     * @return array
+     */
     private function getDisputesParams($builder)
     {
         return [
@@ -198,8 +204,13 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $builder->searchBuilder->startStageDate->format('Y-m-d') : null,
             'to_stage_time_created' => !empty($builder->searchBuilder->endStageDate) ?
                 $builder->searchBuilder->endStageDate->format('Y-m-d') : null,
+            'from_deposit_time_created' => !empty($builder->searchBuilder->startDepositDate) ?
+                $builder->searchBuilder->startDepositDate->format('Y-m-d') : null,
+            'to_deposit_time_created' => !empty($builder->searchBuilder->endDepositDate) ?
+                $builder->searchBuilder->endDepositDate->format('Y-m-d') : null,
             'system.mid' => $builder->searchBuilder->merchantId,
-            'system.hierarchy' => $builder->searchBuilder->systemHierarchy
+            'system.hierarchy' => $builder->searchBuilder->systemHierarchy,
+            'deposit_id' => $builder->searchBuilder->depositReference
         ];
     }
 

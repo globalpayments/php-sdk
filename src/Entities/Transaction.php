@@ -4,7 +4,6 @@ namespace GlobalPayments\Api\Entities;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
-use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
@@ -17,8 +16,9 @@ use GlobalPayments\Api\PaymentMethods\TransactionReference;
  * @property string $authorizationCode The authorization code provided by the issuer.
  * @property string $clientTransactionId The client transaction ID supplied in the request.
  * @property string $orderId The order ID supplied in the request.
- * @property PaymentMethodType $paymentMehtodType The type of payment made in the request.
+ * @property PaymentMethodType $paymentMethodType The type of payment made in the request.
  * @property string $transactionId The transaction ID.
+ * @property AlternativePaymentResponse $alternativePaymentResponse The APM response
  */
 class Transaction
 {
@@ -245,9 +245,7 @@ class Transaction
      * @var string
      */
     public $avsAddressResponse;
-    
-    public $alternativePaymentResponse;
-    
+
     public $customerReceipt;
   
     public $merchantReceipt;
@@ -273,6 +271,20 @@ class Transaction
     public $cardExpMonth;
 
     public $cardExpYear;
+
+    /**
+     * Used for ACH transactions
+     *
+     * @var string
+     */
+    public $accountType;
+
+    /**
+     * Used for ACH transactions
+     *
+     * @var string
+     */
+    public $accountNumberLast4;
 
     /**
      * Creates a `Transaction` object from a stored transaction ID.
@@ -488,6 +500,11 @@ class Transaction
                     return $this->transactionReference->transactionId;
                 }
                 return null;
+            case 'alternativePaymentResponse':
+                if ($this->transactionReference !== null) {
+                    return $this->transactionReference->alternativePaymentResponse;
+                }
+                return null;
             default:
                 break;
         }
@@ -507,6 +524,7 @@ class Transaction
             'authorizationId',
             'paymentMethodType',
             'clientTransactionId',
+            'alternativePaymentResponse'
         ]) || isset($this->{$name});
     }
 
@@ -542,6 +560,12 @@ class Transaction
                     $this->transactionReference = new TransactionReference();
                 }
                 $this->transactionReference->transactionId = $value;
+                return;
+            case 'alternativePaymentResponse':
+                if (!$this->transactionReference instanceof TransactionReference) {
+                    $this->transactionReference = new TransactionReference();
+                }
+                $this->transactionReference->alternativePaymentResponse = $value;
                 return;
             default:
                 break;

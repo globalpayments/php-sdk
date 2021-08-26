@@ -120,35 +120,20 @@ class ReportingStoredPaymentMethodsTest extends TestCase
 
     public function testFindStoredPaymentMethod_By_Status()
     {
-        $status = 'ACTIVE';
-        $response = ReportingService::findStoredPaymentMethodsPaged(1, 10)
-            ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)
-            ->where(SearchCriteria::STORED_PAYMENT_METHOD_STATUS, $status)
-            ->execute();
+        $statuses = ['ACTIVE', 'DELETED'];
+        foreach ($statuses as $status) {
+            $response = ReportingService::findStoredPaymentMethodsPaged(1, 10)
+                ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)
+                ->where(SearchCriteria::STORED_PAYMENT_METHOD_STATUS, $status)
+                ->execute();
 
-        $this->assertNotNull($response);
-        $this->assertTrue(is_array($response->result));
+            $this->assertNotNull($response);
+            $this->assertTrue(is_array($response->result));
 
-        /** @var StoredPaymentMethodSummary $rs */
-        foreach ($response->result as $rs) {
-            $this->assertEquals($status, $rs->status);
-        }
-    }
-
-    public function testFindStoredPaymentMethod_By_Not_Active_Status()
-    {
-        $status = 'NOT_ACTIVE';
-        $response = ReportingService::findStoredPaymentMethodsPaged(1, 10)
-            ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)
-            ->where(SearchCriteria::STORED_PAYMENT_METHOD_STATUS, $status)
-            ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertTrue(is_array($response->result));
-
-        /** @var StoredPaymentMethodSummary $rs */
-        foreach ($response->result as $rs) {
-            $this->assertEquals($status, $rs->status);
+            /** @var StoredPaymentMethodSummary $rs */
+            foreach ($response->result as $rs) {
+                $this->assertEquals($status, $rs->status);
+            }
         }
     }
 

@@ -17,5 +17,9 @@ class PaymentMethod
     /** @var Card $card  */
     public $card;
 
+    public $digital_wallet;
+
+    public $bank_transfer;
+
     const PAYMENT_METHOD_TOKEN_PREFIX = 'PMT_';
 }

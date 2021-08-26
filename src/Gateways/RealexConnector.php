@@ -658,7 +658,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                 $builder->transactionType === TransactionType::VERIFY ? '1' : '0'
             );
         }
-        if (!empty($this->hostedPaymentConfig->fraudFilterMode)) {
+        if ($this->hostedPaymentConfig->fraudFilterMode != FraudFilterMode::NONE) {
             $this->setSerializeData('HPP_FRAUDFILTER_MODE', $this->hostedPaymentConfig->fraudFilterMode);
             if ($this->hostedPaymentConfig->fraudFilterMode !== FraudFilterMode::NONE && !empty($this->hostedPaymentConfig->fraudFilterRules)) {
                 foreach ($this->hostedPaymentConfig->fraudFilterRules->rules as $fraudRule) {
@@ -1342,6 +1342,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         if (($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE)) {
             switch ($card->mobileType) {
                 case EncyptedMobileType::GOOGLE_PAY:
+                case EncyptedMobileType::APPLE_PAY:
                     $requestValues = [
                         $timestamp,
                         $this->merchantId,
@@ -1351,16 +1352,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                         $card->token
                     ];
                     break;
-
-                case EncyptedMobileType::APPLE_PAY:
-                    $requestValues = [
-                        $timestamp,
-                        $this->merchantId,
-                        $orderId,
-                        '',
-                        '',
-                        $card->token
-                    ];
+                default:
                     break;
             }
         }

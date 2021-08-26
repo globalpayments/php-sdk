@@ -5,17 +5,26 @@ namespace GlobalPayments\Api\Entities\GpApi;
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Entities\EncryptionData;
+use GlobalPayments\Api\Entities\Enums\CardType;
+use GlobalPayments\Api\Entities\Enums\DigitalWalletTokenFormat;
+use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\GpApi\CaptureMode;
 use GlobalPayments\Api\Entities\Enums\GpApi\EntryMode;
+use GlobalPayments\Api\Entities\Enums\PaymentType;
+use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Enums\Target;
+use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\GpApi\DTO\Card;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\IRequestBuilder;
+use GlobalPayments\Api\Entities\PhoneNumber;
+use GlobalPayments\Api\Mapping\EnumMapping;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
+use GlobalPayments\Api\PaymentMethods\ECheck;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ICardData;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IEncryptable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
@@ -49,6 +58,9 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
     public function buildRequest(BaseBuilder $builder, $config)
     {
         $requestData = null;
+        /**
+         * @var AuthorizationBuilder $builder
+         */
         switch ($builder->transactionType) {
             case TransactionType::SALE:
             case TransactionType::REFUND:
@@ -75,7 +87,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $card->number = $builderCard->number;
                     $card->expiry_month = (string)$builderCard->expMonth;
                     $card->expiry_year = substr(str_pad($builderCard->expYear, 4, '0', STR_PAD_LEFT), 2, 2);
-                    $card->cvv =$builderCard->cvn;
+                    $card->cvv = $builderCard->cvn;
                     $requestData['card'] = $card;
                 } else {
                     $endpoint = GpApiRequest::VERIFICATIONS_ENDPOINT;
@@ -106,13 +118,17 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
 
     private function createFromAuthorizationBuilder($builder, GpApiConfig $config)
     {
+        /**
+         * @var AuthorizationBuilder $builder
+         */
         $captureMode = $this->getCaptureMode($builder);
 
         $requestBody = [];
         $requestBody['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
         $requestBody['channel'] = $config->channel;
         $requestBody['country'] = $config->country;
-        $requestBody['type'] = ($builder->transactionType == TransactionType::REFUND ? 'REFUND' : 'SALE');
+        $requestBody['type'] = ($builder->transactionType == TransactionType::REFUND ?
+            PaymentType::REFUND : PaymentType::SALE);
         $requestBody['capture_mode'] = !empty($captureMode) ? $captureMode : CaptureMode::AUTO;
         $requestBody['authorization_mode'] = !empty($builder->allowPartialAuth) ? 'PARTIAL' : null;
         $requestBody['amount'] = StringUtils::toNumeric($builder->amount);
@@ -127,6 +143,9 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $requestBody['cashback_amount'] = StringUtils::toNumeric($builder->cashBackAmount);
         $requestBody['ip_address'] = $builder->customerIpAddress;
         $requestBody['payment_method'] = $this->createPaymentMethodParam($builder);
+        if ($builder->paymentMethod instanceof ECheck) {
+            $requestBody['payer'] = $this->setPayerInformation($builder);
+        }
 
         if (!empty($builder->storedCredential)) {
             $requestBody['initiator'] =
@@ -143,59 +162,213 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
     }
 
     /**
+     * Sets the information related to the payer
+     *
+     * @param AuthorizationBuilder $builder
+     * @return mixed
+     */
+    private function setPayerInformation($builder)
+    {
+        $payer['reference'] = !empty($builder->customerId) ?
+            $builder->customerId : (!empty($builder->customerData) ? $builder->customerData->id : null);
+        switch (get_class($builder->paymentMethod)) {
+            case ECheck::class:
+                $payer['billing_address'] = [
+                    'line_1' => $builder->billingAddress->streetAddress1,
+                    'line_2' => $builder->billingAddress->streetAddress2,
+                    'city' => $builder->billingAddress->city,
+                    'postal_code' => $builder->billingAddress->postalCode,
+                    'state' => $builder->billingAddress->state,
+                    'country' => $builder->billingAddress->countryCode
+                ];
+                if (!empty($builder->customerData)) {
+                    $payer['name'] = $builder->customerData->firstName . ' ' . $builder->customerData->lastName;
+                    $payer['date_of_birth'] = $builder->customerData->dateOfBirth;
+                }
+                list($phoneNumber, $phoneCountryCode) = $this->getPhoneNumber($builder, PhoneNumberType::HOME);
+                $payer['landline_phone'] = $phoneCountryCode . $phoneNumber;;
+                list($phoneNumber, $phoneCountryCode) = $this->getPhoneNumber($builder, PhoneNumberType::MOBILE);
+                $payer['mobile_phone'] = $phoneCountryCode . $phoneNumber;
+                break;
+            default:
+                break;
+        }
+
+        return $payer;
+    }
+
+    /**
+     * You can have the phone number set on customerData or directly to the builder
+     *
+     * @param AuthorizationBuilder $builder
+     * @param string $type
+     *
+     * @return array
+     */
+    private function getPhoneNumber($builder, $type)
+    {
+        $phoneKey = strtolower($type) . 'Phone';
+        $phoneCountryCode = $phoneNumber = '';
+        if (
+            isset($builder->customerData) &&
+            isset($builder->customerData->{$phoneKey}) &&
+            $builder->customerData->{$phoneKey} instanceof PhoneNumber
+        ) {
+            $phoneCountryCode = $builder->customerData->{$phoneKey}->countryCode;
+            $phoneNumber = $builder->customerData->{$phoneKey}->number;
+        }
+        if (empty($phoneNumber) && isset($builder->{$phoneKey}) && $builder->{$phoneKey} instanceof PhoneNumber) {
+            $phoneCountryCode = $builder->{$phoneKey}->countryCode;
+            $phoneNumber = $builder->{$phoneKey}->number;
+        }
+
+        return [StringUtils::validateToNumber($phoneNumber), StringUtils::validateToNumber($phoneCountryCode)];
+    }
+
+    /**
      * @param AuthorizationBuilder $builder
      *
      * @return PaymentMethod
      */
     private function createPaymentMethodParam($builder)
     {
-        /** @var CreditCardData|CreditTrackData|DebitTrackData $paymentMethodContainer */
+        /** @var CreditCardData|CreditTrackData|DebitTrackData|ECheck $paymentMethodContainer */
         $paymentMethodContainer = $builder->paymentMethod;
         $paymentMethod = new PaymentMethod();
         $paymentMethod->entry_mode = $this->getEntryMode($builder);
         $paymentMethod->name = !empty($paymentMethodContainer->cardHolderName) ?
             $paymentMethodContainer->cardHolderName : null;
-        //authentication
-        if ($paymentMethodContainer instanceof CreditCardData) {
-            $secureEcom = $paymentMethodContainer->threeDSecure;
-            if (!empty($secureEcom)) {
-                $paymentMethod->authentication = ['id' => $secureEcom->serverTransactionId];
-            }
-        }
-
-        //encryption
-        if ($paymentMethodContainer instanceof IEncryptable) {
-            if (!empty($paymentMethodContainer->encryptionData)) {
-                /**
-                 * @var EncryptionData $encryptionData
-                 */
-                $encryptionData = $paymentMethodContainer->encryptionData;
-                $encryption = ['version' => $encryptionData->version];
-                if (!empty($encryptionData->ktb)) {
-                    $method = 'KBT';
-                    $info = $encryptionData->ktb;
-                } elseif (!empty($encryptionData->ksn)) {
-                    $method = 'KSN';
-                    $info = $encryptionData->ksn;
+        switch (get_class($paymentMethodContainer)) {
+            case CreditCardData::class;
+                $secureEcom = $paymentMethodContainer->threeDSecure;
+                if (!empty($secureEcom)) {
+					$paymentMethod->authentication = ['id' => $secureEcom->serverTransactionId];
                 }
-                if (!empty($info)) {
-                    $encryption->method = $method;
-                    $encryption->info = $info;
-                    $paymentMethod->encryption = $encryption;
+                break;
+            case ECheck::class:
+                $paymentMethod->name = $paymentMethodContainer->checkHolderName;
+                $paymentMethod->bank_transfer = [
+                    'account_number' => $paymentMethodContainer->accountNumber,
+                    'account_type' => EnumMapping::mapAccountType(
+                        GatewayProvider::GP_API,
+                        $paymentMethodContainer->accountType
+                    ),
+                    'check_reference' => $paymentMethodContainer->checkReference,
+                    'sec_code' => $paymentMethodContainer->secCode,
+                    'narrative' => $paymentMethodContainer->merchantNotes,
+                    'bank' => [
+                        'code' => $paymentMethodContainer->routingNumber,
+                        'name' => $paymentMethodContainer->bankName,
+                        'address' =>
+                            [
+                                'line_1' => $paymentMethodContainer->bankAddress->streetAddress1,
+                                'line_2' => $paymentMethodContainer->bankAddress->streetAddress2,
+                                'line_3' => $paymentMethodContainer->bankAddress->streetAddress3,
+                                'city' => $paymentMethodContainer->bankAddress->city,
+                                'postal_code' => $paymentMethodContainer->bankAddress->postalCode,
+                                'state' => $paymentMethodContainer->bankAddress->state,
+                                'country' => $paymentMethodContainer->bankAddress->countryCode
+                            ]
+                    ]
+                ];
+
+                return $paymentMethod;
+            case IEncryptable::class:
+                if (!empty($paymentMethodContainer->encryptionData)) {
+                    /**
+                     * @var EncryptionData $encryptionData
+                     */
+                    $encryptionData = $paymentMethodContainer->encryptionData;
+                    $encryption = ['version' => $encryptionData->version];
+                    if (!empty($encryptionData->ktb)) {
+                        $method = 'KBT';
+                        $info = $encryptionData->ktb;
+                    } elseif (!empty($encryptionData->ksn)) {
+                        $method = 'KSN';
+                        $info = $encryptionData->ksn;
+                    }
+                    if (!empty($info)) {
+                        $encryption->method = $method;
+                        $encryption->info = $info;
+                        $paymentMethod->encryption = $encryption;
+                    }
                 }
+                break;
+            default:
+                break;
+        }
+
+        if (!in_array(
+            $builder->transactionModifier,
+            [TransactionModifier::ENCRYPTED_MOBILE, TransactionModifier::DECRYPTED_MOBILE]
+        )) {
+            if ($paymentMethodContainer instanceof ITokenizable && !empty($paymentMethodContainer->token)) {
+                $paymentMethod->id = $paymentMethodContainer->token;
             }
+
+            if (is_null($paymentMethod->id)) {
+                $paymentMethod->card = CardUtils::generateCard($builder);
+            }
+        } else {
+            /* digital wallet */
+            switch ($builder->transactionModifier) {
+                case TransactionModifier::ENCRYPTED_MOBILE:
+                    $digitalWallet['payment_token'] = !empty($paymentMethodContainer->token) ?
+                        json_decode(preg_replace('/(\\\)(\w)/', '${1}${1}${2}', $paymentMethodContainer->token)) : null;
+                    break;
+                case TransactionModifier::DECRYPTED_MOBILE:
+                    $digitalWallet['token'] = !empty($paymentMethodContainer->token) ?
+                        $paymentMethodContainer->token : null;
+                    $digitalWallet['token_format'] = DigitalWalletTokenFormat::CARD_NUMBER;
+                    $digitalWallet['expiry_month'] = (string) $paymentMethodContainer->expMonth;
+                    $digitalWallet['expiry_year'] = substr(str_pad($paymentMethodContainer->expYear, 4, '0', STR_PAD_LEFT), 2, 2);
+                    $digitalWallet['cryptogram'] = $paymentMethodContainer->cryptogram;
+                    $digitalWallet['eci'] = !empty($paymentMethodContainer->eci) ?
+                        $paymentMethodContainer->eci : $this->getEciCode($paymentMethodContainer);
+                    break;
+                default:
+                    break;
+            }
+            $digitalWallet['provider'] = EnumMapping::mapDigitalWalletType(
+                GatewayProvider::GP_API,
+                $paymentMethodContainer->mobileType
+            );
+            $paymentMethod->digital_wallet = $digitalWallet;
         }
 
-        if ($paymentMethodContainer instanceof ITokenizable && !empty($paymentMethodContainer->token)) {
-            $paymentMethod->id = $paymentMethodContainer->token;
-        }
-
-        if (is_null($paymentMethod->id)) {
-            $paymentMethod->card = CardUtils::generateCard($builder);
-        }
         $paymentMethod->storage_mode = $builder->requestMultiUseToken == true ? 'ON_SUCCESS' : null;
 
         return $paymentMethod;
+    }
+
+    /**
+     * @param CreditCardData $paymentMethod
+     *
+     * @return string|null
+     */
+    private function getEciCode($paymentMethod)
+    {
+        if (!$paymentMethod instanceof CreditCardData) {
+            return null;
+        }
+        if (!empty($paymentMethod->eci)) {
+            return $paymentMethod->eci;
+        }
+        $eciCode = null;
+        switch ($paymentMethod->getCardType())
+        {
+            case CardType::VISA:
+            case CardType::AMEX:
+                $eciCode = '05';
+                break;
+            case CardType::MASTERCARD:
+                $eciCode = '02';
+                break;
+            default:
+                break;
+        }
+
+        return $eciCode;
     }
 
     private function getEntryMode(AuthorizationBuilder $builder)
@@ -228,6 +401,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         if ($builder->transactionType == TransactionType::AUTH) {
             return CaptureMode::LATER;
         }
+
         return CaptureMode::AUTO;
     }
 }
