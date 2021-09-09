@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Entities;
 
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
+use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Utils\CountryUtils;
 
 /**
@@ -82,6 +83,11 @@ class Address
      */
     protected $countryCode;
 
+    private static $_MaxLength = array(
+        'PhoneNumber' => 20,
+        'ZipCode' => 9
+    );
+
     public function __get($property)
     {
         if (property_exists($this, $property)) {
@@ -142,5 +148,58 @@ class Address
     public function isCountry($countryCode)
     {
         return CountryUtils::isCountry($this, $countryCode);
+    }
+
+     /**
+     * @param $number
+     *
+     * @return mixed
+     */
+    public static function cleanPhoneNumber($number)
+    {
+        return preg_replace('/\D+/', '', trim($number));
+    }
+    /**
+     * @param $zip
+     *
+     * @return mixed
+     */
+    public static function cleanZipCode($zip)
+    {
+        return preg_replace('/[^0-9A-Za-z]/', '', trim($zip));
+    }
+
+    /**
+     * This method clean and return the phone number in correct format or throw an exception
+     * 
+     * @param string $phoneNumber   
+     * @return string
+     * @throws ArgumentException     
+     */
+    public static function checkPhoneNumber($phoneNumber) {
+        $phoneNumber = self::cleanPhoneNumber($phoneNumber);
+
+        if (!empty($phoneNumber) && strlen($phoneNumber) > self::$_MaxLength['PhoneNumber']) {
+            $errorMessage = 'phone number can not be empty or invalid';
+            throw new ApiException($errorMessage);
+        }
+        return $phoneNumber;
+    }
+
+    /**
+     * This method cleans and return the Zip code in correct format or throw an exception
+     * 
+     * @param string $zipCode
+     * @return string
+     * @throws ArgumentException
+     */
+    public static function checkZipCode($zipCode) {
+        $zipCode = self::cleanZipCode($zipCode);
+
+        if (!empty($zipCode) && strlen($zipCode) > self::$_MaxLength['ZipCode']) {
+            $errorMessage = 'zip code can not be empty or invalid';
+            throw new ApiException($errorMessage);
+        }
+        return $zipCode;
     }
 }

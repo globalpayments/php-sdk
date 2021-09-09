@@ -12,6 +12,7 @@ use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use GlobalPayments\Api\Entities\BatchSummary;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Enums\AccountType;
+use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\AliasAction;
 use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\CheckType;
@@ -1941,6 +1942,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
      */
     protected function hydrateHolder(DOMDocument $xml, BaseBuilder $builder, $isCheck = false)
     {
+        $address = new Address();
         $holder = $xml->createElement($isCheck ? 'ConsumerInfo' : 'CardHolderData');
 
         if ($isCheck && $builder->paymentMethod instanceof RecurringPaymentMethod) {
@@ -1958,7 +1960,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 $xml->createElement($isCheck ? 'State' : 'CardHolderState', $builder->billingAddress->getProvince())
             );
             $holder->appendChild(
-                $xml->createElement($isCheck ? 'Zip' : 'CardHolderZip', $builder->billingAddress->postalCode)
+                $xml->createElement($isCheck ? 'Zip' : 'CardHolderZip', $address->checkZipCode($builder->billingAddress->postalCode))
             );
         }
 
@@ -1982,7 +1984,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             }
 
             if ($builder->paymentMethod->phoneNumber !== null) {
-                $holder->appendChild($xml->createElement('PhoneNumber', $builder->paymentMethod->phoneNumber));
+                $holder->appendChild($xml->createElement('PhoneNumber', $address->checkPhoneNumber($builder->paymentMethod->phoneNumber)));
             }
 
             if ($builder->paymentMethod->driversLicenseNumber !== null) {

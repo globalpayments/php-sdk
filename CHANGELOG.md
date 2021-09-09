@@ -7,6 +7,10 @@
 
 ## Latest version
 
+- Add sanitize data
+
+## v2.3.11 (08/26/2021)
+
 - Add the amount and currency to hash generation (GP-ECOM)
 - Digital wallets unencrypted and encrypted for GP-API with Google Pay and Apple Pay:
     - sale
@@ -25,7 +29,7 @@
 - Add optional parameters to tokenize() method
 - Add amount and currency to hash generation for Apple PAY (GP-ECOM)
 
-## v2.3.10 (08/26/2021)
+## v2.3.10 (08/19/2021)
 
 - Set Fraud Management Rules for GP-ECOM
 - Portico tokenization example update
@@ -100,6 +104,7 @@ Add GP-ECOM dynamic descriptor functionality
 
 #### Enhancements:
 
+- Add portico connector - sanitize Data
 - Update GP-API to 2021-03-22 version
 - 3DS Status Mapping - Missed Mapping and Revise some mappings
 - Update ACS simulator for 3DS2 to use values from initiate response for the form fields name required in the POST redirect
