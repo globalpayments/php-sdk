@@ -7,6 +7,10 @@
 
 ## Latest version
 
+- Removed unwanted aftifacts files
+
+## v2.3.12 (08/09/2021)
+
 - Add sanitize data
 
 ## v2.3.11 (08/26/2021)
