@@ -4,11 +4,11 @@ namespace GlobalPayments\Api\Entities\GpApi;
 
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
-use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
-use GlobalPayments\Api\Entities\Enums\Target;
+use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\IRequestBuilder;
+use GlobalPayments\Api\Mapping\EnumMapping;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ICardData;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
@@ -81,9 +81,8 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
         ];
 
         if (!empty($builder->storedCredential)) {
-            $threeDS['initiator'] =
-                !empty(StoredCredentialInitiator::$mapInitiator[$builder->storedCredential->initiator]) ?
-                    strtoupper(StoredCredentialInitiator::$mapInitiator[$builder->storedCredential->initiator][Target::GP_API]) : '';
+            $initiator = EnumMapping::mapStoredCredentialInitiator(GatewayProvider::GP_API, $builder->storedCredential->initiator);
+            $threeDS['initiator'] = !empty($initiator) ? $initiator : null;
             $threeDS['stored_credential'] = [
                 'model' => strtoupper($builder->storedCredential->type),
                 'reason' => strtoupper($builder->storedCredential->reason),

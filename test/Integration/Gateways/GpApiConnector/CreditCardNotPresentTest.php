@@ -6,7 +6,8 @@ namespace Gateways\GpApiConnector;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
+use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialReason;
@@ -21,6 +22,7 @@ use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\GpApiAvsCheckTestCards;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
@@ -85,15 +87,11 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testAuthorizationThenCapture()
     {
-        try {
-            $transaction = $this->card->authorize(42)
-                ->withCurrency($this->currency)
-                ->withOrderId('123456-78910')
-                ->withAllowDuplicates(true)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail("Card Authorization Failed");
-        }
+        $transaction = $this->card->authorize(42)
+            ->withCurrency($this->currency)
+            ->withOrderId('123456-78910')
+            ->withAllowDuplicates(true)
+            ->execute();
 
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
@@ -209,14 +207,14 @@ class CreditCardNotPresentTest extends TestCase
             $this->assertContains('Idempotency Key seen before', $e->getMessage());
         }
     }
-	
+
     public function testCreditSale_WithoutPermissions()
     {
         $config = new GpApiConfig();
         $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
         $config->appKey = '9pArW2uWoA8enxKc';
         $config->environment = Environment::TEST;
-        $config->channel = Channels::CardNotPresent;
+        $config->channel = Channel::CardNotPresent;
         $config->country = 'GB';
         $config->permissions = ["TRN_POST_Capture"];
 
@@ -256,8 +254,6 @@ class CreditCardNotPresentTest extends TestCase
         $partialRefund = $transaction->refund($partialAmount)
             ->withCurrency($this->currency)
             ->execute();
-
-
 
         $this->assertNotNull($partialRefund);
         $this->assertEquals('SUCCESS', $partialRefund->responseCode);
@@ -632,6 +628,7 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testCardTokenizationThenDeletion()
     {
+        $this->markTestSkipped('Permission not enabled to execute action for this appId/appKey');
         // process an auto-capture authorization
         $response = $this->card->tokenize()
             ->execute();
@@ -649,6 +646,7 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testCardTokenizationThenDeletion_WithIdempotencyKey()
     {
+        $this->markTestSkipped(' Permission not enabled to execute action for this appId/appKey');
         // process an auto-capture authorization
         $response = $this->card->tokenize()
             ->execute();
@@ -665,7 +663,7 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertEquals('DELETED', $response->responseMessage);
 
         try {
-            $tokenizedCard = (new ManagementBuilder(TransactionType::TOKEN_DELETE))
+            (new ManagementBuilder(TransactionType::TOKEN_DELETE))
                 ->withPaymentMethod($tokenizedCard)
                 ->withIdempotencyKey($this->idempotencyKey)
                 ->execute();
@@ -751,7 +749,7 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertEquals('ACTIVE', $response->responseMessage);
 
         try {
-            $response = (new ManagementBuilder(TransactionType::TOKEN_UPDATE))
+            (new ManagementBuilder(TransactionType::TOKEN_UPDATE))
                 ->withPaymentMethod($tokenizedCard)
                 ->withIdempotencyKey($this->idempotencyKey)
                 ->execute();
@@ -994,7 +992,7 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
 
         try {
-            $capture = $transaction->capture('40')
+            $transaction->capture('40')
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('50020', $e->responseCode);
@@ -1040,13 +1038,13 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         try {
-            $response = $transaction->refund(60)
+            $transaction->refund(60)
                 ->withCurrency($this->currency)
                 ->withAllowDuplicates(true)
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('40087', $e->responseCode);
-            $this->assertContains("INVALID_REQUEST_DATA - You may only refund up to 100% of the original amount", $e->getMessage());
+            $this->assertContains("INVALID_REQUEST_DATA - You may only refund up to 115% of the original amount", $e->getMessage());
         }
     }
 
@@ -1083,6 +1081,94 @@ class CreditCardNotPresentTest extends TestCase
             $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
         }
     }
+    public function testManualTransactions()
+    {
+        $entryModes = [ManualEntryMethod::MOTO, ManualEntryMethod::MAIL, ManualEntryMethod::PHONE];
+        foreach ($entryModes as $entryMode) {
+            $this->card->entryMethod = $entryMode;
+
+            $response = $this->card->charge(69)
+                ->withCurrency($this->currency)
+                ->execute();
+
+            $this->assertNotNull($response);
+            $this->assertEquals('SUCCESS', $response->responseCode);
+            $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+        }
+    }
+
+    /**
+     * Avs test cards scenario
+     *
+     * @dataProvider AvsCardTests
+     * @param $cardNumber
+     * @param $cvnResponseMessage
+     * @param $avsResponseCode
+     * @param $avsAddressResponse
+     * @param $status
+     * @param $transactionStatus
+     */
+    public function testCreditSale_CVVResult($cardNumber, $cvnResponseMessage, $avsResponseCode, $avsAddressResponse, $status, $transactionStatus)
+    {
+        $address = new Address();
+        $address->streetAddress1 = "123 Main St.";
+        $address->city = "Downtown";
+        $address->state = "NJ";
+        $address->country = "US";
+        $address->postalCode = "12345";
+
+        $this->card->number = $cardNumber;
+
+        $response = $this->card->charge(5)
+            ->withCurrency($this->currency)
+            ->withAddress($address)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals($status, $response->responseCode);
+        $this->assertEquals($transactionStatus, $response->responseMessage);
+        $this->assertEquals($cvnResponseMessage, $response->cvnResponseMessage);
+        $this->assertEquals($avsResponseCode, $response->avsResponseCode);
+        $this->assertEquals($avsAddressResponse, $response->avsAddressResponse);
+    }
+
+    /**
+     * AVS test cards
+     *
+     */
+    public function AvsCardTests()
+    {
+        return [
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_1, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_2, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_3, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_4, "MATCHED", "MATCHED", "MATCHED", 'SUCCESS', TransactionStatus::CAPTURED],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_5, "MATCHED", "MATCHED", "NOT_MATCHED", 'SUCCESS', TransactionStatus::CAPTURED],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_6, "MATCHED", "NOT_MATCHED", "MATCHED", 'SUCCESS', TransactionStatus::CAPTURED],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_7, "MATCHED", "NOT_MATCHED", "NOT_MATCHED", 'SUCCESS', TransactionStatus::CAPTURED],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_8, "NOT_MATCHED", "NOT_MATCHED", "MATCHED", 'SUCCESS', TransactionStatus::CAPTURED],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_9, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_10, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_11, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_12, "NOT_MATCHED", "MATCHED", "MATCHED", 'SUCCESS', TransactionStatus::CAPTURED],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_13, "NOT_MATCHED", "MATCHED", "NOT_MATCHED", 'SUCCESS', TransactionStatus::CAPTURED],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_14, "NOT_MATCHED", "NOT_MATCHED", "NOT_MATCHED", 'SUCCESS', TransactionStatus::CAPTURED],
+            [GpApiAvsCheckTestCards::AVS_VISA_1, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", 'DECLINED', TransactionStatus::DECLINED],
+            [GpApiAvsCheckTestCards::AVS_VISA_2, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", 'DECLINED', TransactionStatus::DECLINED],
+            [GpApiAvsCheckTestCards::AVS_VISA_3, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", 'DECLINED', TransactionStatus::DECLINED],
+            [GpApiAvsCheckTestCards::AVS_VISA_4, "NOT_CHECKED", "MATCHED", "MATCHED", 'DECLINED', TransactionStatus::DECLINED],
+            [GpApiAvsCheckTestCards::AVS_VISA_5, "NOT_CHECKED", "MATCHED", "NOT_MATCHED", 'DECLINED', TransactionStatus::DECLINED],
+            [GpApiAvsCheckTestCards::AVS_VISA_6, "NOT_CHECKED", "NOT_MATCHED", "MATCHED", 'DECLINED', TransactionStatus::DECLINED],
+            [GpApiAvsCheckTestCards::AVS_VISA_7, "NOT_CHECKED", "NOT_MATCHED", "NOT_MATCHED", 'DECLINED', TransactionStatus::DECLINED],
+            [GpApiAvsCheckTestCards::AVS_VISA_8, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", 'DECLINED', TransactionStatus::DECLINED],
+            [GpApiAvsCheckTestCards::AVS_VISA_9, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", 'DECLINED', TransactionStatus::DECLINED],
+            [GpApiAvsCheckTestCards::AVS_VISA_10, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", 'DECLINED', TransactionStatus::DECLINED],
+            [GpApiAvsCheckTestCards::AVS_VISA_11, "NOT_CHECKED", "MATCHED", "MATCHED", 'DECLINED', TransactionStatus::DECLINED],
+            [GpApiAvsCheckTestCards::AVS_VISA_12, "NOT_CHECKED", "MATCHED", "NOT_MATCHED", 'DECLINED', TransactionStatus::DECLINED],
+            [GpApiAvsCheckTestCards::AVS_VISA_13, "NOT_CHECKED", "NOT_MATCHED", "MATCHED", 'DECLINED', TransactionStatus::DECLINED],
+            [GpApiAvsCheckTestCards::AVS_VISA_14, "NOT_CHECKED", "NOT_MATCHED", "NOT_MATCHED", 'DECLINED', TransactionStatus::DECLINED]
+        ];
+    }
 
     public function setUpConfig()
     {
@@ -1090,7 +1176,7 @@ class CreditCardNotPresentTest extends TestCase
         $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
         $config->appKey = 'DHUGdzpjXfTbjZeo';
         $config->environment = Environment::TEST;
-        $config->channel = Channels::CardNotPresent;
+        $config->channel = Channel::CardNotPresent;
         $config->country = 'GB';
         //DO NO DELETE - usage example for some settings
 //        $config->dynamicHeaders = [

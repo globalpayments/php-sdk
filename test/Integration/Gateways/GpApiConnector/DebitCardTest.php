@@ -7,7 +7,7 @@ namespace Gateways\GpApiConnector;
 use GlobalPayments\Api\Entities\EncryptionData;
 use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
@@ -76,7 +76,7 @@ class DebitCardTest extends TestCase
     public function testDebitReverse()
     {
         $debitCard = new DebitTrackData();
-        $debitCard->value = '%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?';
+        $debitCard->setValue('%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?');
         $debitCard->pinBlock = '32539F50C245A6A93D123412324000AA';
         $debitCard->entryMethod = EntryMethod::SWIPE;
 
@@ -189,7 +189,7 @@ class DebitCardTest extends TestCase
         $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
         $config->appKey = '9pArW2uWoA8enxKc';
         $config->environment = Environment::TEST;
-        $config->channel = Channels::CardPresent;
+        $config->channel = Channel::CardPresent;
 
         return $config;
     }

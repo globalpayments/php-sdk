@@ -2,8 +2,8 @@
 
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Enums\AccountType;
-use GlobalPayments\Api\Entities\Enums\GpApi\SortDirection;
-use GlobalPayments\Api\Entities\Enums\GpApi\TransactionSortProperty;
+use GlobalPayments\Api\Entities\Enums\SortDirection;
+use GlobalPayments\Api\Entities\Enums\TransactionSortProperty;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\SecCode;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
@@ -13,7 +13,7 @@ use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\PaymentMethods\ECheck;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
@@ -81,7 +81,7 @@ class GpApiAchTest extends TestCase
         $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
         $config->appKey = 'DHUGdzpjXfTbjZeo';
         $config->environment = Environment::TEST;
-        $config->channel = Channels::CardNotPresent;
+        $config->channel = Channel::CardNotPresent;
         $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
 
         return $config;
@@ -114,9 +114,10 @@ class GpApiAchTest extends TestCase
 
     public function testCheckRefundExistingSale()
     {
-	 $this->markTestSkipped('GP-API sandbox limitation');
-        $startDate = (new \DateTime())->modify('-1 year');
-        $endDate = (new \DateTime())->modify('-2 days');
+      $this->markTestSkipped('GP-API sandbox limitation');
+        $startDate = (new DateTime())->modify('-1 year');
+        $endDate = (new DateTime())->modify('-2 days');
+
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
@@ -148,8 +149,8 @@ class GpApiAchTest extends TestCase
         $this->eCheck->secCode = SecCode::PPD;
         $this->eCheck->accountNumber = '051904524';
         $this->eCheck->routingNumber = '123456780';
-        $startDate = (new \DateTime())->modify('-1 year');
-        $endDate = (new \DateTime())->modify('-2 days');
+        $startDate = (new DateTime())->modify('-1 year');
+        $endDate = (new DateTime())->modify('-2 days');
         $amount = '1.29';
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
@@ -179,5 +180,26 @@ class GpApiAchTest extends TestCase
         $this->assertEquals('SUCCESS', $response->responseCode);
     }
 
+    public function testCheckSaleThenRefund()
+    {
+        $response = $this->eCheck->charge(11)
+            ->withCurrency('USD')
+            ->withAddress($this->address)
+            ->withCustomerData($this->customer)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+
+        $refund = $response->refund()
+            ->withCurrency('USD')
+            ->execute();
+
+        $this->assertNotNull($refund);
+        $this->assertEquals('DECLINED', $refund->responseCode);
+        $this->assertEquals(TransactionStatus::DECLINED, $refund->responseMessage);
+        $this->assertEquals('D0005', $refund->authorizationCode);
+    }
 
 }

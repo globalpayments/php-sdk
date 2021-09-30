@@ -64,8 +64,13 @@ class GpApiMapping
                     $card->masked_number_last4 : null;
                 $transaction->cardType = !empty($card->brand) ? $card->brand : null;
                 $transaction->cvnResponseCode = !empty($card->cvv) ? $card->cvv : null;
+                $transaction->cvnResponseMessage = !empty($card->cvv_result) ? $card->cvv_result : null;
                 $transaction->cardBrandTransactionId = !empty($card->brand_reference) ?
                     $card->brand_reference : null;
+                $transaction->avsResponseCode = !empty($card->avs_postal_code_result) ?
+                    $card->avs_postal_code_result : null;
+                $transaction->avsAddressResponse = !empty($card->avs_address_result) ? $card->avs_address_result : null;
+                $transaction->avsResponseMessage = !empty($card->avs_action) ? $card->avs_action : null;
             }
             if (!empty($response->payment_method->bank_transfer)) {
                 $bankTransfer = $response->payment_method->bank_transfer;

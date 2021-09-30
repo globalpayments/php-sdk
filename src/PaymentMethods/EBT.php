@@ -4,7 +4,9 @@ namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Entities\Enums\EbtCardType;
+use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\InquiryType;
+use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\NotImplementedException;
@@ -34,6 +36,9 @@ abstract class EBT implements
      * @var EbtCardType $ebtCardType
      */
     public $ebtCardType;
+
+    /** @var EntryMethod|ManualEntryMethod */
+    public $entryMethod;
 
     /**
      * Adds value to the payment method

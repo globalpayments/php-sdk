@@ -3,11 +3,11 @@
 namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
-use GlobalPayments\Api\Entities\Enums\GpApi\EntryMode;
+use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
 use GlobalPayments\Api\Entities\Enums\PaymentType;
-use GlobalPayments\Api\Entities\Enums\GpApi\SortDirection;
-use GlobalPayments\Api\Entities\Enums\GpApi\TransactionSortProperty;
+use GlobalPayments\Api\Entities\Enums\SortDirection;
+use GlobalPayments\Api\Entities\Enums\TransactionSortProperty;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
@@ -93,7 +93,7 @@ class ReportingTransactionsTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-        $this->assertEquals(1, count($response->result));
+        $this->assertCount(1, $response->result);
         $this->assertEquals($transactionId, $response->result[0]->transactionId);
     }
 
@@ -112,7 +112,7 @@ class ReportingTransactionsTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-        $this->assertEquals(0, count($response->result));
+        $this->assertCount(0, $response->result);
     }
 
     public function testReportFindTransactionsByBatchId()
@@ -209,7 +209,7 @@ class ReportingTransactionsTest extends TestCase
 
     public function testReportFindTransactionsByChannel()
     {
-        $channel = Channels::CardNotPresent;
+        $channel = Channel::CardNotPresent;
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
@@ -228,7 +228,7 @@ class ReportingTransactionsTest extends TestCase
             $this->assertEquals($channel, $rs->channel);
         }
 
-        $channelCP = Channels::CardPresent;
+        $channelCP = Channel::CardPresent;
         try {
             $responseCP = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
@@ -386,7 +386,7 @@ class ReportingTransactionsTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-        $this->assertEquals(0, count($response->result));
+        $this->assertCount(0, $response->result);
     }
 
     public function testReportFindTransactionsByBrandReference()
@@ -427,13 +427,13 @@ class ReportingTransactionsTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-        $this->assertEquals(0, count($response->result));
+        $this->assertCount(0, $response->result);
     }
 
     public function testReportFindTransactionsByEntryMode()
     {
         $startDate = new \DateTime('2020-11-01 midnight');
-        $entryMode = new EntryMode();
+        $entryMode = new PaymentEntryMode();
         $reflectionClass = new ReflectionClass($entryMode);
         foreach ($reflectionClass->getConstants() as $value) {
             try {

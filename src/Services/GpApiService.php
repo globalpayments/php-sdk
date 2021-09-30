@@ -18,6 +18,10 @@ class GpApiService
             $gateway->serviceUrl = ($config->environment == Environment::PRODUCTION) ?
                 ServiceEndpoints::GP_API_PRODUCTION : ServiceEndpoints::GP_API_TEST;
         }
+        $gateway->requestLogger = $config->requestLogger;
+        $gateway->webProxy = $config->webProxy;
+        $gateway->dynamicHeaders = $config->dynamicHeaders;
+
         $data = $gateway->getAccessToken();
 
         $accessTokenInfo = new AccessTokenInfo();

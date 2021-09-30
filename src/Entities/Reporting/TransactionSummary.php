@@ -2,7 +2,7 @@
 namespace GlobalPayments\Api\Entities\Reporting;
 
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
-use GlobalPayments\Api\Entities\Enums\GpApi\EntryMode;
+use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
 
 class TransactionSummary
 {
@@ -425,7 +425,7 @@ class TransactionSummary
     public $currency;
 
     /**
-     * @var EntryMode
+     * @var PaymentEntryMode
      */
     public $entryMode;
 

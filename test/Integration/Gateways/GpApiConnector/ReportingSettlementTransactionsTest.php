@@ -3,9 +3,9 @@
 namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\DepositStatus;
-use GlobalPayments\Api\Entities\Enums\GpApi\SortDirection;
-use GlobalPayments\Api\Entities\Enums\GpApi\TransactionSortProperty;
+use GlobalPayments\Api\Entities\Enums\DepositStatus;
+use GlobalPayments\Api\Entities\Enums\SortDirection;
+use GlobalPayments\Api\Entities\Enums\TransactionSortProperty;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
@@ -208,7 +208,7 @@ class ReportingSettlementTransactionsTest extends TestCase
         }
         $this->assertNotNull($response->result);
         $this->assertTrue(is_array($response->result));
-        $this->assertEquals(0, count($response->result));
+        $this->assertCount(0, $response->result);
     }
 
     public function testReportFindSettlementTransactions_FilterBy_ARN()
@@ -249,7 +249,7 @@ class ReportingSettlementTransactionsTest extends TestCase
         }
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-        $this->assertEquals(0, count($response->result));
+        $this->assertCount(0, $response->result);
     }
 
     public function testReportFindSettlementTransactions_FilterBy_BrandReference()
@@ -291,7 +291,7 @@ class ReportingSettlementTransactionsTest extends TestCase
         }
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-        $this->assertEquals(0, count($response->result));
+        $this->assertCount(0, $response->result);
     }
 
     public function testReportFindSettlementTransactions_FilterBy_AuthCode()
@@ -355,16 +355,17 @@ class ReportingSettlementTransactionsTest extends TestCase
         }
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-        $this->assertEquals(0, count($response->result));
+        $this->assertCount(0, $response->result);
     }
 
+    /**
+     * Settlement transactions report supports filter by transaction status only for values FUNDED and REJECTED
+     */
     public function testReportFindSettlementTransactions_FilterBy_Status()
     {
-        //only for Status = FUNDED and REJECTED
         $startDate = (new \DateTime())->modify('-30 days');
-        $transactionStatus = new TransactionStatus();
-        $reflectionClass = new ReflectionClass($transactionStatus);
-        foreach ($reflectionClass->getConstants() as $value) {
+        $settleTransactionStatus = [TransactionStatus::FUNDED, TransactionStatus::REJECTED];
+        foreach ($settleTransactionStatus as $value) {
             try {
                 $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                     ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
@@ -381,7 +382,7 @@ class ReportingSettlementTransactionsTest extends TestCase
             foreach ($response->result as $rs) {
                 $this->assertInstanceOf(TransactionSummary::class, $rs);
                 $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
-                $this->assertEquals(TransactionStatus::$mapTransactionStatusResponse[$value], $rs->transactionStatus);
+                $this->assertEquals($value, $rs->transactionStatus);
             }
         }
     }
@@ -425,7 +426,7 @@ class ReportingSettlementTransactionsTest extends TestCase
         }
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-        $this->assertEquals(0, count($response->result));
+        $this->assertCount(0, $response->result);
     }
 
     public function testReportFindSettlementTransactions_FilterBy_FromDepositTimeCreated_And_ToDepositTimeCreated()
@@ -513,7 +514,7 @@ class ReportingSettlementTransactionsTest extends TestCase
         }
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-        $this->assertEquals(0, count($response->result));
+        $this->assertCount(0, $response->result);
     }
 
     public function testReportFindSettlementTransactions_FilterBy_Random_SystemHierarchy()
@@ -532,7 +533,7 @@ class ReportingSettlementTransactionsTest extends TestCase
         }
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-        $this->assertEquals(0, count($response->result));
+        $this->assertCount(0, $response->result);
     }
 
     public function testReportFindSettlementTransactions_FilterBy_Invalid_MerchantID()

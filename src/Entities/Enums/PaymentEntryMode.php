@@ -1,12 +1,12 @@
 <?php
 
 
-namespace GlobalPayments\Api\Entities\Enums\GpApi;
+namespace GlobalPayments\Api\Entities\Enums;
 
 
 use GlobalPayments\Api\Entities\Enum;
 
-class EntryMode extends Enum
+class PaymentEntryMode extends Enum
 {
     const MOTO = 'MOTO';
     const ECOM = 'ECOM';
@@ -16,4 +16,6 @@ class EntryMode extends Enum
     const MANUAL = 'MANUAL';
     const CONTACTLESS_CHIP = 'CONTACTLESS_CHIP';
     const CONTACTLESS_SWIPE = 'CONTACTLESS_SWIPE';
+    const PHONE = 'PHONE';
+    const MAIL = 'MAIL';
 }

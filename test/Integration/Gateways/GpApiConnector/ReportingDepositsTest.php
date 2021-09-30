@@ -3,8 +3,8 @@
 namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\DepositSortProperty;
-use GlobalPayments\Api\Entities\Enums\GpApi\SortDirection;
+use GlobalPayments\Api\Entities\Enums\DepositSortProperty;
+use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\DepositSummary;

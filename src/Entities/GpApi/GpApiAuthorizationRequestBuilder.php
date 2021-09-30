@@ -6,16 +6,18 @@ use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Entities\EncryptionData;
 use GlobalPayments\Api\Entities\Enums\CardType;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\DigitalWalletTokenFormat;
+use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
-use GlobalPayments\Api\Entities\Enums\GpApi\CaptureMode;
-use GlobalPayments\Api\Entities\Enums\GpApi\EntryMode;
+use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
+use GlobalPayments\Api\Entities\Enums\CaptureMode;
+use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
 use GlobalPayments\Api\Entities\Enums\PaymentType;
 use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
-use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
-use GlobalPayments\Api\Entities\Enums\Target;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\GpApi\DTO\Card;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\IRequestBuilder;
@@ -31,6 +33,7 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITrackData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Utils\CardUtils;
+use GlobalPayments\Api\Utils\EmvUtils;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\StringUtils;
 
@@ -111,7 +114,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             $builder->clientTransactionId : GenerationUtils::getGuid();
         $requestBody['currency'] = $builder->currency;
         $requestBody['country'] = $config->country;
-        $requestBody['payment_method'] = $this->createPaymentMethodParam($builder);
+        $requestBody['payment_method'] = $this->createPaymentMethodParam($builder, $config);
 
         return $requestBody;
     }
@@ -142,15 +145,14 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $requestBody['convenience_amount'] = StringUtils::toNumeric($builder->convenienceAmount);
         $requestBody['cashback_amount'] = StringUtils::toNumeric($builder->cashBackAmount);
         $requestBody['ip_address'] = $builder->customerIpAddress;
-        $requestBody['payment_method'] = $this->createPaymentMethodParam($builder);
+        $requestBody['payment_method'] = $this->createPaymentMethodParam($builder, $config);
         if ($builder->paymentMethod instanceof ECheck) {
             $requestBody['payer'] = $this->setPayerInformation($builder);
         }
 
         if (!empty($builder->storedCredential)) {
-            $requestBody['initiator'] =
-                !empty(StoredCredentialInitiator::$mapInitiator[$builder->storedCredential->initiator]) ?
-                    strtoupper(StoredCredentialInitiator::$mapInitiator[$builder->storedCredential->initiator][Target::GP_API]) : '';
+            $initiator = EnumMapping::mapStoredCredentialInitiator(GatewayProvider::GP_API, $builder->storedCredential->initiator);
+            $requestBody['initiator'] = !empty($initiator) ? $initiator : null;
             $requestBody['stored_credential'] = [
                 'model' => strtoupper($builder->storedCredential->type),
                 'reason' => strtoupper($builder->storedCredential->reason),
@@ -227,15 +229,16 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
 
     /**
      * @param AuthorizationBuilder $builder
+     * @param GpApiConfig $config
      *
      * @return PaymentMethod
      */
-    private function createPaymentMethodParam($builder)
+    private function createPaymentMethodParam($builder, $config)
     {
         /** @var CreditCardData|CreditTrackData|DebitTrackData|ECheck $paymentMethodContainer */
         $paymentMethodContainer = $builder->paymentMethod;
         $paymentMethod = new PaymentMethod();
-        $paymentMethod->entry_mode = $this->getEntryMode($builder);
+        $paymentMethod->entry_mode = $this->getEntryMode($builder, $config->channel);
         $paymentMethod->name = !empty($paymentMethodContainer->cardHolderName) ?
             $paymentMethodContainer->cardHolderName : null;
         switch (get_class($paymentMethodContainer)) {
@@ -307,7 +310,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             }
 
             if (is_null($paymentMethod->id)) {
-                $paymentMethod->card = CardUtils::generateCard($builder);
+                $paymentMethod->card = CardUtils::generateCard($builder, GatewayProvider::GP_API);
             }
         } else {
             /* digital wallet */
@@ -371,26 +374,62 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         return $eciCode;
     }
 
-    private function getEntryMode(AuthorizationBuilder $builder)
+    /**
+     * @param AuthorizationBuilder $builder
+     * @param string $channel
+     * @return string
+     */
+    private function getEntryMode(AuthorizationBuilder $builder, $channel)
     {
-        if ($builder->paymentMethod instanceof ICardData) {
-            if ($builder->paymentMethod->readerPresent) {
-                return $builder->paymentMethod->cardPresent ? EntryMode::MANUAL : EntryMode::IN_APP;
-            } else {
-                return $builder->paymentMethod->cardPresent ? EntryMode::MANUAL : EntryMode::ECOM;
+        if ($channel == Channel::CardPresent) {
+            if ($builder->paymentMethod instanceof ITrackData) {
+                if (!empty($builder->tagData)) {
+                    if ($builder->paymentMethod->entryMethod == EntryMethod::PROXIMITY) {
+                        return PaymentEntryMode::CONTACTLESS_CHIP;
+                    }
+                    $emvData = EmvUtils::parseTagData($builder->tagData);
+                    if ($emvData->isContactlessMsd()) {
+                        return  PaymentEntryMode::CONTACTLESS_SWIPE;
+                    }
+
+                    return PaymentEntryMode::CHIP;
+                }
+                if ($builder->paymentMethod->entryMethod == PaymentEntryMode::SWIPE) {
+                    return PaymentEntryMode::SWIPE;
+                }
             }
-        } elseif ($builder->paymentMethod instanceof ITrackData) {
-            if (!empty($builder->tagData)) {
-                return ($builder->paymentMethod->entryMethod == EntryMode::SWIPE) ?
-                    EntryMode::CHIP : EntryMode::CONTACTLESS_CHIP;
-            } elseif (!empty($builder->hasEmvFallbackData())) {
-                return EntryMode::CONTACTLESS_SWIPE;
-            } else {
-                return EntryMode::SWIPE;
+            if ($builder->paymentMethod instanceof ICardData && $builder->paymentMethod->cardPresent) {
+                return PaymentEntryMode::MANUAL;
             }
+
+            return PaymentEntryMode::SWIPE;
+        } elseif ($channel == Channel::CardNotPresent) {
+            if ($builder->paymentMethod instanceof ICardData) {
+                if ($builder->paymentMethod->readerPresent === true) {
+                    return PaymentEntryMode::ECOM;
+                }
+                if(
+                    $builder->paymentMethod->readerPresent === false &&
+                    !is_null($builder->paymentMethod->entryMethod)
+                ) {
+                    switch ($builder->paymentMethod->entryMethod) {
+                        case ManualEntryMethod::PHONE:
+                            return PaymentEntryMode::PHONE;
+                        case ManualEntryMethod::MOTO:
+                            return PaymentEntryMode::MOTO;
+                        case ManualEntryMethod::MAIL:
+                            return PaymentEntryMode::MAIL;
+                        default:
+                            break;
+                    }
+                }
+
+            }
+
+            return PaymentEntryMode::ECOM;
         }
 
-        return EntryMode::ECOM;
+        throw new ApiException("Please configure the channel!");
     }
 
     private function getCaptureMode(AuthorizationBuilder $builder)

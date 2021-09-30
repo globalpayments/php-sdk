@@ -2,7 +2,7 @@
 
 use GlobalPayments\Api\Entities\Enums\ChallengeRequestIndicator;
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialReason;
@@ -63,7 +63,7 @@ class GpApi3DS1Test extends TestCase
         $config->appKey = 'DHUGdzpjXfTbjZeo';
         $config->environment = Environment::TEST;
         $config->country = 'GB';
-        $config->channel = Channels::CardNotPresent;
+        $config->channel = Channel::CardNotPresent;
         $config->challengeNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
         $config->methodNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
         $config->merchantContactUrl = 'https://enp4qhvjseljg.x.pipedream.net/';

@@ -7,9 +7,19 @@
 
 ## Latest version
 
-- Removed unwanted aftifacts files
+- Add "paybybankapp" APM (GP-ECOM)
+- Add AVS missing mapping to response when creating a transaction (GP-API)
+- Refacto on enum classes (GP-API)
+- Update "entry_mode" functionality and add manual entry methods: MOTO, PHONE, MAIL (GP-API)
+- Add merchantId on GpApiConfig for partnership active
 
-## v2.3.12 (08/09/2021)
+## v2.3.13 (09/23/2021)
+
+#### Bug Fixes:
+
+- Removed unwanted artefacts files
+
+## v2.3.12 (09/09/2021)
 
 - Add sanitize data
 

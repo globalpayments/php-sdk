@@ -3,7 +3,7 @@
 namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
@@ -33,7 +33,7 @@ class EbtCardTest extends TestCase
         $config->appId = 'VuKlC2n1cr5LZ8fzLUQhA7UObVks6tFF';
         $config->appKey = 'NmGM0kg92z2gA7Og';
         $config->environment = Environment::TEST;
-        $config->channel = Channels::CardPresent;
+        $config->channel = Channel::CardPresent;
 
         return $config;
     }

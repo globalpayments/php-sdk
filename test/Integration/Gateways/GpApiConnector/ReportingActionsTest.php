@@ -1,8 +1,8 @@
 <?php
 
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\SortDirection;
-use GlobalPayments\Api\Entities\Enums\GpApi\StoredPaymentMethodSortProperty;
+use GlobalPayments\Api\Entities\Enums\SortDirection;
+use GlobalPayments\Api\Entities\Enums\StoredPaymentMethodSortProperty;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Reporting\ActionSummary;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
@@ -59,8 +59,8 @@ class ReportingActionsTest extends TestCase
 
     public function testFindActions_By_StartDateAndEndDate()
     {
-        $startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
-        $endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
+        $startDate = (new DateTime())->modify('-30 days')->setTime(0, 0, 0);
+        $endDate = (new DateTime())->modify('-3 days')->setTime(0, 0, 0);
 
         $response = ReportingService::findActionsPaged(1, 10)
             ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)
@@ -108,7 +108,7 @@ class ReportingActionsTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertTrue(empty($response->result));
-        $this->assertEquals(0, count($response->result));
+        $this->assertCount(0, $response->result);
     }
 
     public function testFindActions_FilterBy_Type()
@@ -136,7 +136,7 @@ class ReportingActionsTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertEmpty($response->result);
-        $this->assertEquals(0, count($response->result));
+        $this->assertCount(0, $response->result);
     }
 
     public function testFindActions_FilterBy_Resource()
@@ -197,7 +197,7 @@ class ReportingActionsTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-        $this->assertEquals(0, count($response->result));
+        $this->assertCount(0, $response->result);
     }
 
     public function testFindActions_FilterBy_MerchantName()
@@ -298,7 +298,7 @@ class ReportingActionsTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-        $this->assertEquals(0, count($response->result));
+        $this->assertCount(0, $response->result);
     }
 
     public function testFindActions_FilterBy_ResponseCode()
@@ -389,8 +389,8 @@ class ReportingActionsTest extends TestCase
         $resource = 'TRANSACTIONS';
         $actionType = 'AUTHORIZE';
         $resource_status = 'DECLINED';
-        $startDate = (new \DateTime())->modify('-30 days');
-        $endDate = (new \DateTime())->modify('-3 days');
+        $startDate = (new DateTime())->modify('-30 days');
+        $endDate = (new DateTime())->modify('-3 days');
 
         $response = ReportingService::findActionsPaged(1, 10)
             ->where(SearchCriteria::RESOURCE, $resource)

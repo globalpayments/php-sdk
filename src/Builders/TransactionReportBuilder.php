@@ -2,19 +2,15 @@
 
 namespace GlobalPayments\Api\Builders;
 
-use GlobalPayments\Api\Entities\Enums\GpApi\ActionSortProperty;
-use GlobalPayments\Api\Entities\Enums\GpApi\DepositSortProperty;
-use GlobalPayments\Api\Entities\Enums\GpApi\DisputeSortProperty;
-use GlobalPayments\Api\Entities\Enums\GpApi\SortDirection;
-use GlobalPayments\Api\Entities\Enums\GpApi\StoredPaymentMethodSortProperty;
-use GlobalPayments\Api\Entities\Enums\GpApi\TransactionSortProperty;
+use GlobalPayments\Api\Entities\Enums\ActionSortProperty;
+use GlobalPayments\Api\Entities\Enums\DepositSortProperty;
+use GlobalPayments\Api\Entities\Enums\DisputeSortProperty;
+use GlobalPayments\Api\Entities\Enums\SortDirection;
+use GlobalPayments\Api\Entities\Enums\StoredPaymentMethodSortProperty;
+use GlobalPayments\Api\Entities\Enums\TransactionSortProperty;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\TimeZoneConversion;
-use GlobalPayments\Api\Entities\Exceptions\ApiException;
-use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteriaBuilder;
-use phpDocumentor\Parser\Exception;
 
 class TransactionReportBuilder extends ReportBuilder
 {

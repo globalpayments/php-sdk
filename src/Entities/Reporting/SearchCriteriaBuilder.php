@@ -3,11 +3,11 @@ namespace GlobalPayments\Api\Entities\Reporting;
 
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use GlobalPayments\Api\Entities\Enums\CardType;
-use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
-use GlobalPayments\Api\Entities\Enums\GpApi\DepositStatus;
-use GlobalPayments\Api\Entities\Enums\GpApi\DisputeStage;
-use GlobalPayments\Api\Entities\Enums\GpApi\DisputeStatus;
-use GlobalPayments\Api\Entities\Enums\GpApi\EntryMode;
+use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\DepositStatus;
+use GlobalPayments\Api\Entities\Enums\DisputeStage;
+use GlobalPayments\Api\Entities\Enums\DisputeStatus;
+use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
 use GlobalPayments\Api\Entities\Enums\PaymentType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
@@ -118,7 +118,7 @@ class SearchCriteriaBuilder
     public $cardTypes;
 
     /**
-     * @var Channels
+     * @var Channel
      */
     public $channel;
     
@@ -298,7 +298,7 @@ class SearchCriteriaBuilder
     public $oderId;
 
     /**
-     * @var EntryMode
+     * @var PaymentEntryMode
      */
     public $paymentEntryMode;
     

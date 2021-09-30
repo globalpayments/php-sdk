@@ -5,10 +5,10 @@ namespace Gateways\GpApiConnector;
 use GlobalPayments\Api\Entities\DisputeDocument;
 use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\DisputeSortProperty;
-use GlobalPayments\Api\Entities\Enums\GpApi\DisputeStage;
-use GlobalPayments\Api\Entities\Enums\GpApi\DisputeStatus;
-use GlobalPayments\Api\Entities\Enums\GpApi\SortDirection;
+use GlobalPayments\Api\Entities\Enums\DisputeSortProperty;
+use GlobalPayments\Api\Entities\Enums\DisputeStage;
+use GlobalPayments\Api\Entities\Enums\DisputeStatus;
+use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
@@ -22,7 +22,6 @@ use PHPUnit\Framework\TestCase;
 class ReportingDisputesTest extends TestCase
 {
     private $arn;
-    private $depositReference;
 
     public function setup()
     {
@@ -48,7 +47,6 @@ class ReportingDisputesTest extends TestCase
         $this->assertInstanceOf(DisputeSummary::class, $response);
         $this->assertEquals($disputeId, $response->caseId);
         $this->arn = $response->transactionARN;
-        $this->depositReference = $response->depositReference;
     }
 
     public function testReportDisputeDetailWrongId()
@@ -771,18 +769,18 @@ class ReportingDisputesTest extends TestCase
 
     public function testFindSettlementDisputesPaged_FilterBy_DepositId()
     {
-	 $this->markTestSkipped('GP-API sandbox limitation');
         $startDate = (new \DateTime())->modify('-2 year +1 day');
-
+        $depositReference = 'DEP_2342423443';
         $disputes = ReportingService::findSettlementDisputesPaged(1, 10)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->andWith(DataServiceCriteria::DEPOSIT_REFERENCE, $this->depositReference)
+            ->andWith(DataServiceCriteria::DEPOSIT_REFERENCE,  $depositReference)
             ->execute();
 
         $this->assertNotNull($disputes);
-        $this->assertNotEquals(0 , count($disputes->result));
+        /** @var DisputeSummary $dispute */
+        $this->assertNotCount(0, $disputes->result);
         foreach ($disputes->result as $dispute) {
-            $this->assertEquals($this->depositReference, $dispute->depositReference);
+            $this->assertEquals($depositReference, $dispute->depositReference);
         }
     }
 }

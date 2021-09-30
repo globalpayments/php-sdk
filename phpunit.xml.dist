@@ -26,6 +26,7 @@
         <testsuite name="certification">
             <directory>./test/Integration/Gateways/PorticoConnector/Certifications/</directory>
             <directory>./test/Integration/Gateways/RealexConnector/Certifications/</directory>
+            <directory>./test/Integration/Gateways/GpApiConnector/Certifications/</directory>
         </testsuite>
 		<testsuite name="portico">
             <directory>./test/Integration/Gateways/PorticoConnector/</directory>

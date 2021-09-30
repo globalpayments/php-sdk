@@ -2,8 +2,8 @@
 
 
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\SortDirection;
-use GlobalPayments\Api\Entities\Enums\GpApi\StoredPaymentMethodSortProperty;
+use GlobalPayments\Api\Entities\Enums\SortDirection;
+use GlobalPayments\Api\Entities\Enums\StoredPaymentMethodSortProperty;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\StoredPaymentMethodSummary;
@@ -32,8 +32,8 @@ class ReportingStoredPaymentMethodsTest extends TestCase
 
     public function testFindStoredPaymentMethod_By_StartDateAndEndDate()
     {
-        $startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
-        $endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
+        $startDate = (new DateTime())->modify('-30 days')->setTime(0, 0, 0);
+        $endDate = (new DateTime())->modify('-3 days')->setTime(0, 0, 0);
 
         $response = ReportingService::findStoredPaymentMethodsPaged(1, 10)
             ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)
@@ -58,8 +58,8 @@ class ReportingStoredPaymentMethodsTest extends TestCase
 
     public function testFindStoredPaymentMethod_By_LastUpdated()
     {
-        $startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
-        $endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
+        $startDate = (new DateTime())->modify('-30 days')->setTime(0, 0, 0);
+        $endDate = (new DateTime())->modify('-3 days')->setTime(0, 0, 0);
 
         $response = ReportingService::findStoredPaymentMethodsPaged(1, 10)
             ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)
@@ -74,7 +74,7 @@ class ReportingStoredPaymentMethodsTest extends TestCase
 
     public function testFindStoredPaymentMethod_By_LastUpdated_CurrentDay()
     {
-        $currentDay = (new \DateTime());
+        $currentDay = (new DateTime());
 
         $response = ReportingService::findStoredPaymentMethodsPaged(1, 10)
             ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)

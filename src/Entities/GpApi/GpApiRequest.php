@@ -15,6 +15,7 @@ class GpApiRequest
     const AUTHENTICATIONS_ENDPOINT = '/authentications';
     const BATCHES_ENDPOINT = '/batches';
     const ACTIONS_ENDPOINT = '/actions';
+    const MERCHANT_MANAGEMENT_ENDPOINT = '/merchants';
 
     public $endpoint;
     public $requestBody;

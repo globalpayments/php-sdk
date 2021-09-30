@@ -143,6 +143,10 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
          * @var GpApiRequest $request
          */
         $request =  $requestBuilder->buildRequest($builder, $this->gpApiConfig);
+        $merchantUrl = !empty($this->gpApiConfig->merchantId) ?
+            GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $this->gpApiConfig->merchantId : '';
+        $request->endpoint = $merchantUrl . $request->endpoint;
+
         if (empty($request)) {
             throw new ApiException("Request was not generated!");
         }
@@ -231,6 +235,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
     {
         $accessTokenInfo = $this->gpApiConfig->accessTokenInfo;
         if (!empty($accessTokenInfo) && !empty($accessTokenInfo->accessToken)) {
+            $this->headers['Authorization'] = sprintf('Bearer %s', $accessTokenInfo->accessToken);
             return;
         }
         $response = $this->getAccessToken();

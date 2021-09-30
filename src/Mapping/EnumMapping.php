@@ -3,8 +3,10 @@
 namespace GlobalPayments\Api\Mapping;
 
 use GlobalPayments\Api\Entities\Enums\AccountType;
+use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 
 class EnumMapping
 {
@@ -50,4 +52,47 @@ class EnumMapping
         }
     }
 
+    /**
+     * @param GatewayProvider $gateway
+     * @param StoredCredentialInitiator $value
+     * @return string|null
+     */
+    public static function mapStoredCredentialInitiator($gateway, $value)
+    {
+        switch ($gateway) {
+            case GatewayProvider::GP_API:
+                switch ($value) {
+                    case StoredCredentialInitiator::CARDHOLDER:
+                        return strtoupper(StoredCredentialInitiator::PAYER);
+                    case StoredCredentialInitiator::MERCHANT:
+                        return strtoupper(StoredCredentialInitiator::MERCHANT);
+                    default:
+                        return null;
+                }
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * @param GatewayProvider $gateway
+     * @param EmvLastChipRead $value
+     * @return string|null
+     */
+    public static function mapEmvLastChipRead($gateway, $value)
+    {
+        switch ($gateway) {
+            case GatewayProvider::GP_API:
+                switch ($value) {
+                    case EmvLastChipRead::SUCCESSFUL:
+                        return 'PREV_SUCCESS';
+                    case EmvLastChipRead::FAILED:
+                        return 'PREV_FAILED';
+                    default:
+                        return null;
+                }
+            default:
+                return null;
+        }
+    }
 }

@@ -30,11 +30,5 @@ class DebitTrackData extends Debit implements ITrackData
         $this->value = $value;
         CardUtils::parseTrackData($this);
         $this->cardType = CardUtils::getCardType($this->pan);
-        $this->isFleet = CardUtils::isFleet($this->cardType, $this->pan);
-                
-        if ($this->cardType == 'WexFleet' && $this->discretionaryData != null &&
-                strlen($this->discretionaryData) >= 8) {
-            $this->purchaseDeviceSequenceNumber = substr($this->discretionaryData, 3, 8);
-        }
     }
 }

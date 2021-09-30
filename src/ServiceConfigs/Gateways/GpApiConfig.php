@@ -73,6 +73,9 @@ class GpApiConfig extends GatewayConfig
      */
     public $gatewayProvider;
 
+    /** @var string */
+    public $merchantId;
+
     public function __construct()
     {
         $this->gatewayProvider = GatewayProvider::GP_API;

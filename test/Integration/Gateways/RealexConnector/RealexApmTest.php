@@ -163,6 +163,25 @@ class RealexApmTest extends TestCase
                 ->execute();
     }
 
+    public function testAPMPayByBankApp()
+    {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::PAYBYBANKAPP);
+
+        $paymentMethod->returnUrl = 'https://www.example.com/returnUrl';
+        $paymentMethod->statusUpdateUrl = 'https://www.example.com/statusUrl';
+        $paymentMethod->descriptor = 'Test Transaction';
+        $paymentMethod->country = 'GB';
+        $paymentMethod->accountHolderName = 'James Mason';
+
+        $response = $paymentMethod->charge(10)
+            ->withCurrency("EUR")
+            ->withDescription('New APM')
+            ->execute();
+
+        $this->assertNotEquals(null, $response);
+        $this->assertEquals("01", $response->responseCode);
+    }
+
     public function testApmForRefund()
     {
         // a settle request requires the original order id

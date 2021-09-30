@@ -37,7 +37,7 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
      */
     public function buildRequest(BaseBuilder $builder, $config)
     {
-        $payload = [];
+        $payload = null;
         /**
          * @var ManagementBuilder $builder
          */

@@ -4,6 +4,7 @@
 namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
@@ -125,6 +126,7 @@ class AccessTokenTest extends TestCase
         $accessTokenInfo->transactionProcessingAccountName = "Transaction_Processing";
         $config = new GpApiConfig();
         $config->accessTokenInfo = $accessTokenInfo;
+        $config->channel = Channel::CardNotPresent;
 
         ServicesContainer::configureService($config);
 
@@ -152,6 +154,7 @@ class AccessTokenTest extends TestCase
         $accessTokenInfo->transactionProcessingAccountName = "Transaction_Processing";
         $config = new GpApiConfig();
         $config->accessTokenInfo = $accessTokenInfo;
+        $config->channel = Channel::CardNotPresent;
 
         ServicesContainer::configureService($config);
 

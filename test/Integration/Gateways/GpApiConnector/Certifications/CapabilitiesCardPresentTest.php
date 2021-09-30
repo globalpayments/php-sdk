@@ -5,7 +5,7 @@ namespace Certifications;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
@@ -34,7 +34,7 @@ class CapabilitiesCardPresentTest extends TestCase
         $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
         $config->appKey = '9pArW2uWoA8enxKc';
         $config->environment = Environment::TEST;
-        $config->channel = Channels::CardPresent;
+        $config->channel = Channel::CardPresent;
 
         return $config;
     }

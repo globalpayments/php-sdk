@@ -5,6 +5,8 @@ namespace GlobalPayments\Api\PaymentMethods;
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Enums\DigitalWalletTokenFormat;
+use GlobalPayments\Api\Entities\Enums\EntryMethod;
+use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
@@ -80,6 +82,9 @@ abstract class Credit implements
 
     /** @var bool */
     public $isFleet;
+
+    /** @var EntryMethod|ManualEntryMethod */
+    public $entryMethod;
 
     /** @return boolean */
 

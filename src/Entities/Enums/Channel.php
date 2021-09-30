@@ -1,12 +1,9 @@
 <?php
 
+namespace GlobalPayments\Api\Entities\Enums;
 
-namespace GlobalPayments\Api\Entities\Enums\GpApi;
-
-
-class Channels
+class Channel
 {
-
     const CardNotPresent = 'CNP';
     const CardPresent = 'CP';
 }

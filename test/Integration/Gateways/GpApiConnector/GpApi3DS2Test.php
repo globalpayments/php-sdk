@@ -9,7 +9,7 @@ use GlobalPayments\Api\Entities\Enums\ChallengeWindowSize;
 use GlobalPayments\Api\Entities\Enums\ColorDepth;
 use GlobalPayments\Api\Entities\Enums\DeliveryTimeFrame;
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\ShippingMethod;
@@ -105,7 +105,7 @@ class GpApi3DS2Test extends TestCase
         $config->appKey = 'DHUGdzpjXfTbjZeo';
         $config->environment = Environment::TEST;
         $config->country = 'GB';
-        $config->channel = Channels::CardNotPresent;
+        $config->channel = Channel::CardNotPresent;
         $config->challengeNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
         $config->methodNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
         $config->merchantContactUrl = 'https://enp4qhvjseljg.x.pipedream.net/';
@@ -116,7 +116,7 @@ class GpApi3DS2Test extends TestCase
     /**
      * Frictionless scenario
      *
-     * @throws \GlobalPayments\Api\Entities\Exceptions\ApiException
+     * @throws ApiException
      */
     public function testFullCycle_v2_Frictionless()
     {
@@ -247,7 +247,7 @@ class GpApi3DS2Test extends TestCase
     /**
      * Challenge scenario
      *
-     * @throws \GlobalPayments\Api\Entities\Exceptions\ApiException
+     * @throws ApiException
      */
     public function testFullCycle_CardHolderEnrolled_ChallengeRequired_v2()
     {

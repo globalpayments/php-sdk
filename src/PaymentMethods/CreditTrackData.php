@@ -7,7 +7,6 @@ use GlobalPayments\Api\Utils\CardUtils;
 
 class CreditTrackData extends Credit implements ITrackData
 {
-    public $entryMethod;
     public $value;
     public $discretionaryData;
     public $expiry;

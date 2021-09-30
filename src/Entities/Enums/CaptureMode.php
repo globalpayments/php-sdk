@@ -1,8 +1,6 @@
 <?php
 
-
-namespace GlobalPayments\Api\Entities\Enums\GpApi;
-
+namespace GlobalPayments\Api\Entities\Enums;
 
 class CaptureMode
 {

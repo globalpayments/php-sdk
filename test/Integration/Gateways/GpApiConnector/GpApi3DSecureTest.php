@@ -7,7 +7,7 @@ use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
 use GlobalPayments\Api\Entities\Enums\ChallengeWindowSize;
 use GlobalPayments\Api\Entities\Enums\ColorDepth;
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
 use GlobalPayments\Api\Entities\Enums\OrderTransactionType;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
@@ -27,6 +27,7 @@ use GlobalPayments\Api\Tests\Data\GpApi3DSTestCards;
 use GlobalPayments\Api\Tests\Integration\Gateways\ThreeDSecureAcsClient;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
+use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
 use PHPUnit\Framework\TestCase;
 
 class GpApi3DSecureTest extends TestCase
@@ -102,7 +103,7 @@ class GpApi3DSecureTest extends TestCase
         $config->appKey = 'DHUGdzpjXfTbjZeo';
         $config->environment = Environment::TEST;
         $config->country = 'GB';
-        $config->channel = Channels::CardNotPresent;
+        $config->channel = Channel::CardNotPresent;
         $config->challengeNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
         $config->methodNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
         $config->merchantContactUrl = 'https://enp4qhvjseljg.x.pipedream.net/';
@@ -185,7 +186,7 @@ class GpApi3DSecureTest extends TestCase
      * @dataProvider ChallengeRequiredFailed3DSV1CardTests
      * @param $acsClientResultCode
      * @param $status
-     * @throws \GlobalPayments\Api\Entities\Exceptions\ApiException
+     * @throws ApiException
      */
     public function testCardHolderEnrolled_ChallengeRequired_AuthenticationFailed_v1($acsClientResultCode, $status)
     {
@@ -279,7 +280,7 @@ class GpApi3DSecureTest extends TestCase
      * @dataProvider FrictionlessSuccessful3DSV2CardTests
      * @param $cardNumber
      * @param $status
-     * @throws \GlobalPayments\Api\Entities\Exceptions\ApiException
+     * @throws ApiException
      */
     public function testFrictionlessFullCycle_v2($cardNumber, $status)
     {
@@ -328,7 +329,7 @@ class GpApi3DSecureTest extends TestCase
      * @dataProvider FrictionlessFailed3DSV2CardTests
      * @param $cardNumber
      * @param $status
-     * @throws \GlobalPayments\Api\Entities\Exceptions\ApiException
+     * @throws ApiException
      */
     public function testFrictionlessFullCycle_v2_Failed($cardNumber, $status)
     {
@@ -379,7 +380,7 @@ class GpApi3DSecureTest extends TestCase
      * @dataProvider ChallengeSuccessful3DSV2CardTests
      * @param $cardNumber
      * @param $status
-     * @throws \GlobalPayments\Api\Entities\Exceptions\ApiException
+     * @throws ApiException
      */
     public function testCardHolderEnrolled_ChallengeRequired_v2($cardNumber, $status)
     {
@@ -433,7 +434,7 @@ class GpApi3DSecureTest extends TestCase
     /**
      * Challenge failed scenario
      *
-     * @throws \GlobalPayments\Api\Entities\Exceptions\ApiException
+     * @throws ApiException
      */
     public function testChallengeRequired_GetResultFailed_v2()
     {
@@ -475,7 +476,7 @@ class GpApi3DSecureTest extends TestCase
     /**
      * Frictionless scenario with tokenize card
      *
-     * @throws \GlobalPayments\Api\Entities\Exceptions\ApiException
+     * @throws ApiException
      */
     public function testFullCycle_WithCardTokenization_v2()
     {
@@ -528,7 +529,7 @@ class GpApi3DSecureTest extends TestCase
     /**
      * Frictionless scenario different amount between /auth and /initiate
      *
-     * @throws \GlobalPayments\Api\Entities\Exceptions\ApiException
+     * @throws ApiException
      */
     public function testFrictionlessFullCycle_v2_DifferentAmount()
     {
@@ -631,6 +632,7 @@ class GpApi3DSecureTest extends TestCase
     public function testCreditSaleTokenized_WithStoredCredentials_Recurring()
     {
         $this->card->number = GpApi3DSTestCards::CARD_AUTH_SUCCESSFUL_V2_1;
+        $this->card->entryMethod = ManualEntryMethod::MOTO;
 
         $storeCredentials = new StoredCredential();
         $storeCredentials->initiator = StoredCredentialInitiator::MERCHANT;

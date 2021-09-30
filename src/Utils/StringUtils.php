@@ -85,4 +85,14 @@ class StringUtils
     {
         return preg_replace("/[^0-9]/", "", $value);
     }
+
+    /**
+     * @param string $hexString
+     * @return mixed
+     */
+    public static function bytesFromHex($hexString)
+    {
+        return pack("H*" , strtolower($hexString));
+    }
+
 }
