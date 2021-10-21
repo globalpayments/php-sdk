@@ -10,6 +10,7 @@ use GlobalPayments\Api\Entities\Enums\SecCode;
 use GlobalPayments\Api\PaymentMethods\ECheck;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Services\ReportingService;
 use PHPUnit\Framework\TestCase;
 
 class AchTest extends TestCase
@@ -127,5 +128,26 @@ class AchTest extends TestCase
             $this->fail('no single-use token obtained');
         }
         return $response->token_value;
+    }
+
+    public function testCheckSaleWithAchAdditionTransaction()
+    {
+        $response = $this->eCheck->charge(11)
+            ->withCurrency('USD')
+            ->withAddress($this->address)
+            ->withCustomerId("E8953893489")
+            ->withDescription("Ach_Transaction_Details")
+            ->withInvoiceNumber('1556')
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode);
+
+        $deetsReport = ReportingService::transactionDetail($response->transactionId)
+        ->execute();
+
+        $this->assertNotNull($deetsReport->customerId);
+        $this->assertNotNull($deetsReport->description);
+        $this->assertNotNull($deetsReport->invoiceNumber);
     }
 }
