@@ -107,6 +107,24 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                     }
                 }
                 break;
+            case TransactionType::CONFIRM:
+                if (
+                    $builder->paymentMethod instanceof TransactionReference &&
+                    $builder->paymentMethod->paymentMethodType == PaymentMethodType::APM
+                ) {
+                    $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/confirmation';
+                    $verb = 'POST';
+                    $apmResponse = $builder->paymentMethod->alternativePaymentResponse;
+                    $payload = [
+                        'payment_method' => [
+                            'apm' => [
+                                'provider' => $apmResponse->providerName,
+                                'provider_payer_reference' => $apmResponse->providerReference
+                            ]
+                        ]
+                    ];
+                }
+                break;
             default:
                 return null;
         }

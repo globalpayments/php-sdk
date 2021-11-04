@@ -62,4 +62,5 @@ class TransactionType extends Enum
     const DISPUTE_ACCEPTANCE = 9007199254740992; // 1 << 53
     const DISPUTE_CHALLENGE = 18014398509481984; // 1 << 54
     const REAUTH = 36028797018963968; // 1 << 55
+    const CONFIRM = 72057594037927936; // 1 << 56
 }

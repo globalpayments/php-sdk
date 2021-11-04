@@ -32,6 +32,7 @@ use GlobalPayments\Api\Entities\Enums\DccRateType;
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\DecisionManager;
+use GlobalPayments\Api\Entities\OrderDetails;
 
 class AuthorizationBuilder extends TransactionBuilder
 {
@@ -243,6 +244,12 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var string|amount
      */
     public $shippingAmount;
+
+    /** @var string|float */
+    public $shippingDiscount;
+
+    /** @var OrderDetails */
+    public $orderDetails;
 
     /**
      * @internal
@@ -1206,6 +1213,29 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withShippingAmount($shippingAmount)
     {
         $this->shippingAmount = $shippingAmount;
+        return $this;
+    }
+
+    /**
+     * Set the request shippingDiscount
+     *
+     * @param string|float $shippingDiscount Request shippingDiscount
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withShippingDiscount($shippingDiscount)
+    {
+        $this->shippingDiscount = $shippingDiscount;
+        return $this;
+    }
+
+    /**
+     * @param OrderDetails $orderDetails
+     * @return AuthorizationBuilder
+     */
+    public function withOrderDetails($orderDetails)
+    {
+        $this->orderDetails = $orderDetails;
         return $this;
     }
 

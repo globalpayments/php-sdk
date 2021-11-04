@@ -141,5 +141,6 @@ class AlternativePaymentType extends Enum
     const ZIMPLER = 'zimpler';
     const UK_DIRECT_DEBIT = 'ukdirectdebit';
     const TEST_PAY = 'testpay';
+    const PAYPAL = 'paypal';
     const PAYBYBANKAPP = 'paybybankapp';
 }

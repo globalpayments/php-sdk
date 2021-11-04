@@ -51,6 +51,13 @@ class AlternativePaymentMethod implements
     public $statusUpdateUrl;
 
     /**
+     * The customer will be redirected back to your notifications.cancel_url in case the transaction is canceled
+     *
+     * @var string
+     */
+    public $cancelUrl;
+
+    /**
      * Enables dynamic values to be sent for each transaction.
      *
      * @var string
@@ -70,6 +77,18 @@ class AlternativePaymentMethod implements
      * @var string
      */
     public $accountHolderName;
+
+    /**
+     * The reference from the payment provider: from PayPal etc
+     * @var string
+     */
+    public $providerReference;
+
+    /**
+     * Accepted values ENABLE/DISABLE
+     * @var string
+     */
+    public $addressOverrideMode;
     
     public function __construct($alternativePaymentMethodType)
     {
@@ -88,6 +107,20 @@ class AlternativePaymentMethod implements
     public function charge($amount = null)
     {
         return (new AuthorizationBuilder(TransactionType::SALE, $this))
+            ->withModifier(TransactionModifier::ALTERNATIVE_PAYMENT_METHOD)
+            ->withAmount($amount);
+    }
+
+    /**
+     * Authorizes the payment method
+     *
+     * @param string|float $amount Amount to authorize
+     *
+     * @return AuthorizationBuilder
+     */
+    public function authorize($amount = null)
+    {
+        return (new AuthorizationBuilder(TransactionType::AUTH, $this))
             ->withModifier(TransactionModifier::ALTERNATIVE_PAYMENT_METHOD)
             ->withAmount($amount);
     }

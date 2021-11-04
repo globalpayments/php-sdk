@@ -7,6 +7,14 @@
 
 ## Latest version
 
+- Add PAYPAL alternative payment method on GP-API
+
+## v2.3.15 (10/21/2021)
+
+- Added ach-transaction details test block for Portico
+
+## v2.3.14 (09/30/2021)
+
 - Add "paybybankapp" APM (GP-ECOM)
 - Add AVS missing mapping to response when creating a transaction (GP-API)
 - Refacto on enum classes (GP-API)

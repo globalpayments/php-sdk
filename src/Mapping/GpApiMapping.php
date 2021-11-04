@@ -90,6 +90,9 @@ class GpApiMapping
             $transaction->cardBrandTransactionId = !empty($response->card->brand_reference) ?
                 $response->card->brand_reference : null;
         }
+        if (!empty($response->payment_method->apm)) {
+            $transaction->paymentMethodType = PaymentMethodType::APM;
+        }
 
         return $transaction;
     }
@@ -499,5 +502,67 @@ class GpApiMapping
         $pageInfo->orderBy = !empty($response->paging->order_by) ? $response->paging->order_by :  null;
 
         return $pageInfo;
+    }
+
+    /**
+     * Map response for an APM transaction
+     *
+     * @param Object $response
+     *
+     * @return Transaction
+     */
+    public static function mapResponseAPM($response)
+    {
+        $apm = new AlternativePaymentResponse();
+        $transaction = self::mapResponse($response);
+        $paymentMethodApm = $response->payment_method->apm;
+        $apm->redirectUrl = !empty($response->payment_method->redirect_url) ? $response->payment_method->redirect_url : null;
+        $apm->providerName = $paymentMethodApm->provider;
+        $apm->ack = $paymentMethodApm->ack;
+        $apm->sessionToken = !empty($paymentMethodApm->session_token) ? $paymentMethodApm->session_token : null;
+        $apm->correlationReference = $paymentMethodApm->correlation_reference;
+        $apm->versionReference = $paymentMethodApm->version_reference;
+        $apm->buildReference = $paymentMethodApm->build_reference;
+        $apm->timeCreatedReference = !empty($paymentMethodApm->time_created_reference) ?
+            new \DateTime($paymentMethodApm->time_created_reference) : null;
+        $apm->transactionReference = !empty($paymentMethodApm->transaction_reference) ?
+            $paymentMethodApm->transaction_reference: null;
+        $apm->secureAccountReference = !empty($paymentMethodApm->secure_account_reference) ?
+            $paymentMethodApm->secure_account_reference : null;
+        $apm->reasonCode = !empty($paymentMethodApm->reason_code) ? $paymentMethodApm->reason_code : null;
+        $apm->pendingReason = !empty($paymentMethodApm->pending_reason) ? $paymentMethodApm->pending_reason : null;
+        $apm->grossAmount = !empty($paymentMethodApm->gross_amount) ?
+            StringUtils::toAmount($paymentMethodApm->gross_amount) : null;
+        $apm->paymentTimeReference = !empty($paymentMethodApm->payment_time_reference) ?
+            new \DateTime($paymentMethodApm->payment_time_reference) : null;
+        $apm->paymentType = !empty($paymentMethodApm->payment_type) ? $paymentMethodApm->payment_type : null;
+        $apm->paymentStatus = !empty($paymentMethodApm->payment_status) ? $paymentMethodApm->payment_status : null;
+        $apm->type = !empty($paymentMethodApm->type) ? $paymentMethodApm->type : null;
+        $apm->protectionEligibilty = !empty($paymentMethodApm->protection_eligibilty) ?
+            $paymentMethodApm->protection_eligibilty : null;
+        $apm->feeAmount = !empty($paymentMethodApm->fee_amount) ?
+            StringUtils::toAmount($paymentMethodApm->fee_amount) : null;
+        if (!empty($response->payment_method->authorization)) {
+            $authorization = $response->payment_method->authorization;
+            $apm->authStatus = !empty($authorization->status) ? $authorization->status : null;
+            $apm->authAmount = !empty($authorization->amount) ? $authorization->amount : null;
+            $apm->authAck = !empty($authorization->ack) ? $authorization->ack : null;
+            $apm->authCorrelationReference = !empty($authorization->correlation_reference) ?
+                $authorization->correlation_reference : null;
+            $apm->authVersionReference = !empty($authorization->version_reference) ?
+                $authorization->version_reference : null;
+            $apm->authBuildReference = !empty($authorization->build_reference) ?
+                $authorization->build_reference : null;
+            $apm->authPendingReason = !empty($authorization->pending_reason) ? $authorization->pending_reason : null;
+            $apm->authProtectionEligibilty = !empty($authorization->protection_eligibilty) ?
+                $authorization->protection_eligibilty : null;
+            $apm->authProtectionEligibiltyType = !empty($authorization->protection_eligibilty_type) ?
+                $authorization->protection_eligibilty_type : null;
+            $apm->authReference = !empty($authorization->reference) ? $authorization->reference : null;
+        }
+
+        $transaction->alternativePaymentResponse = $apm;
+
+        return $transaction;
     }
 }

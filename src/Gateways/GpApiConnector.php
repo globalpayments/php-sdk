@@ -24,6 +24,7 @@ use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Mapping\GpApiMapping;
+use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
 
 class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dProvider
 {
@@ -79,7 +80,9 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
             $this->signIn();
         }
         $response = $this->executeProcess($builder);
-
+        if ($builder->paymentMethod instanceof AlternativePaymentMethod) {
+            return GpApiMapping::mapResponseAPM($response);
+        }
         return GpApiMapping::mapResponse($response);
     }
 
@@ -106,7 +109,12 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
             $this->signIn();
         }
         $response = $this->executeProcess($builder);
-
+        if (
+            $builder->paymentMethod instanceof TransactionReference &&
+            $builder->paymentMethod->paymentMethodType == PaymentMethodType::APM
+        ) {
+            return GpApiMapping::mapResponseAPM($response);
+        }
         return GpApiMapping::mapResponse($response);
     }
 

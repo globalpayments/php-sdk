@@ -472,6 +472,17 @@ class Transaction
             ->withAmount($amount);
     }
 
+    /**
+     * Confirm an original transaction. For now it is used for the APM transactions with PayPal
+     *
+     * @return ManagementBuilder
+     */
+    public function confirm()
+    {
+        return (new ManagementBuilder(TransactionType::CONFIRM))
+            ->withPaymentMethod($this->transactionReference);
+    }
+
     public function __get($name)
     {
         switch ($name) {

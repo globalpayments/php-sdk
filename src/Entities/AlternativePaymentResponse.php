@@ -49,4 +49,51 @@ class AlternativePaymentResponse
      * @var string
      */
     public $paymentMethod;
+
+    /**
+     * The provider reference
+     *
+     * @var string
+     */
+    public $providerReference;
+
+    /**
+     * The APM provider name
+     *
+     * @var string
+     */
+    public $providerName;
+
+    /** @var string */
+    public $ack;
+    /** @var string */
+    public $sessionToken;
+    /** @var string */
+    public $correlationReference;
+    /** @var string */
+    public $versionReference;
+    /** @var string */
+    public $buildReference;
+    public $timeCreatedReference;
+    public $transactionReference;
+    public $secureAccountReference;
+    public $reasonCode;
+    public $pendingReason;
+    public $grossAmount;
+    public $paymentTimeReference;
+    public $paymentType;
+    public $paymentStatus;
+    public $type;
+    public $protectionEligibilty;
+    public $authStatus;
+    public $authAmount;
+    public $authAck;
+    public $authCorrelationReference;
+    public $authVersionReference;
+    public $authBuildReference;
+    public $authPendingReason;
+    public $authProtectionEligibilty;
+    public $authProtectionEligibiltyType;
+    public $authReference;
+    public $feeAmount;
 }

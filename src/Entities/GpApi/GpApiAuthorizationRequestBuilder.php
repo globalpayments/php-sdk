@@ -27,6 +27,7 @@ use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
 use GlobalPayments\Api\PaymentMethods\ECheck;
+use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ICardData;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IEncryptable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
@@ -146,10 +147,21 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $requestBody['cashback_amount'] = StringUtils::toNumeric($builder->cashBackAmount);
         $requestBody['ip_address'] = $builder->customerIpAddress;
         $requestBody['payment_method'] = $this->createPaymentMethodParam($builder, $config);
-        if ($builder->paymentMethod instanceof ECheck) {
+        if (
+            $builder->paymentMethod instanceof ECheck ||
+            $builder->paymentMethod instanceof AlternativePaymentMethod
+        ) {
             $requestBody['payer'] = $this->setPayerInformation($builder);
         }
+        if ($builder->paymentMethod instanceof AlternativePaymentMethod) {
+            $this->setOrderInformation($builder, $requestBody);
 
+            $requestBody['notifications'] = [
+                'return_url' => $builder->paymentMethod->returnUrl,
+                'status_url' => $builder->paymentMethod->statusUpdateUrl,
+                'cancel_url' => $builder->paymentMethod->cancelUrl
+            ];
+        }
         if (!empty($builder->storedCredential)) {
             $initiator = EnumMapping::mapStoredCredentialInitiator(GatewayProvider::GP_API, $builder->storedCredential->initiator);
             $requestBody['initiator'] = !empty($initiator) ? $initiator : null;
@@ -174,6 +186,20 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $payer['reference'] = !empty($builder->customerId) ?
             $builder->customerId : (!empty($builder->customerData) ? $builder->customerData->id : null);
         switch (get_class($builder->paymentMethod)) {
+            case AlternativePaymentMethod::class:
+                $payer['home_phone'] = [
+                    'country_code' => !empty($builder->homePhone) ?
+                        StringUtils::validateToNumber($builder->homePhone->countryCode): null,
+                    'subscriber_number' => !empty($builder->homePhone) ?
+                        StringUtils::validateToNumber($builder->homePhone->number): null
+                ];
+                $payer['work_phone'] = [
+                    'country_code' => !empty($builder->workPhone) ?
+                        StringUtils::validateToNumber($builder->workPhone->countryCode): null,
+                    'subscriber_number' => !empty($builder->workPhone) ?
+                        StringUtils::validateToNumber($builder->workPhone->number): null,
+                ];
+                break;
             case ECheck::class:
                 $payer['billing_address'] = [
                     'line_1' => $builder->billingAddress->streetAddress1,
@@ -235,12 +261,13 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
      */
     private function createPaymentMethodParam($builder, $config)
     {
-        /** @var CreditCardData|CreditTrackData|DebitTrackData|ECheck $paymentMethodContainer */
+        /** @var CreditCardData|CreditTrackData|DebitTrackData|ECheck|AlternativePaymentMethod $paymentMethodContainer */
         $paymentMethodContainer = $builder->paymentMethod;
         $paymentMethod = new PaymentMethod();
         $paymentMethod->entry_mode = $this->getEntryMode($builder, $config->channel);
-        $paymentMethod->name = !empty($paymentMethodContainer->cardHolderName) ?
-            $paymentMethodContainer->cardHolderName : null;
+        $paymentMethod->name = $paymentMethodContainer instanceof AlternativePaymentMethod ?
+            $paymentMethodContainer->accountHolderName : (!empty($paymentMethodContainer->cardHolderName) ?
+                $paymentMethodContainer->cardHolderName : null);
         switch (get_class($paymentMethodContainer)) {
             case CreditCardData::class;
                 $secureEcom = $paymentMethodContainer->threeDSecure;
@@ -297,6 +324,14 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     }
                 }
                 break;
+            case AlternativePaymentMethod::class:
+                $paymentMethod->apm = [
+                    'provider' => $paymentMethodContainer->alternativePaymentMethodType,
+                    'address_override_mode' => !empty($paymentMethodContainer->addressOverrideMode) ?
+                        $paymentMethodContainer->addressOverrideMode : null
+                ];
+
+                return $paymentMethod;
             default:
                 break;
         }
@@ -442,5 +477,79 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         }
 
         return CaptureMode::AUTO;
+    }
+
+    private function setOrderInformation($builder, &$requestBody)
+    {
+        $order['description'] = !empty($builder->orderDetails) ?
+            $builder->orderDetails->description : null;
+        if (!empty($builder->shippingAddress)) {
+            $order['shipping_address'] = [
+                'line1' => $builder->shippingAddress->streetAddress1,
+                'line2' => $builder->shippingAddress->streetAddress2,
+                'line3' => $builder->shippingAddress->streetAddress3,
+                'city' => $builder->shippingAddress->city,
+                'postal_code' => $builder->shippingAddress->postalCode,
+                'state' => $builder->shippingAddress->state,
+                'country' => $builder->shippingAddress->countryCode
+            ];
+        }
+        list($phoneNumber, $phoneCountryCode) = $this->getPhoneNumber($builder, PhoneNumberType::SHIPPING);
+        $order['shipping_phone'] = [
+            'country_code' => $phoneCountryCode,
+            'subscriber_number' => $phoneNumber
+        ];
+
+        if (!empty($builder->productData)) {
+            $taxTotalAmount = $itemsAmount = 0;
+            foreach ($builder->productData as $product) {
+                $qta = !empty($product['quantity']) ? $product['quantity'] : 0;
+                $taxAmount = !empty($product['tax_amount']) ? StringUtils::toNumeric($product['tax_amount']) : 0;
+                $unitAmount = !empty($product['unit_amount']) ? StringUtils::toNumeric($product['unit_amount']) : 0;
+                $items[] = [
+                    'reference' => !empty($product['reference']) ? $product['reference'] : null,
+                    'label' => !empty($product['label']) ? $product['label'] : null,
+                    'description' => !empty($product['description']) ? $product['description'] : null,
+                    'quantity' => $qta,
+                    'unit_amount' => $unitAmount,
+                    'unit_currency' => !empty($product['unit_currency']) ? $product['unit_currency'] : null,
+                    'tax_amount' => $taxAmount,
+                    'amount' => $qta * $unitAmount
+                ];
+                if (!empty($product['tax_amount'])) {
+                    $taxTotalAmount += $taxAmount;
+                }
+                if (!empty($product['unit_amount'])) {
+                    $itemsAmount += $unitAmount;
+                }
+            }
+
+            $order['tax_amount'] = $taxTotalAmount;
+            $order['item_amount'] = $itemsAmount;
+            $order['shipping_amount'] = !empty($builder->shippingAmount) ?
+                StringUtils::toNumeric($builder->shippingAmount) : 0;
+            $order['insurance_offered'] = !empty($builder->orderDetails) && !is_null($builder->orderDetails->hasInsurance) ?
+                ($builder->orderDetails->hasInsurance === true ? 'YES' : 'NO') : null;
+            $order['shipping_discount'] = !empty($builder->shippingDiscount) ?
+                StringUtils::toNumeric($builder->shippingDiscount) : 0;
+            $order['insurance_amount'] = !empty($builder->orderDetails->insuranceAmount) ?
+                StringUtils::toNumeric($builder->orderDetails->insuranceAmount) : 0;
+            $order['handling_amount'] = !empty($builder->orderDetails->handlingAmount) ?
+                StringUtils::toNumeric($builder->orderDetails->handlingAmount) : 0;
+            $orderAmount = $itemsAmount + $taxTotalAmount + $order['handling_amount'] + $order['insurance_amount'] + $order['shipping_amount'];
+            $order['amount'] = $orderAmount;
+            $order['currency'] = $builder->currency;
+        }
+        $order['items'] = !empty($items) ? $items : null;
+
+        if (!empty($orderAmount)) {
+            $requestBody['amount'] = $orderAmount;
+        }
+        if (!empty($requestBody['order'])) {
+            $order = array_merge($requestBody['order'], $order);
+        }
+        $requestBody['order'] = $order;
+
+        return $requestBody;
     }
 }

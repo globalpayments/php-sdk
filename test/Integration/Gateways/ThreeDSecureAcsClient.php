@@ -37,8 +37,10 @@ class ThreeDSecureAcsClient
         $kvps = [];
         switch ($this->gatewayProvider)
         {
+            case GatewayProvider::GP_ECOM:
             case GatewayProvider::GP_API:
-                array_push($kvps, ['key' => $secureEcom->messageType, 'value' => urlencode($secureEcom->payerAuthenticationRequest)]);
+                $messageType = $this->gatewayProvider == GatewayProvider::GP_API ? $secureEcom->messageType : 'creq';
+                array_push($kvps, ['key' => $messageType, 'value' => urlencode($secureEcom->payerAuthenticationRequest)]);
                 $postData = $this->buildData($kvps);
                 $header = [
                     "Content-Type: application/x-www-form-urlencoded",
