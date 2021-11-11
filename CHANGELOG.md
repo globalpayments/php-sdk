@@ -7,6 +7,11 @@
 
 ## Latest version
 
+- Add reporting service to get transaction by id on GP-ECOM
+- Add HPP_POST_DIMENSIONS and HPP_POST_RESPONSE to serialize on GP-ECOM
+
+## v2.4.0 (11/04/2021)
+
 - Add PAYPAL alternative payment method on GP-API
 
 ## v2.3.15 (10/21/2021)

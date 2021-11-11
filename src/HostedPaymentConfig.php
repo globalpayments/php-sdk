@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api;
 
 use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
+use GlobalPayments\Api\Entities\Enums\HppVersion;
 use GlobalPayments\Api\Entities\FraudRuleCollection;
 
 class HostedPaymentConfig
@@ -40,5 +41,9 @@ class HostedPaymentConfig
     /** @var Boolean */
     public $requestTransactionStabilityScore;
 
+    /** @var HppVersion */
     public $version;
+
+    /** @var boolean */
+    public $directCurrencyConversionEnabled;
 }

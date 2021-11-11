@@ -478,4 +478,22 @@ class TransactionSummary
      * @var AlternativePaymentResponse
      */
     public $alternativePaymentResponse;
+
+    /** @var string */
+    public $orderId;
+
+    /** @var string */
+    public $avsResponseCode;
+
+    /** @var string */
+    public $cvnResponseCode;
+
+    /** @var string */
+    public $eciIndicator;
+
+    /** @var string */
+    public $xid;
+
+    /** @var string */
+    public $schemeReferenceData;
 }

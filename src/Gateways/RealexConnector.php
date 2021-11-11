@@ -10,12 +10,13 @@ use GlobalPayments\Api\Builders\ReportBuilder;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\CvnPresenceIndicator;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
-use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\HostedPaymentConfig;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
@@ -27,18 +28,14 @@ use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Enums\RecurringSequence;
-use GlobalPayments\Api\Entities\Enums\RecurringType;
-use GlobalPayments\Api\Entities\Enums\DccProcessor;
-use GlobalPayments\Api\Entities\Enums\DccRateType;
-use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\DccResponseResult;
 use GlobalPayments\Api\Entities\FraudManagementResponse;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
-use GlobalPayments\Api\Entities\Enums\HppVersion;
 use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
+use GlobalPayments\Api\Entities\Exceptions\ApiException;
 
 class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringService, ISecure3dProvider
 {
@@ -677,7 +674,12 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         if (isset($this->hostedPaymentConfig->version)) {
             $this->setSerializeData('HPP_VERSION', $this->hostedPaymentConfig->version);
         }
-
+        if (isset($this->hostedPaymentConfig->postDimensions)) {
+            $this->setSerializeData('HPP_POST_DIMENSIONS', $this->hostedPaymentConfig->postDimensions);
+        }
+        if (isset($this->hostedPaymentConfig->postResponse)) {
+            $this->setSerializeData('HPP_POST_RESPONSE', $this->hostedPaymentConfig->postResponse);
+        }
         if (!empty($builder->supplementaryData)) {
             $this->serializeSupplementaryData($builder->supplementaryData);
         }
@@ -825,9 +827,32 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
 
     public function processReport(ReportBuilder $builder)
     {
-        throw new UnsupportedTransactionException(
-            'Reporting functionality is not supported through this gateway.'
+        $xml = new DOMDocument();
+        $timestamp = GenerationUtils::generateTimestamp();
+
+        $request = $xml->createElement("request");
+        $request->setAttribute("timestamp", $timestamp);
+        $request->setAttribute("type", $this->mapReportRequestType($builder->reportType));
+        $request->appendChild($xml->createElement("merchantid", $this->merchantId));
+
+        if ($this->accountId !== null) {
+            $request->appendChild($xml->createElement("account", $this->accountId));
+        }
+        $request->appendChild($xml->createElement("orderid", $builder->transactionId));
+        $hash = GenerationUtils::generateHash(
+            $this->sharedSecret,
+            implode('.', [
+                $timestamp,
+                $this->merchantId,
+                $builder->transactionId,
+                '',
+                '',
+                ''
+            ])
         );
+        $request->appendChild($xml->createElement("sha1hash", $hash));
+        $response = $this->doTransaction($xml->saveXML($request));
+        return $this->MapReportResponse($response, $builder->reportType);
     }
 
     public function processRecurring(RecurringBuilder $builder)
@@ -1502,5 +1527,58 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             default:
                 return null;
         }
+    }
+
+    /**
+     * @param string $reportType
+     */
+    private function mapReportRequestType($reportType)
+    {
+        switch ($reportType) {
+            case ReportType::TRANSACTION_DETAIL:
+                return 'query';
+            default:
+                throw new UnsupportedTransactionException("This reporting call is not supported by your currently configured gateway.");
+        }
+    }
+
+    private function mapReportResponse($rawResponse, $reportType)
+    {
+        $summary = new TransactionSummary();
+        $root = $this->xml2object($rawResponse);
+
+        $this->checkResponse($root);
+        try {
+            switch ($reportType) {
+                case ReportType::TRANSACTION_DETAIL:
+                    $summary->transactionId = (string)$root->pasref;
+                    $summary->orderId = (string)$root->orderid;
+                    $summary->authCode = (string)$root->authcode;
+                    $summary->maskedCardNumber = (string)$root->cardnumber;
+                    $summary->avsResponseCode = (string)$root->avspostcoderesponse;
+                    $summary->cvnResponseCode = (string)$root->cvnresult;
+                    $summary->gatewayResponseCode = (string)$root->result;
+                    $summary->gatewayResponseMessage = (string)$root->message;
+                    $summary->batchSequenceNumber = (string)$root->batchid;
+                    $summary->gatewayResponseCode = (string)$root->result;
+                    if (!empty($root->fraudresponse)) {
+                        $summary->fraudRuleInfo = (string)$root->fraudresponse->result;
+                    }
+                    if (!empty($root->threedsecure)) {
+                        $summary->cavvResponseCode = (string)$root->threedsecure->cavv;
+                        $summary->eciIndicator = (string)$root->threedsecure->eci;
+                        $summary->xid = (string)$root->threedsecure->xid;
+                    }
+                    if (!empty($root->srd)) {
+                        $summary->schemeReferenceData = (string)$root->srd;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        } catch (Exception $e) {
+            throw new ApiException($e->getMessage(), $e);
+        }
+        return $summary;
     }
 }

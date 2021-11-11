@@ -5,7 +5,7 @@ use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GpApi\Channels;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Services\ReportingService;
@@ -59,7 +59,7 @@ class GpApiApmTest extends TestCase
         $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
         $config->appKey = 'DHUGdzpjXfTbjZeo';
         $config->environment = Environment::TEST;
-        $config->channel = Channels::CardNotPresent;
+        $config->channel = Channel::CardNotPresent;
         $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
 
         return $config;

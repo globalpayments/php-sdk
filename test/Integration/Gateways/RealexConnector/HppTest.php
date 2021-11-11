@@ -529,6 +529,8 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig = new HostedPaymentConfig();
         $config->hostedPaymentConfig->language = "GB";
         $config->hostedPaymentConfig->responseUrl = "https://www.example.com/response";
+        $config->hostedPaymentConfig->postDimensions = "https://www.example.com";
+        $config->hostedPaymentConfig->postResponse = "https://www.example.com";
         $config->hostedPaymentConfig->version = HppVersion::VERSION_1;
 
         $service = new HostedService($config);
@@ -540,7 +542,7 @@ class HppTest extends TestCase
                 ->WithOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 ->serialize();
 
-        $expectedJson = '{"MERCHANT_ID":"TWVyY2hhbnRJZA==","ACCOUNT":"aW50ZXJuZXQ=","ORDER_ID":"R1RJNVl4YjBTdW1MX1RrRE1DQXhRQQ==","AMOUNT":"MTk5OQ==","CURRENCY":"RVVS","TIMESTAMP":"MjAxNzA3MjUxNTQ4MjQ=","AUTO_SETTLE_FLAG":"MA==","HPP_LANG":"R0I=","MERCHANT_RESPONSE_URL":"aHR0cHM6Ly93d3cuZXhhbXBsZS5jb20vcmVzcG9uc2U=","HPP_VERSION":"MQ==","SHA1HASH":"MDYxNjA5Zjg1YThlMDE5MWRjN2Y0ODdmODI3OGU3MTg5OGEyZWUyZA=="}';
+        $expectedJson = '{"MERCHANT_ID":"TWVyY2hhbnRJZA==","ACCOUNT":"aW50ZXJuZXQ=","ORDER_ID":"R1RJNVl4YjBTdW1MX1RrRE1DQXhRQQ==","AMOUNT":"MTk5OQ==","CURRENCY":"RVVS","TIMESTAMP":"MjAxNzA3MjUxNTQ4MjQ=","AUTO_SETTLE_FLAG":"MA==","HPP_LANG":"R0I=","MERCHANT_RESPONSE_URL":"aHR0cHM6Ly93d3cuZXhhbXBsZS5jb20vcmVzcG9uc2U=","HPP_VERSION":"MQ==","HPP_POST_DIMENSIONS":"aHR0cHM6Ly93d3cuZXhhbXBsZS5jb20=","HPP_POST_RESPONSE":"aHR0cHM6Ly93d3cuZXhhbXBsZS5jb20=","SHA1HASH":"MDYxNjA5Zjg1YThlMDE5MWRjN2Y0ODdmODI3OGU3MTg5OGEyZWUyZA=="}';
         $this->assertEquals($json, $expectedJson);
     }
 
