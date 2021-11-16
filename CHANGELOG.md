@@ -7,6 +7,13 @@
 
 ## Latest version
 
+#### Enhancements:
+- Add LPMs HPP on GP-ECOM
+- Add PAYPAL on GP-ECOM
+
+## v2.4.1 (11/12/2021)
+
+#### Enhancements:
 - Add reporting service to get transaction by id on GP-ECOM
 - Add HPP_POST_DIMENSIONS and HPP_POST_RESPONSE to serialize on GP-ECOM
 

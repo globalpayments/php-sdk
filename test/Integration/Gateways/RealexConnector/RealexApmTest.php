@@ -8,6 +8,9 @@ use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use PHPUnit\Framework\TestCase;
+use GlobalPayments\Api\Utils\Logging\Logger;
+use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 
 class RealexApmTest extends TestCase
 {
@@ -16,11 +19,13 @@ class RealexApmTest extends TestCase
     {
         $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
-        $config->accountId = "hpp";
+        $config->accountId = "api";
         $config->rebatePassword = 'refund';
         $config->refundPassword = 'refund';
         $config->sharedSecret = "secret";
         $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
+//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
+
         return $config;
     }
 
@@ -174,12 +179,50 @@ class RealexApmTest extends TestCase
         $paymentMethod->accountHolderName = 'James Mason';
 
         $response = $paymentMethod->charge(10)
-            ->withCurrency("EUR")
+            ->withCurrency("GBP")
             ->withDescription('New APM')
             ->execute();
 
         $this->assertNotEquals(null, $response);
         $this->assertEquals("01", $response->responseCode);
+    }
+
+    public function testAPMPaypal()
+    {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::PAYPAL);
+        $paymentMethod->returnUrl = 'https://7b8e82a17ac00346e91e984f42a2a5fb.m.pipedream.net';
+        $paymentMethod->statusUpdateUrl = 'https://7b8e82a17ac00346e91e984f42a2a5fb.m.pipedream.net';
+        $paymentMethod->cancelUrl = 'https://7b8e82a17ac00346e91e984f42a2a5fb.m.pipedream.net';
+        $paymentMethod->descriptor = 'Test Transaction';
+        $paymentMethod->country = 'US';
+        $paymentMethod->accountHolderName = 'James Mason';
+        $amount = 10; $currency = 'USD';
+        $transaction = $paymentMethod->charge($amount)
+            ->withCurrency($currency)
+            ->withDescription('New APM')
+            ->execute();
+
+        $this->assertNotEquals(null, $transaction);
+        $this->assertEquals("00", $transaction->responseCode);
+        $this->assertNotNull($transaction->alternativePaymentResponse->sessionToken);
+
+        $redirectUrl = "Open link in browser and confirm PAYPAL payment: https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token={$transaction->alternativePaymentResponse->sessionToken}";
+        fwrite(STDERR, print_r($redirectUrl, TRUE));
+        sleep(30);
+
+        $transaction->alternativePaymentResponse->providerReference = 'SMKGK7K2BLEUA';
+        $exceptionCaught = false;
+        try {
+            $response = $transaction->confirm($amount)
+                ->withCurrency($currency)
+                ->withAlternativePaymentType(AlternativePaymentType::PAYPAL)
+                ->execute();
+            $this->assertNotNull($response);
+            $this->assertEquals("00", $transaction->responseCode);
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Unexpected Gateway Response: 101 - Payment has not been authorized by the user.', $e->getMessage());
+        }
     }
 
     public function testApmForRefund()

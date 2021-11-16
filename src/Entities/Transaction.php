@@ -477,10 +477,11 @@ class Transaction
      *
      * @return ManagementBuilder
      */
-    public function confirm()
+    public function confirm($amount = null)
     {
         return (new ManagementBuilder(TransactionType::CONFIRM))
-            ->withPaymentMethod($this->transactionReference);
+            ->withPaymentMethod($this->transactionReference)
+            ->withAmount($amount);
     }
 
     public function __get($name)

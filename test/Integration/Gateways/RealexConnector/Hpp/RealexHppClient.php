@@ -1,20 +1,22 @@
 <?php
 namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\Hpp;
 
+use GlobalPayments\Api\Entities\AlternativePaymentResponse;
+use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 use GlobalPayments\Api\Entities\FraudRuleCollection;
+use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
-use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\HostedPaymentConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
+use GlobalPayments\Api\Utils\Logging\Logger;
+use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 
 class RealexHppClient
 {
@@ -48,21 +50,14 @@ class RealexHppClient
         $config->accountId = $account;
         $config->sharedSecret = $this->sharedSecret;
         $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
+        //to be uncomment in case you need to log the raw request/response
+//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
         $config->hostedPaymentConfig = new HostedPaymentConfig();
         $config->hostedPaymentConfig->language = "GB";
         $config->hostedPaymentConfig->responseUrl = "http://requestb.in/10q2bjb1";
         $config->hostedPaymentConfig->version = $hppVersion;
 
         ServicesContainer::configureService($config);
-
-        // create the card object
-        $card = new CreditCardData();
-        $card->number = '4006097467207025';
-        $card->expMonth = 12;
-        $card->expYear = TestCards::validCardExpYear();
-        $card->cvn = '131';
-        $card->cardHolderName = 'James Mason';
-
         // // check hash
         $hashParam = [
             $timestamp,
@@ -71,6 +66,29 @@ class RealexHppClient
             $amount,
             $currency
         ];
+
+        // create the card/APM/LPM object
+        if (!empty($this->getValue('PM_METHODS'))) {
+            $apmTypes = explode("|", $this->getValue('PM_METHODS'));
+            $apmType = reset($apmTypes);
+            $card = new AlternativePaymentMethod($apmType);
+            $card->returnUrl = $this->getValue('MERCHANT_RESPONSE_URL');
+            $card->statusUpdateUrl = $this->getValue('HPP_TX_STATUS_URL');
+            if ($apmType == AlternativePaymentType::PAYPAL) {
+                //cancelUrl for Paypal example
+                $card->cancelUrl =  'https://www.example.com/failure/cancelURL';
+            }
+            $card->country = $this->getValue('HPP_CUSTOMER_COUNTRY');
+            $card->accountHolderName =
+                $this->getValue('HPP_CUSTOMER_FIRSTNAME') . ' '. $this->getValue('HPP_CUSTOMER_LASTNAME') ;
+        } else {
+            $card = new CreditCardData();
+            $card->number = '4006097467207025';
+            $card->expMonth = 12;
+            $card->expYear = TestCards::validCardExpYear();
+            $card->cvn = '131';
+            $card->cardHolderName = 'James Mason';
+        }
 
         //for stored card
         if (!empty($this->paymentData['OFFER_SAVE_CARD'])) {
@@ -83,11 +101,11 @@ class RealexHppClient
         if (!empty($this->paymentData['HPP_FRAUDFILTER_MODE'])) {
             $hashParam[] = $this->paymentData['HPP_FRAUDFILTER_MODE'];
         }
-        
         $newHash = GenerationUtils::generateHash(
             $this->sharedSecret,
             implode('.', $hashParam)
         );
+
         if ($newHash != $requestHash) {
             throw new ApiException("Incorrect hash. Please check your code and the Developers Documentation.");
         }
@@ -125,13 +143,14 @@ class RealexHppClient
             $this->addFraudManagementInfo($gatewayRequest, $orderId);
 
             $gatewayResponse = $gatewayRequest->execute();
-            
-            if ($gatewayResponse->responseCode === '00') {
+
+            if (in_array($gatewayResponse->responseCode, ['00', '01'])) {
                 return $this->convertResponse($gatewayResponse);
             }
         } catch (ApiException $exc) {
             throw $exc;
         }
+
         return null;
     }
 
@@ -266,13 +285,29 @@ class RealexHppClient
             'DCC_INFO_REQUST' => $this->getValue('DCC_INFO'),
             'DCC_INFO_RESPONSE' => $gatewayResponse->dccResponseResult,
             'HPP_FRAUDFILTER_MODE' => $this->getValue('HPP_FRAUDFILTER_MODE'),
-            'HPP_FRAUDFILTER_RESULT' => $gatewayResponse->fraudFilterResponse->fraudResponseResult
+            'HPP_FRAUDFILTER_RESULT' => !empty($gatewayResponse->fraudFilterResponse) ?
+                $gatewayResponse->fraudFilterResponse->fraudResponseResult : null
         ];
-        $hppFraudRules = [];
-        foreach ($gatewayResponse->fraudFilterResponse->fraudResponseRules as $fraudResponseRule) {
-            $hppFraudRules['HPP_FRAUDFILTER_RULE_' .$fraudResponseRule['id']] = $fraudResponseRule['action'];
+        if (!empty($gatewayResponse->transactionReference->alternativePaymentResponse)) {
+            /** @var AlternativePaymentResponse $alternativePaymentResponse */
+            $alternativePaymentResponse = $gatewayResponse->transactionReference->alternativePaymentResponse;
+            $apmResponse = [
+                'HPP_CUSTOMER_FIRSTNAME' => $this->getValue('HPP_CUSTOMER_FIRSTNAME'),
+                'HPP_CUSTOMER_LASTNAME' => $this->getValue('HPP_CUSTOMER_LASTNAME'),
+                'HPP_CUSTOMER_COUNTRY' => $this->getValue('HPP_CUSTOMER_COUNTRY'),
+                'PAYMENTMETHOD' => $alternativePaymentResponse->providerName,
+                'PAYMENTPURPOSE' => $alternativePaymentResponse->paymentPurpose,
+                'HPP_CUSTOMER_BANK_ACCOUNT' => $alternativePaymentResponse->bankAccount
+            ];
+            $response = array_merge($response, $apmResponse);
         }
-        $response = array_merge($response, $hppFraudRules);
+        if (!empty($gatewayResponse->fraudFilterResponse)) {
+            $hppFraudRules = [];
+            foreach ($gatewayResponse->fraudFilterResponse->fraudResponseRules as $fraudResponseRule) {
+                $hppFraudRules['HPP_FRAUDFILTER_RULE_' .$fraudResponseRule['id']] = $fraudResponseRule['action'];
+            }
+            $response = array_merge($response, $hppFraudRules);
+        }
         $response['TSS_INFO'] = $this->getValue('TSS_INFO');
 
         return json_encode($response);

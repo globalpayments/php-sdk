@@ -3,6 +3,8 @@
 namespace GlobalPayments\Api\Test\Integration\Gateways\RealexConnector;
 
 use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
+use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\FraudRuleCollection;
 use GlobalPayments\Api\Services\HostedService;
 use GlobalPayments\Api\HostedPaymentConfig;
@@ -53,7 +55,7 @@ class HppTest extends TestCase
         $config->merchantId = "heartlandgpsandbox";
         $config->accountId = "hpp";
         $config->sharedSecret = "secret";
-        $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
+        $config->serviceUrl = "https://pay.sandbox.realexpayments.com/pay";
         $config->hostedPaymentConfig = new HostedPaymentConfig();
         $config->hostedPaymentConfig->language = "GB";
         $config->hostedPaymentConfig->responseUrl = "http://requestb.in/10q2bjb1";
@@ -850,5 +852,61 @@ class HppTest extends TestCase
         $response = json_decode($json, true);
         $this->assertEquals('AN', $response['BILLING_CO']);
         $this->assertEquals('530', $response['HPP_BILLING_COUNTRY']);
+    }
+
+    /**
+     * We can set multiple APMs/LPMs on $presetPaymentMethods, but our HppClient for testing will treat only the first
+     * entry from the list as an example for our unit test, in this case will be "sofort"
+     */
+    public function testBasicChargeAlternativePayment()
+    {
+        $config = new GpEcomConfig();
+        $config->merchantId = "heartlandgpsandbox";
+        $config->accountId = "hpp";
+        $config->sharedSecret = "secret";
+        $config->serviceUrl = "https://pay.sandbox.realexpayments.com/pay";
+
+        $config->hostedPaymentConfig = new HostedPaymentConfig();
+        $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
+
+        $service = new HostedService($config);
+
+        $hostedPaymentData = new HostedPaymentData();
+        $hostedPaymentData->customerCountry = 'DE';
+        $hostedPaymentData->customerFirstName = 'James';
+        $hostedPaymentData->customerLastName = 'Mason';
+        $hostedPaymentData->merchantResponseUrl = 'https://www.example.com/returnUrl';
+        $hostedPaymentData->transactionStatusUrl = 'https://www.example.com/statusUrl';
+
+        $apmTypes = [
+            AlternativePaymentType::SOFORTUBERWEISUNG,
+            AlternativePaymentType::TEST_PAY,
+            AlternativePaymentType::PAYPAL,
+            AlternativePaymentType::SEPA_DIRECTDEBIT_PPPRO_MANDATE_MODEL_A
+        ];
+        $hostedPaymentData->presetPaymentMethods = $apmTypes;
+
+        $json = $service->charge(10.01)
+            ->withCurrency("EUR")
+            ->withHostedPaymentData($hostedPaymentData)
+            ->serialize();
+
+        $response = json_decode($json, true);
+        $this->assertEquals(implode('|', $apmTypes), $response['PM_METHODS']);
+        $this->assertEquals($hostedPaymentData->customerFirstName, $response['HPP_CUSTOMER_FIRSTNAME']);
+        $this->assertEquals($hostedPaymentData->customerLastName, $response['HPP_CUSTOMER_LASTNAME']);
+        $this->assertEquals($hostedPaymentData->merchantResponseUrl, $response['MERCHANT_RESPONSE_URL']);
+        $this->assertEquals($hostedPaymentData->transactionStatusUrl, $response['HPP_TX_STATUS_URL']);
+        $this->assertEquals($hostedPaymentData->customerCountry, $response['HPP_CUSTOMER_COUNTRY']);
+
+        $client = new RealexHppClient("secret");
+        $response = $client->sendRequest($json, $config->hostedPaymentConfig->version);
+        $parsedResponse = $service->parseResponse($response);
+
+        $this->assertNotNull($parsedResponse);
+        $this->assertEquals("01", $parsedResponse->responseCode);
+        $this->assertEquals(TransactionStatus::PENDING, $parsedResponse->responseMessage);
+        $this->assertEquals(AlternativePaymentType::SOFORTUBERWEISUNG, $parsedResponse->responseValues['PAYMENTMETHOD']);
+        $this->assertEquals($hostedPaymentData->merchantResponseUrl, $parsedResponse->responseValues['MERCHANT_RESPONSE_URL']);
     }
 }

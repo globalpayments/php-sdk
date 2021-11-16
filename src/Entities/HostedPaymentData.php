@@ -2,6 +2,8 @@
 
 namespace GlobalPayments\Api\Entities;
 
+use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
+
 /**
  * Data collection to supplement a hosted payment page.
  */
@@ -86,6 +88,24 @@ class HostedPaymentData
      * @var array<string,string>
      */
     public $supplementaryData;
+
+    /** @var string */
+    public $customerCountry;
+
+    /** @var string */
+    public $customerFirstName;
+
+    /** @var string */
+    public $customerLastName;
+
+    /** @var string */
+    public $merchantResponseUrl;
+
+    /** @var string */
+    public $transactionStatusUrl;
+
+    /** @var array<AlternativePaymentType> */
+    public $presetPaymentMethods = [];
 
     /**
      * Instantiates a new `HostedPaymentData` object.
