@@ -6,6 +6,7 @@ use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
 use GlobalPayments\Api\Terminals\HPA\HpaController;
 use GlobalPayments\Api\Terminals\PAX\PaxController;
+use GlobalPayments\Api\Terminals\UPA\UpaController;
 
 class ConnectionContainer
 {
@@ -63,6 +64,9 @@ class ConnectionContainer
             case DeviceType::PAX_PX5:
             case DeviceType::PAX_PX7:
                 static::$instance = new PaxController($config);
+                break;
+            case DeviceType::UPA_SATURN_1000:
+                static::$instance = new UpaController($config);
                 break;
         }
     }

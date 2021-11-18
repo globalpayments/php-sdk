@@ -15,6 +15,7 @@ class ControlCodes extends Enum
     const FS = 0x1C;  // Field separator
     const GS = 0x1D;  // Message ID follows (for non-PIN entry prompts)
     const RS = 0x1E;  // Message ID follows (for PIN entry prompts)
+    const LF = 0x0A;  //new line
 
     // PAX Specific ??
     const US = 0x1F;

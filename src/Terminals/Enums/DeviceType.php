@@ -13,4 +13,5 @@ class DeviceType extends Enum
     const PAX_D210 = 'PAX_D210';
     const PAX_PX5 = 'PAX_PX5';
     const PAX_PX7 = 'PAX_PX7';
+    const UPA_SATURN_1000 = 'UPA_SATURN_1000';
 }

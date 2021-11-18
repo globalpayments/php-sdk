@@ -58,7 +58,7 @@ class PaxInterface implements IDeviceInterface
         return new BatchResponse($rawResponse);
     }
 
-    public function cancel()
+    public function cancel($cancelParams = null)
     {
         if ($this->paxController->deviceConfig->connectionMode === ConnectionModes::HTTP) {
             throw new ApiException("The cancel command is not available in HTTP mode");
@@ -308,12 +308,18 @@ class PaxInterface implements IDeviceInterface
         return new SafDeleteResponse($rawResponse);
     }
     
-    public function safSummaryReport($safIndicator)
+    public function safSummaryReport($safIndicator = null)
     {
         $message = TerminalUtils::buildAdminMessage(PaxMessageId::R10_SAF_SUMMARY_REPORT, [$safIndicator]);
         
         $rawResponse = $this->paxController->send($message);
         return new SafSummaryReport($rawResponse);
     }
+    
+    public function creditTipAdjust($tipAmount = null)
+    {
+        throw new UnsupportedTransactionException('');
+    }
+
     #endregion
 }

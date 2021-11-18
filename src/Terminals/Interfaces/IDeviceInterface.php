@@ -6,7 +6,7 @@ interface IDeviceInterface
 {
 
     // Admin Calls
-    public function cancel();
+    public function cancel($cancelParams = null);
 
     public function closeLane();
 
@@ -42,6 +42,8 @@ interface IDeviceInterface
     public function creditVerify();
 
     public function creditVoid();
+    
+    public function creditTipAdjust($tipAmount = null);
 
     //Debit Calls
     public function debitSale($amount = null);
@@ -72,6 +74,7 @@ interface IDeviceInterface
     public function setSafMode($paramValue);
     public function sendSaf($safIndicator = null);
     public function safDelete($safIndicator);
+    public function safSummaryReport($safIndicator = null);
     
     //send file request
     public function sendFile($sendFileData);

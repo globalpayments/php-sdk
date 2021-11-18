@@ -2,7 +2,6 @@
 
 namespace GlobalPayments\Api\Terminals\Builders;
 
-use GlobalPayments\Api\Terminals\Builders\TerminalBuilder;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Terminals\ConnectionContainer;
@@ -14,6 +13,7 @@ class TerminalManageBuilder extends TerminalBuilder
     public $currency;
     public $gratuity;
     public $transactionId;
+    public $terminalRefNumber;
 
     /**
      * {@inheritdoc}
@@ -71,7 +71,7 @@ class TerminalManageBuilder extends TerminalBuilder
      *
      * @param string $transactionId Transaction ID
      *
-     * @return AuthorizationBuilder
+     * @return TerminalManageBuilder
      */
     public function withTransactionId($transactionId)
     {
@@ -97,5 +97,11 @@ class TerminalManageBuilder extends TerminalBuilder
         )
                 ->with(TransactionModifier::NONE)
                 ->check('transactionId')->isNotNull();
+    }
+    
+    public function withTerminalRefNumber($terminalRefNumber)
+    {
+        $this->terminalRefNumber = $terminalRefNumber;
+        return $this;
     }
 }

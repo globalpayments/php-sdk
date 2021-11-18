@@ -122,4 +122,29 @@ class TerminalUtils
             $logProvider->setLog($message, $trace);
         }
     }
+    
+    public static function buildUPAMessage($messageType, $requestId, $otherData = null)
+    {
+        $requestMessage = [
+            'message' => 'MSG',
+            'data' => [
+                'command' => $messageType,
+                'requestId' => $requestId,
+                'EcrId' => 13
+            ]
+        ];
+        
+        if(!empty($otherData)){
+            $requestMessage['data']['data'] = $otherData;
+        }
+        
+        $message = chr(ControlCodes::STX);
+        $message .= chr(ControlCodes::LF);
+        $message .= json_encode($requestMessage);
+        $message .= chr(ControlCodes::LF);
+        $message .= chr(ControlCodes::ETX);
+        $message .= chr(ControlCodes::LF);
+        
+        return $message;
+    }
 }

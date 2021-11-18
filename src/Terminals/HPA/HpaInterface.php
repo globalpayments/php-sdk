@@ -84,7 +84,7 @@ class HpaInterface implements IDeviceInterface
      * Reset - Admin mode message - Transition SIP to idle state
      */
 
-    public function cancel()
+    public function cancel($cancelParams = null)
     {
         return $this->reset();
     }
@@ -425,4 +425,15 @@ class HpaInterface implements IDeviceInterface
             HpaMessageId::GET_LAST_RESPONSE
         );
     }
+    
+    public function creditTipAdjust($tipAmount = null)
+    {
+        throw new UnsupportedTransactionException('');
+    }
+    public function safSummaryReport($safIndicator = null)
+    {
+        throw new UnsupportedTransactionException('');
+    }
+
+
 }

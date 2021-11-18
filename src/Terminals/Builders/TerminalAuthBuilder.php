@@ -46,13 +46,15 @@ class TerminalAuthBuilder extends TerminalBuilder
 
     public $transactionId;
 
-    public $clerkId;
-
     public $shiftId;
 
     public $taxType;
     
     public $clientTransactionId;
+    
+    public $tokenRequest;
+    
+    public $tokenValue;
 
     /**
      *
@@ -246,5 +248,5 @@ class TerminalAuthBuilder extends TerminalBuilder
     {
         $this->clientTransactionId = $clientTransactionId;
         return $this;
-    }
+    }    
 }

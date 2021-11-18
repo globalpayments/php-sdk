@@ -8,6 +8,11 @@
 ## Latest version
 
 #### Enhancements:
+- Add Unified Payments Application support
+
+## v2.4.2 (11/16/2021)
+
+#### Enhancements:
 - Add LPMs HPP on GP-ECOM
 - Add PAYPAL on GP-ECOM
 

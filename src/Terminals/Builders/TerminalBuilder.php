@@ -6,7 +6,7 @@ use GlobalPayments\Api\Builders\TransactionBuilder;
 
 abstract class TerminalBuilder extends TransactionBuilder
 {
-
+    
     /**
      * Request transaction type
      *
@@ -23,6 +23,13 @@ abstract class TerminalBuilder extends TransactionBuilder
      * @var int
      */
     public $requestId;
+    
+    /*
+     * ID of the clerk if in retail mode, and ID of the server if in restaurant mode
+     * 
+     * @var int
+     */
+    public $clerkId;
 
     public function __construct($type, $paymentMethodType)
     {
@@ -33,6 +40,12 @@ abstract class TerminalBuilder extends TransactionBuilder
     public function withRequestId($requestId)
     {
         $this->requestId = $requestId;
+        return $this;
+    }
+    
+    public function withClerkId($clerkId)
+    {
+        $this->clerkId = $clerkId;
         return $this;
     }
 }
