@@ -8,6 +8,14 @@
 ## Latest version
 
 #### Enhancements:
+- Added avs/cvv mapping and support for findTransaction method
+- Added batch Close response to return GSAP-specific data
+- Added support for split tender GiftCardSale transactions
+- Fix some GP-API unit tests
+
+## v2.4.3 (11/17/2021)
+
+#### Enhancements:
 - Add Unified Payments Application support
 
 ## v2.4.2 (11/16/2021)

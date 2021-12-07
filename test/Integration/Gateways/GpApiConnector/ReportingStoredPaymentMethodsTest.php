@@ -137,36 +137,6 @@ class ReportingStoredPaymentMethodsTest extends TestCase
         }
     }
 
-    public function testFindStoredPaymentMethod_By_CardNumberLastFour()
-    {
-        $cardNumberLastFour = '1112';
-        $response = ReportingService::findStoredPaymentMethodsPaged(1, 10)
-            ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)
-            ->where(SearchCriteria::CARD_NUMBER_LAST_FOUR, $cardNumberLastFour)
-            ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertTrue(is_array($response->result));
-
-        /** @var StoredPaymentMethodSummary $rs */
-        foreach ($response->result as $rs) {
-            $this->assertEquals($cardNumberLastFour, $rs->cardNumberLastFour);
-        }
-    }
-
-    public function testFindStoredPaymentMethod_By_CardNumberLastFour0000()
-    {
-        $cardNumberLastFour = '0000';
-        $response = ReportingService::findStoredPaymentMethodsPaged(1, 10)
-            ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)
-            ->where(SearchCriteria::CARD_NUMBER_LAST_FOUR, $cardNumberLastFour)
-            ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertTrue(is_array($response->result));
-        $this->assertCount(0, $response->result);
-    }
-
     public function testFindStoredPaymentMethod_By_Reference()
     {
         $reference = '5e3d3885-ceb3-a5ea-015c-945eaa4df8c8';

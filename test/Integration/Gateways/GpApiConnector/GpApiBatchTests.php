@@ -47,13 +47,14 @@ class GpApiBatchTests extends TestCase
         $this->creditCardData->expYear = date('Y', strtotime('+1 year'));
         $this->creditCardData->cvn = "123";
         $this->creditCardData->cardHolderName = "James Mason";
+        $this->creditCardData->cardPresent = true;
     }
 
     public function setUpConfig()
     {
         $config = new GpApiConfig();
-        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
-        $config->appKey = '9pArW2uWoA8enxKc';
+        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
+        $config->appKey = 'DHUGdzpjXfTbjZeo';
         $config->environment = Environment::TEST;
         $config->channel = Channel::CardPresent;
 //        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
@@ -102,7 +103,7 @@ class GpApiBatchTests extends TestCase
             ->execute();
         $this->assertTransactionResponse($transaction, TransactionStatus::CAPTURED);
 
-        sleep(1);
+        sleep(2);
 
         $batch = BatchService::closeBatch($transaction->batchSummary->batchReference);
         $this->assertBatchCloseResponse($batch, $this->amount);
@@ -197,6 +198,8 @@ class GpApiBatchTests extends TestCase
 
         $this->assertTransactionResponse($transaction, TransactionStatus::CAPTURED);
 
+        sleep(2);
+
         $batch = (new ManagementBuilder(TransactionType::BATCH_CLOSE))
             ->withBatchReference($transaction->batchSummary->batchReference)
             ->withIdempotencyKey($idempotencyKey)
@@ -234,7 +237,7 @@ class GpApiBatchTests extends TestCase
 
     public function testBatchClose_WithCardNumberDetails_DeclinedTransaction()
     {
-        $this->creditCardData->cvn = "800";
+        $this->creditCardData->number = "38865000000705";
 
         $transaction = $this->creditCardData->charge($this->amount)
             ->withCurrency($this->currency)
@@ -244,7 +247,7 @@ class GpApiBatchTests extends TestCase
         $this->assertEquals('DECLINED', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::DECLINED, $transaction->responseMessage);
 
-        sleep(2);
+        sleep(3);
 
         $exceptionCaught = false;
         try {
@@ -265,8 +268,12 @@ class GpApiBatchTests extends TestCase
             ->execute();
         $this->assertTransactionResponse($transaction, TransactionStatus::CAPTURED);
 
+        sleep(2);
+
         $batch = BatchService::closeBatch($transaction->batchSummary->batchReference);
         $this->assertBatchCloseResponse($batch, $this->amount);
+
+        sleep(2);
 
         $exceptionCaught = false;
         try {
@@ -343,27 +350,6 @@ class GpApiBatchTests extends TestCase
             $exceptionCaught = true;
             $this->assertEquals('40118', $e->responseCode);
             $this->assertEquals(sprintf('Status Code: RESOURCE_NOT_FOUND - Batch %s not found at this location.', $batchReference), $e->getMessage());
-        } finally {
-            $this->assertTrue($exceptionCaught);
-        }
-    }
-
-    public function testBatchClose_ActionNotAuthorized()
-    {
-        $transaction = $this->creditTrackData->charge($this->amount)
-            ->withCurrency($this->currency)
-            ->execute();
-        $this->assertTransactionResponse($transaction, TransactionStatus::CAPTURED);
-
-        sleep(2);
-
-        $exceptionCaught = false;
-        try {
-            BatchService::closeBatch($transaction->batchSummary->batchReference);
-        } catch (GatewayException $e) {
-            $exceptionCaught = true;
-            $this->assertEquals('40212', $e->responseCode);
-            $this->assertEquals('Status Code: ACTION_NOT_AUTHORIZED - Permission not enabled to execute action', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }

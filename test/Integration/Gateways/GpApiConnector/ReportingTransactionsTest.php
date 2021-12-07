@@ -450,7 +450,7 @@ class ReportingTransactionsTest extends TestCase
             $this->assertTrue(is_array($response->result));
             /** @var TransactionSummary $rs */
             foreach ($response->result as $rs) {
-                $this->assertEquals($value, $rs->entryMode);
+                $this->assertContains($value, $rs->entryMode);
             }
         }
     }

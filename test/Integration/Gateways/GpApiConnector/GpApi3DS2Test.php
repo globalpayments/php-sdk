@@ -30,6 +30,8 @@ use GlobalPayments\Api\Tests\Integration\Gateways\ThreeDSecureAcsClient;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use PHPUnit\Framework\TestCase;
+use GlobalPayments\Api\Utils\Logging\Logger;
+use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 
 class GpApi3DS2Test extends TestCase
 {
@@ -109,6 +111,7 @@ class GpApi3DS2Test extends TestCase
         $config->challengeNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
         $config->methodNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
         $config->merchantContactUrl = 'https://enp4qhvjseljg.x.pipedream.net/';
+        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
 
         return $config;
     }
@@ -1000,7 +1003,11 @@ class GpApi3DS2Test extends TestCase
 
     public function testCardHolderEnrolled_ChallengeRequired_v2_Initiate_AllSourceValues()
     {
-        $source = array(AuthenticationSource::BROWSER, AuthenticationSource::MERCHANT_INITIATED, AuthenticationSource::MOBILE_SDK);
+        $source = [
+            AuthenticationSource::BROWSER,
+            AuthenticationSource::MERCHANT_INITIATED,
+            AuthenticationSource::MOBILE_SDK
+        ];
         foreach ($source as $value) {
             $secureEcom = Secure3dService::checkEnrollment($this->card)
                 ->withCurrency($this->currency)

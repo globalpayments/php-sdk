@@ -18,6 +18,8 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use PHPUnit\Framework\TestCase;
+use GlobalPayments\Api\Utils\Logging\Logger;
+use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 
 class ReportingDisputesTest extends TestCase
 {
@@ -34,6 +36,7 @@ class ReportingDisputesTest extends TestCase
         $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
         $config->appKey = 'DHUGdzpjXfTbjZeo';
         $config->environment = Environment::TEST;
+//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
 
         return $config;
     }

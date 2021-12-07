@@ -1269,8 +1269,15 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             ? (string)$item->RspText
             : $gatewayRspText;
 
-        if (isset($item) && isset($item->AuthAmt)) {
-            $result->authorizedAmount = (string)$item->AuthAmt;
+        if (isset($item) && (isset($item->AuthAmt) || isset($item->SplitTenderCardAmt))) {
+            $result->authorizedAmount = 
+                isset($item->SplitTenderCardAmt)
+                ? (string)$item->SplitTenderCardAmt
+                : (string)$item->AuthAmt;
+        }
+
+        if (isset($item) && isset($item->SplitTenderBalanceDueAmt)) {
+            $result->splitTenderBalanceDueAmt = (string)$item->SplitTenderBalanceDueAmt;
         }
 
         if (isset($item) && isset($item->AvailableBalance)) {
@@ -1360,6 +1367,19 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $result->batchSummary->transactionCount = (string)$item->TxnCnt;
             $result->batchSummary->totalAmount = (string)$item->TotalAmt;
             $result->batchSummary->sequenceNumber = (string)$item->BatchSeqNbr;
+
+            if (isset($item->HostBatchNbr)) {
+                $result->batchSummary->hostBatchNbr = (string)$item->HostBatchNbr;
+            }
+            if (isset($item->HostTotalCnt)) {
+                $result->batchSummary->hostTotalCnt = (string)$item->HostTotalCnt;
+            }
+            if (isset($item->HostTotalAmt)) {
+                $result->batchSummary->hostTotalAmt = (string)$item->HostTotalAmt;
+            }
+            if (isset($item->ProcessedDeviceId)) {
+                $result->batchSummary->processedDeviceId = (string)$item->ProcessedDeviceId;
+            }
         }
 
         if (isset($item) && isset($item->CardBrandTxnId)) {
@@ -1371,7 +1391,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $result->payFacData->transactionId = !empty($root->PaymentFacilitatorTxnId) ? (string) $root->PaymentFacilitatorTxnId : '';
             $result->payFacData->transactionNumber = !empty($root->PaymentFacilitatorTxnNbr) ? (string) $root->PaymentFacilitatorTxnNbr : '';
         }
-        
+
         return $result;
     }
 
@@ -1391,7 +1411,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         }
 
         if ($builder->reportType === ReportType::TRANSACTION_DETAIL) {
-            return $this->hydrateTransactionSummary($doc->Transactions);
+            if(isset($doc->Data))
+                return $this->hydrateTransactionSummary($doc->Data);
         }
 
         return null;
@@ -1417,6 +1438,14 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $summary->authCode = (string)$item->AuthCode;
         }
 
+        if (isset($item) && isset($item->AVSRsltCode)) {
+            $summary->avsResponseCode = (string)$item->AVSRsltCode;
+        }
+
+        if (isset($item) && isset($item->AVSRsltText)) {
+            $summary->avsResponseMessage = (string)$item->AVSRsltText;
+        }
+
         if (isset($item) && isset($item->BatchCloseDT)) {
             $summary->batchCloseDate = (string)$item->BatchCloseDT;
         }
@@ -1427,10 +1456,43 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         if (isset($item) && isset($item->CardHolderData)) {
             if (isset($item->CardHolderData->CardHolderFirstName)) {
-                $summary->cardHolderFirstName = $item->CardHolderData->CardHolderFirstName;
+                $summary->cardHolderFirstName = (string)$item->CardHolderData->CardHolderFirstName;
             }
             if (isset($item->CardHolderData->CardHolderLastName)) {
-                $summary->cardHolderLastName = $item->CardHolderData->CardHolderLastName;
+                $summary->cardHolderLastName = (string)$item->CardHolderData->CardHolderLastName;
+            }
+            if (isset($item->CardHolderData->CardHolderAddr)) {
+                $summary->cardHolderAddr = (string)$item->CardHolderData->CardHolderAddr;
+            }
+            if (isset($item->CardHolderData->CardHolderCity)) {
+                $summary->cardHolderCity = (string)$item->CardHolderData->CardHolderCity;
+            }
+            if (isset($item->CardHolderData->CardHolderState)) {
+                $summary->cardHolderState = (string)$item->CardHolderData->CardHolderState;
+            }
+            if (isset($item->CardHolderData->CardHolderZip)) {
+                $summary->cardHolderZip = (string)$item->CardHolderData->CardHolderZip;
+            }
+        }
+        else
+        {
+            if (isset($item->CardHolderFirstName)) {
+                $summary->cardHolderFirstName = (string)$item->CardHolderFirstName;
+            }
+            if (isset($item->CardHolderLastName)) {
+                $summary->cardHolderLastName = (string)$item->CardHolderLastName;
+            }
+            if (isset($item->CardHolderAddr)) {
+                $summary->cardHolderAddr = (string)$item->CardHolderAddr;
+            }
+            if (isset($item->CardHolderCity)) {
+                $summary->cardHolderCity = (string)$item->CardHolderCity;
+            }
+            if (isset($item->CardHolderState)) {
+                $summary->cardHolderState = (string)$item->CardHolderState;
+            }
+            if (isset($item->CardHolderZip)) {
+                $summary->cardHolderZip = (string)$item->CardHolderZip;
             }
         }
 
@@ -1452,6 +1514,14 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         if (isset($item) && isset($item->ConvenienceAmtInfo)) {
             $summary->convenienceAmount = (string)$item->ConvenienceAmtInfo;
+        }
+
+        if (isset($item) && isset($item->CVVRsltCode)) {
+            $summary->cvnResponseCode = (string)$item->CVVRsltCode;
+        }
+
+        if (isset($item) && isset($item->CVVRsltText)) {
+            $summary->cvnResponseMessage = (string)$item->CVVRsltText;
         }
 
         if (isset($item) && isset($item->DeviceId)) {
@@ -1860,9 +1930,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
     {
         switch ($builder->reportType) {
             case ReportType::ACTIVITY:
-            case ReportType::TRANSACTION_DETAIL:
             case ReportType::FIND_TRANSACTIONS:
                 return 'FindTransactions';
+            case ReportType::TRANSACTION_DETAIL:
+                return 'ReportTxnDetail';
             default:
                 throw new UnsupportedTransactionException();
         }

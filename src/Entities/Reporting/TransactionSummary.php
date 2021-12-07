@@ -41,6 +41,12 @@ class TransactionSummary
      */
     public $authCode;
 
+    /** @var string */
+    public $avsResponseCode;
+
+    /** @var string */
+    public $avsResponseMessage;
+
     /**
      * @var DateTime
      */
@@ -75,6 +81,26 @@ class TransactionSummary
      * @var string
      */
     public $cardHolderLastName;
+
+    /**
+     * @var string
+     */
+    public $cardHolderAddr;
+
+    /**
+     * @var string
+     */
+    public $cardHolderCity;
+
+    /**
+     * @var string
+     */
+    public $cardHolderState;
+
+    /**
+     * @var string
+     */
+    public $cardHolderZip;
 
     /**
      * @var string
@@ -144,6 +170,12 @@ class TransactionSummary
      * @var string
      */
     public $customerLastName;
+
+    /** @var string */
+    public $cvnResponseCode;
+
+    /** @var string */
+    public $cvnResponseMessage;
 
     /**
      * @var bool
@@ -481,12 +513,6 @@ class TransactionSummary
 
     /** @var string */
     public $orderId;
-
-    /** @var string */
-    public $avsResponseCode;
-
-    /** @var string */
-    public $cvnResponseCode;
 
     /** @var string */
     public $eciIndicator;

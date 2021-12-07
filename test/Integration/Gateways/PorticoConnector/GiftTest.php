@@ -58,6 +58,19 @@ class GiftTest extends TestCase
         $this->assertEquals('00', $response->responseCode);
     }
 
+    public function testGiftSaleSplitTender()
+    {
+        $card = new GiftCard();
+        $card->number = "5022440000000000098";
+
+        $response = $card->charge("100000.00")
+        ->withCurrency("USD")
+        ->execute();
+
+        $this->assertNotNull($response->splitTenderBalanceDueAmt);
+        $this->assertNotNull($response->authorizedAmount);
+    }
+
     public function testGiftSale()
     {
         $response = $this->card->charge(10)
@@ -66,6 +79,7 @@ class GiftTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->responseCode);
     }
+
 
     public function testGiftDeactivate()
     {

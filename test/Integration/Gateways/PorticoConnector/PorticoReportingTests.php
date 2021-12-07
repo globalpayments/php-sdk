@@ -294,4 +294,18 @@ class PorticoReportingTests extends TestCase
         $this->assertNotNull($report);
         $this->assertEquals('2', $report->shippingAmount);
     }
+
+    public function testReportTransactionAvsCvvDetail()
+    {
+        $response = ReportingService::transactionDetail("1631054288")
+        ->execute();
+
+        $this->assertNotNull($response);
+
+        $this->assertNotNull($response->avsResponseCode);
+        $this->assertNotNull($response->avsResponseMessage);
+
+        $this->assertNotNull($response->cvnResponseCode);
+        $this->assertNotNull($response->cvnResponseMessage);
+    }
 }

@@ -42,4 +42,24 @@ class BatchSummary
      * @var string
      */
     public $batchReference;
+
+    /**
+     * @var integer
+     */
+    public $hostBatchNbr;
+
+    /**
+     * @var integer
+     */
+    public $hostTotalCnt;
+
+    /**
+     * @var decimal
+     */
+    public $hostTotalAmt;
+
+    /**
+     * @var integer
+     */
+    public $processedDeviceId;
 }

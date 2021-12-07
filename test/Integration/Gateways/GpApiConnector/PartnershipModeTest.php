@@ -1,31 +1,35 @@
 <?php
 
+namespace Gateways\GpApiConnector;
+
 use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\Enums\TransactionStatus;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
-use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\Services\GpApiService;
-use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Entities\BrowserData;
+use GlobalPayments\Api\Entities\Enums\AddressType;
+use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
+use GlobalPayments\Api\Entities\Enums\ChallengeWindowSize;
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\ColorDepth;
 use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
+use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
+use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
+use GlobalPayments\Api\Entities\Enums\TransactionStatus;
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
+use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
+use GlobalPayments\Api\Services\GpApiService;
+use GlobalPayments\Api\Services\Secure3dService;
+use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Integration\Gateways\ThreeDSecureAcsClient;
+use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
-use GlobalPayments\Api\Services\Secure3dService;
-use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
-use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
-use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
-use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
-use GlobalPayments\Api\Tests\Integration\Gateways\ThreeDSecureAcsClient;
-use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
-use GlobalPayments\Api\Entities\Enums\AddressType;
-use GlobalPayments\Api\Entities\BrowserData;
-use GlobalPayments\Api\Entities\Enums\ChallengeWindowSize;
-use GlobalPayments\Api\Entities\Enums\ColorDepth;
 use PHPUnit\Framework\TestCase;
 
 class PartnershipModeTest extends TestCase
 {
-    /** @var CreditCardData  */
+    /** @var CreditCardData */
     private $card;
     /** @var string */
     private $currency;
@@ -40,6 +44,8 @@ class PartnershipModeTest extends TestCase
 
     /** @var BrowserData */
     private $browserData;
+
+    private $merchantId = 'MER_7e3e2c7df34f42819b3edee31022ee3f';
 
     public function setup()
     {
@@ -83,8 +89,8 @@ class PartnershipModeTest extends TestCase
     public function setUpConfig()
     {
         $config = new GpApiConfig();
-        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
-        $config->appKey = 'DHUGdzpjXfTbjZeo';
+        $config->appId = 'zKxybfLqH7vAOtBQrApxD5AUpS3ITaPz';
+        $config->appKey = 'GAMlgEojm6hxZTLI';
         $config->environment = Environment::TEST;
         $config->channel = Channel::CardNotPresent;
         $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
@@ -94,8 +100,8 @@ class PartnershipModeTest extends TestCase
 
     public function testCreditSaleWithPartnerMode()
     {
-		$this->markTestSkipped('Partner mode not enabled on this appId/appKey');
         $merchants = ['MER_7e3e2c7df34f42819b3edee31022ee3f','MER_c4c0df11039c48a9b63701adeaa296c3'];
+
         $address = new Address();
         $address->streetAddress1 = "123 Main St.";
         $address->city = "Downtown";
@@ -123,14 +129,154 @@ class PartnershipModeTest extends TestCase
         }
     }
 
+    public function testCreditSaleRefundWithPartnerMode()
+    {
+        $config = clone($this->baseConfig);
+        $config->merchantId = $this->merchantId;
+        $config->accessTokenInfo = new AccessTokenInfo();
+        $config->accessTokenInfo->accessToken = $this->accessToken;
+        $config->accessTokenInfo->transactionProcessingAccountName = 'transaction_processing';
+        $configName = 'config_' . $this->merchantId;
+        ServicesContainer::configureService($config, $configName);
+
+        $response = $this->card->charge(11)
+            ->withCurrency($this->currency)
+            ->withAddress($this->shippingAddress)
+            ->execute($configName);
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+
+        $refundResponse = $response->refund(11)
+            ->withCurrency($this->currency)
+            ->execute($configName);
+
+        $this->assertNotNull($refundResponse);
+        $this->assertEquals('SUCCESS', $refundResponse->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $refundResponse->responseMessage);
+        unset($config);
+    }
+
+    public function testCreditRefundWithPartnerMode()
+    {
+        $config = clone($this->baseConfig);
+        $config->merchantId = $this->merchantId;
+        $config->accessTokenInfo = new AccessTokenInfo();
+        $config->accessTokenInfo->accessToken = $this->accessToken;
+        $config->accessTokenInfo->transactionProcessingAccountName = 'transaction_processing';
+        $configName = 'config_' . $this->merchantId;
+        ServicesContainer::configureService($config, $configName);
+
+        $refundResponse = $this->card->refund(11)
+            ->withCurrency($this->currency)
+            ->execute($configName);
+
+        $this->assertNotNull($refundResponse);
+        $this->assertEquals('SUCCESS', $refundResponse->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $refundResponse->responseMessage);
+        unset($config);
+    }
+
+    public function testCreditAuthAndCaptureWithPartnerMode()
+    {
+        $config = clone($this->baseConfig);
+        $config->merchantId = $this->merchantId;
+        $config->accessTokenInfo = new AccessTokenInfo();
+        $config->accessTokenInfo->accessToken = $this->accessToken;
+        $config->accessTokenInfo->transactionProcessingAccountName = 'transaction_processing';
+        $configName = 'config_' . $this->merchantId;
+        ServicesContainer::configureService($config, $configName);
+
+        $authResponse = $this->card->authorize(11)
+            ->withCurrency($this->currency)
+            ->execute($configName);
+
+        $this->assertNotNull($authResponse);
+        $this->assertEquals('SUCCESS', $authResponse->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $authResponse->responseMessage);
+
+        $captureResponse = $authResponse->capture(11)
+            ->withCurrency($this->currency)
+            ->execute($configName);
+
+        $this->assertNotNull($captureResponse);
+        $this->assertEquals('SUCCESS', $captureResponse->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $captureResponse->responseMessage);
+
+        unset($config);
+    }
+
+    public function testCreditAuthAndReverseWithPartnerMode()
+    {
+        $config = clone($this->baseConfig);
+        $config->merchantId = $this->merchantId;
+        $config->accessTokenInfo = new AccessTokenInfo();
+        $config->accessTokenInfo->accessToken = $this->accessToken;
+        $config->accessTokenInfo->transactionProcessingAccountName = 'transaction_processing';
+        $configName = 'config_' . $this->merchantId;
+        ServicesContainer::configureService($config, $configName);
+
+        $authResponse = $this->card->authorize(11)
+            ->withCurrency($this->currency)
+            ->execute($configName);
+
+        $this->assertNotNull($authResponse);
+        $this->assertEquals('SUCCESS', $authResponse->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $authResponse->responseMessage);
+
+        $reverseResponse = $authResponse->reverse(11)
+            ->withCurrency($this->currency)
+            ->execute($configName);
+
+        $this->assertNotNull($reverseResponse);
+        $this->assertEquals('SUCCESS', $reverseResponse->responseCode);
+        $this->assertEquals(TransactionStatus::REVERSED, $reverseResponse->responseMessage);
+        unset($config);
+    }
+
+    public function testCreditReAuthWithPartnerMode()
+    {
+        $config = clone($this->baseConfig);
+        $config->merchantId = $this->merchantId;
+        $config->accessTokenInfo = new AccessTokenInfo();
+        $config->accessTokenInfo->accessToken = $this->accessToken;
+        $config->accessTokenInfo->transactionProcessingAccountName = 'transaction_processing';
+        $configName = 'config_' . $this->merchantId;
+        ServicesContainer::configureService($config, $configName);
+
+        $authResponse = $this->card->authorize(11)
+            ->withCurrency($this->currency)
+            ->execute($configName);
+
+        $this->assertNotNull($authResponse);
+        $this->assertEquals('SUCCESS', $authResponse->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $authResponse->responseMessage);
+
+        $reverseResponse = $authResponse->reverse(11)
+            ->withCurrency($this->currency)
+            ->execute($configName);
+
+        $this->assertNotNull($reverseResponse);
+        $this->assertEquals('SUCCESS', $reverseResponse->responseCode);
+        $this->assertEquals(TransactionStatus::REVERSED, $reverseResponse->responseMessage);
+
+        $reAuthResponse = $reverseResponse->reauthorized(11)
+            ->withCurrency($this->currency)
+            ->execute($configName);
+
+        $this->assertNotNull($reAuthResponse);
+        $this->assertEquals('SUCCESS', $reAuthResponse->responseCode);
+        $this->assertEquals(TransactionStatus::REVERSED, $reAuthResponse->responseMessage);
+        unset($config);
+    }
+
     public function testFullCycle3DSChallenge_v2_PartnerMode()
     {
-		$this->markTestSkipped('Partner mode not enabled on this appId/appKey');
         $this->card->number = '4222000001227408';
-        $merchantId = 'MER_7e3e2c7df34f42819b3edee31022ee3f';
 
         $config = clone($this->baseConfig);
-        $config->merchantId = $merchantId;
+        $config->merchantId = $this->merchantId;
         $config->accessTokenInfo = new AccessTokenInfo();
         $config->accessTokenInfo->accessToken = $this->accessToken;
         $config->accessTokenInfo->transactionProcessingAccountName = 'transaction_processing';
@@ -138,7 +284,7 @@ class PartnershipModeTest extends TestCase
         $config->methodNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
         $config->merchantContactUrl = 'https://enp4qhvjseljg.x.pipedream.net/';
 
-        $configName = 'config_' . $merchantId;
+        $configName = 'config_' . $this->merchantId;
         ServicesContainer::configureService($config, $configName);
 
         $secureEcom = Secure3dService::checkEnrollment($this->card)
@@ -188,16 +334,13 @@ class PartnershipModeTest extends TestCase
 
     public function testVerifyTokenizedPaymentMethodWithPartnerMode()
     {
-		$this->markTestSkipped('Partner mode not enabled on this appId/appKey');
-        $merchantId = 'MER_7e3e2c7df34f42819b3edee31022ee3f';
-
         $config = clone($this->baseConfig);
-        $config->merchantId = $merchantId;
+        $config->merchantId = $this->merchantId;
         $config->accessTokenInfo = new AccessTokenInfo();
         $config->accessTokenInfo->accessToken = $this->accessToken;
         $config->accessTokenInfo->transactionProcessingAccountName = 'transaction_processing';
 
-        $configName = 'config_' . $merchantId;
+        $configName = 'config_' . $this->merchantId;
         ServicesContainer::configureService($config, $configName);
 
         $response = $this->card->tokenize()->execute($configName);
@@ -216,4 +359,82 @@ class PartnershipModeTest extends TestCase
         $this->assertEquals('SUCCESS', $response->responseCode);
         $this->assertEquals('VERIFIED', $response->responseMessage);
     }
+
+    public function testCreditSaleWithPartnerMode_WrongMerchant()
+    {
+        $merchantId = 'MER_' . GenerationUtils::getGuid();
+
+        $config = clone($this->baseConfig);
+        $config->merchantId = $merchantId;
+        $config->accessTokenInfo = new AccessTokenInfo();
+        $config->accessTokenInfo->accessToken = $this->accessToken;
+        $config->accessTokenInfo->transactionProcessingAccountName = 'transaction_processing';
+        $configName = 'config_' . $merchantId;
+        ServicesContainer::configureService($config, $configName);
+
+        $exceptionCaught = false;
+        try {
+            $this->card->charge(5)
+                ->withCurrency($this->currency)
+                ->execute($configName);
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40042', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_TRANSACTION_ACTION - Retrieve information about this transaction is not supported', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+        unset($config);
+    }
+
+    public function testCreditSaleWithPartnerMode_MisConfiguration()
+    {
+        $config = clone($this->baseConfig);
+        $config->merchantId = $this->merchantId;
+        $config->accessTokenInfo = new AccessTokenInfo();
+        $config->accessTokenInfo->accessToken = $this->accessToken;
+        $config->accessTokenInfo->transactionProcessingAccountName = 'tokenization';
+        $configName = 'config_' . $this->merchantId;
+        ServicesContainer::configureService($config, $configName);
+
+        $exceptionCaught = false;
+        try {
+            $this->card->charge(5)
+                ->withCurrency($this->currency)
+                ->execute($configName);
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40041', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Merchant configuration does not exist for ,tokenization,US,CNP,EUR,CARD,AUTHORIZE', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+        unset($config);
+    }
+
+    public function testCreditSaleWithPartnerMode_MissingAccountName()
+    {
+        $config = clone($this->baseConfig);
+        $config->merchantId = $this->merchantId;
+        $config->accessTokenInfo = new AccessTokenInfo();
+        $config->accessTokenInfo->accessToken = $this->accessToken;
+        $config->accessTokenInfo->tokenizationAccountName = 'tokenization';
+        $configName = 'config_' . $this->merchantId;
+        ServicesContainer::configureService($config, $configName);
+
+        $exceptionCaught = false;
+        try {
+            $this->card->charge(5)
+                ->withCurrency($this->currency)
+                ->execute($configName);
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40007', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Request expects the following conditionally mandatory fields account_id, account_name.', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+        unset($config);
+    }
+
 }

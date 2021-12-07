@@ -297,7 +297,7 @@ class GpApiMapping
         $summary = new DisputeSummary();
         $summary->caseId = $response->id;
         $summary->caseIdTime = !empty($response->time_created) ? new \DateTime($response->time_created) :
-            (!empty($response->stage_time_created) ? $response->stage_time_created : '');
+            (!empty($response->stage_time_created) ? new \DateTime($response->stage_time_created) : '');
         $summary->caseStatus = $response->status;
         $summary->caseStage = $response->stage;
         $summary->caseAmount = StringUtils::toAmount($response->amount);

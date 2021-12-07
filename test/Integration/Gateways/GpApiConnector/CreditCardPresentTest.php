@@ -85,6 +85,17 @@ class CreditCardPresentTest extends TestCase
         $this->assertTransactionResponse($response, 'SUCCESS', TransactionStatus::CAPTURED);
     }
 
+    public function testCardPresentWithManualEntryModeTransaction()
+    {
+        $card = $this->initCreditCardData();
+
+        $response = $card->charge($this->amount)
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertTransactionResponse($response, 'SUCCESS', TransactionStatus::CAPTURED);
+    }
+
     public function testCreditVerification_CardPresent()
     {
         $card = $this->initCreditTrackData();

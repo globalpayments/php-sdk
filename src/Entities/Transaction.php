@@ -173,6 +173,9 @@ class Transaction
     public $responseMessage;
 
     /** @var array */
+    public $splitTenderBalanceDueAmt;
+
+    /** @var array */
     public $responseValues;
 
     /** @var string */

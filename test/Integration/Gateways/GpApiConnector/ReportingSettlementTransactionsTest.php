@@ -549,8 +549,8 @@ class ReportingSettlementTransactionsTest extends TestCase
                 ->andWith(DataServiceCriteria::MERCHANT_ID, $merchantID)
                 ->execute();
         } catch (GatewayException $e) {
-            $this->assertEquals('40100', $e->responseCode);
-            $this->assertEquals("Status Code: INVALID_REQUEST_DATA - Invalid Value provided in the input field - system.mid", $e->getMessage());
+            $this->assertEquals('40090', $e->responseCode);
+            $this->assertEquals("Status Code: INVALID_REQUEST_DATA - system.mid value is invalid. Please check the format and data provided is correct", $e->getMessage());
         }
     }
 
