@@ -162,11 +162,15 @@ class CreditTest extends TestCase
         $this->card->number = '4002933640008365';
         $orderId = GenerationUtils::generateOrderId();
         
-        $dccDetails = $this->card->getDccRate(DccRateType::SALE, 10, 'USD', DccProcessor::FEXCO, $orderId);
+        $dccDetails = $this->card->getDccRate(DccRateType::SALE, DccProcessor::FEXCO)
+                    ->withAmount(10)
+                    ->withCurrency('USD')
+                    ->withOrderId($orderId)
+                    ->execute();
        
         $this->assertNotNull($dccDetails);
         $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
-        $this->assertNotNull($dccDetails->dccResponseResult);
+        $this->assertNotNull($dccDetails->dccRateData);
     }
     
     public function testCreditDccRateAuthorize()
@@ -176,26 +180,20 @@ class CreditTest extends TestCase
         $this->card->number = '4006097467207025';
         $orderId = GenerationUtils::generateOrderId();
         
-        $dccDetails = $this->card->getDccRate(DccRateType::SALE, 1001, 'EUR', DccProcessor::FEXCO, $orderId);
-        
+        $dccDetails = $this->card->getDccRate(DccRateType::SALE,DccProcessor::FEXCO)
+            ->withAmount(1001)
+            ->withCurrency('EUR')
+            ->withOrderId($orderId)
+            ->execute();
+
         $this->assertNotNull($dccDetails);
         $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
-        $this->assertNotNull($dccDetails->dccResponseResult);
+        $this->assertNotNull($dccDetails->dccRateData);
       
-        //set Currency conversion rates
-        $dccValues = new DccRateData();
-        $dccValues->orderId = $dccDetails->transactionReference->orderId;
-        $dccValues->dccProcessor = DccProcessor::FEXCO;
-        $dccValues->dccType = 1;
-        $dccValues->dccRateType = DccRateType::SALE;
-        $dccValues->currency = $dccDetails->dccResponseResult->cardHolderCurrency;
-        $dccValues->dccRate = $dccDetails->dccResponseResult->cardHolderRate;
-        $dccValues->amount = $dccDetails->dccResponseResult->cardHolderAmount;
-        
         $response = $this->card->authorize(1001)
             ->withCurrency('EUR')
             ->withAllowDuplicates(true)
-            ->withDccRateData($dccValues)
+            ->withDccRateData($dccDetails->dccRateData)
             ->withOrderId($orderId)
             ->execute();
         
@@ -210,26 +208,19 @@ class CreditTest extends TestCase
         $this->card->number = '4006097467207025';
         $orderId = GenerationUtils::generateOrderId();
         
-        $dccDetails = $this->card->getDccRate(DccRateType::SALE, 1001, 'EUR', DccProcessor::FEXCO, $orderId);
-        
+        $dccDetails = $this->card->getDccRate(DccRateType::SALE, DccProcessor::FEXCO)
+            ->withAmount(1001)
+            ->withCurrency('EUR')
+            ->withOrderId($orderId)
+            ->execute();
         $this->assertNotNull($dccDetails);
         $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
-        $this->assertNotNull($dccDetails->dccResponseResult);
-      
-        //set Currency conversion rates
-        $dccValues = new DccRateData();
-        $dccValues->orderId = $dccDetails->transactionReference->orderId;
-        $dccValues->dccProcessor = DccProcessor::FEXCO;
-        $dccValues->dccType = 1;
-        $dccValues->dccRateType = DccRateType::SALE;
-        $dccValues->currency = $dccDetails->dccResponseResult->cardHolderCurrency;
-        $dccValues->dccRate = $dccDetails->dccResponseResult->cardHolderRate;
-        $dccValues->amount = $dccDetails->dccResponseResult->cardHolderAmount;
+        $this->assertNotNull($dccDetails->dccRateData);
         
         $response = $this->card->charge(1001)
             ->withCurrency('EUR')
             ->withAllowDuplicates(true)
-            ->withDccRateData($dccValues)
+            ->withDccRateData($dccDetails->dccRateData)
             ->withOrderId($orderId)
             ->execute();
         
@@ -248,7 +239,11 @@ class CreditTest extends TestCase
         $this->card->number = '4002933640008365';
         $orderId = GenerationUtils::generateOrderId();
         
-        $dccDetails = $this->card->getDccRate(DccRateType::SALE, 10, 'EUR', DccProcessor::FEXCO, $orderId);
+        $dccDetails = $this->card->getDccRate(DccRateType::SALE, DccProcessor::FEXCO)
+            ->withAmount(10)
+            ->withCurrency('EUR')
+            ->withOrderId($orderId)
+            ->execute();
     }
     
     /**
@@ -262,25 +257,20 @@ class CreditTest extends TestCase
         $this->card->number = '4006097467207025';
         $orderId = GenerationUtils::generateOrderId();
         
-        $dccDetails = $this->card->getDccRate(DccRateType::SALE, 1001, 'EUR', DccProcessor::FEXCO, $orderId);
+        $dccDetails = $this->card->getDccRate(DccRateType::SALE,DccProcessor::FEXCO)
+            ->withAmount(10)
+            ->withCurrency('EUR')
+            ->withOrderId($orderId)
+            ->execute();
         
         $this->assertNotNull($dccDetails);
         $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
-        $this->assertNotNull($dccDetails->dccResponseResult);
-        
-        $dccValues = new DccRateData();
-        $dccValues->orderId = $dccDetails->transactionReference->orderId;
-        $dccValues->dccProcessor = DccProcessor::FEXCO;
-        $dccValues->dccType = 1;
-        $dccValues->dccRateType = DccRateType::SALE;
-        $dccValues->currency = $dccDetails->dccResponseResult->cardHolderCurrency;
-        $dccValues->dccRate = $dccDetails->dccResponseResult->cardHolderRate;
-        $dccValues->amount = $dccDetails->dccResponseResult->cardHolderAmount;
+        $this->assertNotNull($dccDetails->dccRateData);
         
         $response = $this->card->authorize(100)
             ->withCurrency('EUR')
             ->withAllowDuplicates(true)
-            ->withDccRateData($dccValues)
+            ->withDccRateData($dccDetails->dccRateData)
             ->withOrderId($orderId)
             ->execute();
     }

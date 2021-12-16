@@ -27,8 +27,6 @@ use GlobalPayments\Api\PaymentMethods\GiftCard;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\Entities\Enums\DccProcessor;
-use GlobalPayments\Api\Entities\Enums\DccRateType;
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\DecisionManager;
@@ -404,30 +402,6 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var dccRateData
      */
     public $dccRateData;
-
-    /**
-     * DCC processor
-     *
-     * @internal
-     * @var dccProcessor
-     */
-    public $dccProcessor;
-
-    /**
-     * DCC Rate Type
-     *
-     * @internal
-     * @var dccRateType
-     */
-    public $dccRateType;
-
-    /**
-     * DCC Type
-     *
-     * @internal
-     * @var dccType
-     */
-    public $dccType;
 
     /**
      * Fraud Filter
@@ -1148,45 +1122,6 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withDccRateData($value)
     {
         $this->dccRateData = $value;
-        return $this;
-    }
-
-    /**
-     * Set the request dccProcessor
-     *
-     * @param DccProcessor dccProcessor
-     *
-     * @return AuthorizationBuilder
-     */
-    public function withDccProcessor($value)
-    {
-        $this->dccProcessor = $value;
-        return $this;
-    }
-
-    /**
-     * Set the request dccRateType
-     *
-     * @param DccRateType dccRateType
-     *
-     * @return AuthorizationBuilder
-     */
-    public function withDccRateType($value)
-    {
-        $this->dccRateType = $value;
-        return $this;
-    }
-
-    /**
-     * Set the request dccType
-     *
-     * @param string dccType
-     *
-     * @return AuthorizationBuilder
-     */
-    public function withDccType($value)
-    {
-        $this->dccType = $value;
         return $this;
     }
 

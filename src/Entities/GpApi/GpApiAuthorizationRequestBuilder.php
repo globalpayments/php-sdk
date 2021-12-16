@@ -99,6 +99,18 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $requestData = $this->generateVerificationRequest($builder, $config);
                 }
                 break;
+            case TransactionType::DCC_RATE_LOOKUP:
+                $endpoint = GpApiRequest::DCC_ENDPOINT;
+                $verb = 'POST';
+                $requestData['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
+                $requestData['channel'] = $config->channel;
+                $requestData['amount'] = StringUtils::toNumeric($builder->amount);
+                $requestData['currency'] = $builder->currency;
+                $requestData['country'] = $config->country;
+                $requestData['reference'] = !empty($builder->clientTransactionId) ?
+                    $builder->clientTransactionId : GenerationUtils::getGuid();
+                $requestData['payment_method'] = $this->createPaymentMethodParam($builder, $config);
+                break;
             default:
                 return '';
         }
@@ -169,6 +181,12 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                 'model' => strtoupper($builder->storedCredential->type),
                 'reason' => strtoupper($builder->storedCredential->reason),
                 'sequence' => strtoupper($builder->storedCredential->sequence)
+            ];
+        }
+
+        if (!empty($builder->dccRateData)) {
+            $requestBody['currency_conversion'] = [
+                'id' => $builder->dccRateData->dccId
             ];
         }
 

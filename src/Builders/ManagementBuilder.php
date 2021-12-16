@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Builders;
 
+use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Enums\CommercialIndicator;
 use GlobalPayments\Api\Entities\Enums\TaxType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
@@ -179,7 +180,10 @@ class ManagementBuilder extends TransactionBuilder
     /**
      * @var ECheck
      */
-    public $eCheck;
+    public $bankTransferDetails;
+
+    /** @var DccRateData */
+    public $dccRateData;
 
     /**
      * {@inheritdoc}
@@ -561,8 +565,21 @@ class ManagementBuilder extends TransactionBuilder
      */
     public function withBankTransferData($eCheck)
     {
-        $this->eCheck = $eCheck;
+        $this->bankTransferDetails = $eCheck;
 
+        return $this;
+    }
+
+    /**
+     * Set the request dccRateData
+     *
+     * @param DccRateData dccRateData
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withDccRateData($value)
+    {
+        $this->dccRateData = $value;
         return $this;
     }
 }

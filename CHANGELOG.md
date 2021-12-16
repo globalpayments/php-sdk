@@ -7,6 +7,13 @@
 
 ## Latest version
 
+- Add Dynamic Currency Conversion feature for GP-API
+- Show exceptions on updateTokenExpiry() & deleteToken()
+- DOMDocument data encoded before serialization
+- CardUtils MC regex updated
+
+## v2.4.4 (12/07/2021)
+
 #### Enhancements:
 - Added avs/cvv mapping and support for findTransaction method
 - Added batch Close response to return GSAP-specific data

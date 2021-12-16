@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\PaymentMethods;
 
+use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Entities\RecurringEntity;
@@ -255,15 +256,13 @@ class RecurringPaymentMethod extends RecurringEntity implements
         throw new ArgumentException(sprintf('Property `%s` does not exist on Transaction', $name));
     }
     
-    public function getDccRate($dccRateType, $amount, $currency, $ccp, $orderId)
+    public function getDccRate($dccRateType, $ccp)
     {
+        $dccRateData = new DccRateData();
+        $dccRateData->dccRateType = $dccRateType;
+        $dccRateData->dccProcessor = $ccp;
+
         return (new AuthorizationBuilder(TransactionType::DCC_RATE_LOOKUP, $this))
-                        ->withAmount($amount)
-                        ->withCurrency($currency)
-                        ->withDccRateType($dccRateType)
-                        ->withDccProcessor($ccp)
-                        ->withDccType("1")
-                        ->withOrderId($orderId)
-                        ->execute();
+                        ->withDccRateData($dccRateData);
     }
 }

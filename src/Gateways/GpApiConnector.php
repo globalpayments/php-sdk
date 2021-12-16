@@ -59,7 +59,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         }
         $xml = simplexml_load_string(file_get_contents($filename));
 
-        return !empty($xml->releaseNumber) ? $xml->releaseNumber : null;
+        return !empty($xml->releaseNumber) ? $xml->releaseNumber : "";
     }
 
     public function getVersion()

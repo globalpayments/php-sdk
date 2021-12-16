@@ -15,7 +15,6 @@ use GlobalPayments\Api\Entities\Enums\RecurringSequence;
 use GlobalPayments\Api\Entities\Enums\RecurringType;
 use GlobalPayments\Api\Entities\Enums\DccProcessor;
 use GlobalPayments\Api\Entities\Enums\DccRateType;
-use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
 
@@ -176,11 +175,15 @@ class RecurringTest extends TestCase
         
         $orderId = GenerationUtils::generateOrderId();
         $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
-        $dccDetails = $paymentMethod->getDccRate(DccRateType::SALE, 1001, 'EUR', DccProcessor::FEXCO, $orderId);
+        $dccDetails = $paymentMethod->getDccRate(DccRateType::SALE,DccProcessor::FEXCO)
+            ->withAmount(1001)
+            ->withCurrency('EUR')
+            ->withOrderId($orderId)
+            ->execute();
         
         $this->assertNotNull($dccDetails);
         $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
-        $this->assertNotNull($dccDetails->dccResponseResult);
+        $this->assertNotNull($dccDetails->dccRateData);
     }
 
     /* 14. CardStorage UpdatePayer */
@@ -356,25 +359,20 @@ class RecurringTest extends TestCase
         $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
         
         $orderId = GenerationUtils::generateOrderId();
-        $dccDetails = $paymentMethod->getDccRate(DccRateType::SALE, 1001, 'EUR', DccProcessor::FEXCO, $orderId);
+        $dccDetails = $paymentMethod->getDccRate(DccRateType::SALE, DccProcessor::FEXCO)
+            ->withAmount(1001)
+            ->withCurrency('EUR')
+            ->withOrderId($orderId)
+            ->execute();
         
         $this->assertNotNull($dccDetails);
         $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
-        $this->assertNotNull($dccDetails->dccResponseResult);
-        
-        $dccValues = new DccRateData();
-        $dccValues->orderId = $dccDetails->transactionReference->orderId;
-        $dccValues->dccProcessor = DccProcessor::FEXCO;
-        $dccValues->dccType = 1;
-        $dccValues->dccRateType = DccRateType::SALE;
-        $dccValues->currency = $dccDetails->dccResponseResult->cardHolderCurrency;
-        $dccValues->dccRate = $dccDetails->dccResponseResult->cardHolderRate;
-        $dccValues->amount = $dccDetails->dccResponseResult->cardHolderAmount;
-        
+        $this->assertNotNull($dccDetails->dccRateData);
+
         $response = $paymentMethod->charge(1001)
                 ->withCurrency("EUR")
                 ->withCvn("123")
-                ->withDccRateData($dccValues)
+                ->withDccRateData($dccDetails->dccRateData)
                 ->withOrderId($orderId)
                 ->execute();
 

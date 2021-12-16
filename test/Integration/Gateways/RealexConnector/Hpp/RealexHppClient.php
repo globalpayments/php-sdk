@@ -172,9 +172,9 @@ class RealexHppClient
             $dccValues->dccProcessor = $dccInfo['CCP'];
             $dccValues->dccType = $dccInfo['TYPE'];
             $dccValues->dccRateType = $dccInfo['RATE_TYPE'];
-            $dccValues->currency = $dccInfo['CURRENCY'];
-            $dccValues->dccRate = $dccInfo['RATE'];
-            $dccValues->amount = $dccInfo['AMOUNT'];
+            $dccValues->cardHolderCurrency = $dccInfo['CURRENCY'];
+            $dccValues->cardHolderRate = $dccInfo['RATE'];
+            $dccValues->cardHolderAmount = $dccInfo['AMOUNT'];
 
             $gatewayRequest
                     ->withDccRateData($dccValues);
@@ -283,7 +283,7 @@ class RealexHppClient
             'AMOUNT' => $this->getValue('AMOUNT'),
             'SHA1HASH' => $newHash,
             'DCC_INFO_REQUST' => $this->getValue('DCC_INFO'),
-            'DCC_INFO_RESPONSE' => $gatewayResponse->dccResponseResult,
+            'DCC_INFO_RESPONSE' => $gatewayResponse->dccRateData,
             'HPP_FRAUDFILTER_MODE' => $this->getValue('HPP_FRAUDFILTER_MODE'),
             'HPP_FRAUDFILTER_RESULT' => !empty($gatewayResponse->fraudFilterResponse) ?
                 $gatewayResponse->fraudFilterResponse->fraudResponseResult : null

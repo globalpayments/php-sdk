@@ -4,7 +4,7 @@ namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
-use GlobalPayments\Api\Entities\Enums\DigitalWalletTokenFormat;
+use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
@@ -213,15 +213,11 @@ abstract class Credit implements
             throw new BuilderException('Token cannot be null');
         }
 
-        try {
-            (new ManagementBuilder(TransactionType::TOKEN_UPDATE))
-                ->withPaymentMethod($this)
-                ->execute();
+        (new ManagementBuilder(TransactionType::TOKEN_UPDATE))
+            ->withPaymentMethod($this)
+            ->execute();
 
-            return true;
-        } catch (ApiException $exc) {
-            return false;
-        }
+        return true;
     }
     
     /**
@@ -235,27 +231,26 @@ abstract class Credit implements
             throw new BuilderException('Token cannot be null');
         }
 
-        try {
-            (new ManagementBuilder(TransactionType::TOKEN_DELETE))
-                ->withPaymentMethod($this)
-                ->execute();
+        (new ManagementBuilder(TransactionType::TOKEN_DELETE))
+            ->withPaymentMethod($this)
+            ->execute();
 
-            return true;
-        } catch (ApiException $exc) {
-            return false;
-        }
+        return true;
     }
 
-    public function getDccRate($dccRateType, $amount, $currency, $ccp, $orderId)
+    public function getDccRate($dccRateType = null, $ccp = null)
     {
-        return (new AuthorizationBuilder(TransactionType::DCC_RATE_LOOKUP, $this))
-                        ->withAmount($amount)
-                        ->withCurrency($currency)
-                        ->withDccRateType($dccRateType)
-                        ->withDccProcessor($ccp)
-                        ->withDccType("1")
-                        ->withOrderId($orderId)
-                        ->execute();
+        if (!empty($dccRateType) || !empty($ccp)) {
+            $dccRateData = new DccRateData();
+            $dccRateData->dccProcessor = $ccp;
+            $dccRateData->dccRateType = $dccRateType;
+        }
+        $authBuilder = new AuthorizationBuilder(TransactionType::DCC_RATE_LOOKUP, $this);
+        if (!empty($dccRateData)) {
+            $authBuilder->withDccRateData($dccRateData);
+        }
+
+        return $authBuilder;
     }
 
     public function detokenize()

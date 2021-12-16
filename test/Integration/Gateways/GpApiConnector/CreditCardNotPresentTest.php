@@ -681,8 +681,8 @@ class CreditCardNotPresentTest extends TestCase
         try {
             $tokenizedCard->deleteToken();
         } catch (ApiException $e) {
-            $this->assertEquals('40006', $e->responseCode);
-            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - payment_method.id: ' . $tokenizedCard->token . ' contains unexpected data', $e->getMessage());
+            $this->assertEquals('40116', $e->responseCode);
+            $this->assertContains(sprintf('Status Code: RESOURCE_NOT_FOUND - payment_method %s not found at this location', $tokenizedCard->token), $e->getMessage());
         }
     }
 
@@ -720,8 +720,8 @@ class CreditCardNotPresentTest extends TestCase
         try {
             $tokenizedCard->updateTokenExpiry();
         } catch (ApiException $e) {
-            $this->assertEquals('40006', $e->responseCode);
-            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - payment_method.id: ' . $tokenizedCard->token . ' contains unexpected data', $e->getMessage());
+            $this->assertEquals('40116', $e->responseCode);
+            $this->assertContains(sprintf('Status Code: RESOURCE_NOT_FOUND - payment_method %s not found at this location', $tokenizedCard->token), $e->getMessage());
         }
     }
 

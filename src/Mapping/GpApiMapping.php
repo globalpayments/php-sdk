@@ -1,11 +1,10 @@
 <?php
 
-
 namespace GlobalPayments\Api\Mapping;
-
 
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\BatchSummary;
+use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\ReportType;
@@ -26,6 +25,8 @@ use GlobalPayments\Api\Entities\MessageExtension;
 
 class GpApiMapping
 {
+    const DCC_RESPONSE = 'RATE_LOOKUP';
+
     /**
      * Map a reponse to a Transaction object for further chaining
      *
@@ -90,11 +91,47 @@ class GpApiMapping
             $transaction->cardBrandTransactionId = !empty($response->card->brand_reference) ?
                 $response->card->brand_reference : null;
         }
+
+        $transaction->dccRateData = self::mapDccInfo($response);
+
         if (!empty($response->payment_method->apm)) {
             $transaction->paymentMethodType = PaymentMethodType::APM;
         }
 
         return $transaction;
+    }
+
+    private static function mapDccInfo($response)
+    {
+        if (
+            $response->action->type != self::DCC_RESPONSE &&
+            empty($response->currency_conversion)
+        ) {
+            return;
+        }
+
+        if (!empty($response->currency_conversion)) {
+            $response = $response->currency_conversion;
+        }
+
+        $dccRateData = new DccRateData();
+        $dccRateData->cardHolderCurrency = !empty($response->payer_currency) ? $response->payer_currency : null;
+        $dccRateData->cardHolderAmount = !empty($response->payer_amount) ?
+            StringUtils::toAmount($response->payer_amount) : null;
+        $dccRateData->cardHolderRate = !empty($response->exchange_rate) ? $response->exchange_rate : null;
+        $dccRateData->merchantCurrency = !empty($response->currency) ? $response->currency : null;
+        $dccRateData->merchantAmount = !empty($response->amount) ? StringUtils::toAmount($response->amount) : null;
+        $dccRateData->marginRatePercentage = !empty($response->margin_rate_percentage) ?
+            $response->margin_rate_percentage : null;
+        $dccRateData->exchangeRateSourceName = !empty($response->exchange_rate_source) ?
+            $response->exchange_rate_source : null;
+        $dccRateData->commissionPercentage = !empty($response->commission_percentage) ?
+            $response->commission_percentage : null;
+        $dccRateData->exchangeRateSourceTimestamp = !empty($response->exchange_rate_time_created) ?
+            $response->exchange_rate_time_created: null;
+        $dccRateData->dccId = !empty($response->id) ? $response->id : null;
+
+        return $dccRateData;
     }
 
     /**

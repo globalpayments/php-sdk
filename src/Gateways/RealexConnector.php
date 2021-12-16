@@ -10,6 +10,7 @@ use GlobalPayments\Api\Builders\ReportBuilder;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 use GlobalPayments\Api\Entities\Enums\CvnPresenceIndicator;
+use GlobalPayments\Api\Entities\Enums\DccProcessor;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
@@ -29,7 +30,7 @@ use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Enums\RecurringSequence;
-use GlobalPayments\Api\Entities\DccResponseResult;
+use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\FraudManagementResponse;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
@@ -252,27 +253,25 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             }
         }
 
-        // For DCC rate lookup
-        if ($builder->transactionType === TransactionType::DCC_RATE_LOOKUP) {
-            $dccinfo = $xml->createElement("dccinfo");
-            $dccinfo->appendChild($xml->createElement("ccp", $builder->dccProcessor));
-            $dccinfo->appendChild($xml->createElement("type", $builder->dccType));
-            $dccinfo->appendChild($xml->createElement("ratetype", $builder->dccRateType));
-            $request->appendChild($dccinfo);
-        }
 
         // For DCC charge/auth
         if (!empty($builder->dccRateData)) {
             $dccinfo = $xml->createElement("dccinfo");
-
-            $amount = $xml->createElement("amount", preg_replace('/[^0-9]/', '', $builder->dccRateData->amount));
-            $amount->setAttribute("currency", $builder->dccRateData->currency);
-
-            $dccinfo->appendChild($amount);
-            $dccinfo->appendChild($xml->createElement("ccp", $builder->dccRateData->dccProcessor));
-            $dccinfo->appendChild($xml->createElement("type", $builder->dccRateData->dccType));
-            $dccinfo->appendChild($xml->createElement("rate", $builder->dccRateData->dccRate));
+            $dccinfo->appendChild($xml->createElement(
+                "ccp",
+                !empty($builder->dccRateData->dccProcessor) ? $builder->dccRateData->dccProcessor : DccProcessor::FEXCO)
+            );
+            $dccinfo->appendChild($xml->createElement(
+                "type",
+                !empty($builder->dccRateData->dccType) ? $builder->dccRateData->dccType : "1")
+            );
             $dccinfo->appendChild($xml->createElement("ratetype", $builder->dccRateData->dccRateType));
+            if ($builder->transactionType !== TransactionType::DCC_RATE_LOOKUP) {
+                $amount = $xml->createElement("amount", preg_replace('/[^0-9]/', '', $builder->dccRateData->cardHolderAmount));
+                $amount->setAttribute("currency", $builder->dccRateData->cardHolderCurrency);
+                $dccinfo->appendChild($amount);
+                $dccinfo->appendChild($xml->createElement("rate", $builder->dccRateData->cardHolderRate));
+            }
             $request->appendChild($dccinfo);
         }
 
@@ -1106,17 +1105,17 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
 
         // dccinfo
         if (!empty($root->dccinfo)) {
-            $result->dccResponseResult = new DccResponseResult();
+            $result->dccRateData = new DccRateData();
 
-            $result->dccResponseResult->cardHolderCurrency = (string)$root->dccinfo->cardholdercurrency;
-            $result->dccResponseResult->cardHolderAmount = (string)$root->dccinfo->cardholderamount;
-            $result->dccResponseResult->cardHolderRate = (string)$root->dccinfo->cardholderrate;
-            $result->dccResponseResult->merchantCurrency = (string)$root->dccinfo->merchantcurrency;
-            $result->dccResponseResult->merchantAmount = (string)$root->dccinfo->merchantamount;
-            $result->dccResponseResult->marginRatePercentage = (string)$root->dccinfo->marginratepercentage;
-            $result->dccResponseResult->exchangeRateSourceName = (string)$root->dccinfo->exchangeratesourcename;
-            $result->dccResponseResult->commissionPercentage = (string)$root->dccinfo->commissionpercentage;
-            $result->dccResponseResult->exchangeRateSourceTimestamp = (string)
+            $result->dccRateData->cardHolderCurrency = (string)$root->dccinfo->cardholdercurrency;
+            $result->dccRateData->cardHolderAmount = (string)$root->dccinfo->cardholderamount;
+            $result->dccRateData->cardHolderRate = (string)$root->dccinfo->cardholderrate;
+            $result->dccRateData->merchantCurrency = (string)$root->dccinfo->merchantcurrency;
+            $result->dccRateData->merchantAmount = (string)$root->dccinfo->merchantamount;
+            $result->dccRateData->marginRatePercentage = (string)$root->dccinfo->marginratepercentage;
+            $result->dccRateData->exchangeRateSourceName = (string)$root->dccinfo->exchangeratesourcename;
+            $result->dccRateData->commissionPercentage = (string)$root->dccinfo->commissionpercentage;
+            $result->dccRateData->exchangeRateSourceTimestamp = (string)
                                             $root->dccinfo->exchangeratesourcetimestamp;
         }
 

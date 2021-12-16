@@ -150,4 +150,20 @@ class AchTest extends TestCase
         $this->assertNotNull($deetsReport->description);
         $this->assertNotNull($deetsReport->invoiceNumber);
     }
+
+    public function testCheckSaleWithEncoding()
+    {
+        $this->address = new Address();
+        $this->address->streetAddress1 = '123 Main St.&';
+        $this->address->city = 'Downtown';
+        $this->address->state = 'NJ';
+        $this->address->postalCode = '12345';
+
+        $response = $this->eCheck->charge(11)
+            ->withCurrency('USD')
+            ->withAddress($this->address)
+            ->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode);
+    }
 }

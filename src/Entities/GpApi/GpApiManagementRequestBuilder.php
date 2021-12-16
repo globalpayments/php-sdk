@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Entities\GpApi;
 
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
+use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
@@ -59,17 +60,20 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/refund';
                 $verb = 'POST';
                 $payload['amount'] = StringUtils::toNumeric($builder->amount);
+                $payload['currency_conversion'] = !empty($builder->dccRateData) ? $this->getDccRate($builder->dccRateData) : null;
                 break;
             case TransactionType::REVERSAL:
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/reversal';
                 $verb = 'POST';
                 $payload['amount'] = StringUtils::toNumeric($builder->amount);
+                $payload['currency_conversion'] = !empty($builder->dccRateData) ? $this->getDccRate($builder->dccRateData) : null;
                 break;
             case TransactionType::CAPTURE:
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/capture';
                 $verb = 'POST';
                 $payload['amount'] = StringUtils::toNumeric($builder->amount);
                 $payload['gratuity'] = StringUtils::toNumeric($builder->gratuity);
+                $payload['currency_conversion'] = !empty($builder->dccRateData) ? $this->getDccRate($builder->dccRateData) : null;
                 break;
             case TransactionType::DISPUTE_ACCEPTANCE:
                 $endpoint = GpApiRequest::DISPUTES_ENDPOINT . '/' . $builder->disputeId . '/acceptance';
@@ -90,8 +94,8 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                 $payload['amount'] = StringUtils::toNumeric($builder->amount);
                 if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::ACH) {
                     $payload['description'] = $builder->description;
-                    if (!empty($builder->eCheck)) {
-                        $eCheck = $builder->eCheck;
+                    if (!empty($builder->bankTransferDetails)) {
+                        $eCheck = $builder->bankTransferDetails;
                         $payload['payment_method'] = [
                             'narrative' => $eCheck->merchantNotes,
                             'bank_transfer' => [
@@ -130,5 +134,16 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
         }
 
         return new GpApiRequest($endpoint, $verb, $payload);
+    }
+
+    /**
+     * @param DccRateData dccRateData
+     * @return array
+     */
+    private function getDccRate($dccRateData)
+    {
+         return [
+             'id' => $dccRateData->dccId
+         ];
     }
 }

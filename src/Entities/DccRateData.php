@@ -2,6 +2,10 @@
 
 namespace GlobalPayments\Api\Entities;
 
+use GlobalPayments\Api\Entities\Enums\DccProcessor;
+use GlobalPayments\Api\Entities\Enums\DccRateType;
+use Zend\I18n\Validator\DateTime;
+
 /**
  * DCC data
  */
@@ -12,19 +16,19 @@ class DccRateData
      *
      * @var float|string|null
      */
-    public $amount;
+    public $cardHolderAmount;
     
     /**
      * The currency
      *
      * @var string
      */
-    public $currency;
+    public $cardHolderCurrency;
     
     /**
      * The name of the CCP (Currency Conversion Processor) the request is to be sent to
      *
-     * @var string
+     * @var DccProcessor
      */
     public $dccProcessor;
     
@@ -33,12 +37,12 @@ class DccRateData
      *
      * @var string
      */
-    public $dccRate;
+    public $cardHolderRate;
     
     /**
      * Rate type, 'S' for authorisation transactions (Sale). 'R' for Refunds.
      *
-     * @var string
+     * @var DccRateType
      */
     public $dccRateType;
     
@@ -56,4 +60,18 @@ class DccRateData
      * @var string
      */
     public $orderId;
+    /** @var string */
+    public $dccId;
+    /** @var string */
+    public $commissionPercentage;
+    /** @var string */
+    public $exchangeRateSourceName;
+    /** @var DateTime */
+    public $exchangeRateSourceTimestamp;
+    /** @var float|string|null */
+    public $merchantAmount;
+    /** @var string */
+    public $merchantCurrency;
+    /** @var string */
+    public $marginRatePercentage;
 }

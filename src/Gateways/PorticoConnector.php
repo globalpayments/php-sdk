@@ -746,7 +746,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                             // }
 
                             if (!empty($lineItem->description)) {
-                                $linetItemNode->appendChild($xml->createElement('ItemDescription', $lineItem->description));
+                                $linetItemNode->appendChild($xml->createElement('ItemDescription', htmlentities($lineItem->description)));
                             }
 
                             if (!empty($lineItem->productCode)) {
@@ -805,7 +805,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                             $linetItemNode = $xml->createElement('LineItemDetail');
 
                             if (!empty($lineItem->description)) {
-                                $linetItemNode->appendChild($xml->createElement('ItemDescription', $lineItem->description));
+                                $linetItemNode->appendChild($xml->createElement('ItemDescription', htmlentities($lineItem->description)));
                             }
 
                             if (!empty($lineItem->productCode)) {
@@ -880,7 +880,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             if (!empty($builder->customerId) || !empty($builder->description) || !empty($builder->invoiceNumber)) {
                 $addons = $xml->createElement('AdditionalTxnFields');
                 $addons->appendChild($xml->createElement('CustomerID', $builder->customerId));
-                $addons->appendChild($xml->createElement('Description', $builder->description));
+                $addons->appendChild($xml->createElement('Description', htmlentities($builder->description)));
                 $addons->appendChild($xml->createElement('InvoiceNbr', $builder->invoiceNumber));
 
                 $root->appendChild($addons);
@@ -945,13 +945,13 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 if ($builder->searchBuilder->cardHolderLastName !== null) {
                     $criteria->appendChild($xml->createElement(
                         'CardHolderLastName',
-                        $builder->searchBuilder->cardHolderLastName
+                        htmlentities($builder->searchBuilder->cardHolderLastName)
                     ));
                 }
                 if ($builder->searchBuilder->cardHolderFirstName !== null) {
                     $criteria->appendChild($xml->createElement(
                         'CardHolderFirstName',
-                        $builder->searchBuilder->cardHolderFirstName
+                        htmlentities($builder->searchBuilder->cardHolderFirstName)
                     ));
                 }
                 if ($builder->searchBuilder->cardNumberFirstSix !== null) {
@@ -1011,7 +1011,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 if ($builder->searchBuilder->username !== null) {
                     $criteria->appendChild($xml->createElement(
                         'UserName',
-                        $builder->searchBuilder->username
+                        htmlentities($builder->searchBuilder->username)
                     ));
                 }
                 if ($builder->searchBuilder->clerkId !== null) {
@@ -1041,7 +1041,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 if ($builder->searchBuilder->displayName !== null) {
                     $criteria->appendChild($xml->createElement(
                         'DisplayName',
-                        $builder->searchBuilder->displayName
+                        htmlentities($builder->searchBuilder->displayName)
                     ));
                 }
                 if ($builder->searchBuilder->clientTransactionId !== null) {
@@ -1077,19 +1077,19 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 if ($builder->searchBuilder->checkFirstName !== null) {
                     $criteria->appendChild($xml->createElement(
                         'CheckFirstName',
-                        $builder->searchBuilder->checkFirstName
+                        htmlentities($builder->searchBuilder->checkFirstName)
                     ));
                 }
                 if ($builder->searchBuilder->checkLastName !== null) {
                     $criteria->appendChild($xml->createElement(
                         'CheckLastName',
-                        $builder->searchBuilder->checkLastName
+                        htmlentities($builder->searchBuilder->checkLastName)
                     ));
                 }
                 if ($builder->searchBuilder->checkName !== null) {
                     $criteria->appendChild($xml->createElement(
                         'CheckName',
-                        $builder->searchBuilder->checkName
+                        htmlentities($builder->searchBuilder->checkName)
                     ));
                 }
                 if ($builder->searchBuilder->giftCurrency !== null) {
@@ -2022,10 +2022,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         if ($builder->billingAddress !== null) {
             $holder->appendChild(
-                $xml->createElement($isCheck ? 'Address1' : 'CardHolderAddr', $builder->billingAddress->streetAddress1)
+                $xml->createElement($isCheck ? 'Address1' : 'CardHolderAddr', htmlentities($builder->billingAddress->streetAddress1))
             );
             $holder->appendChild(
-                $xml->createElement($isCheck ? 'City' : 'CardHolderCity', $builder->billingAddress->city)
+                $xml->createElement($isCheck ? 'City' : 'CardHolderCity', htmlentities($builder->billingAddress->city))
             );
             $holder->appendChild(
                 $xml->createElement($isCheck ? 'State' : 'CardHolderState', $builder->billingAddress->getProvince())
@@ -2037,7 +2037,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         $propertyName = $isCheck ? 'checkHolderName' : 'cardHolderName';
         if (!empty($builder->paymentMethod->{$propertyName})) {
-            $names = explode(' ', $builder->paymentMethod->{$propertyName}, 2);
+            $names = explode(' ', htmlentities($builder->paymentMethod->{$propertyName}), 2);
             $holder->appendChild(
                 $xml->createElement($isCheck ? 'FirstName' : 'CardHolderFirstName', $names[0])
             );
@@ -2051,7 +2051,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         if ($isCheck) {
             if ($builder->paymentMethod->checkHolderName !== null) {
-                $holder->appendChild($xml->createElement('CheckName', $builder->paymentMethod->checkHolderName));
+                $holder->appendChild($xml->createElement('CheckName', htmlentities($builder->paymentMethod->checkHolderName)));
             }
 
             if ($builder->paymentMethod->phoneNumber !== null) {
@@ -2103,7 +2103,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         if ($builder->description !== null && $builder->description !== '') {
             $additionalTxnFields->appendChild(
-                $xml->createElement('Description', $builder->description)
+                $xml->createElement('Description', htmlentities($builder->description))
             );
         }
 

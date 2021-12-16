@@ -226,13 +226,8 @@ class Transaction
      */
     public $giftCard;
     
-    /**
-     * The Dcc Response
-     *
-     * @internal
-     * @var dccResponseResult
-     */
-    public $dccResponseResult;
+    /** @var DccRateData */
+    public $dccRateData;
     
     /**
      * The Dcc Response

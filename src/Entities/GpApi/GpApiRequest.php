@@ -16,6 +16,7 @@ class GpApiRequest
     const BATCHES_ENDPOINT = '/batches';
     const ACTIONS_ENDPOINT = '/actions';
     const MERCHANT_MANAGEMENT_ENDPOINT = '/merchants';
+    const DCC_ENDPOINT= '/currency-conversions';
 
     public $endpoint;
     public $requestBody;
