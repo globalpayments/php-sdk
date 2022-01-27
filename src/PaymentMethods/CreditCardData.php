@@ -11,6 +11,7 @@ use GlobalPayments\Api\Entities\Enums\DccProcessor;
 use GlobalPayments\Api\Entities\Enums\DccRateType;
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\ThreeDSecure;
+use GlobalPayments\Api\Utils\CardUtils;
 
 class CreditCardData extends Credit implements ICardData
 {
@@ -69,21 +70,6 @@ class CreditCardData extends Credit implements ICardData
      * @var bool
      */
     public $readerPresent;
-
-    /**
-     * Card type regex patterns
-     *
-     * @var array
-     */
-    public static $cardTypes = [
-        'Visa' => '/^4/',
-        'MC' => '/^(5[1-5]|2[2-7])/',
-        'Amex' => '/^3[47]/',
-        'DinersClub' => '/^3[0689]/',
-        'EnRoute' => '/^2(014|149)/',
-        'Discover' => '/^6([045]|22)/',
-        'Jcb' => '/^35/',
-    ];
     
     /**
      * Set the Card on File storage
@@ -126,19 +112,7 @@ class CreditCardData extends Credit implements ICardData
      */
     public function getCardType()
     {
-        $number = str_replace(
-            [' ', '-'],
-            '',
-            $this->number
-        );
-
-        foreach (static::$cardTypes as $type => $regex) {
-            if (1 === preg_match($regex, $this->number)) {
-                return $type;
-            }
-        }
-
-        return 'Unknown';
+        return CardUtils::getCardType($this->number);
     }
 
     /**

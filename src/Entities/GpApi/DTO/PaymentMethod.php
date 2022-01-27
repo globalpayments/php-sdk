@@ -19,6 +19,7 @@ class PaymentMethod
     public $bank_transfer;
     /** @var array */
     public $apm;
+    public $fingerprint_mode;
 
     const PAYMENT_METHOD_TOKEN_PREFIX = 'PMT_';
 }

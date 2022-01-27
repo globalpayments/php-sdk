@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\Certifications;
 
+use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Transaction;
@@ -18949,5 +18950,23 @@ class RealexSdkCertification extends TestCase
             ->execute();
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->responseCode);
+    }
+
+    public function testCreditCard_DinersClub_Success()
+    {
+        $config = $this->getBaseConfig();
+        $config->timeout = 60000;
+        ServicesContainer::configureService($config);
+
+        $card = $this->getBaseCardData();
+        $card->number = '36256000000725';
+
+        $response = $card->charge(30)
+            ->withCurrency("USD")
+            ->withDescription("CreditCard_DinersClub_Success")
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode);
     }
 }

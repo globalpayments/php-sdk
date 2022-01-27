@@ -505,6 +505,9 @@ class AuthorizationBuilder extends TransactionBuilder
     /** @var PhoneNumber */
     public $shippingPhone;
 
+    /** string */
+    public $paymentLinkId;
+
     /**
      * {@inheritdoc}
      *
@@ -1430,6 +1433,12 @@ class AuthorizationBuilder extends TransactionBuilder
             default:
                 break;
         }
+        return $this;
+    }
+
+    public function withPaymentLinkId($paymentLinkId)
+    {
+        $this->paymentLinkId = $paymentLinkId;
         return $this;
     }
 }

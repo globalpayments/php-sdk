@@ -5,6 +5,7 @@ namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
 use GlobalPayments\Api\Entities\Enums\Channel;
@@ -71,6 +72,31 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+    }
+
+    public function testCreditSaleWithFingerPrint()
+    {
+        $address = new Address();
+        $address->streetAddress1 = "123 Main St.";
+        $address->city = "Downtown";
+        $address->state = "NJ";
+        $address->country = "US";
+        $address->postalCode = "12345";
+
+        $customer = new Customer();
+        $customer->deviceFingerPrint = "ALWAYS";
+
+        $response = $this->card->charge(69)
+            ->withCurrency($this->currency)
+            ->withAddress($address)
+            ->withCustomerData($customer)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+        $this->assertNotNull($response->fingerprint);
+        $this->assertNotNull($response->fingerprintIndicator);
     }
 
     public function testCreditAuthorization()
@@ -675,6 +701,7 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testCardDelete_WrongId()
     {
+        $this->markTestSkipped('Permission not enabled to execute action for this appId/appKey');
         $tokenizedCard = new CreditCardData();
         $tokenizedCard->token = "PMT_" . GenerationUtils::getGuid();
 
@@ -1130,6 +1157,46 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertEquals($cvnResponseMessage, $response->cvnResponseMessage);
         $this->assertEquals($avsResponseCode, $response->avsResponseCode);
         $this->assertEquals($avsAddressResponse, $response->avsAddressResponse);
+    }
+
+    public function testCreditAuthorizationWithPaymentLinkId()
+    {
+        $transaction = $this->card->authorize(42)
+            ->withCurrency($this->currency)
+            ->withAllowDuplicates(true)
+            ->withPaymentLinkId('LNK_W1xgWehivDP8P779cFDDTZwzL01Ew4')
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+	}
+	
+    public function testVerifyTokenizedPaymentMethodWithFingerprint()
+    {
+        $customer = new Customer();
+        $customer->deviceFingerPrint = "ALWAYS";
+        // process an auto-capture authorization
+        $response = $this->card->tokenize()
+            ->withCustomerData($customer)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertNotNull($response->fingerprint);
+
+        $tokenizedCard = new CreditCardData();
+        $tokenizedCard->token = $response->token;
+
+        $response = $tokenizedCard->verify()
+            ->withCurrency($this->currency)
+            ->withCustomerData($customer)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('VERIFIED', $response->responseMessage);
+        $this->assertNotNull($response->fingerprint);
     }
 
     /**

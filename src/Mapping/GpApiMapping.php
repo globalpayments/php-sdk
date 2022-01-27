@@ -54,11 +54,18 @@ class GpApiMapping
         $transaction->token = substr($response->id, 0, 4) === PaymentMethod::PAYMENT_METHOD_TOKEN_PREFIX ?
             $response->id : null;
         $transaction->clientTransactionId = !empty($response->reference) ? $response->reference : null;
+        $transaction->fingerprint = !empty($response->fingerprint) ? $response->fingerprint : null;
+        $transaction->fingerprintIndicator = !empty($response->fingerprint_presence_indicator) ?
+            $response->fingerprint_presence_indicator : null;
         if (!empty($response->payment_method)) {
             $transaction->authorizationCode = $response->payment_method->result;
             if (!empty($response->payment_method->id)) {
                 $transaction->token = $response->payment_method->id;
             }
+            $transaction->fingerprint = !empty($response->payment_method->fingerprint) ?
+                $response->payment_method->fingerprint : null;
+            $transaction->fingerprintIndicator = !empty($response->payment_method->fingerprint_presence_indicator) ?
+                $response->payment_method->fingerprint_presence_indicator : null;
             if (!empty($response->payment_method->card)) {
                 $card = $response->payment_method->card;
                 $transaction->cardLast4 = !empty($card->masked_number_last4) ?
@@ -80,6 +87,9 @@ class GpApiMapping
                 $transaction->accountType = !empty($bankTransfer->account_type) ? $bankTransfer->account_type : null;
                 $transaction->paymentMethodType = PaymentMethodType::ACH;
             }
+            if (!empty($response->payment_method->apm)) {
+                $transaction->paymentMethodType = PaymentMethodType::APM;
+            }
         }
 
         if (!empty($response->card)) {
@@ -93,10 +103,6 @@ class GpApiMapping
         }
 
         $transaction->dccRateData = self::mapDccInfo($response);
-
-        if (!empty($response->payment_method->apm)) {
-            $transaction->paymentMethodType = PaymentMethodType::APM;
-        }
 
         return $transaction;
     }

@@ -86,6 +86,9 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $requestData['reference'] = $builder->clientTransactionId ?
                         $builder->clientTransactionId : GenerationUtils::generateOrderId();
                     $requestData['usage_mode'] = $builder->paymentMethodUsageMode;
+                    $requestData['fingerprint_mode'] =
+                        (!empty($builder->customerData) & !empty($builder->customerData->deviceFingerPrint) ?
+                            $builder->customerData->deviceFingerPrint : null);
                     $card = new Card();
                     $builderCard = $builder->paymentMethod;
                     $card->number = $builderCard->number;
@@ -159,6 +162,12 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $requestBody['cashback_amount'] = StringUtils::toNumeric($builder->cashBackAmount);
         $requestBody['ip_address'] = $builder->customerIpAddress;
         $requestBody['payment_method'] = $this->createPaymentMethodParam($builder, $config);
+        if (!empty($builder->paymentLinkId)) {
+            $requestBody['link'] = [
+                'id' => $builder->paymentLinkId
+            ];
+        }
+
         if (
             $builder->paymentMethod instanceof ECheck ||
             $builder->paymentMethod instanceof AlternativePaymentMethod
@@ -286,8 +295,12 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $paymentMethod->name = $paymentMethodContainer instanceof AlternativePaymentMethod ?
             $paymentMethodContainer->accountHolderName : (!empty($paymentMethodContainer->cardHolderName) ?
                 $paymentMethodContainer->cardHolderName : null);
+
         switch (get_class($paymentMethodContainer)) {
             case CreditCardData::class;
+                $paymentMethod->fingerprint_mode =
+                    (!empty($builder->customerData) & !empty($builder->customerData->deviceFingerPrint) ?
+                        $builder->customerData->deviceFingerPrint : null);
                 $secureEcom = $paymentMethodContainer->threeDSecure;
                 if (!empty($secureEcom)) {
 					$paymentMethod->authentication = ['id' => $secureEcom->serverTransactionId];
@@ -411,7 +424,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             return $paymentMethod->eci;
         }
         $eciCode = null;
-        switch ($paymentMethod->getCardType())
+        switch (CardUtils::getBaseCardType($paymentMethod->getCardType()))
         {
             case CardType::VISA:
             case CardType::AMEX:

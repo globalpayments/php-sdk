@@ -284,6 +284,12 @@ class Transaction
      */
     public $accountNumberLast4;
 
+    /** @var string */
+    public $fingerprint;
+
+    /** @var string */
+    public $fingerprintIndicator;
+
     /**
      * Creates a `Transaction` object from a stored transaction ID.
      *

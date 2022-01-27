@@ -14,6 +14,7 @@ use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
+use GlobalPayments\Api\Utils\CardUtils;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\StringUtils;
 
@@ -101,7 +102,11 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             if ($paymentMethod instanceof CreditCardData) {
                 $cardData = $paymentMethod;
                 $request = $this->maybeSetKey($request, 'number', $cardData->number);
-                $request = $this->maybeSetKey($request, 'scheme', $this->mapCardScheme(strtoupper($cardData->getCardType())));
+                $request = $this->maybeSetKey(
+                    $request,
+                    'scheme',
+                    $this->mapCardScheme(strtoupper(CardUtils::getBaseCardType($cardData->getCardType())))
+                );
                 $hashValue = $cardData->number;
             } elseif ($paymentMethod instanceof RecurringPaymentMethod) {
                 $storedCard = $paymentMethod;
@@ -158,7 +163,11 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
                 $hashValue = $cardData->number;
 
                 $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'number', $cardData->number);
-                $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'scheme', strtoupper($cardData->getCardType()));
+                $request['card_detail'] = $this->maybeSetKey(
+                    $request['card_detail'],
+                    'scheme',
+                    strtoupper(CardUtils::getBaseCardType($cardData->getCardType()))
+                );
                 $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'expiry_month', $cardData->expMonth);
                 $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'expiry_year',
                                                 substr(str_pad($cardData->expYear, 4, '0', STR_PAD_LEFT), 2, 2));

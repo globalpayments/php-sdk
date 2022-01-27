@@ -230,4 +230,19 @@ class CardUtils
 
         return $cvvIndicator;
     }
+
+    /**
+     * @param string $cardType
+     * @return mixed
+     */
+    public static function getBaseCardType($cardType)
+    {
+        foreach (array_keys(self::$cardTypes) as $baseCardType) {
+            if (substr($cardType, 0, strlen($baseCardType)) == $baseCardType) {
+                return $baseCardType;
+            }
+        }
+
+        return $cardType;
+    }
 }

@@ -2,13 +2,13 @@
 
 namespace Gateways\GpApiConnector;
 
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\PaymentType;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Enums\TransactionSortProperty;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
@@ -310,7 +310,7 @@ class ReportingTransactionsTest extends TestCase
                 ->andWith(SearchCriteria::AUTH_CODE, $authCode)
                 ->execute();
         } catch (ApiException $e) {
-            $this->fail('Find transactions by type failed: ' . $e->getMessage());
+            $this->fail('Find transactions by card brand and auth code failed: ' . $e->getMessage());
         }
 
         $this->assertNotNull($response);
@@ -336,7 +336,7 @@ class ReportingTransactionsTest extends TestCase
                     ->andWith(SearchCriteria::START_DATE, $startDate)
                     ->execute();
             } catch (ApiException $e) {
-                $this->fail('Find transactions by type failed: ' . $e->getMessage());
+                $this->fail('Find transactions by card brand failed: ' . $e->getMessage());
             }
 
             $this->assertNotNull($response);
@@ -359,7 +359,7 @@ class ReportingTransactionsTest extends TestCase
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
-            $this->fail('Find transactions by type failed: ' . $e->getMessage());
+            $this->fail('Find transactions by reference number failed: ' . $e->getMessage());
         }
 
         $this->assertNotNull($response);
@@ -381,7 +381,7 @@ class ReportingTransactionsTest extends TestCase
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
-            $this->fail('Find transactions by type failed: ' . $e->getMessage());
+            $this->fail('Find transactions by reference number failed: ' . $e->getMessage());
         }
 
         $this->assertNotNull($response);
@@ -463,13 +463,13 @@ class ReportingTransactionsTest extends TestCase
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->orderBy(TransactionSortProperty::TIME_CREATED)
                 ->where(SearchCriteria::CARD_NUMBER_FIRST_SIX, $numberFirst6)
                 ->andWith(SearchCriteria::CARD_NUMBER_LAST_FOUR, $numberLast4)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
-            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
+            $this->fail('Find transactions by first6 and last4 of card number  failed: ' . $e->getMessage());
         }
 
         $this->assertNotNull($response);
@@ -488,13 +488,13 @@ class ReportingTransactionsTest extends TestCase
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->orderBy(TransactionSortProperty::TIME_CREATED)
                 ->where(SearchCriteria::TOKEN_FIRST_SIX, $tokenFirst6)
                 ->andWith(SearchCriteria::TOKEN_LAST_FOUR, $tokenLast4)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
-            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
+            $this->fail('Find transactions by first6 and last4 of token failed: ' . $e->getMessage());
         }
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
@@ -502,6 +502,69 @@ class ReportingTransactionsTest extends TestCase
         foreach ($response->result as $rs) {
             $this->assertStringStartsWith($tokenFirst6, (string)$rs->maskedCardNumber);
             $this->assertStringEndsWith($tokenLast4, $rs->maskedCardNumber);
+        }
+    }
+
+    public function testReportFindTransactionsBy_TokenFirst6_and_TokenLast4_and_PaymentMethod()
+    {
+        $tokenFirst6 = "516730";
+        $tokenLast4 = "5507";
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            $response = ReportingService::findTransactionsPaged(1, 10)
+                ->orderBy(TransactionSortProperty::TIME_CREATED)
+                ->where(SearchCriteria::TOKEN_FIRST_SIX, $tokenFirst6)
+                ->andWith(SearchCriteria::TOKEN_LAST_FOUR, $tokenLast4)
+                ->andWith(SearchCriteria::PAYMENT_METHOD, PaymentMethodName::DIGITAL_WALLET)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Find transactions by first6 and last4 of token failed: ' . $e->getMessage());
+        }
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response->result));
+        /** @var TransactionSummary $rs */
+        foreach ($response->result as $rs) {
+            $this->assertStringStartsWith($tokenFirst6, (string)$rs->maskedCardNumber);
+            $this->assertStringEndsWith($tokenLast4, $rs->maskedCardNumber);
+        }
+    }
+
+    public function testReportFindTransactionsBy_TokenFirst6_and_TokenLast4_and_WrongPaymentMethod()
+    {
+        $tokenFirst6 = "516730";
+        $tokenLast4 = "5507";
+        $startDate = new \DateTime('2020-11-01 midnight');
+        try {
+            ReportingService::findTransactionsPaged(1, 10)
+                ->orderBy(TransactionSortProperty::TIME_CREATED)
+                ->where(SearchCriteria::TOKEN_FIRST_SIX, $tokenFirst6)
+                ->andWith(SearchCriteria::TOKEN_LAST_FOUR, $tokenLast4)
+                ->andWith(SearchCriteria::PAYMENT_METHOD, PaymentMethodName::CARD)
+                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->assertEquals('40043', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Request contains unexpected fields: payment_method', $e->getMessage());
+        }
+    }
+
+    public function testReportFindTransactionsBy_PaymentMethod()
+    {
+        $paymentMethodName = new PaymentMethodName();
+        $reflectionClass = new ReflectionClass($paymentMethodName);
+        foreach ($reflectionClass->getConstants() as $value) {
+            $startDate = new \DateTime('2020-11-01 midnight');
+            try {
+                $response = ReportingService::findTransactionsPaged(1, 10)
+                    ->where(SearchCriteria::PAYMENT_METHOD, $value)
+                    ->andWith(SearchCriteria::START_DATE, $startDate)
+                    ->execute();
+            } catch (ApiException $e) {
+                $this->fail('Find transactions by payment method failed: ' . $e->getMessage());
+            }
+            $this->assertNotNull($response);
+            $this->assertTrue(is_array($response->result));
         }
     }
 
@@ -515,7 +578,7 @@ class ReportingTransactionsTest extends TestCase
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
-            $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
+            $this->fail('Find transactions by name failed: ' . $e->getMessage());
         }
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
@@ -534,7 +597,9 @@ class ReportingTransactionsTest extends TestCase
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
         $transactionList = $response->result;
-        uasort($transactionList, function($a, $b) {return strcmp($a->transactionType, $b->transactionType);});
+        uasort($transactionList, function ($a, $b) {
+            return strcmp($a->transactionType, $b->transactionType);
+        });
         foreach ($response->result as $index => $tr) {
             $this->assertSame($transactionList[$index], $tr);
         }
@@ -549,7 +614,9 @@ class ReportingTransactionsTest extends TestCase
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
         $transactionList = $response->result;
-        uasort($transactionList, function($a, $b) {return strcmp($a->transactionId, $b->transactionId);});
+        uasort($transactionList, function ($a, $b) {
+            return strcmp($a->transactionId, $b->transactionId);
+        });
         foreach ($response->result as $index => $tr) {
             $this->assertSame($transactionList[$index], $tr);
         }
@@ -564,7 +631,9 @@ class ReportingTransactionsTest extends TestCase
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
         $transactionList = $response->result;
-        uasort($transactionList, function($a, $b) {return strcmp(($a->transactionDate)->format('Y-m-d H:i:s'), ($b->transactionDate)->format('Y-m-d H:i:s'));});
+        uasort($transactionList, function ($a, $b) {
+            return strcmp(($a->transactionDate)->format('Y-m-d H:i:s'), ($b->transactionDate)->format('Y-m-d H:i:s'));
+        });
         foreach ($response->result as $index => $tr) {
             $this->assertSame($transactionList[$index], $tr);
         }
@@ -605,7 +674,7 @@ class ReportingTransactionsTest extends TestCase
                 ->andWith(SearchCriteria::PAYMENT_METHOD, PaymentMethodName::BANK_TRANSFER)
                 ->execute();
         } catch (ApiException $e) {
-            $this->fail('Find transactions by type failed: ' . $e->getMessage());
+            $this->fail('Find transactions by payment method failed: ' . $e->getMessage());
         }
 
         $this->assertNotNull($response);

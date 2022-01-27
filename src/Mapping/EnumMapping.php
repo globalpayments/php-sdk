@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Mapping;
 
 use GlobalPayments\Api\Entities\Enums\AccountType;
+use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
@@ -90,6 +91,22 @@ class EnumMapping
                         return 'PREV_FAILED';
                     default:
                         return null;
+                }
+            default:
+                return null;
+        }
+    }
+
+    public static function mapCardType($gateway, $value)
+    {
+        switch ($gateway) {
+            case GatewayProvider::GP_ECOM:
+            case GatewayProvider::GP_API:
+                switch ($value) {
+                    case 'DinersClub':
+                        return CardType::DINERS;
+                    default:
+                        return $value;
                 }
             default:
                 return null;

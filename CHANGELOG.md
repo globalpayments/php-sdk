@@ -7,6 +7,17 @@
 
 ## Latest version
 
+#### Enhancements:
+- Add fingerprint feature (GP-API)
+- Add Payment Link Id in the request for authorize (GP-API)
+- Add new unit tests on DCC CNP (GP-API)
+
+#### Bug Fixes:
+- Fix issue for Fleet cards (GP-ECOM)
+- Fix issue for Diners card type (GP-ECOM)
+
+## v3.0.0 (12/16/2021)
+
 - Add Dynamic Currency Conversion feature for GP-API
 - Show exceptions on updateTokenExpiry() & deleteToken()
 - DOMDocument data encoded before serialization

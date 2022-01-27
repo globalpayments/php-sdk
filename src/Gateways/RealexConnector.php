@@ -11,6 +11,7 @@ use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 use GlobalPayments\Api\Entities\Enums\CvnPresenceIndicator;
 use GlobalPayments\Api\Entities\Enums\DccProcessor;
+use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
@@ -21,8 +22,10 @@ use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\HostedPaymentConfig;
+use GlobalPayments\Api\Mapping\EnumMapping;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
+use GlobalPayments\Api\Utils\CardUtils;
 use GlobalPayments\Api\Utils\CountryUtils;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
@@ -300,7 +303,11 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                 $cardElement->appendChild($xml->createElement("number", $card->number));
                 $cardElement->appendChild($xml->createElement("expdate", $card->getShortExpiry()));
                 $cardElement->appendChild($xml->createElement("chname", $card->cardHolderName));
-                $cardElement->appendChild($xml->createElement("type", strtoupper($card->getCardType())));
+
+                $cardElement->appendChild($xml->createElement(
+                    "type",
+                    strtoupper(EnumMapping::mapCardType(GatewayProvider::GP_ECOM, CardUtils::getBaseCardType($card->getCardType())))
+                ));
 
                 if ($card->cvn !== null) {
                     //if cvn number is not empty indicator should be PRESENT
@@ -1046,7 +1053,12 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $cardElement->appendChild($xml->createElement("number", $card->number));
         $cardElement->appendChild($xml->createElement("expdate", $card->getShortExpiry()));
         $cardElement->appendChild($xml->createElement("chname", $card->cardHolderName));
-        $cardElement->appendChild($xml->createElement("type", strtoupper($card->getCardType())));
+        $cardElement->appendChild($xml->createElement(
+            "type",
+            strtoupper(EnumMapping::mapCardType(
+                GatewayProvider::GP_ECOM,
+                CardUtils::getBaseCardType($card->getCardType())))
+        ));
 
         return $cardElement;
     }
@@ -1584,7 +1596,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                 return ['returnurl', 'statusupdateurl', 'cancelurl'];
         }
     }
-      
+
     private function setSerializeData($key, $value = null)
     {
         if ($value !== null) {

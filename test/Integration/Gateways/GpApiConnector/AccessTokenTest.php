@@ -116,6 +116,28 @@ class AccessTokenTest extends TestCase
         }
     }
 
+    public function testCreateAccessTokenWithMaximum_SecondsToExpire()
+    {
+        $this->config->secondsToExpire = 604801;
+        try {
+            GpApiService::generateTransactionKey($this->config);
+        } catch (GatewayException $e) {
+            $this->assertEquals('40213', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - seconds_to_expire contains unexpected data', $e->getMessage());
+        }
+    }
+
+    public function testCreateAccessTokenWithInvalid_SecondsToExpire()
+    {
+        $this->config->secondsToExpire = 10;
+        try {
+            GpApiService::generateTransactionKey($this->config);
+        } catch (GatewayException $e) {
+            $this->assertEquals('40213', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - seconds_to_expire contains unexpected data', $e->getMessage());
+        }
+    }
+
     public function testUseExpiredAccessToken()
     {
         $accessTokenInfo = new AccessTokenInfo();
