@@ -4,10 +4,10 @@ namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\DisputeDocument;
 use GlobalPayments\Api\Entities\Enums\CardType;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\DisputeSortProperty;
 use GlobalPayments\Api\Entities\Enums\DisputeStage;
 use GlobalPayments\Api\Entities\Enums\DisputeStatus;
+use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
@@ -114,16 +114,19 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindDisputes_By_Status()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $disputes = ReportingService::findDisputesPaged(1, 10)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->andWith(SearchCriteria::DISPUTE_STATUS, DisputeStatus::UNDER_REVIEW)
-            ->execute();
+        $startDate = new \DateTime('2021-01-01 midnight');
+        $disputeStatus = array("UNDER_REVIEW", "WITH_MERCHANT", "CLOSED");
+        foreach ($disputeStatus as $value) {
+            $disputes = ReportingService::findDisputesPaged(1, 10)
+                ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+                ->andWith(SearchCriteria::DISPUTE_STATUS, $value)
+                ->execute();
 
-        $this->assertNotNull($disputes);
-        $this->assertInstanceOf(PagedResult::class, $disputes);
-        foreach ($disputes->result as $dispute) {
-            $this->assertEquals(DisputeStatus::UNDER_REVIEW, $dispute->caseStatus);
+            $this->assertNotNull($disputes);
+            $this->assertInstanceOf(PagedResult::class, $disputes);
+            foreach ($disputes->result as $dispute) {
+                $this->assertEquals($value, $dispute->caseStatus);
+            }
         }
     }
 

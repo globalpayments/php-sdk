@@ -489,7 +489,13 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                             break;
                     }
                 }
-
+                if (
+                    $builder->transactionModifier == TransactionModifier::ENCRYPTED_MOBILE &&
+                    $builder->paymentMethod instanceof CreditCardData &&
+                    $builder->paymentMethod->hasInAppPaymentData()
+                ) {
+                    return PaymentEntryMode::IN_APP;
+                }
             }
 
             return PaymentEntryMode::ECOM;

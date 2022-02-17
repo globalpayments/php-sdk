@@ -8,6 +8,12 @@
 ## Latest version
 
 #### Enhancements:
+
+- use "IN_APP" entry_mode when creating a transaction with digital wallets (GP-API)
+- add new unit tests for dcc and others
+
+## v3.0.1 (01/27/2022)
+
 - Add fingerprint feature (GP-API)
 - Add Payment Link Id in the request for authorize (GP-API)
 - Add new unit tests on DCC CNP (GP-API)

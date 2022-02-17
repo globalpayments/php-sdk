@@ -1,17 +1,17 @@
 <?php
 
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
-use \GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
+use PHPUnit\Framework\TestCase;
 
 class DccCardNotPresentTest extends TestCase
 {
@@ -41,164 +41,114 @@ class DccCardNotPresentTest extends TestCase
         $accessTokenInfo = new AccessTokenInfo();
         $accessTokenInfo->transactionProcessingAccountName = 'dcc';
         $config->accessTokenInfo = $accessTokenInfo;
-//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
+        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
         return $config;
     }
 
     public function testCreditGetDccInfo()
     {
-        $orderId = GenerationUtils::generateOrderId();
-
         $dccDetails = $this->card->getDccRate()
             ->withAmount($this->amount)
             ->withCurrency($this->currency)
             ->execute();
 
-        $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
-        $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
-        $this->assertNotNull($dccDetails->dccRateData);
+        $expectedDccValue = $this->getAmount($dccDetails);
+        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
 
         sleep(2);
 
         $response = $this->card->charge($this->amount)
             ->withCurrency($this->currency)
-            ->withAllowDuplicates(true)
             ->withDccRateData($dccDetails->dccRateData)
-            ->withClientTransactionId($orderId)
             ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals('CAPTURED', $response->responseMessage);
+        $this->assertTransactionResponse($response, TransactionStatus::CAPTURED, $expectedDccValue);
     }
 
     public function testCreditDccRateAuthorize()
     {
-        $orderId = GenerationUtils::generateOrderId();
-
         $dccDetails = $this->card->getDccRate()
             ->withAmount($this->amount)
             ->withCurrency($this->currency)
             ->execute();
-        $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
-        $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
-        $this->assertNotNull($dccDetails->dccRateData);
+
+        $expectedDccValue = $this->getAmount($dccDetails);
+        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
 
         sleep(2);
 
         $response = $this->card->authorize($this->amount)
             ->withCurrency($this->currency)
-            ->withAllowDuplicates(true)
             ->withDccRateData($dccDetails->dccRateData)
-            ->withClientTransactionId($orderId)
             ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $response->responseMessage);
+        $this->assertTransactionResponse($response, TransactionStatus::PREAUTHORIZED, $expectedDccValue);
     }
 
     public function testCreditDccRateRefundStandalone()
     {
-        $orderId = GenerationUtils::generateOrderId();
-
         $dccDetails = $this->card->getDccRate()
             ->withAmount($this->amount)
             ->withCurrency($this->currency)
             ->execute();
 
-        $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
-        $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
-        $this->assertNotNull($dccDetails->dccRateData);
+        $expectedDccValue = $this->getAmount($dccDetails);
+        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
 
         sleep(2);
 
         $response = $this->card->refund($this->amount)
             ->withCurrency($this->currency)
-            ->withAllowDuplicates(true)
             ->withDccRateData($dccDetails->dccRateData)
-            ->withClientTransactionId($orderId)
             ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals('CAPTURED', $response->responseMessage);
+        $this->assertTransactionResponse($response, TransactionStatus::CAPTURED, $expectedDccValue);
     }
 
     public function testCreditDccRateReversal()
     {
-        $orderId = GenerationUtils::generateOrderId();
-
         $dccDetails = $this->card->getDccRate()
             ->withAmount($this->amount)
             ->withCurrency($this->currency)
             ->execute();
 
-        $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
-        $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
-        $this->assertNotNull($dccDetails->dccRateData);
+        $expectedDccValue = $this->getAmount($dccDetails);
+        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
 
         sleep(2);
 
         $transaction = $this->card->charge($this->amount)
             ->withCurrency($this->currency)
-            ->withAllowDuplicates(true)
             ->withDccRateData($dccDetails->dccRateData)
-            ->withClientTransactionId($orderId)
             ->execute();
-
-        $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
+        $this->assertTransactionResponse($transaction, TransactionStatus::CAPTURED, $expectedDccValue);
 
         $reverse = $transaction->reverse()
             ->withDccRateData($transaction->dccRateData)
             ->execute();
-
-        $this->assertNotNull($reverse);
-        $this->assertEquals('SUCCESS', $reverse->responseCode);
-        $this->assertEquals(TransactionStatus::REVERSED, $reverse->responseMessage);
+        $this->assertTransactionResponse($reverse, TransactionStatus::REVERSED, $expectedDccValue);
     }
 
     public function testCreditDccRateRefund()
     {
-        $orderId = GenerationUtils::generateOrderId();
-
         $dccDetails = $this->card->getDccRate()
             ->withAmount($this->amount)
             ->withCurrency($this->currency)
             ->execute();
 
-        $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
-        $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
-        $this->assertNotNull($dccDetails->dccRateData);
+        $expectedDccValue = $this->getAmount($dccDetails);
+        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
 
         sleep(2);
 
         $transaction = $this->card->charge($this->amount)
             ->withCurrency($this->currency)
-            ->withAllowDuplicates(true)
             ->withDccRateData($dccDetails->dccRateData)
-            ->withClientTransactionId($orderId)
             ->execute();
+        $this->assertTransactionResponse($transaction, TransactionStatus::CAPTURED, $expectedDccValue);
 
-        $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
-
-        $reverse = $transaction->refund()
+        $refund = $transaction->refund()
             ->withCurrency($this->currency)
             ->withDccRateData($dccDetails->dccRateData)
             ->execute();
-
-        $this->assertNotNull($reverse);
-        $this->assertEquals('SUCCESS', $reverse->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $reverse->responseMessage);
+        $this->assertTransactionResponse($refund, TransactionStatus::CAPTURED, $expectedDccValue);
     }
 
     public function testAuthorizationThenCapture()
@@ -208,10 +158,8 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->execute();
 
-        $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
-        $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
-        $this->assertNotNull($dccDetails->dccRateData);
+        $expectedDccValue = $this->getAmount($dccDetails);
+        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
 
         sleep(2);
 
@@ -220,18 +168,12 @@ class DccCardNotPresentTest extends TestCase
             ->withAllowDuplicates(true)
             ->withDccRateData($dccDetails->dccRateData)
             ->execute();
-
-        $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
-        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+        $this->assertTransactionResponse($transaction, TransactionStatus::PREAUTHORIZED, $expectedDccValue);
 
         $capture = $transaction->capture()
             ->withDccRateData($dccDetails->dccRateData)
             ->execute();
-
-        $this->assertNotNull($capture);
-        $this->assertEquals('SUCCESS', $capture->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
+        $this->assertTransactionResponse($capture, TransactionStatus::CAPTURED, $expectedDccValue);
     }
 
     public function testCardTokenizationThenPayingWithToken()
@@ -251,10 +193,8 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->execute();
 
-        $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
-        $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
-        $this->assertNotNull($dccDetails->dccRateData);
+        $expectedDccValue = $this->getAmount($dccDetails);
+        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
 
         sleep(2);
 
@@ -262,10 +202,7 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->withDccRateData($dccDetails->dccRateData)
             ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+        $this->assertTransactionResponse($response, TransactionStatus::CAPTURED, $expectedDccValue);
     }
 
     public function testCreditGetDccInfo_WithIdempotencyKey()
@@ -278,10 +215,8 @@ class DccCardNotPresentTest extends TestCase
             ->withIdempotencyKey($idempotency)
             ->execute();
 
-        $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
-        $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
-        $this->assertNotNull($dccDetails->dccRateData);
+        $expectedDccValue = $this->getAmount($dccDetails);
+        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
 
         sleep(2);
 
@@ -306,7 +241,6 @@ class DccCardNotPresentTest extends TestCase
 
     public function testCreditGetDccInfo_RateNotAvailable()
     {
-        $orderId = GenerationUtils::generateOrderId();
         $this->card->number = "4263970000005262";
 
         $dccDetails = $this->card->getDccRate()
@@ -314,23 +248,20 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->execute();
 
+        $expectedDccValue = $this->getAmount($dccDetails);
         $this->assertNotNull($dccDetails);
         $this->assertEquals('SUCCESS', $dccDetails->responseCode);
         $this->assertEquals('NOT_AVAILABLE', $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
+        $this->assertEquals($expectedDccValue, $dccDetails->dccRateData->cardHolderAmount);
 
         sleep(2);
 
         $response = $this->card->charge($this->amount)
             ->withCurrency($this->currency)
-            ->withAllowDuplicates(true)
             ->withDccRateData($dccDetails->dccRateData)
-            ->withClientTransactionId($orderId)
             ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals('CAPTURED', $response->responseMessage);
+        $this->assertTransactionResponse($response, TransactionStatus::CAPTURED, $this->amount);
         $this->assertEquals($this->amount, $response->dccRateData->cardHolderAmount);
         $this->assertEquals($this->currency, $response->dccRateData->cardHolderCurrency);
     }
@@ -347,8 +278,8 @@ class DccCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('40085', $e->responseCode);
-            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Card number fails Luhn Check', $e->getMessage());
+            $this->assertEquals('40090', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - card.number value is invalid. Please check the format and data provided is correct.', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -385,4 +316,27 @@ class DccCardNotPresentTest extends TestCase
             $this->assertTrue($exceptionCaught);
         }
     }
+
+    private function assertDccInfoResponse($dccDetails, $expectedDccValue)
+    {
+        $this->assertNotNull($dccDetails);
+        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
+        $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
+        $this->assertNotNull($dccDetails->dccRateData);
+        $this->assertEquals($expectedDccValue, $dccDetails->dccRateData->cardHolderAmount);
+    }
+
+    private function assertTransactionResponse($transaction, $transactionStatus, $expectedDccValue)
+    {
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals($transactionStatus, $transaction->responseMessage);
+        $this->assertEquals($expectedDccValue, $transaction->dccRateData->cardHolderAmount);
+    }
+
+    private function getAmount($dccDetails)
+    {
+        return round($this->amount * $dccDetails->dccRateData->cardHolderRate, 2);
+    }
+
 }

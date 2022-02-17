@@ -115,6 +115,11 @@ class CreditCardData extends Credit implements ICardData
         return CardUtils::getCardType($this->number);
     }
 
+    public function hasInAppPaymentData()
+    {
+        return !empty($this->token) && !empty($this->mobileType);
+    }
+
     /**
      * Verify whether the cardholder is enrolled in 3DS
      *

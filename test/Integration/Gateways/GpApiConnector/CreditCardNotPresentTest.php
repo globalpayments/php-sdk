@@ -99,6 +99,23 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertNotNull($response->fingerprintIndicator);
     }
 
+    public function testCreditSaleWith_FingerPrintSuccess()
+    {
+        $customer = new Customer();
+        $customer->deviceFingerPrint = "ON_SUCCESS";
+
+        $response = $this->card->charge(69)
+            ->withCurrency($this->currency)
+            ->withCustomerData($customer)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+        $this->assertNotNull($response->fingerprint);
+        $this->assertNotNull($response->fingerprintIndicator);
+    }
+
     public function testCreditAuthorization()
     {
         $transaction = $this->card->authorize(42)
@@ -122,6 +139,37 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+
+        try {
+            $capture = $transaction->capture(30)
+                ->withGratuity(12)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail("Transaction capture failed");
+        }
+
+        $this->assertNotNull($capture);
+        $this->assertEquals('SUCCESS', $capture->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
+    }
+
+    public function testAuthorizationThenCapture_WithFingerPrint()
+    {
+        $customer = new Customer();
+        $customer->deviceFingerPrint = "ON_SUCCESS";
+
+        $transaction = $this->card->authorize(42)
+            ->withCurrency($this->currency)
+            ->withOrderId('123456-78910')
+            ->withAllowDuplicates(true)
+            ->withCustomerData($customer)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+        $this->assertNotNull($transaction->fingerprint);
+        $this->assertNotNull($transaction->fingerprintIndicator);
 
         try {
             $capture = $transaction->capture(30)
@@ -174,6 +222,29 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+    }
+
+    public function testCreditRefund_WithFingerPrint()
+    {
+        $customer = new Customer();
+        $customer->deviceFingerPrint = "ALWAYS";
+
+        try {
+            // process an auto-capture authorization
+            $response = $this->card->refund(16)
+                ->withCurrency($this->currency)
+                ->withAllowDuplicates(true)
+                ->withCustomerData($customer)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail('Credit Card Refund failed ' . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+        $this->assertNotNull($response->fingerprint);
+        $this->assertNotNull($response->fingerprintIndicator);
     }
 
     public function testCreditDefaultRefund()
@@ -1124,6 +1195,24 @@ class CreditCardNotPresentTest extends TestCase
         }
     }
 
+    public function testCreditSale_ExpiryCard()
+    {
+        $this->card->expYear = date('Y', strtotime('-1 year'));
+
+        $exceptionCaught = false;
+        try {
+            $this->card->charge(1)
+                ->withCurrency($this->currency)
+                ->execute();
+        } catch (ApiException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40085', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Expiry date invalid', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
     /**
      * Avs test cards scenario
      *
@@ -1199,6 +1288,22 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertNotNull($response->fingerprint);
     }
 
+    public function testCreditSaleWith_InvalidFingerPrint()
+    {
+        $customer = new Customer();
+        $customer->deviceFingerPrint = "NOT_ALWAYS";
+
+        try {
+             $this->card->charge(60)
+                ->withCurrency($this->currency)
+                ->withCustomData($customer)
+                ->execute();
+        } catch (GatewayException $e) {
+            $this->assertEquals('40087', $e->responseCode);
+            $this->assertEquals("INVALID_REQUEST_DATA - fingerprint_mode contains unexpected data", $e->getMessage());
+        }
+    }
+
     /**
      * AVS test cards
      *
@@ -1252,7 +1357,7 @@ class CreditCardNotPresentTest extends TestCase
 //        ];
 //        $config->permissions = ['TRN_POST_Authorize'];
 //        $config->webProxy = new CustomWebProxy('127.0.0.1:8866');
-//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
+        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
 
         return $config;
     }
