@@ -19,6 +19,8 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use GlobalPayments\Api\Utils\Logging\Logger;
+use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 
 class ReportingSettlementTransactionsTest extends TestCase
 {
@@ -561,7 +563,7 @@ class ReportingSettlementTransactionsTest extends TestCase
         $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
         $config->appKey = '9pArW2uWoA8enxKc';
         $config->environment = Environment::TEST;
-
+//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
         return $config;
     }
 }

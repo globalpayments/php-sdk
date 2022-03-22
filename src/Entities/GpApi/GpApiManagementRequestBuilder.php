@@ -129,6 +129,18 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                     ];
                 }
                 break;
+            case TransactionType::EDIT:
+                $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId .
+                    '/adjustment';
+                $verb = 'POST';
+                $payload = [
+                    'amount' => StringUtils::toNumeric($builder->amount),
+                    'gratuity_amount' => StringUtils::toNumeric($builder->gratuity),                     
+                    'payment_method' => [
+                            'card' => ['tag' => $builder->tagData]
+                        ]
+                    ];
+                break;
             default:
                 return null;
         }

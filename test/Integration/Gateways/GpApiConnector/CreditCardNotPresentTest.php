@@ -479,6 +479,7 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+        $this->assertTrue($transaction->multiCapture);
 
         $capture1 = $transaction->capture(10)->execute();
 
@@ -1296,11 +1297,11 @@ class CreditCardNotPresentTest extends TestCase
         try {
              $this->card->charge(60)
                 ->withCurrency($this->currency)
-                ->withCustomData($customer)
+                 ->withCustomerData($customer)
                 ->execute();
         } catch (GatewayException $e) {
-            $this->assertEquals('40087', $e->responseCode);
-            $this->assertEquals("INVALID_REQUEST_DATA - fingerprint_mode contains unexpected data", $e->getMessage());
+            $this->assertEquals('40213', $e->responseCode);
+            $this->assertEquals("Status Code: INVALID_REQUEST_DATA - fingerprint_mode contains unexpected data", $e->getMessage());
         }
     }
 

@@ -3,49 +3,41 @@
 namespace GlobalPayments\Api\Services;
 
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
-use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
-use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 
 class ReportingService
 {
     public static function findTransactions($transactionId = null)
     {
-        $response = (new TransactionReportBuilder(ReportType::FIND_TRANSACTIONS))
+        return (new TransactionReportBuilder(ReportType::FIND_TRANSACTIONS))
             ->withTransactionId($transactionId);
-        return $response;
     }
 
     public static function findDeposits()
     {
-        $response = new TransactionReportBuilder(ReportType::FIND_DEPOSITS);
-        return $response;
+        return new TransactionReportBuilder(ReportType::FIND_DEPOSITS);
     }
 
     public static function findSettlementTransactions()
     {
-        $response = new TransactionReportBuilder(ReportType::FIND_SETTLEMENT_TRANSACTIONS);
-        return $response;
+        return new TransactionReportBuilder(ReportType::FIND_SETTLEMENT_TRANSACTIONS);
     }
 
     public static function activity()
     {
-        $response = (new TransactionReportBuilder(ReportType::ACTIVITY));
-        return $response;
+        return (new TransactionReportBuilder(ReportType::ACTIVITY));
     }
 
     public static function transactionDetail($transactionId)
     {
-        $response = (new TransactionReportBuilder(ReportType::TRANSACTION_DETAIL))
+        return (new TransactionReportBuilder(ReportType::TRANSACTION_DETAIL))
             ->withTransactionId($transactionId);
-        return $response;
     }
 
     public static function depositDetail($depositId)
     {
-        $response = (new TransactionReportBuilder(ReportType::DEPOSIT_DETAIL))
+        return (new TransactionReportBuilder(ReportType::DEPOSIT_DETAIL))
             ->withDepositId($depositId);
-        return $response;
     }
 
     public static function findDisputes()

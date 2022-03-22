@@ -4,10 +4,12 @@ namespace GlobalPayments\Api\Entities\GpApi;
 
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
+use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\IRequestBuilder;
+use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Mapping\EnumMapping;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ICardData;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
@@ -79,15 +81,8 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
             'three_ds_method_return_url' => $config->methodNotificationUrl
 
         ];
-
         if (!empty($builder->storedCredential)) {
-            $initiator = EnumMapping::mapStoredCredentialInitiator(GatewayProvider::GP_API, $builder->storedCredential->initiator);
-            $threeDS['initiator'] = !empty($initiator) ? $initiator : null;
-            $threeDS['stored_credential'] = [
-                'model' => strtoupper($builder->storedCredential->type),
-                'reason' => strtoupper($builder->storedCredential->reason),
-                'sequence' => strtoupper($builder->storedCredential->sequence)
-            ];
+            $this->setStoreCredentialParam($builder->storedCredential, $threeDS);
         }
 
         return $threeDS;
@@ -99,8 +94,12 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
         $threeDS['three_ds'] = [
             'source' => (string) $builder->authenticationSource,
             'preference' => $builder->challengeRequestIndicator,
-            'message_version' => $builder->messageVersion
+            'message_version' => $builder->threeDSecure->messageVersion,
         ];
+
+        if (!empty($builder->storedCredential)) {
+            $this->setStoreCredentialParam($builder->storedCredential, $threeDS);
+        }
         $threeDS['method_url_completion_status'] = (string) $builder->methodUrlCompletion;
         $threeDS['merchant_contact_url'] = $config->merchantContactUrl;
         $order = [
@@ -121,7 +120,7 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
             'preorder_availability_date' => !empty($builder->preOrderAvailabilityDate) ?
                 (new \DateTime($builder->preOrderAvailabilityDate))->format('Y-m-d') : null,
             'reorder_indicator' => (string) $builder->reorderIndicator,
-            'transaction_type' => $builder->orderTransactionType
+            'category' => $builder->orderTransactionType
         ];
 
         if (!empty($builder->shippingAddress)) {
@@ -190,7 +189,7 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
             'authentication_type' => (string) $builder->customerAuthenticationMethod
         ];
 
-        if (!empty($builder->browserData)) {
+        if (!empty($builder->browserData) && $builder->authenticationSource != AuthenticationSource::MOBILE_SDK) {
             $threeDS['browser_data'] = [
                 'accept_header' => $builder->browserData->acceptHeader,
                 'color_depth' => (string) $builder->browserData->colorDepth,
@@ -203,6 +202,18 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
                 'challenge_window_size' => (string) $builder->browserData->challengWindowSize,
                 'timezone' => (string) $builder->browserData->timeZone,
                 'user_agent' => $builder->browserData->userAgent
+            ];
+        }
+        if (!empty($builder->mobileData) && $builder->authenticationSource == AuthenticationSource::MOBILE_SDK) {
+            $threeDS['mobile_data'] = [
+                'encoded_data' => $builder->mobileData->encodedData,
+                'application_reference' => $builder->mobileData->applicationReference,
+                'sdk_interface' => $builder->mobileData->sdkInterface,
+                'sdk_ui_type' => EnumMapping::mapSdkUiType(GatewayProvider::GP_API, $builder->mobileData->sdkUiTypes),
+                'ephemeral_public_key' => json_decode($builder->mobileData->ephemeralPublicKey),
+                'maximum_timeout' => $builder->mobileData->maximumTimeout,
+                'reference_number' => $builder->mobileData->referenceNumber,
+                'sdk_trans_reference' => $builder->mobileData->sdkTransReference
             ];
         }
 
@@ -227,5 +238,23 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
         $paymentMethod->name = !empty($cardData->cardHolderName) ? $cardData->cardHolderName : null;
 
         return $paymentMethod;
+    }
+
+
+    /**
+     * Set the stored credential details in the request
+     *
+     * @param StoredCredential $storedCredential
+     * @param array $threeDS
+     */
+    private function setStoreCredentialParam($storedCredential, &$threeDS)
+    {
+        $initiator = EnumMapping::mapStoredCredentialInitiator(GatewayProvider::GP_API, $storedCredential->initiator);
+        $threeDS['initiator'] = !empty($initiator) ? $initiator : null;
+        $threeDS['stored_credential'] = [
+            'model' => strtoupper($storedCredential->type),
+            'reason' => strtoupper($storedCredential->reason),
+            'sequence' => strtoupper($storedCredential->sequence)
+        ];
     }
 }

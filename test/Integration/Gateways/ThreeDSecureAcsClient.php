@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Tests\Integration\Gateways;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\ThreeDSecure;
+use GlobalPayments\Api\Utils\StringUtils;
 
 class ThreeDSecureAcsClient
 {
@@ -66,7 +67,7 @@ class ThreeDSecureAcsClient
                 $rawResponse = $this->sendRequest($verb, $postData, $header);
                 $rValue = new AcsResponse();
                 $status = false;
-                if ($this->isJson($rawResponse)) {
+                if (StringUtils::isJson($rawResponse)) {
                     $rawResponse = json_decode($rawResponse);
                     $status = !empty($rawResponse->success) ? $rawResponse->success : false;
                 }
@@ -109,7 +110,7 @@ class ThreeDSecureAcsClient
                 $rawResponse2 = $this->sendRequest($verb, $postData, $header);
 
                 $rValue = new AcsResponse();
-                if ($this->isJson($rawResponse2)) {
+                if (StringUtils::isJson($rawResponse2)) {
                     $rawResponse2 = json_decode($rawResponse2);
                     $rValue->setStatus(!empty($rawResponse2->success) ? $rawResponse2->success : false);
                     $rValue->setAuthResponse($paRes);
@@ -241,11 +242,5 @@ class ThreeDSecureAcsClient
             return substr($raw, $index, $length);
         }
         return null;
-    }
-
-    public function isJson($string)
-    {
-        json_decode($string);
-        return (json_last_error() == JSON_ERROR_NONE);
     }
 }

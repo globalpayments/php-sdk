@@ -2,11 +2,12 @@
 
 namespace Gateways\GpApiConnector;
 
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
+use GlobalPayments\Api\Entities\Enums\StoredCredentialSequence;
 use GlobalPayments\Api\Entities\Enums\TransactionSortProperty;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
@@ -19,9 +20,9 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
+use PHPUnit\Framework\TestCase;
 
 class CreditCardPresentTest extends TestCase
 {
@@ -356,6 +357,242 @@ class CreditCardPresentTest extends TestCase
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
+    public function testAdjustSaleTransaction()
+    {
+        $card = new CreditTrackData();
+        $card->setTrackData('%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?');
+        $tagData = '9F4005F000F0A0019F02060000000025009F03060000000000009F2608D90A06501B48564E82027C005F3401019F360200029F0702FF009F0802008C9F0902008C9F34030403029F2701809F0D05F0400088009F0E0508000000009F0F05F0400098005F280208409F390105FFC605DC4000A800FFC7050010000000FFC805DC4004F8009F3303E0B8C89F1A0208409F350122950500000080005F2A0208409A031409109B02E8009F21030811539C01009F37045EED3A8E4F07A00000000310109F0607A00000000310108407A00000000310109F100706010A03A400029F410400000001';
+        $card->entryMethod = EntryMethod::PROXIMITY;
+
+        $transaction = $card->charge(10)
+            ->withCurrency("USD")
+            ->withAllowDuplicates(true)
+            ->withTagData($tagData)
+            ->execute();
+
+        $this->assertTransactionResponse(
+            $transaction,
+            'SUCCESS',
+            TransactionStatus::CAPTURED
+        );
+
+        $response = $transaction->edit()
+            ->withAmount(10.01)
+            ->withTagData($tagData)
+            ->withGratuity(5.01)
+            ->execute();
+
+        $this->assertTransactionResponse(
+            $response,
+            'SUCCESS',
+            TransactionStatus::CAPTURED
+        );
+    }
+
+    public function testAdjustAuthTransaction()
+    {
+        $card = $this->initCreditTrackData(EntryMethod::PROXIMITY);
+        $tagData = '9F4005F000F0A0019F02060000000025009F03060000000000009F2608D90A06501B48564E82027C005F3401019F360200029F0702FF009F0802008C9F0902008C9F34030403029F2701809F0D05F0400088009F0E0508000000009F0F05F0400098005F280208409F390105FFC605DC4000A800FFC7050010000000FFC805DC4004F8009F3303E0B8C89F1A0208409F350122950500000080005F2A0208409A031409109B02E8009F21030811539C01009F37045EED3A8E4F07A00000000310109F0607A00000000310108407A00000000310109F100706010A03A400029F410400000001';
+
+        $transaction = $card->authorize($this->amount)
+            ->withCurrency($this->currency)
+            ->withTagData($tagData)
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $this->assertTransactionResponse(
+            $transaction,
+            'SUCCESS',
+            TransactionStatus::PREAUTHORIZED
+        );
+
+        $response = $transaction->edit()
+            ->withAmount(10.01)
+            ->withTagData($tagData)
+            ->withGratuity(5.01)
+            ->withMultiCapture(StoredCredentialSequence::FIRST, 1)
+            ->execute();
+        $this->assertTransactionResponse(
+            $response,
+            'SUCCESS',
+            TransactionStatus::PREAUTHORIZED
+        );
+    }
+
+    public function testAdjustSaleTransaction_AdjustAmountHigherThanSale()
+    {
+        $card = $this->initCreditTrackData();
+
+        $transaction = $card->charge($this->amount)
+            ->withCurrency($this->currency)
+            ->withAllowDuplicates(true)
+            ->execute();
+        $this->assertTransactionResponse(
+            $transaction,
+            'SUCCESS',
+            TransactionStatus::CAPTURED
+        );
+
+        $response = $transaction->edit()
+            ->withAmount($this->amount + 2)
+            ->execute();
+        $this->assertTransactionResponse(
+            $response,
+            'SUCCESS',
+            TransactionStatus::CAPTURED
+        );
+    }
+
+    public function testAdjustSaleTransaction_AdjustOnlyTag()
+    {
+        $card = $this->initCreditTrackData(EntryMethod::PROXIMITY);
+        $tagData = '9F4005F000F0A0019F02060000000025009F03060000000000009F2608D90A06501B48564E82027C005F3401019F360200029F0702FF009F0802008C9F0902008C9F34030403029F2701809F0D05F0400088009F0E0508000000009F0F05F0400098005F280208409F390105FFC605DC4000A800FFC7050010000000FFC805DC4004F8009F3303E0B8C89F1A0208409F350122950500000080005F2A0208409A031409109B02E8009F21030811539C01009F37045EED3A8E4F07A00000000310109F0607A00000000310108407A00000000310109F100706010A03A400029F410400000001';
+
+        $transaction = $card->charge($this->amount)
+            ->withCurrency($this->currency)
+            ->withTagData($tagData)
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $this->assertTransactionResponse(
+            $transaction,
+            'SUCCESS',
+            TransactionStatus::CAPTURED
+        );
+
+        $response = $transaction->edit()
+            ->withTagData($tagData)
+            ->execute();
+
+        $this->assertTransactionResponse(
+            $response,
+            'SUCCESS',
+            TransactionStatus::CAPTURED
+        );
+    }
+
+    public function testAdjustSaleTransaction_AdjustOnlyGratuity()
+    {
+        $card = $this->initCreditTrackData();
+
+        $transaction = $card->charge($this->amount)
+            ->withCurrency($this->currency)
+            ->withChipCondition(EmvLastChipRead::SUCCESSFUL)
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $this->assertTransactionResponse(
+            $transaction,
+            'SUCCESS',
+            TransactionStatus::CAPTURED
+        );
+
+        $response = $transaction->edit()
+            ->withGratuity(1)
+            ->execute();
+        $this->assertTransactionResponse(
+            $response,
+            'SUCCESS',
+            TransactionStatus::CAPTURED
+        );
+    }
+
+    public function testAdjustSaleTransaction_AdjustAmountToZero()
+    {
+        $card = $this->initCreditTrackData();
+
+        $transaction = $card->charge($this->amount)
+            ->withCurrency($this->currency)
+            ->withChipCondition(EmvLastChipRead::SUCCESSFUL)
+            ->withAllowDuplicates(true)
+            ->execute();
+        $this->assertTransactionResponse(
+            $transaction,
+            'SUCCESS',
+            TransactionStatus::CAPTURED
+        );
+
+        $response = $transaction->edit()
+            ->withAmount(0)
+            ->execute();
+        $this->assertTransactionResponse(
+            $response,
+            'SUCCESS',
+            TransactionStatus::CAPTURED
+        );
+    }
+
+    public function testAdjustSaleTransaction_AdjustGratuityToZero()
+    {
+        $card = $this->initCreditTrackData();
+
+        $transaction = $card->charge($this->amount)
+            ->withCurrency($this->currency)
+            ->withChipCondition(EmvLastChipRead::SUCCESSFUL)
+            ->withAllowDuplicates(true)
+            ->execute();
+        $this->assertTransactionResponse(
+            $transaction,
+            'SUCCESS',
+            TransactionStatus::CAPTURED
+        );
+
+        $response = $transaction->edit()
+            ->withGratuity(0)
+            ->execute();
+        $this->assertTransactionResponse(
+            $response,
+            'SUCCESS',
+            TransactionStatus::CAPTURED
+        );
+    }
+
+    public function testAdjustSaleTransaction_WithoutMandatory()
+    {
+        $card = $this->initCreditTrackData();
+
+        $transaction = $card->charge($this->amount)
+            ->withCurrency($this->currency)
+            ->withChipCondition(EmvLastChipRead::SUCCESSFUL)
+            ->withAllowDuplicates(true)
+            ->execute();
+        $this->assertTransactionResponse(
+            $transaction,
+            'SUCCESS',
+            TransactionStatus::CAPTURED
+        );
+
+        $exceptionCaught = false;
+        try {
+            $transaction->edit()
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40005', $e->responseCode);
+            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields [amount or tag or gratuityAmount]', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testAdjustSaleTransaction_TransactionNotFound()
+    {
+        $transaction = new Transaction();
+        $transaction->transactionId = GenerationUtils::getGuid();
+
+        $exceptionCaught = false;
+        try {
+            $transaction->edit()
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40008', $e->responseCode);
+            $this->assertContains(sprintf('Status Code: RESOURCE_NOT_FOUND - Transaction %s not found at this location.', $transaction->transactionId), $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
     private function initCreditCardData()
     {
         $card = new CreditCardData();
@@ -369,11 +606,11 @@ class CreditCardPresentTest extends TestCase
         return $card;
     }
 
-    private function initCreditTrackData()
+    private function initCreditTrackData($entryMethod = EntryMethod::SWIPE)
     {
         $card = new CreditTrackData();
         $card->setTrackData('%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?');
-        $card->entryMethod = EntryMethod::SWIPE;
+        $card->entryMethod = $entryMethod;
 
         return $card;
     }
@@ -384,5 +621,4 @@ class CreditCardPresentTest extends TestCase
         $this->assertEquals($transactionResponseCode, $transaction->responseCode);
         $this->assertEquals($transactionStatus, $transaction->responseMessage);
     }
-
 }

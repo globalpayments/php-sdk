@@ -10,6 +10,8 @@ use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
 use GlobalPayments\Api\Entities\Enums\OrderTransactionType;
+use GlobalPayments\Api\Entities\Enums\SdkInterface;
+use GlobalPayments\Api\Entities\Enums\SdkUiType;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialSequence;
@@ -17,6 +19,7 @@ use GlobalPayments\Api\Entities\Enums\StoredCredentialType;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialReason;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\MobileData;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
@@ -698,6 +701,70 @@ class GpApi3DSecureTest extends TestCase
         $this->assertEquals(TransactionStatus::CAPTURED, $recurringPayment->responseMessage);
     }
 
+    /**
+     * Frictionless scenario with mobile sdk
+     */
+    public function testFrictionlessFullCycle_v2_WithMobileSdk()
+    {
+        $this->card->number = GpApi3DSTestCards::CARD_AUTH_SUCCESSFUL_V2_2;
+
+        $secureEcom = Secure3dService::checkEnrollment($this->card)
+            ->withCurrency($this->currency)
+            ->withAmount($this->amount)
+            ->execute();
+
+        $this->assertNotNull($secureEcom);
+        $this->assertEquals(Secure3dStatus::ENROLLED, $secureEcom->enrolled);
+        $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
+        $this->assertEquals(Secure3dStatus::AVAILABLE, $secureEcom->status);
+
+        $mobileData = new MobileData();
+        $mobileData->encodedData = 'ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K';
+        $mobileData->applicationReference = 'f283b3ec-27da-42a1-acea-f3f70e75bbdc';
+        $mobileData->sdkInterface = SdkInterface::BROWSER;
+        $mobileData->sdkUiTypes = [SdkUiType::HTML_OTHER];
+        $mobileData->ephemeralPublicKey = '{
+            "kty": "EC",
+            "crv": "P-256",
+            "x": "WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI",
+            "y": "Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw"
+        }';
+        $mobileData->maximumTimeout = 50;
+        $mobileData->referenceNumber = '3DS_LOA_SDK_PPFU_020100_00007';
+        $mobileData->sdkTransReference = 'b2385523-a66c-4907-ac3c-91848e8c0067';
+
+        $initAuth = Secure3dService::initiateAuthentication($this->card, $secureEcom)
+            ->withAmount($this->amount)
+            ->withCurrency($this->currency)
+            ->withAuthenticationSource(AuthenticationSource::MOBILE_SDK)
+            ->withMethodUrlCompletion(MethodUrlCompletion::YES)
+            ->withOrderCreateDate(date('Y-m-d H:i:s'))
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->withOrderTransactionType(OrderTransactionType::GOODS_SERVICE_PURCHASE)
+            ->withMobileData($mobileData)
+            ->execute();
+        $this->assertNotNull($initAuth);
+        $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $initAuth->status);
+        $this->assertNotNull($initAuth->issuerAcsUrl);
+        $this->assertNotNull($initAuth->payerAuthenticationRequest);
+        $this->assertNotNull($initAuth->acsTransactionId);
+        $this->assertEquals("05", $initAuth->eci);
+        $this->assertEquals("2.2.0", $initAuth->messageVersion);
+
+        $secureEcom = Secure3dService::getAuthenticationData()
+            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->execute();
+
+        $this->card->threeDSecure = $secureEcom;
+        $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $secureEcom->status);
+        $this->assertEquals('YES', $secureEcom->liabilityShift);
+
+        $response = $this->card->charge($this->amount)->withCurrency($this->currency)->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+    }
+
     public function ChallengeSuccessful3DSV2CardTests()
     {
         return [
@@ -729,11 +796,11 @@ class GpApi3DSecureTest extends TestCase
     {
         return [
             'Frictionless failed 1' => [GpApi3DSTestCards::CARD_AUTH_ATTEMPTED_BUT_NOT_SUCCESSFUL_V2_1, Secure3dStatus::SUCCESS_ATTEMPT_MADE],
-            'Frictionless failed 2' => [GpApi3DSTestCards::CARD_AUTH_FAILED_V2_1, Secure3dStatus::NOT_AUTHENTICATED],
+            'Frictionless failed 2' => [GpApi3DSTestCards::CARD_AUTH_FAILED_V2_1, Secure3dStatus::FAILED],
             'Frictionless failed 3' => [GpApi3DSTestCards::CARD_AUTH_ISSUER_REJECTED_V2_1, Secure3dStatus::FAILED],
             'Frictionless failed 4' => [GpApi3DSTestCards::CARD_AUTH_COULD_NOT_BE_PREFORMED_V2_1, Secure3dStatus::FAILED],
             'Frictionless failed 5' => [GpApi3DSTestCards::CARD_AUTH_ATTEMPTED_BUT_NOT_SUCCESSFUL_V2_2, Secure3dStatus::SUCCESS_ATTEMPT_MADE],
-            'Frictionless failed 6' => [GpApi3DSTestCards::CARD_AUTH_FAILED_V2_2, Secure3dStatus::NOT_AUTHENTICATED],
+            'Frictionless failed 6' => [GpApi3DSTestCards::CARD_AUTH_FAILED_V2_2, Secure3dStatus::FAILED],
             'Frictionless failed 7' => [GpApi3DSTestCards::CARD_AUTH_ISSUER_REJECTED_V2_2, Secure3dStatus::FAILED],
             'Frictionless failed 8' => [GpApi3DSTestCards::CARD_AUTH_COULD_NOT_BE_PREFORMED_V2_2, Secure3dStatus::FAILED]
         ];

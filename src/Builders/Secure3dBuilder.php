@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Builders;
 use GlobalPayments\Api\Entities\Enums\DecoupledFlowRequest;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Enums\WhiteListStatus;
+use GlobalPayments\Api\Entities\MobileData;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Gateways\GpApiConnector;
 use GlobalPayments\Api\ServicesContainer;
@@ -193,6 +194,9 @@ class Secure3dBuilder extends BaseBuilder
      * @var bool
      */
     public $enableExemptionOptimization;
+
+    /** @var MobileData */
+    public $mobileData;
 
     /**
      * @var StoredCredential
@@ -1330,6 +1334,13 @@ class Secure3dBuilder extends BaseBuilder
     {
         $this->enableExemptionOptimization = $value;
 
+        return $this;
+    }
+
+    /** @return Secure3dBuilder */
+    public function withMobileData($value)
+    {
+        $this->mobileData = $value;
         return $this;
     }
 

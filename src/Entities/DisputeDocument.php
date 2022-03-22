@@ -4,13 +4,12 @@ namespace GlobalPayments\Api\Entities;
 
 class DisputeDocument
 {
-    /**
-     * @var string
-     */
+    /** @var string */
+    public $id;
+
+    /** @var string */
     public $type;
 
-    /**
-     * @var string;
-     */
+    /** @var string */
     public $b64_content;
 }

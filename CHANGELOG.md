@@ -6,14 +6,22 @@
 
 
 ## Latest version
+#### Enhancements:
+- add "MOBILE_SDK" source in the 3DS2 flow initiate step (GP-API)
+- Adjust a CP Sale (GP-API)
+- Search [POST] for a Payment Method (GP-API)
+- Stored Payment Methods - POST Search (GP-API)
+- Get a Document associated with a Dispute (GP-API)
 
+
+## v3.0.2 (02/17/2022)
 #### Enhancements:
 
 - use "IN_APP" entry_mode when creating a transaction with digital wallets (GP-API)
 - add new unit tests for dcc and others
 
 ## v3.0.1 (01/27/2022)
-
+#### Enhancements:
 - Add fingerprint feature (GP-API)
 - Add Payment Link Id in the request for authorize (GP-API)
 - Add new unit tests on DCC CNP (GP-API)

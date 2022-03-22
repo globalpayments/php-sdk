@@ -53,6 +53,7 @@ class SearchCriteria extends Enum
     const TRANSACTION_STATUS = 'transactionStatus';
     const DISPUTE_STAGE = 'disputeStage';
     const DISPUTE_STATUS = 'disputeStatus';
+    const DISPUTE_DOCUMENT_ID = 'disputeDocumentId';
     const UNIQUE_DEVICE_ID = 'uniqueDeviceId';
     const USER_NAME = 'username';
     const CARDHOLDER_NAME = 'name';

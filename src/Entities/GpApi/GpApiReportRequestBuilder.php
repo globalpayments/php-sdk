@@ -7,6 +7,7 @@ use GlobalPayments\Api\Builders\ReportBuilder;
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\IRequestBuilder;
+use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Utils\StringUtils;
 
@@ -28,7 +29,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
      */
     public function buildRequest(BaseBuilder $builder, $config)
     {
-        $queryParams = [];
+        $queryParams = $payload = null;
         /**
          * @var TransactionReportBuilder $builder
          */
@@ -102,6 +103,9 @@ class GpApiReportRequestBuilder implements IRequestBuilder
             case ReportType::DISPUTE_DETAIL:
                 $endpoint = GpApiRequest::DISPUTES_ENDPOINT . '/' . $builder->searchBuilder->disputeId;
                 $verb = 'GET';
+                if ($builder->searchBuilder->disputeDocumentId) {
+                    $endpoint .= '/documents/' . $builder->searchBuilder->disputeDocumentId;
+                }
                 break;
             case ReportType::FIND_DISPUTES_PAGED:
                 $endpoint = GpApiRequest::DISPUTES_ENDPOINT;
@@ -121,6 +125,22 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $queryParams = array_merge($queryParams, $this->getDisputesParams($builder));
                 break;
             case ReportType::FIND_STORED_PAYMENT_METHODS_PAGED:
+                if ($builder->searchBuilder->paymentMethod instanceof CreditCardData) {
+                    $endpoint = GpApiRequest::PAYMENT_METHODS_ENDPOINT . '/search';
+                    $verb = 'POST';
+                    $paymentMethod = $builder->searchBuilder->paymentMethod;
+                    $card = [
+                        'number' => $paymentMethod->number,
+                        'expiry_month' => str_pad($paymentMethod->expMonth, 2, '0', STR_PAD_LEFT),
+                        'expiry_year' => substr(str_pad($paymentMethod->expYear, 4, '0', STR_PAD_LEFT), 2, 2)
+                    ];
+                    $payload = [
+                        'account_name' => $config->accessTokenInfo->tokenizationAccountName,
+                        'reference' => $builder->searchBuilder->referenceNumber,
+                        'card' => !empty($card) ? $card : null
+                    ];
+                    break;
+                }
                 $endpoint = GpApiRequest::PAYMENT_METHODS_ENDPOINT;
                 $verb = 'GET';
                 $this->addBasicParams($queryParams, $builder);
@@ -178,7 +198,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 return null;
         }
 
-        return new GpApiRequest($endpoint, $verb, null, $queryParams);
+        return new GpApiRequest($endpoint, $verb, $payload, $queryParams);
     }
 
     public function addBasicParams(&$data, $builder)

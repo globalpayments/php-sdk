@@ -32,6 +32,8 @@ use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
+use GlobalPayments\Api\Entities\Enums\SdkUiType;
+use GlobalPayments\Api\Entities\Enums\SdkInterface;
 
 class GpApi3DS2Test extends TestCase
 {
@@ -111,7 +113,7 @@ class GpApi3DS2Test extends TestCase
         $config->challengeNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
         $config->methodNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
         $config->merchantContactUrl = 'https://enp4qhvjseljg.x.pipedream.net/';
-        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
+//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
 
         return $config;
     }
@@ -191,7 +193,7 @@ class GpApi3DS2Test extends TestCase
             ->withServerTransactionId($secureEcom->serverTransactionId)
             ->execute();
 
-        $this->assertEquals(Secure3dStatus::NOT_AUTHENTICATED, $secureEcom->status);
+        $this->assertEquals(Secure3dStatus::FAILED, $secureEcom->status);
         $this->card->threeDSecure = $secureEcom;
 
         $response = $this->card->charge($this->amount)->withCurrency($this->currency)->execute();
@@ -1005,8 +1007,7 @@ class GpApi3DS2Test extends TestCase
     {
         $source = [
             AuthenticationSource::BROWSER,
-            AuthenticationSource::MERCHANT_INITIATED,
-            AuthenticationSource::MOBILE_SDK
+            AuthenticationSource::STORED_RECURRING
         ];
         foreach ($source as $value) {
             $secureEcom = Secure3dService::checkEnrollment($this->card)
@@ -1107,6 +1108,150 @@ class GpApi3DS2Test extends TestCase
             $this->assertEquals('40118', $e->responseCode);
             $this->assertEquals('Status Code: RESOURCE_NOT_FOUND - Authentication ' . $transactionId .
                 ' not found at this location.', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testChallengeRequired_v2_Initiate_MobileSDK()
+    {
+        $secureEcom = Secure3dService::checkEnrollment($this->card)
+            ->withCurrency($this->currency)
+            ->withAmount($this->amount)
+            ->execute();
+
+        $this->assertCheckEnrollment3DSV2($secureEcom);
+        $mobileData = new \GlobalPayments\Api\Entities\MobileData();
+        $mobileData->encodedData = 'ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K';
+        $mobileData->applicationReference = 'f283b3ec-27da-42a1-acea-f3f70e75bbdc';
+        $mobileData->sdkInterface = SdkInterface::BROWSER;
+        $mobileData->sdkUiTypes = [SdkUiType::HTML_OTHER];
+        $mobileData->ephemeralPublicKey = '{
+            "kty": "EC",
+            "crv": "P-256",
+            "x": "WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI",
+            "y": "Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw"
+        }';
+        $mobileData->maximumTimeout = 50;
+        $mobileData->referenceNumber = '3DS_LOA_SDK_PPFU_020100_00007';
+        $mobileData->sdkTransReference = 'b2385523-a66c-4907-ac3c-91848e8c0067';
+
+        $initAuth = Secure3dService::initiateAuthentication($this->card, $secureEcom)
+            ->withAmount($this->amount)
+            ->withCurrency($this->currency)
+            ->withAuthenticationSource(AuthenticationSource::MOBILE_SDK)
+            ->withMobileData($mobileData)
+            ->withMethodUrlCompletion(MethodUrlCompletion::YES)
+            ->withOrderCreateDate(date('Y-m-d H:i:s'))
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->execute();
+
+        $this->assertInitiate3DSV2($initAuth);
+        $this->assertEquals('HTML', $initAuth->acsInterface);
+        $this->assertEquals(SdkUiType::HTML_OTHER, $initAuth->acsUiTemplate);
+    }
+
+    public function testChallengeRequired_v2_Initiate_MobileDataAndBrowserData()
+    {
+        $secureEcom = Secure3dService::checkEnrollment($this->card)
+            ->withCurrency($this->currency)
+            ->withAmount($this->amount)
+            ->execute();
+
+        $this->assertCheckEnrollment3DSV2($secureEcom);
+        $mobileData = new \GlobalPayments\Api\Entities\MobileData();
+        $mobileData->encodedData = 'ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K';
+        $mobileData->applicationReference = 'f283b3ec-27da-42a1-acea-f3f70e75bbdc';
+        $mobileData->sdkInterface = SdkInterface::BROWSER;
+        $mobileData->sdkUiTypes = [SdkUiType::HTML_OTHER];
+        $mobileData->ephemeralPublicKey = '{
+            "kty": "EC",
+            "crv": "P-256",
+            "x": "WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI",
+            "y": "Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw"
+        }';
+        $mobileData->maximumTimeout = 50;
+        $mobileData->referenceNumber = '3DS_LOA_SDK_PPFU_020100_00007';
+        $mobileData->sdkTransReference = 'b2385523-a66c-4907-ac3c-91848e8c0067';
+
+        $initAuth = Secure3dService::initiateAuthentication($this->card, $secureEcom)
+            ->withAmount($this->amount)
+            ->withCurrency($this->currency)
+            ->withAuthenticationSource(AuthenticationSource::BROWSER)
+            ->withMobileData($mobileData)
+            ->withBrowserData($this->browserData)
+            ->withMethodUrlCompletion(MethodUrlCompletion::YES)
+            ->withOrderCreateDate(date('Y-m-d H:i:s'))
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->execute();
+
+        $this->assertInitiate3DSV2($initAuth);
+    }
+
+    public function testChallengeRequired_v2_Initiate_With_MobileData_AndSourceBrowser()
+    {
+        $secureEcom = Secure3dService::checkEnrollment($this->card)
+            ->withCurrency($this->currency)
+            ->withAmount($this->amount)
+            ->execute();
+
+        $this->assertCheckEnrollment3DSV2($secureEcom);
+        $mobileData = new \GlobalPayments\Api\Entities\MobileData();
+        $mobileData->encodedData = 'ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K';
+        $mobileData->applicationReference = 'f283b3ec-27da-42a1-acea-f3f70e75bbdc';
+        $mobileData->sdkInterface = SdkInterface::BROWSER;
+        $mobileData->sdkUiTypes = [SdkUiType::HTML_OTHER];
+        $mobileData->ephemeralPublicKey = '{
+            "kty": "EC",
+            "crv": "P-256",
+            "x": "WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI",
+            "y": "Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw"
+        }';
+        $mobileData->maximumTimeout = 50;
+        $mobileData->referenceNumber = '3DS_LOA_SDK_PPFU_020100_00007';
+        $mobileData->sdkTransReference = 'b2385523-a66c-4907-ac3c-91848e8c0067';
+
+        $exceptionCaught = false;
+        try {
+            Secure3dService::initiateAuthentication($this->card, $secureEcom)
+                ->withAmount($this->amount)
+                ->withCurrency($this->currency)
+                ->withAuthenticationSource(AuthenticationSource::BROWSER)
+                ->withMethodUrlCompletion(MethodUrlCompletion::YES)
+                ->withOrderCreateDate(date('Y-m-d H:i:s'))
+                ->withMobileData($mobileData)
+                ->execute();
+        } catch (ApiException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40233', $e->responseCode);
+            $this->assertStringStartsWith('Status Code: INVALID_REQUEST_DATA - Required Data Element browser_data', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testChallengeRequired_v2_Initiate_With_SourceMobileSdk_WithoutMobileData()
+    {
+        $secureEcom = Secure3dService::checkEnrollment($this->card)
+            ->withCurrency($this->currency)
+            ->withAmount($this->amount)
+            ->execute();
+
+        $this->assertCheckEnrollment3DSV2($secureEcom);
+
+        $exceptionCaught = false;
+        try {
+            Secure3dService::initiateAuthentication($this->card, $secureEcom)
+                ->withAmount($this->amount)
+                ->withCurrency($this->currency)
+                ->withAuthenticationSource(AuthenticationSource::MOBILE_SDK)
+                ->withMethodUrlCompletion(MethodUrlCompletion::YES)
+                ->withOrderCreateDate(date('Y-m-d H:i:s'))
+                ->execute();
+        } catch (ApiException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40233', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Required Data Element sdk_information', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }

@@ -202,6 +202,9 @@ class SearchCriteriaBuilder
      */
     public $disputeStatus;
 
+    /** @var string */
+    public $disputeDocumentId;
+
     /**
      * @var \DateTime
      */

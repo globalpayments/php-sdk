@@ -1,16 +1,18 @@
 <?php
 
-
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Enums\StoredPaymentMethodSortProperty;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\StoredPaymentMethodSummary;
+use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Utils\Logging\Logger;
+use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 
 class ReportingStoredPaymentMethodsTest extends TestCase
@@ -26,6 +28,7 @@ class ReportingStoredPaymentMethodsTest extends TestCase
         $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
         $config->appKey = '9pArW2uWoA8enxKc';
         $config->environment = Environment::TEST;
+//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
 
         return $config;
     }
@@ -194,6 +197,67 @@ class ReportingStoredPaymentMethodsTest extends TestCase
             $exceptionCaught = true;
             $this->assertEquals('40213', $e->responseCode);
             $this->assertEquals(sprintf('Status Code: INVALID_REQUEST_DATA - payment_method.id: %s contains unexpected data', $paymentMethodId), $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testFindStoredPaymentMethod_By_CardInfo()
+    {
+        $card = new CreditCardData();
+        $card->number = '4242424242424242';
+        $card->expMonth = '12';
+        $card->expYear = date('y', strtotime('+1 year'));
+
+        $response = ReportingService::findStoredPaymentMethodsPaged(1, 10)
+            ->where(SearchCriteria::PAYMENT_METHOD, $card)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response->result));
+
+        /** @var StoredPaymentMethodSummary $rs */
+        foreach ($response->result as $index => $rs) {
+            $this->assertEquals($card->expMonth, $rs->cardExpMonth);
+            $this->assertEquals($card->expYear, $rs->cardExpYear);
+            $this->assertEquals(substr_replace($card->number, 'xxxxxxxxxxxx', 0, -4), $rs->cardNumberLastFour);
+        }
+    }
+
+    public function testFindStoredPaymentMethod_By_OnlyCardNumberInfo()
+    {
+        $card = new CreditCardData();
+        $card->number = '4263970000005262';
+        $card->expMonth = '12';
+        $card->expYear = date('y', strtotime('+1 year'));
+
+        $response = ReportingService::findStoredPaymentMethodsPaged(1, 10)
+            ->where(SearchCriteria::PAYMENT_METHOD, $card)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response->result));
+
+        /** @var StoredPaymentMethodSummary $rs */
+        foreach ($response->result as $index => $rs) {
+            $this->assertEquals($card->expMonth, $rs->cardExpMonth);
+            $this->assertEquals($card->expYear, $rs->cardExpYear);
+            $this->assertEquals(substr_replace($card->number, 'xxxxxxxxxxxx', 0, -4), $rs->cardNumberLastFour);
+        }
+    }
+
+    public function testFindStoredPaymentMethod_By_WithoutMandatoryCardNumber()
+    {
+        $card = new CreditCardData();
+        $exceptionCaught = false;
+        try {
+            ReportingService::findStoredPaymentMethodsPaged(1, 10)
+                ->where(SearchCriteria::PAYMENT_METHOD, $card)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40005', $e->responseCode);
+            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields : number', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }

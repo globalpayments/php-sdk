@@ -99,7 +99,7 @@ class ReportingDisputesTest extends TestCase
     public function testReportFindDisputes_By_Brand()
     {
         $cardBrand = "VISA";
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $disputes = ReportingService::findDisputesPaged(1, 10)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
             ->andWith(SearchCriteria::CARD_BRAND, $cardBrand)
@@ -114,7 +114,7 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindDisputes_By_Status()
     {
-        $startDate = new \DateTime('2021-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $disputeStatus = array("UNDER_REVIEW", "WITH_MERCHANT", "CLOSED");
         foreach ($disputeStatus as $value) {
             $disputes = ReportingService::findDisputesPaged(1, 10)
@@ -133,7 +133,7 @@ class ReportingDisputesTest extends TestCase
     public function testReportFindDisputes_By_Stage()
     {
         $disputeStage = DisputeStage::CHARGEBACK;
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $disputes = ReportingService::findDisputesPaged(1, 10)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
             ->andWith(SearchCriteria::DISPUTE_STAGE, $disputeStage)
@@ -150,7 +150,7 @@ class ReportingDisputesTest extends TestCase
     {
         $merchantId = "8593872";
         $systemHierarchy = "111-23-099-002-005";
-        $startDate = new \DateTime('2020-01-01 midnight');
+        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $disputes = ReportingService::findDisputesPaged(1, 10)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
             ->andWith(DataServiceCriteria::MERCHANT_ID, $merchantId)
@@ -167,8 +167,8 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindDisputes_By_From_And_To_Stage_Time_Created()
     {
-        $startDate = new \DateTime('2020-01-01 midnight');
-        $endDate = new \DateTime('2021-01-21 midnight');
+        $startDate = (new \DateTime())->modify('-2 year +1 day');
+        $endDate = (new \DateTime())->modify('-10 days');
         $disputes = ReportingService::findDisputesPaged(1, 10)
             ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
             ->andWith(DataServiceCriteria::END_STAGE_DATE, $endDate)
@@ -340,6 +340,20 @@ class ReportingDisputesTest extends TestCase
             $this->assertEquals(DisputeStage::CHARGEBACK, $dispute->caseStage);
             $this->assertSame($disputesList[$index], $dispute);
         }
+    }
+
+    public function testFindDocumentAssociatedWithDispute()
+    {
+        $disputeId = 'DIS_SAND_abcd1235';
+        $documentId = 'DOC_MyEvidence_234234AVCDE-1';
+        $response = ReportingService::disputeDetail($disputeId)
+            ->where(SearchCriteria::DISPUTE_DOCUMENT_ID, $documentId)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertInstanceOf(DisputeDocument::class, $response);
+        $this->assertEquals($documentId, $response->id);
+        $this->assertNotEmpty($response->b64_content);
     }
 
     /***************************************

@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Entities\Reporting;
 
 
 use GlobalPayments\Api\Builders\ManagementBuilder;
+use GlobalPayments\Api\Entities\DisputeDocument;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 
 class DisputeSummary
@@ -193,6 +194,9 @@ class DisputeSummary
      * @var string
      */
     public $lastAdjustmentFunding;
+
+    /** @var array<DisputeDocument> */
+    public $documents;
 
     /**
      * @return ManagementBuilder

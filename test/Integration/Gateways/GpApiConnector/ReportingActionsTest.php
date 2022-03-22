@@ -10,6 +10,8 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Utils\Logging\Logger;
+use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 
 class ReportingActionsTest extends TestCase
@@ -25,6 +27,7 @@ class ReportingActionsTest extends TestCase
         $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
         $config->appKey = '9pArW2uWoA8enxKc';
         $config->environment = Environment::TEST;
+//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
 
         return $config;
     }
@@ -173,9 +176,11 @@ class ReportingActionsTest extends TestCase
 
     public function testFindActions_FilterBy_ResourceId()
     {
-        $resourceId = 'ACT_tc888Ub0L0dthnPjOqrjeSnB4JflNF';
+        $this->markTestSkipped('You need a valid resourceId in order to run this test.');
+        $resourceId = 'TRN_cf4e1008-c921-4096-bec9-2372cb9476d8';
         $response = ReportingService::findActionsPaged(1, 10)
             ->where(SearchCriteria::RESOURCE_ID, $resourceId)
+            ->andWith(SearchCriteria::RESOURCE, 'TRANSACTION')
             ->execute();
 
         $this->assertNotNull($response);

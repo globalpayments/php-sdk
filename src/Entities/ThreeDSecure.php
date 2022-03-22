@@ -26,6 +26,13 @@ class ThreeDSecure
      */
     public $acsInfoIndicator;
 
+    /** @var string */
+    public $acsInterface;
+
+
+    /** @var string */
+    public $acsUiTemplate;
+
     /**
      * The algorithm used
      *
@@ -368,6 +375,8 @@ class ThreeDSecure
             $this->acsTransactionId = $this->mergeValue($this->acsTransactionId, $secureEcom->acsTransactionId);
             $this->acsEndVersion = $this->mergeValue($this->acsEndVersion, $secureEcom->acsEndVersion);
             $this->acsStartVersion = $this->mergeValue($this->acsStartVersion, $secureEcom->acsStartVersion);
+            $this->acsInterface = $this->mergeValue($this->acsInterface, $secureEcom->acsInterface);
+            $this->acsUiTemplate = $this->mergeValue($this->acsUiTemplate, $secureEcom->acsUiTemplate);
             $this->algorithm = $this->mergeValue($this->algorithm, $secureEcom->algorithm);
             $this->amount = $this->mergeValue($this->amount, $secureEcom->amount);
             $this->authenticationSource = $this->mergeValue($this->authenticationSource, $secureEcom->authenticationSource);

@@ -4,7 +4,9 @@ namespace GlobalPayments\Api\Mapping;
 
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\BatchSummary;
+use GlobalPayments\Api\Entities\DisputeDocument;
 use GlobalPayments\Api\Entities\DccRateData;
+use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\ReportType;
@@ -167,6 +169,14 @@ class GpApiMapping
                 }
                 break;
             case ReportType::DISPUTE_DETAIL:
+                if ($response->action->type == 'DOCUMENT_SINGLE'){
+                    $report = new DisputeDocument();
+                    $report->id = $response->id;
+                    $report->b64_content = $response->b64_content;
+                } else {
+                    $report = self::mapDisputeSummary($response);
+                }
+                break;
             case ReportType::SETTLEMENT_DISPUTE_DETAIL:
                 $report = self::mapDisputeSummary($response);
                 break;
@@ -371,6 +381,16 @@ class GpApiMapping
                 $summary->transactionAuthCode = $card->authcode;
             }
         }
+        if (!empty($response->documents)) {
+            foreach ($response->documents as $document) {
+                if (!empty($document->id)) {
+                    $disputeDocument = new DisputeDocument();
+                    $disputeDocument->id = $document->id;
+                    $disputeDocument->type = !empty($document->type) ? $document->type : null;
+                    $summary->documents[] = $disputeDocument;
+                }
+            }
+        }
 
         if (!empty($card)) {
             $summary->transactionARN = $card->arn;
@@ -480,6 +500,9 @@ class GpApiMapping
         $threeDSecure->payerAuthenticationRequest = !empty($response->three_ds->method_data->encoded_method_data) ?
             $response->three_ds->method_data->encoded_method_data : null;
         $threeDSecure->issuerAcsUrl = !empty($response->three_ds->method_url) ? $response->three_ds->method_url : null;
+        $threeDSecure->authenticationSource = !empty($response->three_ds->authentication_source) ?
+            $response->three_ds->authentication_source : null;
+
         if (
             !empty($response->three_ds->acs_challenge_request_url) &&
             $threeDSecure->status == Secure3dStatus::CHALLENGE_REQUIRED
@@ -488,6 +511,19 @@ class GpApiMapping
             $threeDSecure->payerAuthenticationRequest = !empty($response->three_ds->challenge_value) ?
                 $response->three_ds->challenge_value : null;
         }
+        if (
+            $threeDSecure->authenticationSource == AuthenticationSource::MOBILE_SDK &&
+            !empty($response->three_ds->mobile_data)
+        ) {
+            $mobileData = $response->three_ds->mobile_data;
+            $threeDSecure->payerAuthenticationRequest = !empty($mobileData->acs_signed_content) ?
+                $mobileData->acs_signed_content : null;
+            $threeDSecure->acsInterface = !empty($mobileData->acs_rendering_type->acs_interface) ?
+                $mobileData->acs_rendering_type->acs_interface : null;
+            $threeDSecure->acsUiTemplate = !empty($mobileData->acs_rendering_type->acs_ui_template) ?
+                $mobileData->acs_rendering_type->acs_ui_template : null;
+        }
+
         $threeDSecure->setCurrency($response->currency);
         $threeDSecure->setAmount(StringUtils::toAmount($response->amount));
         $threeDSecure->authenticationValue = !empty($response->three_ds->authentication_value) ?
@@ -508,8 +544,6 @@ class GpApiMapping
             $response->notifications->challenge_return_url : null;
         $threeDSecure->liabilityShift = !empty($response->three_ds->liability_shift) ?
             $response->three_ds->liability_shift : null;
-        $threeDSecure->authenticationSource = !empty($response->three_ds->authentication_source) ?
-            $response->three_ds->authentication_source : null;
         $threeDSecure->authenticationType = !empty($response->three_ds->authentication_request_type) ?
             $response->three_ds->authentication_request_type : null;
         $threeDSecure->acsInfoIndicator = !empty($response->three_ds->acs_decoupled_response_indicator) ?

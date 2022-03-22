@@ -185,6 +185,9 @@ class ManagementBuilder extends TransactionBuilder
     /** @var DccRateData */
     public $dccRateData;
 
+    /** @var string */
+    public $tagData;
+
     /**
      * {@inheritdoc}
      *
@@ -566,10 +569,15 @@ class ManagementBuilder extends TransactionBuilder
     public function withBankTransferData($eCheck)
     {
         $this->bankTransferDetails = $eCheck;
-
         return $this;
     }
 
+    public function withTagData($value)
+    {
+        $this->tagData = $value;
+        return $this;
+    }
+	
     /**
      * Set the request dccRateData
      *

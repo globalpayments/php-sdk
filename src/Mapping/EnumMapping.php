@@ -7,6 +7,7 @@ use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\Api\Entities\Enums\SdkUiType;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 
 class EnumMapping
@@ -56,7 +57,7 @@ class EnumMapping
     /**
      * @param GatewayProvider $gateway
      * @param StoredCredentialInitiator $value
-     * @return string|null
+     * @return string
      */
     public static function mapStoredCredentialInitiator($gateway, $value)
     {
@@ -68,10 +69,10 @@ class EnumMapping
                     case StoredCredentialInitiator::MERCHANT:
                         return strtoupper(StoredCredentialInitiator::MERCHANT);
                     default:
-                        return null;
+                        return $value;
                 }
             default:
-                return null;
+                return $value;
         }
     }
 
@@ -105,6 +106,21 @@ class EnumMapping
                 switch ($value) {
                     case 'DinersClub':
                         return CardType::DINERS;
+                    default:
+                        return $value;
+                }
+            default:
+                return null;
+        }
+    }
+
+    public static function mapSdkUiType($gateway, $value)
+    {
+        switch ($gateway) {
+            case GatewayProvider::GP_API:
+                switch ($value) {
+                    case SdkUiType::OOB:
+                        return 'OUT_OF_BAND';
                     default:
                         return $value;
                 }
