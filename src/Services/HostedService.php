@@ -7,6 +7,7 @@ use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
@@ -26,7 +27,7 @@ class HostedService
     /**
      * Instatiates a new object
      *
-     * @param ServicesConfig $config Service config
+     * @param ServicesConfig|GpEcomConfig $config Service/Ecom config
      *
      * @return void
      */
