@@ -66,6 +66,7 @@ class ConnectionContainer
                 static::$instance = new PaxController($config);
                 break;
             case DeviceType::UPA_SATURN_1000:
+            case DeviceType::UPA_VERIFONE_T650P:
                 static::$instance = new UpaController($config);
                 break;
         }

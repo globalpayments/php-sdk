@@ -7,6 +7,11 @@
 
 ## Latest version
 #### Enhancements:
+- UPA devices: add support for batch summary report, batch detail report, and open tab details report
+- UPA devices: various modifications to account for latest UPA version's changes 
+
+## v3.0.3 (03/21/2022)
+#### Enhancements:
 - add "MOBILE_SDK" source in the 3DS2 flow initiate step (GP-API)
 - Adjust a CP Sale (GP-API)
 - Search [POST] for a Payment Method (GP-API)

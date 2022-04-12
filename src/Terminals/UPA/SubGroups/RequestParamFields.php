@@ -4,7 +4,7 @@ namespace GlobalPayments\Api\Terminals\UPA\SubGroups;
 
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\Terminals\Interfaces\IRequestSubGroup;
-use GlobalPayments\Api\Terminals\Enums\ControlCodes;
+use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 
 class RequestParamFields implements IRequestSubGroup
 {
@@ -24,6 +24,13 @@ class RequestParamFields implements IRequestSubGroup
      * Token returned previously by the host.
      */
     public $tokenValue = null;
+
+    /*
+     *Card On File Indicator
+     */
+    public $cardOnFileIndicator = null;
+
+    public $cardBrandTransId = null;
         
     /*
      * return Array
@@ -40,6 +47,15 @@ class RequestParamFields implements IRequestSubGroup
     {
         if (!empty($builder->clerkId)) {
             $this->clerkId = $builder->clerkId;
+        }
+
+        if (!empty($builder->cardOnFileIndicator)) {
+            $this->cardOnFileIndicator = ($builder->cardOnFileIndicator === StoredCredentialInitiator::CARDHOLDER)
+                                            ? 'C' : 'M';
+        }
+
+        if (!empty($builder->cardBrandTransId)) {
+            $this->cardBrandTransId = $builder->cardBrandTransId;
         }
         
         if (!empty($builder->requestMultiUseToken)) {

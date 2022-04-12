@@ -62,12 +62,12 @@ class UpaController extends DeviceController
     public function manageTransaction($builder)
     {
         $requestId = (!empty($builder->requestId)) ?
-                        $builder->requestId :
-                        $this->requestIdProvider->getRequestId();
-        
+            $builder->requestId :
+            $this->requestIdProvider->getRequestId();
+
         $requestTransactionFields = new RequestTransactionFields();
         $requestTransactionFields->setParams($builder);
-        
+
         $transactionType = $this->mapTransactionType($builder->transactionType);
         return $this->doTransaction(
             $transactionType,
@@ -80,16 +80,17 @@ class UpaController extends DeviceController
     public function processTransaction($builder)
     {
         $requestId = (!empty($builder->requestId)) ?
-                        $builder->requestId :
-                        $this->requestIdProvider->getRequestId();
+            $builder->requestId :
+            $this->requestIdProvider->getRequestId();
 
         $requestParamFields = new RequestParamFields();
         $requestParamFields->setParams($builder);
-        
+
         $requestTransactionFields = new RequestTransactionFields();
         $requestTransactionFields->setParams($builder);
-       
+
         $transactionType = $this->mapTransactionType($builder->transactionType);
+
         return $this->doTransaction(
             $transactionType,
             $requestId,
@@ -113,36 +114,40 @@ class UpaController extends DeviceController
                 return UpaMessageId::CARD_VERIFY;
             case TransactionType::REVERSAL:
                 return UpaMessageId::REVERSAL;
+            case TransactionType::AUTH:
+                return UpaMessageId::PRE_AUTH;
+            case TransactionType::CAPTURE:
+                return UpaMessageId::CAPTURE;
+            case TransactionType::TOKENIZE:
+                return UpaMessageId::TOKENIZE;
             default:
                 throw new UnsupportedTransactionException(
                     'The selected gateway does not support this transaction type.'
                 );
         }
     }
-           
+
     private function doTransaction(
         $requestType,
         $requestId,
         RequestParamFields $requestParamFields = null,
         RequestTransactionFields $requestTransactionFields = null
     ) {
-    
+
         $data = [];
-        
         if (!is_null($requestParamFields) && !empty($requestParamFields->getElementString())) {
             $data['params'] = $requestParamFields->getElementString();
         }
-        
+
         if (!is_null($requestTransactionFields) && !empty($requestTransactionFields->getElementString())) {
             $data['transaction'] = $requestTransactionFields->getElementString();
         }
-        
+
         $message = TerminalUtils::buildUPAMessage($requestType, $requestId, $data);
-        
         $response = $this->send($message, $requestType);
         return new UpaDeviceResponse($response, $requestType);
     }
-        
+
     public function processReport($builder)
     {
         return false;

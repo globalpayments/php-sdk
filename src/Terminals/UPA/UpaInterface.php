@@ -13,6 +13,7 @@ use GlobalPayments\Api\Terminals\UPA\Builders\UpaTerminalManageBuilder;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Terminals\UPA\Responses\UpaBatchReport;
+use GlobalPayments\Api\Terminals\UPA\Responses\UpaReportHandler;
 
 /**
  * Heartland payment application implementation of device messages
@@ -72,12 +73,14 @@ class UpaInterface implements IDeviceInterface
 
     public function creditAuth($amount = null)
     {
-        throw new UnsupportedTransactionException('');
+        return (new TerminalAuthBuilder(TransactionType::AUTH, PaymentMethodType::CREDIT))
+                        ->withAmount($amount);
     }
 
     public function creditCapture($amount = null)
     {
-        throw new UnsupportedTransactionException('');
+        return (new UpaTerminalManageBuilder(TransactionType::CAPTURE, PaymentMethodType::CREDIT))
+                        ->withAmount($amount);
     }
 
     public function creditRefund($amount = null)
@@ -111,6 +114,11 @@ class UpaInterface implements IDeviceInterface
     {
         return (new UpaTerminalManageBuilder(TransactionType::EDIT, PaymentMethodType::CREDIT))
             ->withGratuity($tipAmount);
+    }
+    
+    public function creditToken()
+    {
+        return (new TerminalAuthBuilder(TransactionType::TOKENIZE, PaymentMethodType::CREDIT));
     }
     
     public function debitRefund($amount = null)
@@ -309,6 +317,18 @@ class UpaInterface implements IDeviceInterface
     {
         throw new UnsupportedTransactionException('');
     }
+    
+    public function getOpenTabDetails()
+    {
+        $message = TerminalUtils::buildUPAMessage(
+            UpaMessageId::GET_OPEN_TAB_DETAILS,
+            $this->upaController->requestIdProvider->getRequestId()
+        );
+        
+        $rawResponse = $this->upaController->send($message, UpaMessageId::GET_OPEN_TAB_DETAILS);
+        return new UpaReportHandler($rawResponse, UpaMessageId::GET_OPEN_TAB_DETAILS);
+    }
+    
     
     #endregion
 }

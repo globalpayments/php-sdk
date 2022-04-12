@@ -28,7 +28,7 @@ class UpaBatchTests extends TestCase
     protected function getConfig()
     {
         $config = new ConnectionConfig();
-        $config->ipAddress = '192.168.47.79';
+        $config->ipAddress = '192.168.213.79';
         $config->port = '8081';
         $config->deviceType = DeviceType::UPA_SATURN_1000;
         $config->connectionMode = ConnectionModes::TCP_IP;
@@ -53,5 +53,24 @@ class UpaBatchTests extends TestCase
         $this->assertEquals("00", $response->deviceResponseCode);
         $this->assertNotNull($response->batchSummary);
         $this->assertNotNull($response->batchTransactions);
+    }
+    
+    public function testGetOpenTabDetails()
+    {
+        $response = $this->device->getOpenTabDetails();
+        
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertNotNull($response->reportRecords);
+        
+        foreach ($response->reportRecords as $transaction) {
+            $captureResponse = $this->device->creditCapture($transaction['authorizedAmount'])
+            ->withTransactionId($transaction['referenceNumber'])
+            ->execute();
+            
+            $this->assertNotNull($captureResponse);
+            $this->assertEquals('00', $captureResponse->deviceResponseCode);
+            $this->assertNotNull($captureResponse->transactionId);
+        }
     }
 }

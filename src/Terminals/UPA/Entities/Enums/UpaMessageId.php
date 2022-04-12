@@ -21,4 +21,8 @@ class UpaMessageId extends Enum
     const REVERSAL = "Reversal";
     const GET_BATCH_REPORT = "GetBatchReport";
     const BALANCE_INQUIRY = "BalanceInquiry";
+    const PRE_AUTH = "PreAuth";
+    const CAPTURE = "AuthCompletion";
+    const TOKENIZE = "Tokenize";
+    const GET_OPEN_TAB_DETAILS = "GetOpenTabDetails";
 }

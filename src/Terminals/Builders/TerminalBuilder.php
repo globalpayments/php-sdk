@@ -31,6 +31,20 @@ abstract class TerminalBuilder extends TransactionBuilder
      */
     public $clerkId;
 
+    /*
+     * Card On File Indicator, C - Cardholder initiated transaction, M - Merchant initiated transaction
+     *
+     * @var int
+     */
+    public $cardOnFileIndicator;
+
+    /*
+     * Network Transaction Identifier
+     *
+     * @var int
+     */
+    public $cardBrandTransId;
+
     public function __construct($type, $paymentMethodType)
     {
         $this->paymentMethodType = $paymentMethodType;
@@ -46,6 +60,18 @@ abstract class TerminalBuilder extends TransactionBuilder
     public function withClerkId($clerkId)
     {
         $this->clerkId = $clerkId;
+        return $this;
+    }
+
+    public function withCardOnFileIndicator($cardOnFileIndicator)
+    {
+        $this->cardOnFileIndicator = $cardOnFileIndicator;
+        return $this;
+    }
+
+    public function withCardBrandTransId ($cardBrandTransId)
+    {
+        $this->cardBrandTransId = $cardBrandTransId;
         return $this;
     }
 }

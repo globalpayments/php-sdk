@@ -55,6 +55,8 @@ class TerminalAuthBuilder extends TerminalBuilder
     public $tokenRequest;
     
     public $tokenValue;
+    
+    public $autoSubstantiation;
 
     /**
      *
@@ -168,7 +170,7 @@ class TerminalAuthBuilder extends TerminalBuilder
     {
         if ($this->paymentMethod == null || ! ($this->paymentMethod instanceof CreditCardData)) {
             $this->paymentMethod = new CreditCardData();
-            $this->paymentMethod->token = value;
+            $this->paymentMethod->token = $value;
         }
         return $this;
     }
@@ -248,5 +250,11 @@ class TerminalAuthBuilder extends TerminalBuilder
     {
         $this->clientTransactionId = $clientTransactionId;
         return $this;
-    }    
+    } 
+    
+    public function withAutoSubstantiation($healthCareCardData)
+    {
+        $this->autoSubstantiation = $healthCareCardData;
+        return $this;
+    }
 }

@@ -51,7 +51,22 @@ class RequestTransactionFields implements IRequestSubGroup
     public $tranNo = null;
     
     public $totalAmount = null;
-        
+    
+    public $amount = null;
+    
+    public $referenceNumber = null;
+    
+    //Health Card related fields
+    public $cardIsHSAFSA = null;
+    
+    public $prescriptionAmount = null;
+    
+    public $clinicAmount = null;
+    
+    public $dentalAmount = null;
+    
+    public $visionOpticalAmount = null;
+    
     /*
      * return Array
      */
@@ -68,6 +83,9 @@ class RequestTransactionFields implements IRequestSubGroup
         if (isset($builder->amount)) {
             if ($builder->transactionType == TransactionType::REFUND) {
                 $this->totalAmount = sprintf('%08.2f', $builder->amount);
+            } elseif ($builder->transactionType == TransactionType::AUTH
+                || $builder->transactionType == TransactionType::CAPTURE) {
+                $this->amount = sprintf('%08.2f', $builder->amount);
             } else {
                 $this->baseAmount = sprintf('%07.2f', $builder->amount);
             }
@@ -91,6 +109,40 @@ class RequestTransactionFields implements IRequestSubGroup
         
         if (!empty($builder->terminalRefNumber)) {
             $this->tranNo = $builder->terminalRefNumber;
+        }
+        
+        if ($builder->paymentMethod != null &&
+            $builder->paymentMethod instanceof TransactionReference &&
+            !empty($builder->paymentMethod->transactionId)) {
+            $this->referenceNumber = $builder->paymentMethod->transactionId;
+        }
+        
+        if (!empty($builder->autoSubstantiation)) {
+            $this->setHealthCardData($builder->autoSubstantiation);
+        }
+    }
+    
+    private function setHealthCardData($autoSubstantiation)
+    {
+        if (!empty($autoSubstantiation->getPrescriptionSubTotal())) {
+            $this->prescriptionAmount = sprintf('%06.2f', $autoSubstantiation->getPrescriptionSubTotal());
+        }
+        
+        if (!empty($autoSubstantiation->getClinicSubTotal())) {
+            $this->clinicAmount = sprintf('%06.2f', $autoSubstantiation->getClinicSubTotal());
+        }
+        
+        if (!empty($autoSubstantiation->getDentalSubTotal())) {
+            $this->dentalAmount = sprintf('%06.2f', $autoSubstantiation->getDentalSubTotal());
+        }
+        
+        if (!empty($autoSubstantiation->getVisionSubTotal())) {
+            $this->visionOpticalAmount = sprintf('%06.2f', $autoSubstantiation->getVisionSubTotal());
+        }
+        
+        if ($this->prescriptionAmount > 0 || $this->clinicAmount > 0 || $this->dentalAmount > 0
+            || $this->visionOpticalAmount > 0) {
+            $this->cardIsHSAFSA = 1;
         }
     }
 }

@@ -45,6 +45,7 @@ class UpaResponse extends UpaResponseHandler
     public $tipDue;
     public $availableBalance;
     public $terminalRefNumber;
+    public $cardBrandTransId;
     
     //payment
     public $cardHolderName;
@@ -145,6 +146,7 @@ class UpaResponse extends UpaResponseHandler
             'baseDue' => 'baseDue',
             'taxDue' => 'taxDue',
             'tipDue' => 'tipDue',
+            'cardBrandTransId' => 'cardBrandTransId',
             
             //payment
             'cardHolderName' => 'cardHolderName',
