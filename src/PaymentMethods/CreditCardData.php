@@ -124,6 +124,7 @@ class CreditCardData extends Credit implements ICardData
      * Verify whether the cardholder is enrolled in 3DS
      *
      * @return bool
+     * @deprecated verifyEnrolled is deprecated. Please use Secure3dService::checkEnrollment
      */
     public function verifyEnrolled($amount, $currency, $orderId = null)
     {
@@ -156,6 +157,7 @@ class CreditCardData extends Credit implements ICardData
 
     /**
      * @return bool
+     * @deprecated verifySignature is deprecated. Please use Secure3dService::getAuthenticationData
      */
     public function verifySignature($authorizationResponse, $merchantData = null, $amount = null, $currency = null, $orderId = null)
     {

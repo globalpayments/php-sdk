@@ -193,7 +193,7 @@ class GpApi3DS2Test extends TestCase
             ->withServerTransactionId($secureEcom->serverTransactionId)
             ->execute();
 
-        $this->assertEquals(Secure3dStatus::FAILED, $secureEcom->status);
+        $this->assertEquals(Secure3dStatus::NOT_AUTHENTICATED, $secureEcom->status);
         $this->card->threeDSecure = $secureEcom;
 
         $response = $this->card->charge($this->amount)->withCurrency($this->currency)->execute();
@@ -1005,14 +1005,25 @@ class GpApi3DS2Test extends TestCase
 
     public function testCardHolderEnrolled_ChallengeRequired_v2_Initiate_AllSourceValues()
     {
+        $this->markTestSkipped('MERCHANT_INITIATED and STORED_RECURRING failing, issue raised with UCP team.');
         $source = [
             AuthenticationSource::BROWSER,
+            AuthenticationSource::MERCHANT_INITIATED,
             AuthenticationSource::STORED_RECURRING
         ];
+
+        $storeCredentials = new StoredCredential();
+        $storeCredentials->initiator = StoredCredentialInitiator::PAYER;
+        $storeCredentials->type = StoredCredentialType::SPLIT_OR_DELAYED_SHIPMENT;
+        $storeCredentials->sequence = StoredCredentialSequence::FIRST;
+        $storeCredentials->reason = StoredCredentialReason::INCREMENTAL;
+
         foreach ($source as $value) {
             $secureEcom = Secure3dService::checkEnrollment($this->card)
                 ->withCurrency($this->currency)
                 ->withAmount($this->amount)
+                ->withAuthenticationSource($value)
+                ->withStoredCredential($storeCredentials)
                 ->execute();
 
             $this->assertCheckEnrollment3DSV2($secureEcom);
@@ -1025,6 +1036,7 @@ class GpApi3DS2Test extends TestCase
                 ->withOrderCreateDate(date('Y-m-d H:i:s'))
                 ->withAddress($this->shippingAddress, AddressType::SHIPPING)
                 ->withBrowserData($this->browserData)
+                ->withStoredCredential($storeCredentials)
                 ->execute();
 
             $this->assertInitiate3DSV2($initAuth);

@@ -7,6 +7,7 @@ use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\Api\Entities\Enums\MessageCategory;
 use GlobalPayments\Api\Entities\Enums\SdkUiType;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 
@@ -126,6 +127,21 @@ class EnumMapping
                 }
             default:
                 return null;
+        }
+    }
+
+    public static function mapMessageCategory($gateway, $value)
+    {
+        switch ($gateway) {
+            case GatewayProvider::GP_API:
+                switch ($value) {
+                    case MessageCategory::PAYMENT_AUTHENTICATION:
+                        return 'PAYMENT';
+                    default:
+                        return $value;
+                }
+            default:
+                return $value;
         }
     }
 }

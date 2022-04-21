@@ -24,10 +24,14 @@ use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 class ReportingDisputesTest extends TestCase
 {
     private $arn;
+    private $startDate;
+    private $endDate;
 
     public function setup()
     {
         ServicesContainer::configureService($this->setUpConfig());
+        $this->startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
+        $this->endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
     }
 
     public function setUpConfig()
@@ -81,11 +85,10 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindDisputes_By_ARN_NotFound()
     {
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $arn = "874091790340471";
         try {
             ReportingService::findDisputesPaged(1, 10)
-                ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+                ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
                 ->andWith(SearchCriteria::AQUIRER_REFERENCE_NUMBER, $arn)
                 ->execute();
         } catch (GatewayException $e) {
@@ -99,9 +102,8 @@ class ReportingDisputesTest extends TestCase
     public function testReportFindDisputes_By_Brand()
     {
         $cardBrand = "VISA";
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $disputes = ReportingService::findDisputesPaged(1, 10)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(SearchCriteria::CARD_BRAND, $cardBrand)
             ->execute();
 
@@ -114,11 +116,10 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindDisputes_By_Status()
     {
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $disputeStatus = array("UNDER_REVIEW", "WITH_MERCHANT", "CLOSED");
         foreach ($disputeStatus as $value) {
             $disputes = ReportingService::findDisputesPaged(1, 10)
-                ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+                ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
                 ->andWith(SearchCriteria::DISPUTE_STATUS, $value)
                 ->execute();
 
@@ -133,9 +134,8 @@ class ReportingDisputesTest extends TestCase
     public function testReportFindDisputes_By_Stage()
     {
         $disputeStage = DisputeStage::CHARGEBACK;
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $disputes = ReportingService::findDisputesPaged(1, 10)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(SearchCriteria::DISPUTE_STAGE, $disputeStage)
             ->execute();
 
@@ -150,9 +150,8 @@ class ReportingDisputesTest extends TestCase
     {
         $merchantId = "8593872";
         $systemHierarchy = "111-23-099-002-005";
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $disputes = ReportingService::findDisputesPaged(1, 10)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(DataServiceCriteria::MERCHANT_ID, $merchantId)
             ->andWith(DataServiceCriteria::SYSTEM_HIERARCHY, $systemHierarchy)
             ->execute();
@@ -167,26 +166,24 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindDisputes_By_From_And_To_Stage_Time_Created()
     {
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $endDate = (new \DateTime())->modify('-10 days');
         $disputes = ReportingService::findDisputesPaged(1, 10)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(DataServiceCriteria::END_STAGE_DATE, $endDate)
             ->execute();
 
         $this->assertNotNull($disputes);
         $this->assertInstanceOf(PagedResult::class, $disputes);
         foreach ($disputes->result as $dispute) {
-            $this->assertTrue($dispute->caseIdTime >= $startDate && $dispute->caseIdTime <= $endDate);
+            $this->assertTrue($dispute->caseIdTime >= $this->startDate && $dispute->caseIdTime <= $this->endDate);
         }
     }
 
     public function testReportFindDisputes_Order_By_Id()
     {
-        $startDate = new \DateTime('2020-02-01 midnight');
         $disputes = ReportingService::findDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::DESC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->execute();
 
         $this->assertNotNull($disputes);
@@ -205,13 +202,11 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindDisputes_Order_By_ARN()
     {
-        $startDate = (new \DateTime())->modify('-1 year');
-        $endDate = (new \DateTime())->modify('-30 days');
         // EndStageDate is mandatory in order to be able to sort by ARN
         $disputes = ReportingService::findDisputesPaged(1, 25)
             ->orderBy(DisputeSortProperty::ARN, SortDirection::DESC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->andWith(DataServiceCriteria::END_STAGE_DATE, $endDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
+            ->andWith(DataServiceCriteria::END_STAGE_DATE, $this->endDate)
             ->execute();
 
         $this->assertNotNull($disputes);
@@ -230,10 +225,9 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindDisputes_Order_By_Brand()
     {
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $disputes = ReportingService::findDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::BRAND, SortDirection::DESC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->execute();
 
         $this->assertNotNull($disputes);
@@ -252,10 +246,9 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindDisputes_Order_By_Status()
     {
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $disputes = ReportingService::findDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::STATUS, SortDirection::DESC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->execute();
 
         $this->assertNotNull($disputes);
@@ -274,10 +267,9 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindDisputes_Order_By_Stage()
     {
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $disputes = ReportingService::findDisputesPaged(1, 20)
             ->orderBy(DisputeSortProperty::STAGE, SortDirection::DESC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->execute();
 
         $this->assertNotNull($disputes);
@@ -296,10 +288,9 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindDisputes_Order_By_Id_With_Brand_VISA()
     {
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $disputes = ReportingService::findDisputesPaged(1, 30)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(SearchCriteria::CARD_BRAND, CardType::VISA)
             ->execute();
 
@@ -320,10 +311,9 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindDisputes_Order_By_Id_With_Stage_Chargeback()
     {
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $disputes = ReportingService::findDisputesPaged(1, 30)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(SearchCriteria::DISPUTE_STAGE, DisputeStage::CHARGEBACK)
             ->execute();
 
@@ -387,10 +377,9 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportSettlementDispute_Order_By_Id_With_Status_Funded()
     {
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_DEPOSIT_DATE, $startDate)
+            ->where(DataServiceCriteria::START_DEPOSIT_DATE, $this->startDate)
             ->andWith(SearchCriteria::DISPUTE_STATUS, DisputeStatus::SETTLE_DISPUTE_FUNDED)
             ->execute();
 
@@ -403,10 +392,9 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindSettlementDisputes_Order_By_Id()
     {
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->execute();
 
         $this->assertNotNull($summary);
@@ -425,10 +413,9 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindSettlementDisputes_Order_By_ARN()
     {
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ARN, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->execute();
 
         $this->assertNotNull($summary);
@@ -447,10 +434,9 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindSettlementDisputes_Order_By_Brand()
     {
-        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::BRAND, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->execute();
 
         $this->assertNotNull($summary);
@@ -469,10 +455,9 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindSettlementDisputes_Order_By_Stage()
     {
-        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::STAGE, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->execute();
 
         $this->assertNotNull($summary);
@@ -492,12 +477,11 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindSettlementDisputes_FilterBy_ARN()
     {
-        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $arn = '74500010037624410827759';
 
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(SearchCriteria::AQUIRER_REFERENCE_NUMBER, $arn)
             ->execute();
 
@@ -510,12 +494,11 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindSettlementDisputes_FilterBy_ARN_NotFound()
     {
-        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $arn = '00000010037624410827111';
 
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(SearchCriteria::AQUIRER_REFERENCE_NUMBER, $arn)
             ->execute();
 
@@ -526,12 +509,11 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindSettlementDisputes_FilterBy_Brand()
     {
-        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $brand = 'VISA';
 
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(SearchCriteria::CARD_BRAND, $brand)
             ->execute();
 
@@ -544,12 +526,11 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindSettlementDisputes_FilterBy_Brand_NotFound()
     {
-        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $brand = 'MASTERCAR';
 
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(SearchCriteria::CARD_BRAND, $brand)
             ->execute();
 
@@ -560,10 +541,9 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindSettlementDisputes_FilterBy_Stage()
     {
-        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(SearchCriteria::DISPUTE_STAGE, DisputeStage::CHARGEBACK)
             ->execute();
 
@@ -576,31 +556,27 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindSettlementDisputes_FilterBy_FromAndToStageTimeCreated()
     {
-        $startDate = (new \DateTime())->modify('-1 year +1 day');
-        $endDate = (new \DateTime())->modify('-30 days');
-
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
-            ->andWith(DataServiceCriteria::END_STAGE_DATE, $endDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
+            ->andWith(DataServiceCriteria::END_STAGE_DATE, $this->endDate)
             ->execute();
 
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
         foreach ($summary->result as $dispute) {
-            $this->assertTrue($dispute->caseTime <= $endDate);
+            $this->assertTrue($dispute->caseTime <= $this->endDate);
         }
     }
 
     public function testReportFindSettlementDisputes_FilterBy_SystemMidAndHierarchy()
     {
-        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $systemMid = '101023947262';
         $systemHierarchy = '055-70-024-011-019';
 
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(DataServiceCriteria::MERCHANT_ID, $systemMid)
             ->andWith(DataServiceCriteria::SYSTEM_HIERARCHY, $systemHierarchy)
             ->execute();
@@ -615,12 +591,11 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindSettlementDisputes_FilterBy_WrongSystemMid()
     {
-        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $systemHierarchy = '000-70-024-011-111';
 
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(DataServiceCriteria::SYSTEM_HIERARCHY, $systemHierarchy)
             ->execute();
 
@@ -631,12 +606,11 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindSettlementDisputes_FilterBy_WrongSystemHierarchy()
     {
-        $startDate = (new \DateTime())->modify('-1 year +1 day');
         $systemMid = '000023947222';
 
         $summary = ReportingService::findSettlementDisputesPaged(1, 10)
             ->orderBy(DisputeSortProperty::ID, SortDirection::ASC)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(DataServiceCriteria::MERCHANT_ID, $systemMid)
             ->execute();
 
@@ -789,10 +763,9 @@ class ReportingDisputesTest extends TestCase
 
     public function testFindSettlementDisputesPaged_FilterBy_DepositId()
     {
-        $startDate = (new \DateTime())->modify('-2 year +1 day');
         $depositReference = 'DEP_2342423443';
         $disputes = ReportingService::findSettlementDisputesPaged(1, 10)
-            ->where(DataServiceCriteria::START_STAGE_DATE, $startDate)
+            ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(DataServiceCriteria::DEPOSIT_REFERENCE,  $depositReference)
             ->execute();
 

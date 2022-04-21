@@ -166,6 +166,7 @@ class GpApiAchTest extends TestCase
         }
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
+        /** @var \GlobalPayments\Api\Entities\Reporting\TransactionSummary $transactionSummary */
         $transactionSummary = reset($response->result);
         $this->assertNotNull($transactionSummary);
         $this->assertEquals($amount, $transactionSummary->amount);
@@ -197,9 +198,9 @@ class GpApiAchTest extends TestCase
             ->execute();
 
         $this->assertNotNull($refund);
-        $this->assertEquals('DECLINED', $refund->responseCode);
-        $this->assertEquals(TransactionStatus::DECLINED, $refund->responseMessage);
-        $this->assertEquals('D0005', $refund->authorizationCode);
+        $this->assertEquals('SUCCESS', $refund->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $refund->responseMessage);
+        $this->assertEquals('A0000', $refund->authorizationCode);
     }
 
 }

@@ -7,11 +7,13 @@ use GlobalPayments\Api\Entities\BatchSummary;
 use GlobalPayments\Api\Entities\DisputeDocument;
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
+use GlobalPayments\Api\Entities\Enums\CaptureMode;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
+use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
@@ -43,9 +45,12 @@ class GpApiMapping
             return $transaction;
         }
         $transaction->transactionId = $response->id;
-        $transaction->balanceAmount = !empty($response->amount) ? StringUtils::toAmount($response->amount) : null;
-        $transaction->timestamp = !empty($response->time_created) ? $response->time_created : '';
         $transaction->responseMessage = $response->status;
+        $transaction->balanceAmount = !empty($response->amount) ? StringUtils::toAmount($response->amount) : null;
+        $transaction->authorizedAmount = ($response->status == TransactionStatus::PREAUTHORIZED && !empty($response->amount)) ?
+            StringUtils::toAmount($response->amount) : null;
+        $transaction->timestamp = !empty($response->time_created) ? $response->time_created : '';
+
         $transaction->referenceNumber = !empty($response->reference) ? $response->reference : null;
         $batchSummary = new BatchSummary();
         $batchSummary->batchReference = !empty($response->batch_id) ? $response->batch_id : null;
@@ -105,6 +110,7 @@ class GpApiMapping
         }
 
         $transaction->dccRateData = self::mapDccInfo($response);
+        $transaction->multiCapture = (!empty($response->capture_mode) && $response->capture_mode == CaptureMode::MULTIPLE);
 
         return $transaction;
     }

@@ -53,8 +53,8 @@ class GpApiBatchTests extends TestCase
     public function setUpConfig()
     {
         $config = new GpApiConfig();
-        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
-        $config->appKey = 'DHUGdzpjXfTbjZeo';
+        $config->appId = 'P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg';
+        $config->appKey = 'ockJr6pv6KFoGiZA';
         $config->environment = Environment::TEST;
         $config->channel = Channel::CardPresent;
 //        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
@@ -314,8 +314,8 @@ class GpApiBatchTests extends TestCase
     public function testBatchClose_CardNotPresentChannel()
     {
         $config = new GpApiConfig();
-        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
-        $config->appKey = '9pArW2uWoA8enxKc';
+        $config->appId = 'P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg';
+        $config->appKey = 'ockJr6pv6KFoGiZA';
         $config->environment = Environment::TEST;
         $config->channel = Channel::CardNotPresent;
 

@@ -349,11 +349,11 @@ class Transaction
      *
      * @param string|float $amount The additional amount to authorize
      *
-     * @return AuthorizationBuilder
+     * @return ManagementBuilder
      */
     public function additionalAuth($amount = null)
     {
-        return (new AuthorizationBuilder(TransactionType::AUTH))
+        return (new ManagementBuilder(TransactionType::AUTH))
             ->withPaymentMethod($this->transactionReference)
             ->withAmount($amount);
     }

@@ -95,6 +95,7 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
             'source' => (string) $builder->authenticationSource,
             'preference' => $builder->challengeRequestIndicator,
             'message_version' => $builder->threeDSecure->messageVersion,
+            'message_category' => EnumMapping::mapMessageCategory(GatewayProvider::GP_API, $builder->messageCategory)
         ];
 
         if (!empty($builder->storedCredential)) {
@@ -120,7 +121,7 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
             'preorder_availability_date' => !empty($builder->preOrderAvailabilityDate) ?
                 (new \DateTime($builder->preOrderAvailabilityDate))->format('Y-m-d') : null,
             'reorder_indicator' => (string) $builder->reorderIndicator,
-            'category' => $builder->orderTransactionType
+            'transaction_type' => $builder->orderTransactionType
         ];
 
         if (!empty($builder->shippingAddress)) {

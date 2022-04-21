@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateways\GpApiConnector;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\DepositSortProperty;
@@ -16,9 +16,14 @@ use PHPUnit\Framework\TestCase;
 
 class ReportingDepositsTest extends TestCase
 {
+    private $startDate;
+    private $endDate;
+
     public function setup()
     {
         ServicesContainer::configureService($this->setUpConfig());
+        $this->startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
+        $this->endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
     }
 
     public function testReportDepositDetail()
@@ -55,11 +60,10 @@ class ReportingDepositsTest extends TestCase
 
     public function testReportFindDepositsByStartDateAndOrderByTimeCreated()
     {
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findDepositsPaged(1, 10)
                 ->orderBy(DepositSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
+                ->where(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail("Find deposits by start date failed with: " . $e->getMessage());
@@ -71,16 +75,15 @@ class ReportingDepositsTest extends TestCase
         $randomDeposit = $response->result[array_rand($response->result)];
         $this->assertNotNull($randomDeposit);
         $this->assertInstanceOf(DepositSummary::class, $randomDeposit);
-        $this->assertGreaterThanOrEqual($startDate, $randomDeposit->depositDate);
+        $this->assertGreaterThanOrEqual($this->startDate, $randomDeposit->depositDate);
     }
 
     public function testReportFindDepositsOrderByDepositId()
     {
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findDepositsPaged(1, 10)
                 ->orderBy(DepositSortProperty::DEPOSIT_ID, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
+                ->where(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail("Find deposits order by deposit id failed with: " . $e->getMessage());
@@ -96,11 +99,10 @@ class ReportingDepositsTest extends TestCase
 
     public function testReportFindDepositsOrderByStatus()
     {
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findDepositsPaged(1, 10)
                 ->orderBy(DepositSortProperty::STATUS, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
+                ->where(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail("Find deposits order by status failed with: " . $e->getMessage());
@@ -116,11 +118,10 @@ class ReportingDepositsTest extends TestCase
 
     public function testReportFindDepositsOrderByType()
     {
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findDepositsPaged(1, 10)
                 ->orderBy(DepositSortProperty::TYPE, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
+                ->where(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail("Find deposits order by type failed with: " . $e->getMessage());
@@ -136,12 +137,10 @@ class ReportingDepositsTest extends TestCase
 
     public function testReportFindDepositsOrderByEndDateOrderByTimeCreated()
     {
-        $startDate = new \DateTime('2020-11-01 midnight');
-        $endDate = new \DateTime('2021-01-15 midnight');
         $response = ReportingService::findDepositsPaged(1, 10)
             ->orderBy(DepositSortProperty::TIME_CREATED, SortDirection::DESC)
-            ->where(SearchCriteria::START_DATE, $startDate)
-            ->andWith(SearchCriteria::END_DATE, $endDate)
+            ->where(SearchCriteria::START_DATE, $this->startDate)
+            ->andWith(SearchCriteria::END_DATE, $this->endDate)
             ->execute();
 
         $this->assertNotNull($response);
@@ -153,13 +152,12 @@ class ReportingDepositsTest extends TestCase
 
     public function testReportFindDepositsByNotFoundAmount()
     {
-        $startDate = new \DateTime('2020-11-01 midnight');
         $amount = 140;
 
         try {
             $response = ReportingService::findDepositsPaged(1, 10)
                 ->orderBy(DepositSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
+                ->where(SearchCriteria::START_DATE, $this->startDate)
                 ->andWith(DataServiceCriteria::AMOUNT, $amount)
                 ->execute();
         } catch (ApiException $e) {
@@ -172,13 +170,12 @@ class ReportingDepositsTest extends TestCase
 
     public function testReportFindDepositsByAmount()
     {
-        $startDate = new \DateTime('2020-11-01 midnight');
         $amount = 141;
 
         try {
             $response = ReportingService::findDepositsPaged(1, 10)
                 ->orderBy(DepositSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
+                ->where(SearchCriteria::START_DATE, $this->startDate)
                 ->andWith(DataServiceCriteria::AMOUNT, $amount)
                 ->execute();
         } catch (ApiException $e) {

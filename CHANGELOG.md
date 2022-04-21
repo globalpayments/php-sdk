@@ -7,6 +7,13 @@
 
 ## Latest version
 #### Enhancements:
+- GP-API: Increment an Auth: increment the amount for an existing transaction.
+- GP-API: Map multiCapture on the transaction response
+- GP-API: Update unit tests
+- Deprecate verifyEnrolled and verifySignature from CreditCardData
+
+## v3.0.4 (04/12/2022)
+#### Enhancements:
 - UPA devices: add support for batch summary report, batch detail report, and open tab details report
 - UPA devices: various modifications to account for latest UPA version's changes 
 

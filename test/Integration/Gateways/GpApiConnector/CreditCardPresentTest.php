@@ -6,11 +6,15 @@ use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\Entities\Enums\LodgingItemType;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodProgram;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialSequence;
 use GlobalPayments\Api\Entities\Enums\TransactionSortProperty;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\Lodging;
+use GlobalPayments\Api\Entities\LodgingItems;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\Transaction;
@@ -37,8 +41,8 @@ class CreditCardPresentTest extends TestCase
     public function setUpConfig()
     {
         $config = new GpApiConfig();
-        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
-        $config->appKey = 'DHUGdzpjXfTbjZeo';
+        $config->appId = 'x0lQh0iLV0fOkmeAyIDyBqrP9U5QaiKc';
+        $config->appKey = 'DYcEE2GpSzblo0ib';
         $config->environment = Environment::TEST;
         $config->channel = Channel::CardPresent;
 //        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
@@ -169,7 +173,7 @@ class CreditCardPresentTest extends TestCase
     {
         $startDate = (new \DateTime())->modify('-29 days')->setTime(0, 0, 0);
 
-        $response = ReportingService::findTransactionsPaged(1, 100)
+        $response = ReportingService::findTransactionsPaged(1, 10)
             ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
             ->where(SearchCriteria::TRANSACTION_STATUS, TransactionStatus::PREAUTHORIZED)
             ->andWith(SearchCriteria::CHANNEL, Channel::CardPresent)
@@ -591,6 +595,50 @@ class CreditCardPresentTest extends TestCase
         } finally {
             $this->assertTrue($exceptionCaught);
         }
+    }
+
+    public function testIncrementalAuth()
+    {
+        $card = $this->initCreditCardData();
+
+        $transaction = $card->authorize(50)
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+
+        $lodgingInfo = new Lodging();
+        $lodgingInfo->bookingReference = 's9RpaDwXq1sPRkbP';
+        $lodgingInfo->durationDays = 10;
+        $lodgingInfo->dateCheckedIn = date('Y-m-d H:i:s');
+        $lodgingInfo->dateCheckedOut = date('Y-m-d H:i:s', strtotime("+7 days"));
+        $lodgingInfo->dailyRateAmount = '13.49';
+        $item1 = new LodgingItems();
+        $item1->types = [LodgingItemType::NO_SHOW];
+        $item1->reference = 'item_1';
+        $item1->totalAmount = '13.49';
+        $item1->paymentMethodProgramCodes = [PaymentMethodProgram::ASSURED_RESERVATION];
+        $lodgingInfo->items = [$item1];
+
+        $transaction = $transaction->additionalAuth(10)
+            ->withCurrency($this->currency)
+            ->withLodging($lodgingInfo)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+        $this->assertEquals(60, $transaction->authorizedAmount);
+
+
+
+        $capture = $transaction->capture()->execute();
+
+        $this->assertNotNull($capture);
+        $this->assertEquals('SUCCESS', $capture->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
     }
 
     private function initCreditCardData()

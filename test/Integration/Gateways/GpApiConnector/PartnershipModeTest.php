@@ -405,7 +405,7 @@ class PartnershipModeTest extends TestCase
         } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40041', $e->responseCode);
-            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Merchant configuration does not exist for ,tokenization,US,CNP,EUR,CARD,AUTHORIZE', $e->getMessage());
+            $this->assertContains(' INVALID_REQUEST_DATA - Merchant configuration does not exist', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }

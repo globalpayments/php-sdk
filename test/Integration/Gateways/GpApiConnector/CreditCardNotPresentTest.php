@@ -1,14 +1,15 @@
 <?php
 
-
 namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\Entities\Enums\LodgingItemType;
 use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodProgram;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialReason;
@@ -18,6 +19,8 @@ use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\Lodging;
+use GlobalPayments\Api\Entities\LodgingItems;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
@@ -1260,13 +1263,12 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
-	}
-	
+    }
+
     public function testVerifyTokenizedPaymentMethodWithFingerprint()
     {
         $customer = new Customer();
         $customer->deviceFingerPrint = "ALWAYS";
-        // process an auto-capture authorization
         $response = $this->card->tokenize()
             ->withCustomerData($customer)
             ->execute();

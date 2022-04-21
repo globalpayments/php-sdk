@@ -10,6 +10,8 @@ use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\GpApi\DTO\Card;
 use GlobalPayments\Api\Entities\IRequestBuilder;
+use GlobalPayments\Api\Entities\Lodging;
+use GlobalPayments\Api\Entities\LodgingItems;
 use GlobalPayments\Api\Mapping\EnumMapping;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
@@ -126,6 +128,39 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                                 'provider_payer_reference' => $apmResponse->providerReference
                             ]
                         ]
+                    ];
+                }
+                break;
+            case TransactionType::AUTH:
+                $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/incremental';
+                $verb = 'POST';
+                $payload['amount'] = StringUtils::toNumeric($builder->amount);
+                if (!empty($builder->lodging)) {
+                    /** @var Lodging $lodging */
+                    $lodging = $builder->lodging;
+                    if (!empty($lodging->items)) {
+                        $lodgingItems = [];
+                        /** @var LodgingItems $item */
+                        foreach ($lodging->items as $item) {
+                            $lodgingItems[] = [
+                                'types' => $item->types,
+                                'reference' => $item->reference,
+                                'total_amount' => !empty($item->totalAmount) ? StringUtils::toNumeric($item->totalAmount) : null,
+                                'payment_method_program_codes' => $item->paymentMethodProgramCodes
+                            ];
+                        }
+                    }
+
+                    $payload['lodging'] = [
+                        'booking_reference' => $lodging->bookingReference,
+                        'duration_days' => $lodging->durationDays,
+                        'date_checked_in' => !empty($lodging->dateCheckedIn) ?
+                            (new \DateTime($lodging->dateCheckedIn))->format('Y-m-d') : null,
+                        'date_checked_out' => !empty($lodging->dateCheckedOut) ?
+                            (new \DateTime($lodging->dateCheckedOut))->format('Y-m-d') : null,
+                        'daily_rate_amount' => !empty($lodging->dailyRateAmount) ?
+                            StringUtils::toNumeric($lodging->dailyRateAmount) : null,
+                        'lodging.charge_items' => !empty($lodgingItems) ? $lodgingItems : null
                     ];
                 }
                 break;
