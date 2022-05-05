@@ -74,6 +74,7 @@ class GpApiApmTest extends TestCase
      */
     public function testPayPalCharge_fullCycle()
     {
+        $this->markTestSkipped('To run this test you need to login to your Paypal account and access the link printed and continue the transaction');
         $response = $this->paymentMethod->charge(1.34)
             ->withCurrency($this->currency)
             ->withDescription('New APM')
@@ -113,6 +114,7 @@ class GpApiApmTest extends TestCase
 
     public function testPayPalCapture_fullCycle()
     {
+        $this->markTestSkipped('To run this test you need to login to your Paypal account and access the link printed and continue the transaction');
         $response = $this->paymentMethod->authorize(1.34)
             ->withCurrency($this->currency)
             ->withDescription('New APM')
@@ -160,6 +162,7 @@ class GpApiApmTest extends TestCase
 
     public function testPayPalFullCycle_Refund()
     {
+        $this->markTestSkipped('To run this test you need to login to your Paypal account and access the link printed and continue the transaction');
         $trn = $this->paymentMethod->charge(1.22)
             ->withCurrency($this->currency)
             ->withDescription('New APM')
@@ -206,6 +209,7 @@ class GpApiApmTest extends TestCase
 
     public function testPayPalFullCycle_Reverse()
     {
+        $this->markTestSkipped('To run this test you need to login to your Paypal account and access the link printed and continue the transaction');
         $trn = $this->paymentMethod->charge(1.22)
             ->withCurrency($this->currency)
             ->withDescription('New APM')
@@ -252,6 +256,7 @@ class GpApiApmTest extends TestCase
 
     public function testPayPalMultiCapture_fullCycle()
     {
+        $this->markTestSkipped('To run this test you need to login to your Paypal account and access the link printed and continue the transaction');
         $response = $this->paymentMethod->authorize(3)
             ->withCurrency($this->currency)
             ->withMultiCapture(true)

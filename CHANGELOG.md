@@ -7,6 +7,12 @@
 
 ## Latest version
 #### Enhancements:
+- GP-ECOM: Add bank payment (open banking) service
+- GP-API: Update usage mode, cardholder name and card number on a stored payment method
+- Portico: Updated code for Secure3D and WalletData Element
+
+## v3.0.4 (04/21/2022)
+#### Enhancements:
 - GP-API: Increment an Auth: increment the amount for an existing transaction.
 - GP-API: Map multiCapture on the transaction response
 - GP-API: Update unit tests

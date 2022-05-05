@@ -13,4 +13,7 @@ class PaymentMethodName extends Enum
      * ACH transaction
      */
     const BANK_TRANSFER = 'BANK TRANSFER';
+
+    /** Open Banking transaction */
+    const BANK_PAYMENT = 'BANK PAYMENT';
 }

@@ -8,4 +8,5 @@ interface ITokenizable
     public function updateTokenExpiry();
     public function deleteToken();
     public function detokenize();
+    public function updateToken();
 }

@@ -469,6 +469,27 @@ class SearchCriteriaBuilder
      * @var PaymentMethodName
      */
     public $paymentMethod;
+
+    /** ******************************
+     * Open banking search criteria *
+     ********************************/
+
+    /**
+     * Open banking transaction id
+     *
+     * @var string
+     */
+    public $bankPaymentId;
+
+    /**
+     * Indicates if sensitive information including destination account number, IBAN, account name, or sort code
+     * should be sent back in the response (when set to TRUE).
+     *
+     * @var boolean
+     */
+    public $returnPii;
+
+    /** END Open Banking search criteria */
     
     public function __construct(TransactionReportBuilder $reportBuilder = null)
     {

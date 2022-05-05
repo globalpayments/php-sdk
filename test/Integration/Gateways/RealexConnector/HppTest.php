@@ -4,8 +4,11 @@ namespace GlobalPayments\Api\Test\Integration\Gateways\RealexConnector;
 
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
+use GlobalPayments\Api\Entities\Enums\BankPaymentStatus;
+use GlobalPayments\Api\Entities\Enums\ShaHashType;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\FraudRuleCollection;
+use GlobalPayments\Api\PaymentMethods\BankPayment;
 use GlobalPayments\Api\Services\HostedService;
 use GlobalPayments\Api\HostedPaymentConfig;
 use GlobalPayments\Api\Entities\HostedPaymentData;
@@ -17,6 +20,7 @@ use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\Hpp\RealexHppClient;
+use GlobalPayments\Api\Entities\Enums\RemittanceReferenceType;
 use PHPUnit\Framework\TestCase;
 
 class HppTest extends TestCase
@@ -24,7 +28,6 @@ class HppTest extends TestCase
     private $billingAddress;
 
     private $shippingAddress;
-
 
     private $hppVersionList = [
         HppVersion::VERSION_1,
@@ -908,5 +911,47 @@ class HppTest extends TestCase
         $this->assertEquals(TransactionStatus::PENDING, $parsedResponse->responseMessage);
         $this->assertEquals(AlternativePaymentType::SOFORTUBERWEISUNG, $parsedResponse->responseValues['PAYMENTMETHOD']);
         $this->assertEquals($hostedPaymentData->merchantResponseUrl, $parsedResponse->responseValues['MERCHANT_RESPONSE_URL']);
+    }
+
+    public function testOpenBankingInitiate()
+    {
+        $config = new GpEcomConfig();
+        $config->merchantId = 'openbankingsandbox';
+        $config->sharedSecret = 'sharedsecret';
+        $config->accountId = 'internet';
+        $config->serviceUrl = "https://pay.sandbox.realexpayments.com/pay";
+        $config->enableBankPayment = true;
+        $config->hostedPaymentConfig = new HostedPaymentConfig();
+        $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
+        $config->shaHashType = ShaHashType::SHA256;
+
+        $hostedPaymentData = new HostedPaymentData();
+        $hostedPaymentData->customerCountry = 'DE';
+        $hostedPaymentData->customerFirstName = 'James';
+        $hostedPaymentData->customerLastName = 'Mason';
+        $hostedPaymentData->transactionStatusUrl = 'https://www.example.com/statusUrl';
+        $hostedPaymentData->merchantResponseUrl = 'https://www.example.com/statusUrl';
+        $hostedPaymentData->presetPaymentMethods = ['ob'];
+
+        $bankPayment = new BankPayment();
+        $bankPayment->accountNumber = '12345678';
+        $bankPayment->sortCode = '406650';
+        $bankPayment->accountName = 'AccountName';
+
+        $client = new RealexHppClient($config->sharedSecret, ShaHashType::SHA256);
+        $service = new HostedService($config);
+
+        $json = $service->charge(10.99)
+            ->withCurrency("GBP")
+            ->withPaymentMethod($bankPayment)
+            ->withHostedPaymentData($hostedPaymentData)
+            ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
+            ->serialize();
+        $this->assertNotNull($json);
+        $response = $client->sendRequest($json, HppVersion::VERSION_2);
+        $this->assertNotNull($response);
+
+        $parsedResponse = $service->parseResponse($response);
+        $this->assertEquals(BankPaymentStatus::PAYMENT_INITIATED, $parsedResponse->responseMessage);
     }
 }

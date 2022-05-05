@@ -47,6 +47,7 @@ use GlobalPayments\Api\Entities\Reporting\LodgingData;
 use GlobalPayments\Api\Entities\Reporting\AltPaymentData;
 use GlobalPayments\Api\Entities\Reporting\AltPaymentProcessorInfo;
 use GlobalPayments\Api\Entities\Exceptions\NotImplementedException;
+use GlobalPayments\Api\PaymentMethods\CreditCardData;
 
 class PorticoConnector extends XmlGateway implements IPaymentGateway
 {
@@ -258,7 +259,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                     $hasToken,
                     $tokenValue
                 )
-            );
+            );           
+            
         } elseif ($builder->paymentMethod instanceof ITrackData) {
             $trackData = $this->hydrateTrackData(
                 $xml,
@@ -461,6 +463,11 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         if ($cardData->childNodes->length > 0 && $builder->aliasAction !== AliasAction::CREATE) {
             $block1->appendChild($cardData);
         }
+        
+        //secure 3d
+        if ($builder->paymentMethod instanceof CreditCardData && !empty($builder->paymentMethod->threeDSecure)) {
+            $this->hydrateThreeDSecureData($xml, $builder, $block1);
+        }
 
         if ($builder->paymentMethod instanceof IBalanceable && $builder->balanceInquiryType !== null) {
             $block1->appendChild($xml->createElement('BalanceInquiryType', $builder->balanceInquiryType));
@@ -494,36 +501,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                     $direct->appendChild($xml->createElement('DirectMktShipDay', $builder->ecommerceInfo->shipDay));
                 }
                 $block1->appendChild($direct);
-            }
-            if (!empty($builder->paymentMethod->threeDSecure)) {
-                $secure = $xml->createElement('SecureECommerce');
-                if (!empty($builder->paymentMethod->threeDSecure->paymentDataSource)) {
-                    $secure->appendChild(
-                        $xml->createElement(
-                            'PaymentDataSource',
-                            $builder->paymentMethod->threeDSecure->paymentDataSource
-                        )
-                    );
-                }
-                if (!empty($builder->paymentMethod->threeDSecure->paymentDataType)) {
-                    $secure->appendChild(
-                        $xml->createElement(
-                            'TypeOfPaymentData',
-                            $builder->paymentMethod->threeDSecure->paymentDataType
-                        )
-                    );
-                }
-                if (!empty($builder->paymentMethod->threeDSecure->cavv)) {
-                    $secure->appendChild($xml->createElement('PaymentData', $builder->paymentMethod->threeDSecure->cavv));
-                }
-                if (!empty($builder->paymentMethod->threeDSecure->eci)) {
-                    $secure->appendChild($xml->createElement('ECommerceIndicator', $builder->paymentMethod->threeDSecure->eci));
-                }
-                if (!empty($builder->paymentMethod->threeDSecure->xid)) {
-                    $secure->appendChild($xml->createElement('XID', $builder->paymentMethod->threeDSecure->xid));
-                }
-                $block1->appendChild($secure);
-            }
+            }            
         }
 
         if ($builder->dynamicDescriptor !== null) {
@@ -575,7 +553,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         }
 
         $transaction->appendChild($block1);
-
+        
         $response = $this->doTransaction($this->buildEnvelope($xml, $transaction, $builder->clientTransactionId));
         return $this->mapResponse($response, $builder, $this->buildEnvelope($xml, $transaction));
     }
@@ -2262,5 +2240,69 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
     public function supportsHostedPayments()
     {
         return $this->supportsHostedPayments;
+    }
+    
+    protected function hydrateThreeDSecureData(DOMDocument $xml, BaseBuilder $builder, $block1){
+        //3dseccure
+        if (!empty($builder->paymentMethod->threeDSecure->eci)) {
+            $secure = $xml->createElement('Secure3D');
+            
+            $secure->appendChild(
+                $xml->createElement(
+                    'Version',
+                    $this->getSecure3DVersion($builder->paymentMethod->threeDSecure->getVersion())
+                    )
+                );
+            
+            if (!empty($builder->paymentMethod->threeDSecure->cavv)) {
+                $secure->appendChild($xml->createElement('AuthenticationValue', $builder->paymentMethod->threeDSecure->cavv));
+            }
+            if (!empty($builder->paymentMethod->threeDSecure->eci)) {
+                $secure->appendChild($xml->createElement('ECI', $builder->paymentMethod->threeDSecure->eci));
+            }
+            if (!empty($builder->paymentMethod->threeDSecure->xid)) {
+                $secure->appendChild($xml->createElement('DirectoryServerTxnId', $builder->paymentMethod->threeDSecure->xid));
+            }            
+            
+            $block1->appendChild($secure);
+        }
+        
+        //wallet data
+        if (!empty($builder->paymentMethod->threeDSecure->paymentDataSource)) {
+            $walletData  = $xml->createElement('WalletData');
+            
+            $walletData->appendChild(
+                $xml->createElement(
+                    'PaymentSource',
+                    $builder->paymentMethod->threeDSecure->paymentDataSource
+                    )
+                );
+            
+            if (!empty($builder->paymentMethod->threeDSecure->cavv)) {
+                $walletData->appendChild($xml->createElement('Cryptogram', $builder->paymentMethod->threeDSecure->cavv));
+            }
+            if (!empty($builder->paymentMethod->threeDSecure->eci)) {
+                $walletData->appendChild($xml->createElement('ECI', $builder->paymentMethod->threeDSecure->eci));
+            }
+            if (!empty($builder->paymentMethod->mobileType)) {
+                $walletData->appendChild($xml->createElement('DigitalPaymentToken', $builder->paymentMethod->token));
+            }
+            
+            $block1->appendChild($walletData);
+        }        
+    }
+    
+    private function getSecure3DVersion($version){
+        if($version == null){
+            return 1;
+        }
+        switch ($version){
+            case 'TWO':
+                return 2;
+            case 'ONE':
+            case 'ANY':
+            default:
+                return 1;
+        }
     }
 }

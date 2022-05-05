@@ -227,6 +227,7 @@ class RealexApmTest extends TestCase
 
     public function testApmForRefund()
     {
+        $this->markTestSkipped('You need a valid values for orderId and payment refrence to run this test!');
         // a settle request requires the original order id
         $orderId = "20180912050207-5b989dcfc9433";
         // and the payments reference (pasref) from the authorization response

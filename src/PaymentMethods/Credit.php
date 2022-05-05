@@ -219,6 +219,21 @@ abstract class Credit implements
 
         return true;
     }
+
+    /**
+     * Updates the payment token
+     *
+     * @return ManagementBuilder
+     */
+    public function updateToken()
+    {
+        if (empty($this->token)) {
+            throw new BuilderException('Token cannot be null');
+        }
+
+        return (new ManagementBuilder(TransactionType::TOKEN_UPDATE))
+            ->withPaymentMethod($this);
+    }
     
     /**
      * Deletes the token associated with the current card object

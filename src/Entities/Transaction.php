@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Entities;
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
@@ -210,6 +211,9 @@ class Transaction
      */
     public $token;
 
+    /** @var PaymentMethodUsageMode */
+    public $tokenUsageMode;
+
     /**
      * The transaction reference.
      *
@@ -289,6 +293,13 @@ class Transaction
 
     /** @var string */
     public $fingerprintIndicator;
+
+    /**
+     * The bank transfer / open banking response data
+     *
+     * @var BankPaymentResponse
+     */
+    public $bankPaymentResponse;
 
     /**
      * Creates a `Transaction` object from a stored transaction ID.

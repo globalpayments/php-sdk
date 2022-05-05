@@ -7,9 +7,9 @@ use GlobalPayments\Api\Entities\Exceptions\ApiException;
 
 // configure client settings
 $config = new GpEcomConfig();
-$config->merchantId = "heartlandgpsandbox";
-$config->accountId = "hpp";
-$config->sharedSecret = "secret";
+$config->merchantId = "openbankingsandbox";
+$config->accountId = "internet";
+$config->sharedSecret = "sharedsecret";
 $config->serviceUrl = "https://pay.sandbox.realexpayments.com/pay";
 
 $service = new HostedService($config);
@@ -23,6 +23,7 @@ $service = new HostedService($config);
  * '"MESSAGE":"[ test system ] Authorised","PASREF":"15011597872195765","CVNRESULT":"M","HPP_FRAUDFILTER_RESULT":"PASS"}";
  */
 $responseJson = $_POST['hppResponse'];
+
 try {
     // create the response object from the response JSON
     $parsedResponse = $service->parseResponse($responseJson, true);

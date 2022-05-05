@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Gateways;
 
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Utils\ArrayUtils;
 
 abstract class RestGateway extends Gateway
 {
@@ -29,11 +30,11 @@ abstract class RestGateway extends Gateway
         if ($this->isGpApi()) {
             if (!empty($data)) {
                 $data = (array) $data;
-                $this->array_remove_empty($data);
+                $data = ArrayUtils::array_remove_empty($data);
                 $data = json_encode($data, JSON_UNESCAPED_SLASHES);
             }
             if (!empty($queryStringParams)){
-                $this->array_remove_empty($queryStringParams);
+                $queryStringParams = ArrayUtils::array_remove_empty($queryStringParams);
             }
         }
 
@@ -44,12 +45,13 @@ abstract class RestGateway extends Gateway
                 $response->rawResponse = gzdecode($response->rawResponse);
             }
         }
-        if (!in_array($response->statusCode, [200, 204])) {
+        if (!in_array($response->statusCode, [200, 204, 201])) {
             $parsed = json_decode($response->rawResponse);
             $error = isset($parsed->error) ? $parsed->error : $parsed;
             if (empty($error)) {
                 throw new GatewayException(sprintf('Status Code: %s', $response->statusCode));
             }
+
             if ($this->isGpApi()) {
                 $gatewayException = new GatewayException(
                     sprintf(
@@ -70,14 +72,16 @@ abstract class RestGateway extends Gateway
                 $errorMessage = '';
                 foreach ($errMsgProperty as $propertyName) {
                     if (property_exists($error, $propertyName)) {
-                        $errorMessage .= $error->{$propertyName} . ' ';
+                        if (is_string($error->{$propertyName})) {
+                            $errorMessage .= $error->{$propertyName} . ' ';
+                        }
                     }
                 }
                 throw new GatewayException(
                     sprintf(
                         'Status Code: %s - %s',
                         $response->statusCode,
-                        !empty($errorMessage) ? $errorMessage : (string)$error
+                        !empty($errorMessage) ? $errorMessage : serialize($error)
                     )
                 );
             }
@@ -89,22 +93,5 @@ abstract class RestGateway extends Gateway
     private function isGpApi()
     {
         return $this instanceof GpApiConnector;
-    }
-
-    private function array_remove_empty(&$haystack)
-    {
-        foreach ($haystack as $key => $value) {
-            if (is_array($value) || is_object($value)) {
-                $v = (array) $haystack[$key];
-                $haystack[$key] = $this->array_remove_empty($v);
-            }
-            if (empty($haystack[$key])) {
-                if (is_null($haystack[$key]) || is_array($haystack[$key]) || $haystack[$key] === '') {
-                    unset($haystack[$key]);
-                }
-            }
-        }
-
-        return $haystack;
     }
 }

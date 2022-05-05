@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Builders;
 
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\TimeZoneConversion;
+use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\ServicesContainer;
 
 abstract class ReportBuilder extends BaseBuilder
@@ -39,8 +40,16 @@ abstract class ReportBuilder extends BaseBuilder
     public function execute($configName = 'default')
     {
         parent::execute($configName);
+        switch ($this->reportType) {
+            case ReportType::FIND_BANK_PAYMENT:
+                $client = ServicesContainer::instance()->getOpenBanking($configName);
+                break;
+            default:
+                $client = ServicesContainer::instance()->getClient($configName);
+                break;
 
-        $client = ServicesContainer::instance()->getClient($configName);
+        }
+
         return $client->processReport($this);
     }
 }

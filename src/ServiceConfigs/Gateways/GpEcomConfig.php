@@ -6,8 +6,10 @@ use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\ServiceEndpoints;
+use GlobalPayments\Api\Entities\Enums\ShaHashType;
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
 use GlobalPayments\Api\Gateways\Gp3DSProvider;
+use GlobalPayments\Api\Gateways\OpenBankingProvider;
 use GlobalPayments\Api\Gateways\RealexConnector;
 use GlobalPayments\Api\ConfiguredServices;
 
@@ -23,12 +25,18 @@ class GpEcomConfig extends GatewayConfig
     public $sharedSecret;
     public $channel;
     public $hostedPaymentConfig;
+    /** @var ShaHashType */
+    public $shaHashType = ShaHashType::SHA1;
 
     // Secure 3D
     public $challengeNotificationUrl;
+    public $methodNotificationUrl;
     public $merchantContactUrl;
     public $merchantNotificationUrl;
     public $secure3dVersion;
+
+    //Open banking service
+    public $enableBankPayment = false;
 
     public function __construct()
     {
@@ -49,6 +57,7 @@ class GpEcomConfig extends GatewayConfig
         $gateway->merchantId = $this->merchantId;
         $gateway->rebatePassword = $this->rebatePassword;
         $gateway->sharedSecret = $this->sharedSecret;
+        $gateway->shaHashType = $this->shaHashType;
         $gateway->timeout = $this->timeout;
         $gateway->serviceUrl = $this->serviceUrl;
         $gateway->refundPassword = $this->refundPassword;
@@ -81,6 +90,20 @@ class GpEcomConfig extends GatewayConfig
             $secure3d2->webProxy = $this->webProxy;
 
             $services->setSecure3dProvider(Secure3dVersion::TWO, $secure3d2);
+        }
+        if ($this->enableBankPayment === true) {
+            $openBanking = new OpenBankingProvider();
+            $openBanking->merchantId = $gateway->merchantId;
+            $openBanking->accountId = $gateway->accountId;
+            $openBanking->sharedSecret = $gateway->sharedSecret;
+            $openBanking->shaHashType = $this->shaHashType;
+            $openBanking->serviceUrl = $this->environment === Environment::PRODUCTION ?
+                ServiceEndpoints::OPEN_BANKING_PRODUCTION : ServiceEndpoints::OPEN_BANKING_TEST;
+            $openBanking->timeout = $gateway->timeout;
+            $openBanking->requestLogger = $this->requestLogger;
+            $openBanking->webProxy = $this->webProxy;
+
+            $services->setOpenBankingProvider($openBanking);
         }
     }
 

@@ -13,9 +13,11 @@ use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Entities\Lodging;
 use GlobalPayments\Api\Entities\LodgingItems;
 use GlobalPayments\Api\Mapping\EnumMapping;
+use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Utils\StringUtils;
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 
 class GpApiManagementRequestBuilder implements IRequestBuilder
 {
@@ -50,13 +52,24 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                 $verb = 'DELETE';
                 break;
             case TransactionType::TOKEN_UPDATE:
+                if (!$builder->paymentMethod instanceof CreditCardData) {
+                    throw new GatewayException("Payment method doesn't support this action!");
+                }
                 $endpoint = GpApiRequest::PAYMENT_METHODS_ENDPOINT . '/' . $builder->paymentMethod->token;
                 $verb = 'PATCH';
                 $card = new Card();
                 $builderCard = $builder->paymentMethod;
-                $card->expiry_month = (string)$builderCard->expMonth;
-                $card->expiry_year = substr(str_pad($builderCard->expYear, 4, '0', STR_PAD_LEFT), 2, 2);
-                $payload['card'] = $card;
+
+                $card->expiry_month = !empty($builderCard->expMonth) ? (string)$builderCard->expMonth : null;
+                $card->expiry_year = !empty($builderCard->expYear) ?
+                    substr(str_pad($builderCard->expYear, 4, '0', STR_PAD_LEFT), 2, 2) : null;
+                $card->number = !empty($builderCard->number) ? $builderCard->number : null;
+                $payload = [
+                    'usage_mode' => !empty($builder->paymentMethodUsageMode) ? $builder->paymentMethodUsageMode : null,
+                    'name' => !empty($builderCard->cardHolderName) ? $builderCard->cardHolderName : null,
+                    'card' => $card
+                ];
+
                 break;
             case TransactionType::REFUND:
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/refund';

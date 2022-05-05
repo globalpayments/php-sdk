@@ -14,6 +14,7 @@ use GlobalPayments\Api\Entities\Enums\DccProcessor;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\ReportType;
+use GlobalPayments\Api\Entities\Enums\ShaHashType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
@@ -23,6 +24,7 @@ use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\HostedPaymentConfig;
 use GlobalPayments\Api\Mapping\EnumMapping;
+use GlobalPayments\Api\PaymentMethods\BankPayment;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\Utils\CardUtils;
@@ -101,7 +103,9 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
      * @var HostedPaymentConfig
      */
     public $hostedPaymentConfig;
-    
+
+    /** @var ShaHashType */
+    public $shaHashType;
     /**
      * @var array
      */
@@ -336,13 +340,11 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                 );
             } else {
                 $requestValues = $this->getShal1RequestValues($timestamp, $orderId, $builder, $card);
-                
                 $hash = GenerationUtils::generateHash(
                     $this->sharedSecret,
                     implode('.', $requestValues)
                 );
             }
-           
             $request->appendChild($xml->createElement("sha1hash", $hash));
         }
         if ($builder->paymentMethod instanceof RecurringPaymentMethod) {
@@ -426,7 +428,6 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $comment = $xml->createElement("comment", $builder->description);
             $comment->setAttribute("id", "1");
             $comments->appendChild($comment);
-            
             $request->appendChild($comments);
         }
         
@@ -542,22 +543,49 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             throw new UnsupportedTransactionException("Only Charge and Authorize are supported through HPP.");
         }
 
+        if ($builder->paymentMethod instanceof BankPayment &&
+            $builder->transactionType !== TransactionType::SALE) {
+            throw new UnsupportedTransactionException("Only Charge is supported for Bank Payment through HPP.");
+        }
+
         $orderId = isset($builder->orderId) ? $builder->orderId : GenerationUtils::generateOrderId();
         $timestamp = isset($builder->timestamp) ? $builder->timestamp : GenerationUtils::generateTimestamp();
+        $amount = preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount));
 
         $this->setSerializeData('MERCHANT_ID', $this->merchantId);
         $this->setSerializeData('ACCOUNT', $this->accountId);
         $this->setSerializeData('HPP_CHANNEL', $this->channel);
         $this->setSerializeData('ORDER_ID', $orderId);
         if ($builder->amount !== null) {
-            $this->setSerializeData('AMOUNT', preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount)));
+            $this->setSerializeData('AMOUNT', $amount);
         }
         $this->setSerializeData('CURRENCY', $builder->currency);
         $this->setSerializeData('TIMESTAMP', $timestamp);
+
         $this->setSerializeData(
             'AUTO_SETTLE_FLAG',
             ($builder->transactionType == TransactionType::SALE) ? "1" : "0"
         );
+
+        if ($builder->paymentMethod instanceof BankPayment) {
+            $this->buildOpenBankingHppRequest($builder);
+            $toHash =  implode('.', [
+                $timestamp,
+                $this->merchantId,
+                $orderId,
+                $amount,
+                $builder->currency,
+                !empty($builder->paymentMethod->sortCode) ? $builder->paymentMethod->sortCode : '',
+                !empty($builder->paymentMethod->accountNumber) ? $builder->paymentMethod->accountNumber : '',
+                !empty($builder->paymentMethod->iban) ? $builder->paymentMethod->iban : '',
+            ]);
+            list($tagHashName, $tagHashValue) = $this->mapShaHash($toHash);
+            $this->setSerializeData($tagHashName, $tagHashValue);
+
+            return GenerationUtils::convertArrayToJson($this->serializeData, $this->hostedPaymentConfig->version);
+        }
+
+
         $this->setSerializeData('COMMENT1', $builder->description);
         
         if (isset($this->hostedPaymentConfig->requestTransactionStabilityScore)) {
@@ -568,6 +596,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $this->serializeData["DCC_ENABLE"] =
                     $this->hostedPaymentConfig->directCurrencyConversionEnabled ? "1" : "0";
         }
+
         if (!empty($builder->hostedPaymentData)) {
             $hostedPaymentData = $builder->hostedPaymentData;
             $this->setSerializeData('CUST_NUM', $builder->hostedPaymentData->customerNumber);
@@ -747,6 +776,51 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $this->serializeData["SHA1HASH"] = GenerationUtils::generateHash($this->sharedSecret, implode('.', $toHash));
 
         return GenerationUtils::convertArrayToJson($this->serializeData, $this->hostedPaymentConfig->version);
+    }
+
+    private function mapShaHash($toHash)
+    {
+        if (empty($this->shaHashType)) {
+            throw new ApiException(sprintf("%s not supported. Please check your code and the Developers Documentation.", $this->shaHashType));
+        }
+
+        return [
+            $this->shaHashType . 'HASH',
+            GenerationUtils::generateNewHash($this->sharedSecret, $toHash, $this->shaHashType)
+        ];
+    }
+
+    /**
+     * @param AuthorizationBuilder $builder
+     */
+    private function buildOpenBankingHppRequest($builder)
+    {
+        $paymentMethod = $builder->paymentMethod;
+        $this->setSerializeData(
+            'HPP_OB_PAYMENT_SCHEME',
+            !empty($paymentMethod->bankPaymentType) ?
+                $paymentMethod->bankPaymentType : OpenBankingProvider::getBankPaymentType($builder->currency)
+        );
+        $this->setSerializeData('HPP_OB_REMITTANCE_REF_TYPE', $builder->remittanceReferenceType);
+        $this->setSerializeData('HPP_OB_REMITTANCE_REF_VALUE', $builder->remittanceReferenceValue);
+        $this->setSerializeData('HPP_OB_DST_ACCOUNT_IBAN', $paymentMethod->iban);
+        $this->setSerializeData('HPP_OB_DST_ACCOUNT_NAME', $paymentMethod->accountName);
+        $this->setSerializeData('HPP_OB_DST_ACCOUNT_NUMBER', $paymentMethod->accountNumber);
+        $this->setSerializeData('HPP_OB_DST_ACCOUNT_SORT_CODE', $paymentMethod->sortCode);
+        if (!empty($builder->hostedPaymentData)) {
+            $hostedPaymentData = $builder->hostedPaymentData;
+            if (!empty($hostedPaymentData->transactionStatusUrl)) {
+                $this->setSerializeData('HPP_TX_STATUS_URL', $hostedPaymentData->transactionStatusUrl);
+            }
+            if (!empty($hostedPaymentData->merchantResponseUrl)) {
+                $this->setSerializeData('MERCHANT_RESPONSE_URL', $hostedPaymentData->merchantResponseUrl);
+            }
+            if (!empty($hostedPaymentData->presetPaymentMethods)) {
+                $this->setSerializeData('PM_METHODS', implode( '|', $hostedPaymentData->presetPaymentMethods));
+            }
+
+            $this->setSerializeData('HPP_OB_CUSTOMER_COUNTRIES', $hostedPaymentData->customerCountry);
+        }
     }
 
     /**
@@ -1464,6 +1538,7 @@ class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                     break;
             }
         }
+
         return $requestValues;
     }
     

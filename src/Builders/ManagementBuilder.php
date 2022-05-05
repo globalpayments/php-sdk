@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Builders;
 
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Enums\CommercialIndicator;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\Enums\TaxType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
@@ -191,6 +192,9 @@ class ManagementBuilder extends TransactionBuilder
 
     /** @var string */
     public $tagData;
+
+    /** @var PaymentMethodUsageMode */
+    public $paymentMethodUsageMode;
 
     /**
      * {@inheritdoc}
@@ -592,6 +596,21 @@ class ManagementBuilder extends TransactionBuilder
     public function withDccRateData($value)
     {
         $this->dccRateData = $value;
+
+        return $this;
+    }
+
+    /**
+     * Set the request to use usage_mode
+     *
+     * @param string $value
+     *
+     * @return $this
+     */
+    public function withPaymentMethodUsageMode($value)
+    {
+        $this->paymentMethodUsageMode = $value;
+
         return $this;
     }
 
@@ -605,6 +624,7 @@ class ManagementBuilder extends TransactionBuilder
     public function withLodging($lodging)
     {
         $this->lodging = $lodging;
+
         return $this;
     }
 }

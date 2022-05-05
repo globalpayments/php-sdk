@@ -6,6 +6,7 @@ use GlobalPayments\Api\Gateways\IPaymentGateway;
 use GlobalPayments\Api\Gateways\IRecurringService;
 use GlobalPayments\Api\Gateways\ISecure3dProvider;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
+use GlobalPayments\Api\Gateways\OpenBankingProvider;
 
 class ConfiguredServices
 {
@@ -13,6 +14,9 @@ class ConfiguredServices
     
     /** @var IPayFacProvider  */
     private $payFacProvider;
+
+    /** @var OpenBankingProvider */
+    private $openBankingProvider;
 
     /** @var IPaymentGateway */
     public $gatewayConnector;
@@ -81,5 +85,15 @@ class ConfiguredServices
             return $provider;
         }
         return null;
+    }
+
+    public function setOpenBankingProvider($provider)
+    {
+        $this->openBankingProvider = $provider;
+    }
+
+    public function getOpenBankingProvider()
+    {
+        return $this->openBankingProvider;
     }
 }

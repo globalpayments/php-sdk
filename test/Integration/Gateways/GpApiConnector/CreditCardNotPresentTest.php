@@ -6,25 +6,25 @@ use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\LodgingItemType;
 use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
 use GlobalPayments\Api\Entities\Enums\Channel;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodProgram;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
+use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialReason;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialSequence;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialType;
+use GlobalPayments\Api\Entities\Enums\StoredPaymentMethodSortProperty;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
-use GlobalPayments\Api\Entities\Lodging;
-use GlobalPayments\Api\Entities\LodgingItems;
+use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
+use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\GpApiAvsCheckTestCards;
 use GlobalPayments\Api\Utils\GenerationUtils;
@@ -1183,6 +1183,7 @@ class CreditCardNotPresentTest extends TestCase
             $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
         }
     }
+
     public function testManualTransactions()
     {
         $entryModes = [ManualEntryMethod::MOTO, ManualEntryMethod::MAIL, ManualEntryMethod::PHONE];
@@ -1297,13 +1298,109 @@ class CreditCardNotPresentTest extends TestCase
         $customer->deviceFingerPrint = "NOT_ALWAYS";
 
         try {
-             $this->card->charge(60)
+            $this->card->charge(60)
                 ->withCurrency($this->currency)
-                 ->withCustomerData($customer)
+                ->withCustomerData($customer)
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('40213', $e->responseCode);
             $this->assertEquals("Status Code: INVALID_REQUEST_DATA - fingerprint_mode contains unexpected data", $e->getMessage());
+        }
+    }
+
+    public function testUpdatePaymentToken()
+    {
+        $startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
+        $endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
+
+        $response = ReportingService::findStoredPaymentMethodsPaged(1, 1)
+            ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::DESC)
+            ->where(SearchCriteria::START_DATE, $startDate)
+            ->andWith(SearchCriteria::END_DATE, $endDate)
+            ->execute();
+
+        $this->assertCount(1, $response->result);
+        $pmtToken = reset($response->result)->paymentMethodId;
+        $this->assertNotEmpty($pmtToken);
+        $this->assertNotNull($pmtToken);
+        $tokenizedCard = new CreditCardData();
+        $tokenizedCard->token = $pmtToken;
+        $tokenizedCard->cardHolderName = 'James BondUp';
+        $tokenizedCard->expYear = date('Y', strtotime('+1 year'));
+        $tokenizedCard->expMonth = date('m');
+        $tokenizedCard->number = "4263970000005262";
+
+        $response = $tokenizedCard->updateToken()
+            ->withPaymentMethodUsageMode(PaymentMethodUsageMode::MULTIPLE)
+            ->execute();
+
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('ACTIVE', $response->responseMessage);
+        $this->assertEquals($pmtToken, $response->token);
+        $this->assertEquals(PaymentMethodUsageMode::MULTIPLE, $response->tokenUsageMode);
+    }
+
+    public function testCardTokenizationThenUpdateAndThenCharge()
+    {
+        $response = $this->card->tokenize()
+            ->withPaymentMethodUsageMode(PaymentMethodUsageMode::SINGLE)
+            ->execute();
+        $tokenId = $response->token;
+
+        $tokenizedCard = new CreditCardData();
+        $tokenizedCard->token = $tokenId;
+        $tokenizedCard->cardHolderName = "GpApi";
+
+        $responseUpdateToken = $tokenizedCard->updateToken()
+            ->withPaymentMethodUsageMode(PaymentMethodUsageMode::MULTIPLE)
+            ->execute();
+        $this->assertNotNull($responseUpdateToken);
+        $this->assertEquals('SUCCESS', $responseUpdateToken->responseCode);
+        $this->assertEquals('ACTIVE', $responseUpdateToken->responseMessage);
+        $this->assertEquals('MULTIPLE', $responseUpdateToken->tokenUsageMode);
+
+        $chargeResponse = $tokenizedCard->charge(1)
+            ->withCurrency($this->currency)
+            ->execute();
+        $this->assertNotNull($chargeResponse);
+        $this->assertEquals('SUCCESS', $chargeResponse->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $chargeResponse->responseMessage);
+    }
+
+    public function testCardTokenizationThenUpdateToSingleUsage()
+    {
+        $tokenizedCard = new CreditCardData();
+        $tokenizedCard->token = 'PMT_' . GenerationUtils::getGuid();
+
+        $exceptionCaught = false;
+        try {
+            $tokenizedCard->updateToken()
+                ->withPaymentMethodUsageMode(PaymentMethodUsageMode::SINGLE)
+                ->execute();
+        } catch (ApiException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('50020', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Tokentype can only be MULTI', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testCardTokenizationThenUpdateWithoutUsageMode()
+    {
+        $tokenizedCard = new CreditCardData();
+        $tokenizedCard->token = 'PMT_' . GenerationUtils::getGuid();
+
+        $exceptionCaught = false;
+        try {
+            $tokenizedCard->updateToken()
+                ->execute();
+        } catch (ApiException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('50021', $e->responseCode);
+            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Mandatory Fields missing [card expdate] See Developers Guide', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
         }
     }
 
@@ -1360,7 +1457,7 @@ class CreditCardNotPresentTest extends TestCase
 //        ];
 //        $config->permissions = ['TRN_POST_Authorize'];
 //        $config->webProxy = new CustomWebProxy('127.0.0.1:8866');
-        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
+//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
 
         return $config;
     }

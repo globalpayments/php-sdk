@@ -247,6 +247,12 @@ class TransactionReportBuilder extends ReportBuilder
         return $this;
     }
 
+    public function withBankPaymentId($bankPaymentId)
+    {
+        $this->searchBuilder->bankPaymentId = $bankPaymentId;
+        return $this;
+    }
+
     /**
      * Set the gateway order for the criteria
      * @param string $sortProperty sorting property

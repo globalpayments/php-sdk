@@ -10,6 +10,7 @@ use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
+use GlobalPayments\Api\Entities\Enums\RemittanceReferenceType;
 use GlobalPayments\Api\Entities\FraudRuleCollection;
 use GlobalPayments\Api\Entities\HostedPaymentData;
 use GlobalPayments\Api\Entities\Enums\AddressType;
@@ -507,6 +508,12 @@ class AuthorizationBuilder extends TransactionBuilder
 
     /** string */
     public $paymentLinkId;
+
+    /** @var RemittanceReferenceType */
+    public $remittanceReferenceType;
+
+    /** @var string */
+    public $remittanceReferenceValue;
 
     /**
      * {@inheritdoc}
@@ -1439,6 +1446,14 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withPaymentLinkId($paymentLinkId)
     {
         $this->paymentLinkId = $paymentLinkId;
+        return $this;
+    }
+
+    public function withRemittanceReference($remittanceReferenceType, $remittanceReferenceValue)
+    {
+        $this->remittanceReferenceType = $remittanceReferenceType;
+        $this->remittanceReferenceValue = $remittanceReferenceValue;
+
         return $this;
     }
 }

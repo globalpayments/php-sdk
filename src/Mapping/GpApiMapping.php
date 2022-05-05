@@ -60,6 +60,7 @@ class GpApiMapping
         $transaction->responseCode = $response->action->result_code;
         $transaction->token = substr($response->id, 0, 4) === PaymentMethod::PAYMENT_METHOD_TOKEN_PREFIX ?
             $response->id : null;
+        $transaction->tokenUsageMode = !empty($response->usage_mode) ? $response->usage_mode : null;
         $transaction->clientTransactionId = !empty($response->reference) ? $response->reference : null;
         $transaction->fingerprint = !empty($response->fingerprint) ? $response->fingerprint : null;
         $transaction->fingerprintIndicator = !empty($response->fingerprint_presence_indicator) ?

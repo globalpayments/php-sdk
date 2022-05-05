@@ -46,4 +46,7 @@ class HostedPaymentConfig
 
     /** @var boolean */
     public $directCurrencyConversionEnabled;
+
+    /** @var boolean */
+    public $enableBankTransfer = false;
 }

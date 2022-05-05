@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Services;
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Enums\ShaHashType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServicesContainer;
@@ -23,6 +24,13 @@ class HostedService
      */
     public $sharedSecret;
 
+    public $shaHashType = ShaHashType::SHA1;
+
+    private static $supportedShaType = [
+      ShaHashType::SHA1,
+      ShaHashType::SHA256
+    ];
+
     /**
      * Instatiates a new object
      *
@@ -32,8 +40,12 @@ class HostedService
      */
     public function __construct($config)
     {
+        if (!in_array($config->shaHashType, self::$supportedShaType)) {
+            throw new ApiException(sprintf("%s not supported. Please check your code and the Developers Documentation.", $config->shaHashType));
+        }
         ServicesContainer::configureService($config);
         $this->sharedSecret = $config->sharedSecret;
+        $this->shaHashType = $config->shaHashType;
     }
 
     /**
@@ -107,8 +119,13 @@ class HostedService
         $message = $response["MESSAGE"];
         $transactionId = $response["PASREF"];
         $authCode = $response["AUTHCODE"];
-        $sha1Hash = $response["SHA1HASH"];
-        $hash = GenerationUtils::generateHash($this->sharedSecret, implode('.', [
+        if (empty($response[$this->shaHashType . "HASH"])) {
+            throw new ApiException("SHA hash is missing. Please check your code and the Developers Documentation.");
+        }
+        $shaHash = $response[$this->shaHashType . "HASH"];
+        $hash = GenerationUtils::generateNewHash(
+            $this->sharedSecret,
+            implode('.', [
                     $timestamp,
                     $merchantId,
                     $orderId,
@@ -116,9 +133,11 @@ class HostedService
                     $message,
                     $transactionId,
                     $authCode
-        ]));
+            ]),
+            $this->shaHashType
+        );
 
-        if ($hash != $sha1Hash) {
+        if ($hash != $shaHash) {
             throw new ApiException("Incorrect hash. Please check your code and the Developers Documentation.");
         }
 

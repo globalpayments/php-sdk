@@ -2,6 +2,7 @@
 namespace GlobalPayments\Api\Entities\Reporting;
 
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
+use GlobalPayments\Api\Entities\BankPaymentResponse;
 use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
 
 class TransactionSummary
@@ -522,4 +523,7 @@ class TransactionSummary
 
     /** @var string */
     public $schemeReferenceData;
+
+    /** @var BankPaymentResponse */
+    public $bankPaymentResponse;
 }

@@ -30,6 +30,7 @@ class ReportingTest extends TestCase
 
     public function testGetTransactionDetail()
     {
+        $this->markTestSkipped('You need a valid transaction id to run this test!');
         $transactionId = "u2RjrtEmaU2f0pB-aGw4Eg";
 
         /** @var TransactionSummary $response */

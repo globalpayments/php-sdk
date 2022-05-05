@@ -194,4 +194,13 @@ class ServicesContainer
         }
         throw new ConfigurationException('payFacProvider is not configured');
     }
+
+    public function getOpenBanking($configName)
+    {
+        if (array_key_exists($configName, static::$configurations)) {
+            return static::$configurations[$configName]->getOpenBankingProvider();
+        }
+
+        throw new ApiException("The specified configuration has not been added for open banking.");
+    }
 }

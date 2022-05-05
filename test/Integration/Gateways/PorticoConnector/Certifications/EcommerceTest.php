@@ -24,6 +24,8 @@ use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Enums\Secure3dPaymentDataSource;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\Services\BatchService;
+use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
+use GlobalPayments\Api\Entities\Enums\MobilePaymentMethodType;
 
 class TestCards
 {
@@ -1983,4 +1985,71 @@ class EcommerceTest extends TestCase
         $this->assertEquals(true, $response != null);
         $this->assertEquals('00', $response->responseCode);
     }
+    
+    public function testEcomWithWalletData()
+    {
+        $secureEcom = new ThreeDSecure();
+        $secureEcom->cavv = 'XXXXf98AAajXbDRg3HSUMAACAAA=';
+        $secureEcom->paymentDataSource = Secure3dPaymentDataSource::APPLEPAY;
+        $secureEcom->setVersion(Secure3dVersion::ONE);
+        
+        $card = TestCards::visaManual();
+        $card->threeDSecure = $secureEcom;
+        
+        $response = $card->charge(10)
+        ->withCurrency('USD')
+        ->withInvoiceNumber('12345')
+        ->withAllowDuplicates(true)
+        ->execute();
+        
+        $this->assertEquals(true, $response != null);
+        $this->assertEquals('00', $response->responseCode);
+    }
+    
+    public function testEcomWithSecure3D()
+    {
+        $secureEcom = new ThreeDSecure();
+        $secureEcom->cavv = 'XXXXf98AAajXbDRg3HSUMAACAAA=';
+        $secureEcom->xid = '0l35fwh1sys3ojzyxelu4ddhmnu5zfke5vst';
+        $secureEcom->eci = '5';
+        $secureEcom->setVersion(Secure3dVersion::ONE);
+        
+        $card = TestCards::visaManual();
+        $card->threeDSecure = $secureEcom;
+        
+        $response = $card->charge(10)
+        ->withCurrency('USD')
+        ->withInvoiceNumber('12345')
+        ->withAllowDuplicates(true)
+        ->execute();
+        
+        $this->assertEquals(true, $response != null);
+        $this->assertEquals('00', $response->responseCode);
+    }    
+    
+    public function testEcomWithWalletDataMobileType()
+    {
+        $secureEcom = new ThreeDSecure();
+        $secureEcom->cavv = 'XXXXf98AAajXbDRg3HSUMAACAAA=';
+        $secureEcom->paymentDataSource = Secure3dPaymentDataSource::APPLEPAY;
+        
+        $card = TestCards::visaManual();
+        $token = $card->tokenize()->execute()->token;
+        
+        $this->assertTrue(!empty($token), 'TOKEN COULD NOT BE GENERATED.');
+        
+        $card->threeDSecure = $secureEcom;
+        $card->mobileType = MobilePaymentMethodType::APPLEPAY;
+        $card->token = $token;
+        
+        $response = $card->charge(10)
+        ->withCurrency('USD')
+        ->withInvoiceNumber('12345')
+        ->withAllowDuplicates(true)
+        ->execute();
+        
+        $this->assertEquals(true, $response != null);
+        $this->assertEquals('00', $response->responseCode);
+    }  
+       
 }

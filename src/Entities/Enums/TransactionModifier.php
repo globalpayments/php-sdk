@@ -22,4 +22,5 @@ class TransactionModifier extends Enum
     const ALTERNATIVE_PAYMENT_METHOD = 12;
     const LEVEL_III = 13;
     const DECRYPTED_MOBILE = 14;
+    const BANK_PAYMENT = 15;
 }

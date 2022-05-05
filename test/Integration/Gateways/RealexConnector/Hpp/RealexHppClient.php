@@ -3,8 +3,11 @@ namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\Hpp;
 
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
+use GlobalPayments\Api\Entities\Enums\ShaHashType;
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\FraudRuleCollection;
 use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
+use GlobalPayments\Api\PaymentMethods\BankPayment;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
@@ -22,10 +25,12 @@ class RealexHppClient
 {
     private $sharedSecret;
     private $paymentData;
+    private $shaHashType;
 
-    public function __construct($sharedSecret)
+    public function __construct($sharedSecret, $shaHashType = ShaHashType::SHA1)
     {
         $this->sharedSecret = $sharedSecret;
+        $this->shaHashType = $shaHashType;
     }
 
     public function sendRequest($jsonData, $hppVersion = '')
@@ -39,7 +44,8 @@ class RealexHppClient
         $amount = $this->getValue('AMOUNT');
         $currency = $this->getValue('CURRENCY');
         $autoSettle = $this->getValue('AUTO_SETTLE_FLAG');
-        $requestHash = $this->getValue('SHA1HASH');
+        $shaHashTagName = $this->shaHashType . 'HASH';
+        $requestHash = $this->getValue($shaHashTagName);
         $shippingCode = $this->getValue('SHIPPING_CODE');
         $shippingCountry = $this->getValue('SHIPPING_CO');
         $billingCode = $this->getValue('BILLING_CODE');
@@ -49,9 +55,10 @@ class RealexHppClient
         $config->merchantId = $merchantId;
         $config->accountId = $account;
         $config->sharedSecret = $this->sharedSecret;
+        $config->shaHashType = $this->shaHashType;
         $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
         //to be uncomment in case you need to log the raw request/response
-//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
+        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
         $config->hostedPaymentConfig = new HostedPaymentConfig();
         $config->hostedPaymentConfig->language = "GB";
         $config->hostedPaymentConfig->responseUrl = "http://requestb.in/10q2bjb1";
@@ -67,20 +74,37 @@ class RealexHppClient
             $currency
         ];
 
-        // create the card/APM/LPM object
+        // create the card/APM/LPM/OB object
         if (!empty($this->getValue('PM_METHODS'))) {
             $apmTypes = explode("|", $this->getValue('PM_METHODS'));
-            $apmType = reset($apmTypes);
-            $card = new AlternativePaymentMethod($apmType);
+            if (in_array('ob', $apmTypes)) {
+                $card = new BankPayment();
+                $card->sortCode = $this->getValue('HPP_OB_DST_ACCOUNT_SORT_CODE');
+                $card->accountNumber = $this->getValue('HPP_OB_DST_ACCOUNT_NUMBER');
+                $card->accountName = $this->getValue('HPP_OB_DST_ACCOUNT_NAME');
+                $card->bankPaymentType = $this->getValue('HPP_OB_PAYMENT_SCHEME');
+                $card->iban = $this->getValue('HPP_OB_DST_ACCOUNT_IBAN');
+                $hashParam = array_merge(
+                    $hashParam,
+                    [
+                        !empty($card->sortCode) ? $card->sortCode : '',
+                        !empty($card->accountNumber) ? $card->accountNumber : '',
+                        !empty($card->iban) ? $card->iban : '',
+                    ]
+                );
+            } else {
+                $apmType = reset($apmTypes);
+                $card = new AlternativePaymentMethod($apmType);
+                if ($apmType == AlternativePaymentType::PAYPAL) {
+                    //cancelUrl for Paypal example
+                    $card->cancelUrl =  'https://www.example.com/failure/cancelURL';
+                }
+                $card->country = $this->getValue('HPP_CUSTOMER_COUNTRY');
+                $card->accountHolderName =
+                    $this->getValue('HPP_CUSTOMER_FIRSTNAME') . ' '. $this->getValue('HPP_CUSTOMER_LASTNAME') ;
+            }
             $card->returnUrl = $this->getValue('MERCHANT_RESPONSE_URL');
             $card->statusUpdateUrl = $this->getValue('HPP_TX_STATUS_URL');
-            if ($apmType == AlternativePaymentType::PAYPAL) {
-                //cancelUrl for Paypal example
-                $card->cancelUrl =  'https://www.example.com/failure/cancelURL';
-            }
-            $card->country = $this->getValue('HPP_CUSTOMER_COUNTRY');
-            $card->accountHolderName =
-                $this->getValue('HPP_CUSTOMER_FIRSTNAME') . ' '. $this->getValue('HPP_CUSTOMER_LASTNAME') ;
         } else {
             $card = new CreditCardData();
             $card->number = '4006097467207025';
@@ -101,11 +125,12 @@ class RealexHppClient
         if (!empty($this->paymentData['HPP_FRAUDFILTER_MODE'])) {
             $hashParam[] = $this->paymentData['HPP_FRAUDFILTER_MODE'];
         }
-        $newHash = GenerationUtils::generateHash(
-            $this->sharedSecret,
-            implode('.', $hashParam)
-        );
 
+        $newHash = GenerationUtils::generateNewHash(
+            $this->sharedSecret,
+            implode('.', $hashParam),
+            $this->shaHashType
+        );
         if ($newHash != $requestHash) {
             throw new ApiException("Incorrect hash. Please check your code and the Developers Documentation.");
         }
@@ -142,10 +167,20 @@ class RealexHppClient
             //handle fraud management
             $this->addFraudManagementInfo($gatewayRequest, $orderId);
 
-            $gatewayResponse = $gatewayRequest->execute();
+            if ($card instanceof BankPayment) {
+                $this->addRemittanceRef($gatewayRequest);
+            }
 
-            if (in_array($gatewayResponse->responseCode, ['00', '01'])) {
+            $gatewayResponse = $gatewayRequest->execute();
+            if (
+                in_array($gatewayResponse->responseCode, ['00', '01']) ||
+                ($card instanceof BankPayment && $gatewayResponse->responseMessage == 'PAYMENT_INITIATED')
+            ) {
                 return $this->convertResponse($gatewayResponse);
+            } else {
+                throw new ApiException(
+                    sprintf('Status Code: %s - %s', $gatewayResponse->responseCode, $gatewayResponse->responseMessage)
+                );
             }
         } catch (ApiException $exc) {
             throw $exc;
@@ -179,6 +214,15 @@ class RealexHppClient
             $gatewayRequest
                     ->withDccRateData($dccValues);
         }
+    }
+
+    public function addRemittanceRef($gatewayRequest)
+    {
+
+        $gatewayRequest->withRemittanceReference(
+            $this->getValue('HPP_OB_REMITTANCE_REF_TYPE'),
+            $this->getValue('HPP_OB_REMITTANCE_REF_VALUE')
+        );
     }
 
     public function addFraudManagementInfo($gatewayRequest, $orderId)
@@ -245,7 +289,7 @@ class RealexHppClient
         $merchantId = $this->paymentData['MERCHANT_ID'];
         $account = $this->paymentData['ACCOUNT'];
 
-        $newHash = GenerationUtils::generateHash(
+        $newHash = GenerationUtils::generateNewHash(
             $this->sharedSecret,
             implode('.', [
                     $gatewayResponse->timestamp,
@@ -255,7 +299,8 @@ class RealexHppClient
                     $gatewayResponse->responseMessage,
                     $gatewayResponse->transactionReference->transactionId,
                     $gatewayResponse->transactionReference->authCode
-                        ])
+                        ]),
+            $this->shaHashType
         );
 
         // begin building response
@@ -281,7 +326,7 @@ class RealexHppClient
             'CARD_PAYMENT_BUTTON' => $this->getValue('CARD_PAYMENT_BUTTON'),
             'MESSAGE' => $gatewayResponse->responseMessage,
             'AMOUNT' => $this->getValue('AMOUNT'),
-            'SHA1HASH' => $newHash,
+            $this->shaHashType . 'HASH' => $newHash,
             'DCC_INFO_REQUST' => $this->getValue('DCC_INFO'),
             'DCC_INFO_RESPONSE' => $gatewayResponse->dccRateData,
             'HPP_FRAUDFILTER_MODE' => $this->getValue('HPP_FRAUDFILTER_MODE'),

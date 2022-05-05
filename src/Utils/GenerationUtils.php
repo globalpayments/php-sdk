@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Utils;
 
 use DateTime;
 use GlobalPayments\Api\Entities\Enums\HppVersion;
+use GlobalPayments\Api\Entities\Enums\ShaHashType;
 use ReflectionClass;
 
 /**
@@ -79,6 +80,16 @@ class GenerationUtils
         $toHashSecondPass = $toHashFirstPass . '.' . $secret;
 
         return sha1($toHashSecondPass);
+    }
+    public static function generateNewHash($secret, $toHash, $shaType = ShaHashType::SHA1)
+    {
+        //first pass hashes the String of required fields
+        $toHashFirstPass = hash($shaType, $toHash);
+
+        //second pass takes the first hash, adds the secret and hashes again
+        $toHashSecondPass = $toHashFirstPass . '.' . $secret;
+
+        return hash($shaType, $toHashSecondPass);
     }
 
     /**
