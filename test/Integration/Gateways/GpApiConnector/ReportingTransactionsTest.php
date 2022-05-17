@@ -517,7 +517,7 @@ class ReportingTransactionsTest extends TestCase
                 ->orderBy(TransactionSortProperty::TIME_CREATED)
                 ->where(SearchCriteria::TOKEN_FIRST_SIX, $tokenFirst6)
                 ->andWith(SearchCriteria::TOKEN_LAST_FOUR, $tokenLast4)
-                ->andWith(SearchCriteria::PAYMENT_METHOD, PaymentMethodName::DIGITAL_WALLET)
+                ->andWith(SearchCriteria::PAYMENT_METHOD_NAME, PaymentMethodName::DIGITAL_WALLET)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
@@ -542,7 +542,7 @@ class ReportingTransactionsTest extends TestCase
                 ->orderBy(TransactionSortProperty::TIME_CREATED)
                 ->where(SearchCriteria::TOKEN_FIRST_SIX, $tokenFirst6)
                 ->andWith(SearchCriteria::TOKEN_LAST_FOUR, $tokenLast4)
-                ->andWith(SearchCriteria::PAYMENT_METHOD, PaymentMethodName::CARD)
+                ->andWith(SearchCriteria::PAYMENT_METHOD_NAME, PaymentMethodName::CARD)
                 ->andWith(SearchCriteria::START_DATE, $startDate)
                 ->execute();
         } catch (ApiException $e) {
@@ -673,7 +673,7 @@ class ReportingTransactionsTest extends TestCase
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                 ->where(SearchCriteria::START_DATE, $startDate)
-                ->andWith(SearchCriteria::PAYMENT_METHOD, PaymentMethodName::BANK_TRANSFER)
+                ->andWith(SearchCriteria::PAYMENT_METHOD_NAME, PaymentMethodName::BANK_TRANSFER)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by payment method failed: ' . $e->getMessage());

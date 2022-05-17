@@ -120,6 +120,12 @@ class ReportingService
             ->withActionId($actionId);
     }
 
+    public static function documentDisputeDetail($disputeId)
+    {
+        return (new TransactionReportBuilder(ReportType::DOCUMENT_DISPUTE_DETAIL))
+            ->withDisputeId($disputeId);
+    }
+
     public static function bankPaymentDetail($id)
     {
         return (new TransactionReportBuilder(ReportType::FIND_BANK_PAYMENT))

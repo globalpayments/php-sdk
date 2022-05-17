@@ -7,6 +7,13 @@
 
 ## Latest version
 #### Enhancements:
+- GP-ECOM: Add HPP capture billing/shipping address
+- Add intl and mbstring extensions on composer
+- GP-API: Refacto reporting for disputes / search stored payment methods / LodgingData
+
+## v3.1.0 (05/05/2022)
+#### Enhancements:
+
 - GP-ECOM: Add bank payment (open banking) service
 - GP-API: Update usage mode, cardholder name and card number on a stored payment method
 - Portico: Updated code for Secure3D and WalletData Element

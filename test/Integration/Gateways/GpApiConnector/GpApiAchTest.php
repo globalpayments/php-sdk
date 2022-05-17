@@ -123,13 +123,14 @@ class GpApiAchTest extends TestCase
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::END_DATE, $endDate)
-                ->andWith(SearchCriteria::PAYMENT_METHOD, PaymentMethodName::BANK_TRANSFER)
+                ->andWith(SearchCriteria::PAYMENT_METHOD_NAME, PaymentMethodName::BANK_TRANSFER)
                 ->andWith(SearchCriteria::PAYMENT_TYPE, PaymentType::SALE)
                 ->andWith(DataServiceCriteria::AMOUNT, 11)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by type failed: ' . $e->getMessage());
         }
+
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
         $transactionSummary = reset($response->result);
@@ -157,7 +158,7 @@ class GpApiAchTest extends TestCase
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                 ->where(SearchCriteria::START_DATE, $startDate)
                 ->andWith(SearchCriteria::END_DATE, $endDate)
-                ->andWith(SearchCriteria::PAYMENT_METHOD, PaymentMethodName::BANK_TRANSFER)
+                ->andWith(SearchCriteria::PAYMENT_METHOD_NAME, PaymentMethodName::BANK_TRANSFER)
                 ->andWith(SearchCriteria::PAYMENT_TYPE, PaymentType::SALE)
                 ->andWith(DataServiceCriteria::AMOUNT, $amount)
                 ->execute();

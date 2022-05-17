@@ -913,6 +913,37 @@ class HppTest extends TestCase
         $this->assertEquals($hostedPaymentData->merchantResponseUrl, $parsedResponse->responseValues['MERCHANT_RESPONSE_URL']);
     }
 
+    public function testCaptureBillingShippingInfo()
+    {
+        $config = new GpEcomConfig();
+        $config->merchantId = "MerchantId";
+        $config->accountId = "internet";
+        $config->refundPassword = "refund";
+        $config->sharedSecret = "secret";
+        $config->serviceUrl = "https://pay.sandbox.realexpayments.com/pay";
+        $config->hostedPaymentConfig = new HostedPaymentConfig();
+        $config->hostedPaymentConfig->language = "GB";
+        $config->hostedPaymentConfig->responseUrl = "https://www.example.com/response";
+        $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
+
+        $service = new HostedService($config);
+        $client = new RealexHppClient("secret");
+
+        $hostedPaymentData = new HostedPaymentData();
+        $hostedPaymentData->addressCapture = true;
+        $hostedPaymentData->notReturnAddress = false;
+
+        $json = $service->charge(19)
+            ->withCurrency("EUR")
+            ->withAddress($this->billingAddress, AddressType::BILLING)
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->withHostedPaymentData($hostedPaymentData)
+            ->serialize();
+        $response = json_decode($json, true);
+        $this->assertEquals(true, $response['HPP_CAPTURE_ADDRESS']);
+        $this->assertEquals(false, $response['HPP_DO_NOT_RETURN_ADDRESS']);
+    }
+
     public function testOpenBankingInitiate()
     {
         $config = new GpEcomConfig();
@@ -937,13 +968,14 @@ class HppTest extends TestCase
         $bankPayment->accountNumber = '12345678';
         $bankPayment->sortCode = '406650';
         $bankPayment->accountName = 'AccountName';
+        $hostedPaymentData->bankPayment = $bankPayment;
+
 
         $client = new RealexHppClient($config->sharedSecret, ShaHashType::SHA256);
         $service = new HostedService($config);
 
         $json = $service->charge(10.99)
             ->withCurrency("GBP")
-            ->withPaymentMethod($bankPayment)
             ->withHostedPaymentData($hostedPaymentData)
             ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
             ->serialize();

@@ -10,7 +10,7 @@ use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\GpApi\DTO\Card;
 use GlobalPayments\Api\Entities\IRequestBuilder;
-use GlobalPayments\Api\Entities\Lodging;
+use GlobalPayments\Api\Entities\LodgingData;
 use GlobalPayments\Api\Entities\LodgingItems;
 use GlobalPayments\Api\Mapping\EnumMapping;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
@@ -148,9 +148,9 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/incremental';
                 $verb = 'POST';
                 $payload['amount'] = StringUtils::toNumeric($builder->amount);
-                if (!empty($builder->lodging)) {
-                    /** @var Lodging $lodging */
-                    $lodging = $builder->lodging;
+                if (!empty($builder->lodgingData)) {
+                    /** @var LodgingData $lodging */
+                    $lodging = $builder->lodgingData;
                     if (!empty($lodging->items)) {
                         $lodgingItems = [];
                         /** @var LodgingItems $item */
@@ -167,10 +167,10 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                     $payload['lodging'] = [
                         'booking_reference' => $lodging->bookingReference,
                         'duration_days' => $lodging->durationDays,
-                        'date_checked_in' => !empty($lodging->dateCheckedIn) ?
-                            (new \DateTime($lodging->dateCheckedIn))->format('Y-m-d') : null,
-                        'date_checked_out' => !empty($lodging->dateCheckedOut) ?
-                            (new \DateTime($lodging->dateCheckedOut))->format('Y-m-d') : null,
+                        'date_checked_in' => !empty($lodging->checkedInDate) ?
+                            (new \DateTime($lodging->checkedInDate))->format('Y-m-d') : null,
+                        'date_checked_out' => !empty($lodging->checkedOutDate) ?
+                            (new \DateTime($lodging->checkedOutDate))->format('Y-m-d') : null,
                         'daily_rate_amount' => !empty($lodging->dailyRateAmount) ?
                             StringUtils::toNumeric($lodging->dailyRateAmount) : null,
                         'lodging.charge_items' => !empty($lodgingItems) ? $lodgingItems : null

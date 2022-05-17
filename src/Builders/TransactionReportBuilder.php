@@ -7,6 +7,7 @@ use GlobalPayments\Api\Entities\Enums\DepositSortProperty;
 use GlobalPayments\Api\Entities\Enums\DisputeSortProperty;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Enums\StoredPaymentMethodSortProperty;
+use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionSortProperty;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\TimeZoneConversion;
@@ -96,6 +97,8 @@ class TransactionReportBuilder extends ReportBuilder
      */
     public $reportType;
 
+    public $transactionModifier = TransactionModifier::NONE;
+
     /**
      * @internal
      * @var TimeZoneConversion
@@ -106,6 +109,7 @@ class TransactionReportBuilder extends ReportBuilder
     {
         parent::__construct($activity);
 
+        $this->transactionType = $activity;
         $this->searchBuilder = new SearchCriteriaBuilder($this);
     }
 
@@ -311,5 +315,8 @@ class TransactionReportBuilder extends ReportBuilder
 
         $this->validations->of(ReportType::ACTIVITY)
             ->check('transactionId')->isNull();
+
+        $this->validations->of(ReportType::DOCUMENT_DISPUTE_DETAIL)
+            ->check('disputeDocumentId')->isNotNullInSubProperty('searchBuilder');
     }
 }

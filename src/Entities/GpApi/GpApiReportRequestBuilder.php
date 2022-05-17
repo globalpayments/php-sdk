@@ -77,7 +77,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $queryParams['batch_id'] = $builder->searchBuilder->batchId;
                 $queryParams['entry_mode'] = $builder->searchBuilder->paymentEntryMode;
                 $queryParams['name'] = $builder->searchBuilder->name;
-                $queryParams['payment_method'] = $builder->searchBuilder->paymentMethod;
+                $queryParams['payment_method'] = $builder->searchBuilder->paymentMethodName;
                 $queryParams = array_merge($queryParams,  $this->getTransactionParams($builder));
                 break;
             case ReportType::FIND_SETTLEMENT_TRANSACTIONS_PAGED:
@@ -103,9 +103,11 @@ class GpApiReportRequestBuilder implements IRequestBuilder
             case ReportType::DISPUTE_DETAIL:
                 $endpoint = GpApiRequest::DISPUTES_ENDPOINT . '/' . $builder->searchBuilder->disputeId;
                 $verb = 'GET';
-                if ($builder->searchBuilder->disputeDocumentId) {
-                    $endpoint .= '/documents/' . $builder->searchBuilder->disputeDocumentId;
-                }
+                break;
+            case ReportType::DOCUMENT_DISPUTE_DETAIL:
+                $endpoint = GpApiRequest::DISPUTES_ENDPOINT . '/' . $builder->searchBuilder->disputeId . '/documents/' .
+                    $builder->searchBuilder->disputeDocumentId;
+                $verb = 'GET';
                 break;
             case ReportType::FIND_DISPUTES_PAGED:
                 $endpoint = GpApiRequest::DISPUTES_ENDPOINT;

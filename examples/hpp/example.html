@@ -1,20 +1,38 @@
-
+<fieldset style="width: 30%;">
+    <legend style="font-style: italic"> Capture Billing and Shipping Information</legend>
+    <div>
+        <input type="checkbox" id="capture_address" name="capture_address">
+        <label for="capture_address">Enable Capture billing and shipping capability</label>
+    </div>
+    <div>
+        <input type="checkbox" id="not_return_address" name="not_return_address">
+        <label for="not_return_address">Do not return address information in HPP response</label>
+    </div>
+</fieldset>
+<br>
 <button id="payButtonId">Click here to pay</button>
 
 <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
 <script src="rxp-hpp.js"></script>
 <script>
     $(document).ready(function() {
-        $.getJSON("get-json.php", function(jsonFromRequestEndpoint) {
-            console.log(jsonFromRequestEndpoint);
-            RealexHpp.setHppUrl("https://pay.sandbox.realexpayments.com/pay");
-            /*
+        $("#payButtonId").click(function() {
+            const data = {
+                captureAddress: document.getElementById("capture_address").checked,
+                notReturnAddress: document.getElementById("not_return_address").checked
+            };
+            console.log(data);
+            $.getJSON("get-json.php", data, function (jsonFromRequestEndpoint) {
+                console.log(jsonFromRequestEndpoint);
+                RealexHpp.setHppUrl("https://pay.sandbox.realexpayments.com/pay");
+                /*
              * if running this from localhost, for your response endpoint,
              * you will need to expose your local server to the outside world
              * you can use something like ngrok for it then access your local host via
              * the ngrok link
              */
-            RealexHpp.lightbox.init("payButtonId", "response-endpoint.php", jsonFromRequestEndpoint);
+                RealexHpp.lightbox.init("autoload", "response-endpoint.php", jsonFromRequestEndpoint);
+            });
         });
     });
 </script>

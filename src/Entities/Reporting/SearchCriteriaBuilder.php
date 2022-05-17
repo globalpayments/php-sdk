@@ -14,6 +14,7 @@ use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
+use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 
 class SearchCriteriaBuilder
 {
@@ -467,6 +468,11 @@ class SearchCriteriaBuilder
 
     /**
      * @var PaymentMethodName
+     */
+    public $paymentMethodName;
+
+    /**
+     * @var IPaymentMethod
      */
     public $paymentMethod;
 

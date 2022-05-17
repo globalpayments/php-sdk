@@ -16,7 +16,9 @@
     "ext-dom": "*",
     "ext-openssl": "*",
     "ext-json": "*",
-    "ext-zlib": "*"
+    "ext-zlib": "*",
+    "ext-intl": "*",
+    "ext-mbstring": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "~5.0",

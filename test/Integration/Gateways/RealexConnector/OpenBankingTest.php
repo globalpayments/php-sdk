@@ -112,7 +112,7 @@ class OpenBankingTest extends TestCase
     public function testBankPaymentListWithReturnPii()
     {
         $startDate = (new \DateTime())->modify('-29 day');
-        $endDate = (new \DateTime())->modify('-28 day');
+        $endDate = (new \DateTime())->modify('-1 day');
         $response = ReportingService::findBankPaymentTransactions(1, 10)
             ->where(SearchCriteria::START_DATE, $startDate)
             ->andWith(SearchCriteria::END_DATE, $endDate)

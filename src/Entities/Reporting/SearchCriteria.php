@@ -73,5 +73,6 @@ class SearchCriteria extends Enum
     const RESPONSE_CODE = 'responseCode';
     const HTTP_RESPONSE_CODE = 'httpResponseCode';
     const PAYMENT_METHOD = 'paymentMethod';
+    const PAYMENT_METHOD_NAME = 'paymentMethodName';
     const RETURN_PII = 'returnPii';
 }

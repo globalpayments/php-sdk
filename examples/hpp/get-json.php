@@ -12,6 +12,7 @@ use GlobalPayments\Api\Entities\Enums\HppVersion;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Services\HostedService;
 
+
 // configure client, request and HPP settings
 $config = new GpEcomConfig();
 $config->merchantId = "openbankingsandbox";
@@ -21,6 +22,7 @@ $config->serviceUrl = "https://pay.sandbox.realexpayments.com/pay";
 $config->enableBankPayment = true;
 $config->hostedPaymentConfig = new HostedPaymentConfig();
 $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
+
 $service = new HostedService($config);
 
 // Add 3D Secure 2 Mandatory and Recommended Fields
@@ -28,6 +30,12 @@ $hostedPaymentData = new HostedPaymentData();
 $hostedPaymentData->customerEmail = "james.mason@example.com";
 $hostedPaymentData->customerPhoneMobile = "44|07123456789";
 $hostedPaymentData->addressesMatch = false;
+if (isset($_REQUEST['captureAddress'])) {
+    $hostedPaymentData->addressCapture = filter_var($_REQUEST['captureAddress'], FILTER_VALIDATE_BOOLEAN);
+}
+if (isset($_REQUEST['notReturnAddress'])) {
+    $hostedPaymentData->notReturnAddress = filter_var($_REQUEST['notReturnAddress'], FILTER_VALIDATE_BOOLEAN);
+}
 
 $hostedPaymentData->customerCountry = 'GB';
 $hostedPaymentData->customerFirstName = 'James';
@@ -58,13 +66,14 @@ $bankPayment->accountNumber = '12345678';
 $bankPayment->sortCode = '406650';
 $bankPayment->accountName = 'AccountName';
 
+$hostedPaymentData->bankPayment = $bankPayment;
+
 try {
     $hppJson = $service->charge(19.99)
         ->withCurrency("GBP")
         ->withHostedPaymentData($hostedPaymentData)
         ->withAddress($billingAddress, AddressType::BILLING)
         ->withAddress($shippingAddress, AddressType::SHIPPING)
-        ->withPaymentMethod($bankPayment)
         ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
         ->serialize();
     //with this, we can pass our json to the client side

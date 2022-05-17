@@ -17,9 +17,10 @@ use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
-use PHPUnit\Framework\TestCase;
+use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
+use PHPUnit\Framework\TestCase;
 
 class ReportingDisputesTest extends TestCase
 {
@@ -40,10 +41,12 @@ class ReportingDisputesTest extends TestCase
         $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
         $config->appKey = 'DHUGdzpjXfTbjZeo';
         $config->environment = Environment::TEST;
-//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
+        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
 
         return $config;
     }
+
+    #region Report Disputes
 
     public function testReportDisputeDetail()
     {
@@ -332,11 +335,15 @@ class ReportingDisputesTest extends TestCase
         }
     }
 
+    #endregion
+
+    #region Get a Document associated with a Dispute
+
     public function testFindDocumentAssociatedWithDispute()
     {
         $disputeId = 'DIS_SAND_abcd1235';
         $documentId = 'DOC_MyEvidence_234234AVCDE-1';
-        $response = ReportingService::disputeDetail($disputeId)
+        $response = ReportingService::documentDisputeDetail($disputeId)
             ->where(SearchCriteria::DISPUTE_DOCUMENT_ID, $documentId)
             ->execute();
 
@@ -346,6 +353,47 @@ class ReportingDisputesTest extends TestCase
         $this->assertNotEmpty($response->b64_content);
     }
 
+    public function testFindDocumentAssociatedWithDispute_RandomDisputeId()
+    {
+        $disputeId = GenerationUtils::getGuid();
+        $documentId = 'DOC_MyEvidence_234234AVCDE-1';
+
+        $exceptionCaught = false;
+        try {
+            ReportingService::documentDisputeDetail($disputeId)
+                ->where(SearchCriteria::DISPUTE_DOCUMENT_ID, $documentId)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40073', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - 101,Unable to locate dispute record for that ID. Please recheck the ID provided.', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testFindDocumentAssociatedWithDispute_RandomDocumentId()
+    {
+        $disputeId = "DIS_SAND_abcd1235";
+        $documentId = GenerationUtils::getGuid();
+
+        $exceptionCaught = false;
+        try {
+            ReportingService::documentDisputeDetail($disputeId)
+                ->where(SearchCriteria::DISPUTE_DOCUMENT_ID, $documentId)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40071', $e->responseCode);
+            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - 128,No document found, please recheck the values provided', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    #endregion
+
+    #region Settlement disputes
     /***************************************
      *          Settlement disputes        *
      ***************************************/
@@ -619,6 +667,10 @@ class ReportingDisputesTest extends TestCase
         $this->assertTrue(count($summary->result) == 0);
     }
 
+    #endregion
+
+    #region Accept and Challenge Dispute
+
     public function testReportDisputeAcceptance()
     {
         $disputeId = "DIS_SAND_abcd1234";
@@ -760,6 +812,8 @@ class ReportingDisputesTest extends TestCase
             $this->assertTrue($exceptionCaught);
         }
     }
+
+    #endregion
 
     public function testFindSettlementDisputesPaged_FilterBy_DepositId()
     {

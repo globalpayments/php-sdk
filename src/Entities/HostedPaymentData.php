@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Entities;
 
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
+use GlobalPayments\Api\PaymentMethods\BankPayment;
 
 /**
  * Data collection to supplement a hosted payment page.
@@ -17,6 +18,20 @@ class HostedPaymentData
      * @var boolean
      */
     public $addressesMatch;
+
+    /**
+     * Determines whether the address forms will be displayed on the HPP
+     *
+     * @var boolean
+     */
+    public $addressCapture;
+
+    /**
+     * Determines whether or not the HPP response will contain the address and contact information.
+     *
+     * @var boolean
+     */
+    public $notReturnAddress;
 
     /**
      * Determines the challenge request preference for 3DS 2.0.
@@ -106,6 +121,9 @@ class HostedPaymentData
 
     /** @var array<AlternativePaymentType> */
     public $presetPaymentMethods = [];
+
+    /** @var BankPayment */
+    public $bankPayment;
 
     /**
      * Instantiates a new `HostedPaymentData` object.

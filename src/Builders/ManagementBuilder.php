@@ -8,7 +8,7 @@ use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\Enums\TaxType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\Lodging;
+use GlobalPayments\Api\Entities\LodgingData;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\ECheck;
@@ -187,8 +187,8 @@ class ManagementBuilder extends TransactionBuilder
     /** @var DccRateData */
     public $dccRateData;
 
-    /** @var Lodging */
-    public $lodging;
+    /** @var LodgingData */
+    public $lodgingData;
 
     /** @var string */
     public $tagData;
@@ -617,13 +617,13 @@ class ManagementBuilder extends TransactionBuilder
     /**
      * Set the lodging details
      *
-     * @param Lodging $lodging
+     * @param LodgingData $lodging
      *
      * @return $this
      */
-    public function withLodging($lodging)
+    public function withLodgingData($lodgingData)
     {
-        $this->lodging = $lodging;
+        $this->lodgingData = $lodgingData;
 
         return $this;
     }

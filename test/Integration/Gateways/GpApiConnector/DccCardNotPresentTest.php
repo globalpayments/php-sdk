@@ -331,7 +331,9 @@ class DccCardNotPresentTest extends TestCase
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
         $this->assertEquals($transactionStatus, $transaction->responseMessage);
-        $this->assertEquals($expectedDccValue, $transaction->dccRateData->cardHolderAmount);
+        if ($transactionStatus !== TransactionStatus::REVERSED) {
+                    $this->assertEquals($expectedDccValue, $transaction->dccRateData->cardHolderAmount);
+                }
     }
 
     private function getAmount($dccDetails)

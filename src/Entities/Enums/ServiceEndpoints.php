@@ -27,5 +27,5 @@ class ServiceEndpoints extends Enum
     const GP_API_TEST = "https://apis.sandbox.globalpay.com/ucp";
     const GP_API_PRODUCTION = "https://apis.globalpay.com/ucp";
     const OPEN_BANKING_TEST = 'https://beta.sandbox.globalpay-ecommerce.com/openbanking';
-    const OPEN_BANKING_PRODUCTION = '';
+    const OPEN_BANKING_PRODUCTION = 'https://beta.globalpay-ecommerce.com/openbanking';
 }

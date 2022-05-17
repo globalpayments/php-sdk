@@ -13,7 +13,7 @@ use GlobalPayments\Api\Entities\Enums\StoredCredentialSequence;
 use GlobalPayments\Api\Entities\Enums\TransactionSortProperty;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
-use GlobalPayments\Api\Entities\Lodging;
+use GlobalPayments\Api\Entities\LodgingData;
 use GlobalPayments\Api\Entities\LodgingItems;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
@@ -609,11 +609,11 @@ class CreditCardPresentTest extends TestCase
         $this->assertEquals('SUCCESS', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
 
-        $lodgingInfo = new Lodging();
+        $lodgingInfo = new LodgingData();
         $lodgingInfo->bookingReference = 's9RpaDwXq1sPRkbP';
         $lodgingInfo->durationDays = 10;
-        $lodgingInfo->dateCheckedIn = date('Y-m-d H:i:s');
-        $lodgingInfo->dateCheckedOut = date('Y-m-d H:i:s', strtotime("+7 days"));
+        $lodgingInfo->checkedInDate = date('Y-m-d H:i:s');
+        $lodgingInfo->checkedOutDate = date('Y-m-d H:i:s', strtotime("+7 days"));
         $lodgingInfo->dailyRateAmount = '13.49';
         $item1 = new LodgingItems();
         $item1->types = [LodgingItemType::NO_SHOW];
@@ -624,7 +624,7 @@ class CreditCardPresentTest extends TestCase
 
         $transaction = $transaction->additionalAuth(10)
             ->withCurrency($this->currency)
-            ->withLodging($lodgingInfo)
+            ->withLodgingData($lodgingInfo)
             ->execute();
 
         $this->assertNotNull($transaction);

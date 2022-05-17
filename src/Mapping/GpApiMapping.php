@@ -175,15 +175,12 @@ class GpApiMapping
                     array_push($report->result, self::mapDepositSummary($deposit));
                 }
                 break;
-            case ReportType::DISPUTE_DETAIL:
-                if ($response->action->type == 'DOCUMENT_SINGLE'){
-                    $report = new DisputeDocument();
-                    $report->id = $response->id;
-                    $report->b64_content = $response->b64_content;
-                } else {
-                    $report = self::mapDisputeSummary($response);
-                }
+            case ReportType::DOCUMENT_DISPUTE_DETAIL:
+                $report = new DisputeDocument();
+                $report->id = $response->id;
+                $report->b64_content = $response->b64_content;
                 break;
+            case ReportType::DISPUTE_DETAIL:
             case ReportType::SETTLEMENT_DISPUTE_DETAIL:
                 $report = self::mapDisputeSummary($response);
                 break;

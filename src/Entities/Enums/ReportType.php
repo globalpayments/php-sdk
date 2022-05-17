@@ -8,6 +8,8 @@ class ReportType extends Enum
 {
     const FIND_TRANSACTIONS = 1;
     const ACTIVITY = 2; // 1 << 1;
+    const FIND_BANK_PAYMENT = 4; // 1 << 2
+    const DOCUMENT_DISPUTE_DETAIL = 8; // 1 << 3
     const TRANSACTION_DETAIL = 128; // 1 << 7;
     const FIND_DEPOSITS = 256; //1 << 8
     const FIND_DISPUTES = 512; // 1 << 9
@@ -25,5 +27,4 @@ class ReportType extends Enum
     const STORED_PAYMENT_METHOD_DETAIL = 2097152; // 1 << 21
     const FIND_ACTIONS_PAGED = 4194304; // 1 << 22
     const ACTION_DETAIL = 8388608; // 1 << 23
-    const FIND_BANK_PAYMENT = 4; // 1 << 2
 }
