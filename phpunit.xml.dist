@@ -25,14 +25,14 @@
         </testsuite>
         <testsuite name="certification">
             <directory>./test/Integration/Gateways/PorticoConnector/Certifications/</directory>
-            <directory>./test/Integration/Gateways/RealexConnector/Certifications/</directory>
+            <directory>./test/Integration/Gateways/GpEcomConnector/Certifications/</directory>
             <directory>./test/Integration/Gateways/GpApiConnector/Certifications/</directory>
         </testsuite>
-		<testsuite name="portico">
+        <testsuite name="portico">
             <directory>./test/Integration/Gateways/PorticoConnector/</directory>
         </testsuite>
-		<testsuite name="realex">
-            <directory>./test/Integration/Gateways/RealexConnector/</directory>
+        <testsuite name="gpecom">
+            <directory>./test/Integration/Gateways/GpEcomConnector/</directory>
         </testsuite>
         <testsuite name="gpapi">
             <directory>./test/Integration/Gateways/GpApiConnector/</directory>

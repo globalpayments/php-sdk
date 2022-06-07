@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api\Entities\GpApi;
+namespace GlobalPayments\Api\Builders\RequestBuilder\GpApi;
 
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
@@ -9,6 +9,7 @@ use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\GpApi\DTO\Card;
+use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Entities\LodgingData;
 use GlobalPayments\Api\Entities\LodgingItems;

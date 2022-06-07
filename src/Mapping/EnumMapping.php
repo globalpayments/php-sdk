@@ -7,6 +7,7 @@ use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\Api\Entities\Enums\ScheduleFrequency;
 use GlobalPayments\Api\Entities\Enums\MessageCategory;
 use GlobalPayments\Api\Entities\Enums\SdkUiType;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
@@ -115,6 +116,25 @@ class EnumMapping
         }
     }
 
+    public static function mapScheduleFrequency($gateway, $value)
+    {
+        switch ($gateway) {
+            case GatewayProvider::GP_ECOM:
+                switch ($value) {
+                    case ScheduleFrequency::BI_MONTHLY:
+                        return 'bimonthly';
+                    case ScheduleFrequency::SEMI_ANNUALLY:
+                        return 'halfyearly';
+                    case ScheduleFrequency::ANNUALLY:
+                        return 'yearly';
+                    default:
+                        return $value;
+                }
+            default:
+                return $value;
+        }
+    }
+
     public static function mapSdkUiType($gateway, $value)
     {
         switch ($gateway) {
@@ -126,7 +146,7 @@ class EnumMapping
                         return $value;
                 }
             default:
-                return null;
+                return $value;
         }
     }
 

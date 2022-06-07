@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Services\ReportingService;

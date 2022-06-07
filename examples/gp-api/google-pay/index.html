@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Global Payments Google Pay with GP-API example</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="main.js"></script>
+    <script defer
+            src="https://pay.google.com/gp/p/js/pay.js"
+            onload="onGooglePayLoaded()"></script>
+</head>
+<body>
+    <div id="container"></div>
+    <p class="error hide">In order to process payments via Google Pay, please switch to HTTPS.</p>
+    <form id="form" action="charge.php" method="POST">
+        <input type="hidden" id="googlePayToken" name="googlePayToken" />
+    </form>
+</body>
+</html>

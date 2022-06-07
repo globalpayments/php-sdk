@@ -207,6 +207,7 @@ class ManagementBuilder extends TransactionBuilder
     public function __construct($type, $paymentMethod = null)
     {
         parent::__construct($type, $paymentMethod);
+        $this->supplementaryData = [];
     }
 
     /**

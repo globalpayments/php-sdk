@@ -1,5 +1,5 @@
 <?php
-namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\Hpp;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector\Hpp;
 
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
@@ -21,7 +21,7 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 
-class RealexHppClient
+class GpEcomHppClient
 {
     private $sharedSecret;
     private $paymentData;

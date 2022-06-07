@@ -1,10 +1,11 @@
 <?php
 
-namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
 use GlobalPayments\Api\Services\HostedService;
 use GlobalPayments\Api\HostedPaymentConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
+use GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector\Hpp\GpEcomHppClient;
 use PHPUnit\Framework\TestCase;
 
 class HppTestCase extends TestCase
@@ -13,7 +14,7 @@ class HppTestCase extends TestCase
     /** @var HostedService */
     protected $service;
 
-    /** @var RealexHppClient */
+    /** @var GpEcomHppClient */
     protected $client;
 
     protected function config()

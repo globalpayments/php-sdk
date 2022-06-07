@@ -390,13 +390,6 @@ class AuthorizationBuilder extends TransactionBuilder
     public $timestamp;
 
     /**
-     * Request supplementary data
-     *
-     * @var array<string, string>
-     */
-    public $supplementaryData;
-
-    /**
      * DCC rate Data
      *
      * @internal
@@ -1319,31 +1312,6 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withMultiCapture($multiCapture = false)
     {
         $this->multiCapture = $multiCapture;
-        return $this;
-    }
-
-    /**
-     * Depending on the parameters received,
-     * Add supplementary data or
-     * Add multiple values to the supplementaryData array
-     *
-     * @param string|array<string, string>  $key
-     * @param string $value
-     *
-     * @return AuthorizationBuilder
-     */
-    public function withSupplementaryData($key, $value = null)
-    {
-        if ($value === null && is_array($key)) {
-            foreach ($key as $k => $v) {
-                $this->withSupplementaryData($k, $v);
-            }
-        }
-
-        if ($key && isset($value)) {
-            $this->supplementaryData[$key] = (string) $value;
-        }
-
         return $this;
     }
 

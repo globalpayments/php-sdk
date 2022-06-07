@@ -5,13 +5,9 @@ namespace GlobalPayments\Api\ServiceConfigs\Gateways;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\ConfiguredServices;
-use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\ServiceEndpoints;
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
 use GlobalPayments\Api\Gateways\GeniusConnector;
-use GlobalPayments\Api\Gateways\Gp3DSProvider;
-use GlobalPayments\Api\Gateways\MerchantwareConnector;
-use GlobalPayments\Api\Gateways\RealexConnector;
 
 class GeniusConfig extends GatewayConfig
 {

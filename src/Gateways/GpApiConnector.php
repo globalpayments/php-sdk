@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Gateways;
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Builders\ReportBuilder;
+use GlobalPayments\Api\Builders\RequestBuilder\RequestBuilderFactory;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
@@ -13,7 +14,6 @@ use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\GpApi\GpApiTokenResponse;
-use GlobalPayments\Api\Entities\GpApi\GpApiRequestBuilderFactory;
 use GlobalPayments\Api\Entities\GpApi\GpApiSessionInfo;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\IRequestBuilder;
@@ -139,11 +139,11 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
 
     private function executeProcess($builder)
     {
-        $processFactory = new GpApiRequestBuilderFactory();
+        $processFactory = new RequestBuilderFactory();
         /**
          * @var IRequestBuilder $requestBuilder
          */
-        $requestBuilder = $processFactory->getRequestBuilder($builder);
+        $requestBuilder = $processFactory->getRequestBuilder($builder, $this->gpApiConfig->gatewayProvider);
         if (empty($requestBuilder)) {
             throw new ApiException("Request builder not found!");
         }

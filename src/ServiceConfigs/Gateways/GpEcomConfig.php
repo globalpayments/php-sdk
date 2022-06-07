@@ -9,8 +9,8 @@ use GlobalPayments\Api\Entities\Enums\ServiceEndpoints;
 use GlobalPayments\Api\Entities\Enums\ShaHashType;
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
 use GlobalPayments\Api\Gateways\Gp3DSProvider;
+use GlobalPayments\Api\Gateways\GpEcomConnector;
 use GlobalPayments\Api\Gateways\OpenBankingProvider;
-use GlobalPayments\Api\Gateways\RealexConnector;
 use GlobalPayments\Api\ConfiguredServices;
 
 class GpEcomConfig extends GatewayConfig
@@ -51,17 +51,11 @@ class GpEcomConfig extends GatewayConfig
             $this->serviceUrl = $this->environment == Environment::TEST ? ServiceEndpoints::GLOBAL_ECOM_TEST : ServiceEndpoints::GLOBAL_ECOM_PRODUCTION;
         }
 
-        $gateway = new RealexConnector();
-        $gateway->accountId = $this->accountId;
-        $gateway->channel = $this->channel;
-        $gateway->merchantId = $this->merchantId;
-        $gateway->rebatePassword = $this->rebatePassword;
-        $gateway->sharedSecret = $this->sharedSecret;
-        $gateway->shaHashType = $this->shaHashType;
+        $gateway = new GpEcomConnector($this);
         $gateway->timeout = $this->timeout;
-        $gateway->serviceUrl = $this->serviceUrl;
-        $gateway->refundPassword = $this->refundPassword;
         $gateway->hostedPaymentConfig = $this->hostedPaymentConfig;
+
+        $gateway->serviceUrl = $this->serviceUrl;
         $gateway->requestLogger = $this->requestLogger;
         $gateway->webProxy = $this->webProxy;
 
@@ -78,9 +72,9 @@ class GpEcomConfig extends GatewayConfig
 
         if ($this->secure3dVersion == Secure3dVersion::TWO || $this->secure3dVersion == Secure3dVersion::ANY) {
             $secure3d2 = new Gp3DSProvider();
-            $secure3d2->setMerchantId($gateway->merchantId);
-            $secure3d2->setAccountId($gateway->accountId);
-            $secure3d2->setSharedSecret($gateway->sharedSecret);
+            $secure3d2->setMerchantId($this->merchantId);
+            $secure3d2->setAccountId($this->accountId);
+            $secure3d2->setSharedSecret($this->sharedSecret);
             $secure3d2->serviceUrl = $this->environment == Environment::TEST ? ServiceEndpoints::THREE_DS_AUTH_TEST : ServiceEndpoints::THREE_DS_AUTH_PRODUCTION;
             $secure3d2->setMerchantContactUrl($this->merchantContactUrl);
             $secure3d2->setMethodNotificationUrl($this->methodNotificationUrl);
@@ -93,9 +87,9 @@ class GpEcomConfig extends GatewayConfig
         }
         if ($this->enableBankPayment === true) {
             $openBanking = new OpenBankingProvider();
-            $openBanking->merchantId = $gateway->merchantId;
-            $openBanking->accountId = $gateway->accountId;
-            $openBanking->sharedSecret = $gateway->sharedSecret;
+            $openBanking->merchantId = $this->merchantId;
+            $openBanking->accountId = $this->accountId;
+            $openBanking->sharedSecret = $this->sharedSecret;
             $openBanking->shaHashType = $this->shaHashType;
             $openBanking->serviceUrl = $this->environment === Environment::PRODUCTION ?
                 ServiceEndpoints::OPEN_BANKING_PRODUCTION : ServiceEndpoints::OPEN_BANKING_TEST;

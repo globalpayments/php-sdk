@@ -20,6 +20,7 @@ class PaymentMethod
     /** @var array */
     public $apm;
     public $fingerprint_mode;
+    public $narrative;
 
     const PAYMENT_METHOD_TOKEN_PREFIX = 'PMT_';
 }

@@ -950,6 +950,19 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
+    public function testCreditSale_WithDynamicDescriptor()
+    {
+        $dynamicDescriptor = 'My company';
+        $response = $this->card->charge(50)
+            ->withCurrency("EUR")
+            ->withDynamicDescriptor($dynamicDescriptor)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+    }
+
     public function testCreditReverseTransactionWrongId()
     {
         $transaction = new Transaction();

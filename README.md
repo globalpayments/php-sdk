@@ -32,7 +32,7 @@ This SDK makes it easy to integrate your PHP application with our Card Not Prese
 
 ## Requirements
 
-- PHP 5.5.9+
+- PHP 7.1.0+
 - OpenSSL 1.0.1+
 - PHP Curl extension
 - PHP DOM extension
@@ -64,7 +64,7 @@ In addition you can find working examples in the our example code repository.
 
 *Quick Tip*: The included [test suite](https://github.com/globalpayments/php-sdk/tree/master/test) can be a great source of code samples for using the SDK!
 
-#### Process a Payment Example
+### Process a Payment Example
 
 ```csharp
 $card = new CreditCardData();
@@ -85,7 +85,7 @@ try {
 }
 ```
 
-#### Test Card Data
+### Test Card Data
 
 Name        | Number           | Exp Month | Exp Year | CVN
 ----------- | ---------------- | --------- | -------- | ----
@@ -97,7 +97,7 @@ Amex        | 374101000000608  | 12        | 2025     | 1234
 JCB         | 3566000000000000 | 12        | 2025     | 123
 Diners Club | 36256000000725   | 12        | 2025     | 123
 
-#### Testing Exceptions
+### Testing Exceptions
 
 During your integration you will want to test for specific issuer responses such as 'Card Declined'. Because our sandbox environments do not actually reach out to issuing banks for authorizations, there are specific transaction amounts and/or card numbers that will trigger gateway and issuing bank responses. Please contact your support representative for a complete listing of values used to simulate transaction AVS/CVV results, declines, errors, and other responses that can be caught in your code. Example error handling code:
 

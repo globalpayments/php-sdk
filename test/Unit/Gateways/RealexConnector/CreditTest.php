@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api\Tests\Unit\Gateways\RealexConnector;
+namespace GlobalPayments\Api\Tests\Unit\Gateways\GpEcomConnector;
 
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServicesConfig;

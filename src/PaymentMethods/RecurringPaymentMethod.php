@@ -3,12 +3,10 @@
 namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Entities\DccRateData;
-use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Entities\RecurringEntity;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
-use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\Schedule;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IAuthable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IChargable;
@@ -16,8 +14,6 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IRefundable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IVerifyable;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\Enums\DccProcessor;
-use GlobalPayments\Api\Entities\Enums\DccRateType;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ISecure3d;
 
 /**
@@ -207,7 +203,8 @@ class RecurringPaymentMethod extends RecurringEntity implements
      */
     public function addSchedule($scheduleId)
     {
-        $schedule = new Schedule($this->customerKey, $this->key);
+        $key = !empty($this->key) ? $this->key : $this->id;
+        $schedule = new Schedule($this->customerKey, $key);
         $schedule->id = $scheduleId;
         return $schedule;
     }

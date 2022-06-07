@@ -1,16 +1,16 @@
 <?php
 
-namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\Services\CreditService;
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
+use GlobalPayments\Api\Utils\Logging\Logger;
+use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\Enums\DccProcessor;
 use GlobalPayments\Api\Entities\Enums\DccRateType;
-use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
 
@@ -140,6 +140,7 @@ class CreditTest extends TestCase
         $config->rebatePassword = 'rebate';
         $config->refundPassword = 'refund';
         $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
+        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
         return $config;
     }
     
@@ -289,6 +290,27 @@ class CreditTest extends TestCase
 
         $capture = $authorize->capture(5)
             ->withDynamicDescriptor($dynamicDescriptor)
+            ->execute();
+
+        $this->assertNotNull($capture);
+        $this->assertEquals('00', $capture->responseCode, $capture->responseMessage);
+    }
+
+    public function testCreditAuthorizationSupplementaryData()
+    {
+        $authorize = $this->card->authorize(10)
+            ->withCurrency('EUR')
+            ->withSupplementaryData(["taxInfo" => ["VATREF", "763637283332"]])
+            ->withSupplementaryData(["indentityInfo"=> ["Passport", "PPS736353"]])
+            ->withSupplementaryData(["RANDOM_KEY1" => "VALUE_1", "RANDOM_KEY2" => "VALUE_2"])
+            ->withSupplementaryData('RANDOM_KEY3', 'ACTIVE')
+            ->execute();
+
+        $this->assertNotNull($authorize);
+        $this->assertEquals('00', $authorize->responseCode, $authorize->responseMessage);
+
+        $capture = $authorize->capture(5)
+            ->withSupplementaryData(["taxInfo" => ["VATREF1", "7636372833321"]])
             ->execute();
 
         $this->assertNotNull($capture);

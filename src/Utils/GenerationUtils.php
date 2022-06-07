@@ -14,7 +14,7 @@ class GenerationUtils
 {
 
     /**
-     * Generate a hash, required for all messages sent to Realex to prove it
+     * Generate a hash, required for all messages sent to GP-ECOM to prove it
      * was not tampered with.
      *
      * Each message sent to Realex should have a hash attached. For a message
@@ -182,5 +182,18 @@ class GenerationUtils
         }
 
         return $array;
+    }
+
+    public static function generateScheduleId()
+    {
+        $uuid = self::getGuid();
+        $mostSignificantBits = substr($uuid, 0, 8);
+        $leastSignificantBits = substr($uuid, 23, 8);
+
+        return strtolower(substr(
+            base64_encode($mostSignificantBits . $leastSignificantBits),
+            0,
+            20
+        ));
     }
 }

@@ -1,8 +1,7 @@
 <?php
 
-namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\Certifications;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector\Certifications;
 
-use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Transaction;
@@ -14,7 +13,7 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 
-class RealexSdkCertification extends TestCase
+class SdkTest extends TestCase
 {
     public function tearDown()
     {

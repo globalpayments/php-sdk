@@ -1,11 +1,12 @@
 <?php
 
-namespace GlobalPayments\Api\Entities\GpApi;
+namespace GlobalPayments\Api\Builders\RequestBuilder\GpApi;
 
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\ReportBuilder;
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use GlobalPayments\Api\Entities\Enums\ReportType;
+use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;

@@ -63,6 +63,13 @@ abstract class TransactionBuilder extends BaseBuilder
     public $allowDuplicates;
 
     /**
+     * Request supplementary data
+     *
+     * @var array
+     */
+    public $supplementaryData;
+
+    /**
      * Instantiates a new builder
      *
      * @param TransactionType $type Request transaction type
@@ -115,6 +122,31 @@ abstract class TransactionBuilder extends BaseBuilder
     public function withAllowDuplicates($allowDuplicates)
     {
         $this->allowDuplicates = $allowDuplicates;
+        return $this;
+    }
+
+    /**
+     * Depending on the parameters received,
+     * Add supplementary data or
+     * Add multiple values to the supplementaryData array
+     *
+     * @param string|array<string, string>  $key
+     * @param string $value
+     *
+     * @return $this
+     */
+    public function withSupplementaryData($key, $value = null)
+    {
+        if ($value === null && is_array($key)) {
+            foreach ($key as $k => $v) {
+                $this->withSupplementaryData($k, $v);
+            }
+        }
+
+        if ($key && isset($value)) {
+            $this->supplementaryData[$key] = $value;
+        }
+
         return $this;
     }
 }

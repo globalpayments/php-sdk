@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api\Entities\GpApi;
+namespace GlobalPayments\Api\Builders\RequestBuilder\GpApi;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\BaseBuilder;
@@ -20,6 +20,7 @@ use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\GpApi\DTO\Card;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
+use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Mapping\EnumMapping;
@@ -295,7 +296,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $paymentMethod->name = $paymentMethodContainer instanceof AlternativePaymentMethod ?
             $paymentMethodContainer->accountHolderName : (!empty($paymentMethodContainer->cardHolderName) ?
                 $paymentMethodContainer->cardHolderName : null);
-
+        $paymentMethod->narrative = !empty($builder->dynamicDescriptor) ? $builder->dynamicDescriptor : null;
         switch (get_class($paymentMethodContainer)) {
             case CreditCardData::class;
                 $paymentMethod->fingerprint_mode =

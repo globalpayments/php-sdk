@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api\Test\Integration\Gateways\RealexConnector;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
@@ -18,8 +18,9 @@ use GlobalPayments\Api\Entities\Enums\RecurringType;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+//use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
-use GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector\Hpp\RealexHppClient;
+use GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector\Hpp\GpEcomHppClient;
 use GlobalPayments\Api\Entities\Enums\RemittanceReferenceType;
 use PHPUnit\Framework\TestCase;
 
@@ -77,7 +78,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->language = "GB";
         $config->hostedPaymentConfig->responseUrl = "http://requestb.in/10q2bjb1";
 
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         $address = new Address();
         $address->postalCode = "123|56";
@@ -115,7 +116,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->language = "GB";
         $config->hostedPaymentConfig->responseUrl = "http://requestb.in/10q2bjb1";
 
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         $address = new Address();
         $address->postalCode = "123|56";
@@ -156,7 +157,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->language = "GB";
         $config->hostedPaymentConfig->responseUrl = "http://requestb.in/10q2bjb1";
 
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         $address = new Address();
         $address->postalCode = "123|56";
@@ -251,7 +252,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->language = "GB";
         $config->hostedPaymentConfig->responseUrl = "http://requestb.in/10q2bjb1";
 
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         // data to be passed to the HPP along with transaction level settings
         $hostedPaymentData = new HostedPaymentData();
@@ -292,7 +293,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->language = "GB";
         $config->hostedPaymentConfig->responseUrl = "http://requestb.in/10q2bjb1";
 
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         // data to be passed to the HPP along with transaction level settings
         $hostedPaymentData = new HostedPaymentData();
@@ -335,7 +336,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->language = "GB";
         $config->hostedPaymentConfig->responseUrl = "http://requestb.in/10q2bjb1";
 
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         //run test cases for different version
         foreach ($this->hppVersionList as $hppVersion) {
@@ -377,7 +378,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->directCurrencyConversionEnabled = "1";
 
         $service = new HostedService($config);
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         //serialize the request
         $json = $service->Charge(19)
@@ -407,7 +408,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->directCurrencyConversionEnabled = "0";
 
         $service = new HostedService($config);
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         //serialize the request
         $json = $service->Charge(19)
@@ -437,7 +438,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->fraudFilterMode = FraudFilterMode::PASSIVE;
 
         $service = new HostedService($config);
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
         
         // data to be passed to the HPP along with transaction level settings
         $hostedPaymentData = new HostedPaymentData();
@@ -489,7 +490,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->fraudFilterRules = $rules;
 
         $service = new HostedService($config);
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         // data to be passed to the HPP along with transaction level settings
         $hostedPaymentData = new HostedPaymentData();
@@ -539,7 +540,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->version = HppVersion::VERSION_1;
 
         $service = new HostedService($config);
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         $json = $service->authorize(19.99)
                 ->withCurrency("EUR")
@@ -565,7 +566,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
 
         $service = new HostedService($config);
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         $json = $service->authorize(19.99)
                 ->withCurrency("EUR")
@@ -591,7 +592,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
 
         $service = new HostedService($config);
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         $json = $service->charge(19.99)
                 ->withCurrency("EUR")
@@ -617,7 +618,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->version = HppVersion::VERSION_1;
 
         $service = new HostedService($config);
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         $hostedPaymentData = new HostedPaymentData();
         $hostedPaymentData->offerToSaveCard = "1"; // display the save card tick box
@@ -652,7 +653,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
 
         $service = new HostedService($config);
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         $hostedPaymentData = new HostedPaymentData();
         $hostedPaymentData->offerToSaveCard = "1"; // display the save card tick box
@@ -684,7 +685,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->language = "GB";
         $config->hostedPaymentConfig->responseUrl = "http://requestb.in/10q2bjb1";
 
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         $address = new Address();
         $address->postalCode = "123|56";
@@ -902,7 +903,7 @@ class HppTest extends TestCase
         $this->assertEquals($hostedPaymentData->transactionStatusUrl, $response['HPP_TX_STATUS_URL']);
         $this->assertEquals($hostedPaymentData->customerCountry, $response['HPP_CUSTOMER_COUNTRY']);
 
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
         $response = $client->sendRequest($json, $config->hostedPaymentConfig->version);
         $parsedResponse = $service->parseResponse($response);
 
@@ -927,7 +928,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
 
         $service = new HostedService($config);
-        $client = new RealexHppClient("secret");
+        $client = new GpEcomHppClient("secret");
 
         $hostedPaymentData = new HostedPaymentData();
         $hostedPaymentData->addressCapture = true;
@@ -971,7 +972,7 @@ class HppTest extends TestCase
         $hostedPaymentData->bankPayment = $bankPayment;
 
 
-        $client = new RealexHppClient($config->sharedSecret, ShaHashType::SHA256);
+        $client = new GpEcomHppClient($config->sharedSecret, ShaHashType::SHA256);
         $service = new HostedService($config);
 
         $json = $service->charge(10.99)

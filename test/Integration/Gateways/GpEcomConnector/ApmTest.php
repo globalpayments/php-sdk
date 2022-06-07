@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
@@ -12,7 +12,7 @@ use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 
-class RealexApmTest extends TestCase
+class ApmTest extends TestCase
 {
 
     protected function config()

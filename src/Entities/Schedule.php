@@ -122,6 +122,8 @@ class Schedule extends RecurringEntity
      */
     public $poNumber;
 
+    public $orderPrefix;
+
     /**
      * The identifier of the payment method associated with
      * the schedule.
@@ -165,6 +167,17 @@ class Schedule extends RecurringEntity
      * @var float|string|null
      */
     public $taxAmount;
+
+    public $productId;
+
+    /**
+     * A unique reference for this customer for example from your CRM system.
+     * @var string
+     */
+    public $customerNumber;
+
+    /** @var string */
+    public $scheduletext;
 
     /**
      * Instantiates a new `Schedule` object.
@@ -431,6 +444,45 @@ class Schedule extends RecurringEntity
     public function withTaxAmount($value)
     {
         $this->taxAmount = $value;
+        return $this;
+    }
+
+    /**
+     * Set the request product ID
+     *
+     * @param string|float $productId Request product ID
+     *
+     * @return Schedule
+     */
+    public function withProductId($productId)
+    {
+        $this->productId = $productId;
+        return $this;
+    }
+
+    /**
+     * Set a string to be used as the prefix of the Order ID for each scheduled payment.
+     *
+     * @param string $orderPrefix
+     *
+     * @return $this
+     */
+    public function withOrderPrefix($orderPrefix)
+    {
+        $this->orderPrefix = $orderPrefix;
+
+        return $this;
+    }
+
+    /**
+     * @param string $customerNumber
+     *
+     * @return $this
+     */
+    public function withCustomerNumber($customerNumber)
+    {
+        $this->customerNumber = $customerNumber;
+
         return $this;
     }
 }

@@ -2,7 +2,9 @@
 
 namespace GlobalPayments\Api\Entities\GpApi;
 
-class GpApiRequest
+use GlobalPayments\Api\Entities\Request;
+
+class GpApiRequest extends Request
 {
     const ACCESS_TOKEN_ENDPOINT = '/accesstoken';
     const TRANSACTION_ENDPOINT = '/transactions';
@@ -17,18 +19,4 @@ class GpApiRequest
     const ACTIONS_ENDPOINT = '/actions';
     const MERCHANT_MANAGEMENT_ENDPOINT = '/merchants';
     const DCC_ENDPOINT= '/currency-conversions';
-
-    public $endpoint;
-    public $requestBody;
-    public $queryParams;
-    public $httpVerb;
-    public $resultsField;
-
-    public function __construct($endpoint, $httpVerb, $requestBody = '', $queryParams = null)
-    {
-        $this->endpoint = $endpoint;
-        $this->httpVerb = $httpVerb;
-        $this->requestBody = $requestBody;
-        $this->queryParams = $queryParams;
-    }
 }

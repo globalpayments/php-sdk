@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api\Entities\GpApi;
+namespace GlobalPayments\Api\Builders\RequestBuilder\GpApi;
 
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
@@ -8,6 +8,7 @@ use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
+use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Mapping\EnumMapping;

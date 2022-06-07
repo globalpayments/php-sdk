@@ -7,6 +7,12 @@
 
 ## Latest version
 #### Enhancements:
+- GP-ECOM: Add payment scheduler 
+- GP-ECOM/GP-API: Structure refacto  
+- Upgrade to min PHP 7.1 
+
+## v3.1.1 (05/17/2022)
+#### Enhancements:
 - GP-ECOM: Add HPP capture billing/shipping address
 - Add intl and mbstring extensions on composer
 - GP-API: Refacto reporting for disputes / search stored payment methods / LodgingData

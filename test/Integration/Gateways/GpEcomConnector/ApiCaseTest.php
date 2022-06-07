@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api\Tests\Integration\Gateways\RealexConnector;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
 use GlobalPayments\Api\Entities\FraudRuleCollection;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
@@ -124,20 +124,6 @@ class ApiCaseTest extends TestCase
         }
     }
 
-    /* 04. ThreeD Secure Verify Enrolled */
-
-    public function testthreeDSecureVerifyEnrolled()
-    {
-        // will update later
-    }
-
-    /* 05. ThreeD Secure Verify Sig */
-
-    public function testthreeDSecureVerifySig()
-    {
-        // will update later
-    }
-
     /* 06.ThreeD Secure Auth */
 
     public function testthreeDSecureAuth()
@@ -168,13 +154,6 @@ class ApiCaseTest extends TestCase
         } catch (ApiException $e) {
             // TODO: Add your error handling here
         }
-    }
-
-    /* 07. Process Payment Apple Pay */
-
-    public function testprocessPaymentApplePay()
-    {
-        // will update later
     }
 
     /* 19. Transaction Management Delayed Auth */
@@ -232,7 +211,8 @@ class ApiCaseTest extends TestCase
             $this->assertNotEquals(null, $response);
             $this->assertEquals("00", $responseCode);
         } catch (ApiException $e) {
-            // TODO: Add your error handling here
+            $this->assertEquals('508', $e->responseCode);
+            $this->assertEquals('Original transaction not found.', $e->responseMessage);
         }
     }
 
@@ -299,7 +279,8 @@ class ApiCaseTest extends TestCase
             $this->assertNotEquals(null, $response);
             $this->assertEquals("00", $responseCode);
         } catch (ApiException $e) {
-            // TODO: Add your error handling here
+            $this->assertEquals('508', $e->responseCode);
+            $this->assertEquals('Original transaction not found.', $e->responseMessage);
         }
     }
 
@@ -500,27 +481,6 @@ class ApiCaseTest extends TestCase
         $this->assertEquals("00", $responseCode);
     }
 
-    /* 26. Dcc Rate Lookup */
-
-    public function testdccRateLookup()
-    {
-        // will update later
-    }
-
-    /* 27. Dcc Present Choice */
-
-    public function testdccPresentChoice()
-    {
-        // will update later
-    }
-
-    /* 28. Dcc Auth Data Submission */
-
-    public function testdccAuthDataSubmission()
-    {
-        // will update later
-    }
-    
     /* 29. Google pay */
     
     public function testauthMobileGooglePay()
