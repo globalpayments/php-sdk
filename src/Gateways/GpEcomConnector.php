@@ -387,6 +387,7 @@ class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             $this->setSerializeData('HPP_CUSTOMER_PHONENUMBER_MOBILE', $hostedPaymentData->customerPhoneMobile);
             $this->setSerializeData('HPP_PHONE', $hostedPaymentData->customerPhoneMobile);
             $this->setSerializeData('HPP_CHALLENGE_REQUEST_INDICATOR', $hostedPaymentData->challengeRequest);
+            $this->setSerializeData('HPP_ENABLE_EXEMPTION_OPTIMIZATION', $hostedPaymentData->enableExemptionOptimization);
             if (isset($hostedPaymentData->addressesMatch)) {
                 $this->setSerializeData('HPP_ADDRESS_MATCH_INDICATOR', $hostedPaymentData->addressesMatch ? 'TRUE' : 'FALSE');
             }

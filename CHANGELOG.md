@@ -4,12 +4,17 @@
 
 # Changelog
 
-
 ## Latest version
+#### Enhancements:
+- HPP Exemption Optimization Service
+- Update timestamp on the Logger
+
+## v4.0.0 (06/07/2022)
 #### Enhancements:
 - GP-ECOM: Add payment scheduler 
 - GP-ECOM/GP-API: Structure refacto  
 - Upgrade to min PHP 7.1 
+- GP-API: Add example with Google Pay
 
 ## v3.1.1 (05/17/2022)
 #### Enhancements:

@@ -125,6 +125,9 @@ class HostedPaymentData
     /** @var BankPayment */
     public $bankPayment;
 
+    /** @var boolean */
+    public $enableExemptionOptimization;
+
     /**
      * Instantiates a new `HostedPaymentData` object.
      *

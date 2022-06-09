@@ -18,10 +18,10 @@ use GlobalPayments\Api\Entities\Enums\RecurringType;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
-//use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector\Hpp\GpEcomHppClient;
 use GlobalPayments\Api\Entities\Enums\RemittanceReferenceType;
+use GlobalPayments\Api\Entities\Enums\ChallengeRequestIndicator;
 use PHPUnit\Framework\TestCase;
 
 class HppTest extends TestCase
@@ -986,5 +986,37 @@ class HppTest extends TestCase
 
         $parsedResponse = $service->parseResponse($response);
         $this->assertEquals(BankPaymentStatus::PAYMENT_INITIATED, $parsedResponse->responseMessage);
+    }
+
+    public function test3DSExemption()
+    {
+        $config = new GpEcomConfig();
+        $config->merchantId = "heartlandgpsandbox";
+        $config->accountId = "3dsecure";
+        $config->sharedSecret = "secret";
+        $config->hostedPaymentConfig = new HostedPaymentConfig();
+        $config->hostedPaymentConfig->language = "GB";
+        $config->hostedPaymentConfig->responseUrl = "https://www.example.com/response";;
+        $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
+
+        $service = new HostedService($config);
+
+        // data to be passed to the HPP along with transaction level settings
+        $hostedPaymentData = new HostedPaymentData();
+        $hostedPaymentData->enableExemptionOptimization = true;
+        $hostedPaymentData->challengeRequest = ChallengeRequestIndicator::NO_CHALLENGE_REQUESTED;
+
+        //serialize the request
+        $json = $service->charge(10.01)
+            ->withCurrency("EUR")
+            ->withAddress($this->billingAddress, AddressType::BILLING)
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->withHostedPaymentData($hostedPaymentData)
+            ->serialize();
+        $this->assertNotNull($json);
+
+        $jsonResponse = json_decode($json, true);
+        $this->assertTrue(isset($jsonResponse['HPP_ENABLE_EXEMPTION_OPTIMIZATION']));
+        $this->assertEquals(true, $jsonResponse['HPP_ENABLE_EXEMPTION_OPTIMIZATION']);
     }
 }
