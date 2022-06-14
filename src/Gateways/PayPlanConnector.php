@@ -3,23 +3,11 @@
 namespace GlobalPayments\Api\Gateways;
 
 use GlobalPayments\Api\Builders\RecurringBuilder;
-use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\Customer;
-use GlobalPayments\Api\Entities\Schedule;
-use GlobalPayments\Api\Entities\Enums\AccountType;
-use GlobalPayments\Api\Entities\Enums\CheckType;
-use GlobalPayments\Api\Entities\Enums\PaymentSchedule;
-use GlobalPayments\Api\Entities\Enums\SecCode;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
-use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
-use GlobalPayments\Api\PaymentMethods\Credit;
-use GlobalPayments\Api\PaymentMethods\ECheck;
-use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ICardData;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ITrackData;
-use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Entities\{Address, Customer, Schedule};
+use GlobalPayments\Api\Entities\Enums\{AccountType, CheckType, PaymentSchedule, SecCode, TransactionType};
+use GlobalPayments\Api\Entities\Exceptions\{ArgumentException, UnsupportedTransactionException};
+use GlobalPayments\Api\PaymentMethods\{Credit, Echeck, RecurringPaymentMethod};
+use GlobalPayments\Api\PaymentMethods\Interfaces\{ICardData, IEncryptable, IPaymentMethod, ITrackData};
 
 class PayPlanConnector extends RestGateway implements IRecurringService
 {
@@ -343,7 +331,6 @@ class PayPlanConnector extends RestGateway implements IRecurringService
         $request = $this->buildAddress($request, $payment->address);
 
         if ($type === TransactionType::CREATE) {
-            $tokenValue;
             list($hasToken, $tokenValue) = $this->hasToken($payment->paymentMethod);
             $paymentInfo = null;
             $paymentInfoKey = null;
@@ -474,7 +461,6 @@ class PayPlanConnector extends RestGateway implements IRecurringService
             return $request;
         }
 
-        $request['scheduleIdentifier'] = $schedule->id;
         $request['scheduleName'] = $schedule->name;
         $request['scheduleStatus'] = $schedule->status;
         $request['paymentMethodKey'] = $schedule->paymentKey;
@@ -499,14 +485,16 @@ class PayPlanConnector extends RestGateway implements IRecurringService
             $request = $this->buildDate($request, 'startDate', $schedule->startDate);
             $request['frequency'] = $schedule->frequency;
             $request['duration'] = $mapDuration();
+            $request['scheduleIdentifier'] = $schedule->id;
         } else { // Edit Fields
             if (!$schedule->hasStarted) {
+                $request['scheduleIdentifier'] = $schedule->id;
                 $request = $this->buildDate($request, 'startDate', $schedule->startDate, ($type === TransactionType::EDIT));
                 $request['frequency'] = $schedule->frequency;
                 $request['duration'] = $mapDuration();
             } else {
                 $request = $this->buildDate($request, 'cancellationDate', $schedule->cancellationDate);
-                $request = $this->buildDate($request, 'nextProcressingDate', $schedule->nextProcessingDate);
+                $request = $this->buildDate($request, 'nextProcessingDate', $schedule->nextProcessingDate);
             }
         }
 
@@ -515,7 +503,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
 
     protected function buildDate($request, $name, $date = null, $force = false)
     {
-        if ($date !== null || $force) {
+        if (!empty($date) || $force) {
             if ($force && is_string($date)) {
                 $request[$name] = $date;
             } else {

@@ -4,7 +4,11 @@
 
 # Changelog
 
-## Latest version
+## v4.0.2 (06/14/2022)
+#### Bug Fixes:
+- Fix issue with recurring payment schedule edits (Portico)
+
+## v4.0.1 (06/09/2022)
 #### Enhancements:
 - HPP Exemption Optimization Service
 - Update timestamp on the Logger

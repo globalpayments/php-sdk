@@ -198,6 +198,24 @@ final class RecurringTest extends TestCase
         static::$paymentMethodVisa = $paymentMethod;
     }
 
+    public function test003aAddPaymentCreditMasterCardSUT(): void
+    {
+        if (static::$customerPerson === null) {
+            $this->markTestIncomplete();
+        }
+
+        $card = new CreditCardData();
+        $card->token = $this->generateSUT(5454545454545454, 123, TestCards::validCardExpYear(), 12);
+
+        $paymentMethod = static::$customerPerson->addPaymentMethod(
+            $this->getIdentifier('CreditSUT'),
+            $card
+        )->create();
+
+        $this->assertNotNull($paymentMethod);
+        $this->assertNotNull($paymentMethod->key);
+    }
+
     public function test004AddPaymentCreditMasterCard()
     {
         if (static::$customerPerson === null) {
@@ -622,5 +640,41 @@ final class RecurringTest extends TestCase
         $schedule = Schedule::find(static::$scheduleVisaID);
         $schedule->startDate = $updateTimeValueAsObj;
         $schedule->saveChanges();
+    }
+
+    public function generateSUT(string $cardNo, string $cvv, string $expYear, string $expMonth): string
+    {
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://cert.api2-c.heartlandportico.com/Hps.Exchange.PosGateway.Hpf.v1/api/token?api_key=pkapi_cert_jKc1FtuyAydZhZfbB3',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS =>'{
+                "object": "token",
+                "token_type": "supt",
+                "card": {
+                    "number": '.$cardNo.',
+                    "cvc": '.$cvv.',
+                    "exp_month": '.$expMonth.',
+                    "exp_year": '.$expYear.'
+                }
+            }',
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/json'
+            )
+        ));
+
+        $response = curl_exec($curl);
+
+        $responseObj = json_decode($response);
+
+        curl_close($curl);
+        return $responseObj->token_value;
     }
 }
