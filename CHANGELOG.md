@@ -4,6 +4,12 @@
 
 # Changelog
 
+## Latest version
+#### Enhancements:
+- Add autoloader standalone
+- Add end-to-end example for GP-API with HF and 3DS2
+- Refacto on the folder structure in examples
+
 ## v4.0.2 (06/14/2022)
 #### Bug Fixes:
 - Fix issue with recurring payment schedule edits (Portico)

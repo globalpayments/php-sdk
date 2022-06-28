@@ -1,6 +1,6 @@
 <?php
 
-require_once ('../.././../vendor/autoload.php');
+require_once ('../.././../autoload_standalone.php');
 
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use GlobalPayments\Api\Entities\Enums\Environment;

@@ -1,42 +1,14 @@
 <?php
 
-
 namespace GlobalPayments\Api\Utils\Logging;
-
 
 use DateTime;
 use RuntimeException;
-use Psr\Log\AbstractLogger;
-use Psr\Log\LogLevel;
 
-/**
- * Finally, a light, permissions-checking logging class.
- *
- * Originally written for use with wpSearch
- *
- * Usage:
- * $log = new Logger('/var/log/', Psr\Log\LogLevel::INFO);
- * $log->info('Returned a million search results'); //Prints to the log file
- * $log->error('Oh dear.'); //Prints to the log file
- * $log->debug('x = 5'); //Prints nothing due to current severity threshold
- *
- * @author  Kenny Katzgrau <katzgrau@gmail.com>
- * @since   July 26, 2008
- * @link    https://github.com/katzgrau/KLogger
- * @version 1.0.0
- */
-class Logger extends AbstractLogger
+class Logger
 {
+    const INFO_LOG_LEVEL = 'info';
 
-    /**
-     * KLogger options
-     *  Anything options not considered 'core' to the logging library should be
-     *  settable view the third parameter in the constructor
-     *
-     *  Core options include the log file path and the log threshold
-     *
-     * @var array
-     */
     protected $options = array(
         'extension' => 'txt',
         'dateFormat' => 'Y-m-d G:i:s.u',
@@ -54,31 +26,10 @@ class Logger extends AbstractLogger
     private $logFilePath;
 
     /**
-     * Current minimum logging threshold
-     * @var integer
-     */
-    protected $logLevelThreshold = LogLevel::DEBUG;
-
-    /**
      * The number of lines logged in this instance's lifetime
      * @var int
      */
     private $logLineCount = 0;
-
-    /**
-     * Log Levels
-     * @var array
-     */
-    protected $logLevels = array(
-        LogLevel::EMERGENCY => 0,
-        LogLevel::ALERT => 1,
-        LogLevel::CRITICAL => 2,
-        LogLevel::ERROR => 3,
-        LogLevel::WARNING => 4,
-        LogLevel::NOTICE => 5,
-        LogLevel::INFO => 6,
-        LogLevel::DEBUG => 7
-    );
 
     /**
      * This holds the file handle for this instance's log file
@@ -103,17 +54,9 @@ class Logger extends AbstractLogger
      * Class constructor
      *
      * @param string $logDirectory File path to the logging directory
-     * @param string $logLevelThreshold The LogLevel Threshold
-     * @param array $options
-     *
-     * @internal param string $logFilePrefix The prefix for the log file name
-     * @internal param string $logFileExt The extension for the log file
      */
-    public function __construct($logDirectory, $logLevelThreshold = LogLevel::DEBUG, array $options = array())
+    public function __construct($logDirectory)
     {
-        $this->logLevelThreshold = $logLevelThreshold;
-        $this->options = array_merge($this->options, $options);
-
         $logDirectory = rtrim($logDirectory, DIRECTORY_SEPARATOR);
         if (!file_exists($logDirectory)) {
             mkdir($logDirectory, $this->defaultPermissions, true);
@@ -192,16 +135,6 @@ class Logger extends AbstractLogger
     }
 
     /**
-     * Sets the Log Level Threshold
-     *
-     * @param string $logLevelThreshold The log level threshold
-     */
-    public function setLogLevelThreshold($logLevelThreshold)
-    {
-        $this->logLevelThreshold = $logLevelThreshold;
-    }
-
-    /**
      * Logs with an arbitrary level.
      *
      * @param mixed $level
@@ -211,9 +144,6 @@ class Logger extends AbstractLogger
      */
     public function log($level, $message, array $context = array())
     {
-        if ($this->logLevels[$this->logLevelThreshold] < $this->logLevels[$level]) {
-            return;
-        }
         $message = $this->formatMessage($level, $message, $context);
         $this->write($message);
     }
@@ -348,5 +278,10 @@ class Logger extends AbstractLogger
     protected function indent($string, $indent = '    ')
     {
         return $indent . str_replace("\n", "\n" . $indent, $string);
+    }
+
+    public function info($message, array $context = array())
+    {
+        $this->log(self::INFO_LOG_LEVEL,$message, $context);
     }
 }

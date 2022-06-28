@@ -1,18 +1,16 @@
 <?php
 
-
 namespace GlobalPayments\Api\Utils\Logging;
-
 
 use GlobalPayments\Api\Entities\IRequestLogger;
 use GlobalPayments\Api\Gateways\GatewayResponse;
-use Psr\Log\LoggerInterface;
 
 class SampleRequestLogger implements IRequestLogger
 {
+    /** @var Logger $logger */
     private $logger;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(Logger $logger)
     {
         $this->logger = $logger;
     }
