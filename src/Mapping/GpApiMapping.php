@@ -554,6 +554,10 @@ class GpApiMapping
             $response->three_ds->acs_decoupled_response_indicator : null;
         $threeDSecure->whitelistStatus = !empty($response->three_ds->whitelist_status) ?
             $response->three_ds->whitelist_status : null;
+        $threeDSecure->redirectUrl = !empty($response->three_ds->redirect_url) ?
+            $response->three_ds->redirect_url : null;
+        $threeDSecure->cardHolderResponseInfo = !empty($response->three_ds->cardholder_response_info) ?
+            $response->three_ds->cardholder_response_info : null;
         if (!empty($response->three_ds->message_extension)) {
             foreach ($response->three_ds->message_extension as $messageExtension) {
                 $msgItem = new MessageExtension();

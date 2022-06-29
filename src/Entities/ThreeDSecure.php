@@ -288,6 +288,11 @@ class ThreeDSecure
     /**
      * @var string
      */
+    public $redirectUrl;
+
+    /**
+     * @var string
+     */
     public $sdkInterface;
 
     /**
@@ -414,6 +419,7 @@ class ThreeDSecure
             $this->exemptStatus = $this->mergeValue($this->exemptStatus, $secureEcom->exemptStatus);
             $this->exemptReason = $this->mergeValue($this->exemptStatus, $secureEcom->exemptReason);
             $this->liabilityShift = $this->mergeValue($this->liabilityShift, $secureEcom->liabilityShift);
+            $this->redirectUrl = $this->mergeValue($this->redirectUrl, $secureEcom->redirectUrl);
         }
     }
 

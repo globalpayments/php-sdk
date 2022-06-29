@@ -1289,6 +1289,6 @@ class GpApi3DS2Test extends TestCase
         $this->assertNotNull($initAuth->acsTransactionId);
         $this->assertEmpty($initAuth->eci);
         $this->assertEquals("2.1.0", $initAuth->messageVersion);
+        $this->assertNotNull($initAuth->redirectUrl);
     }
-
 }
