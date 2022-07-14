@@ -632,13 +632,123 @@ class CreditCardPresentTest extends TestCase
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
         $this->assertEquals(60, $transaction->authorizedAmount);
 
-
-
         $capture = $transaction->capture()->execute();
 
         $this->assertNotNull($capture);
         $this->assertEquals('SUCCESS', $capture->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
+    }
+
+    public function testIncrementalAuth_WithoutCurrencyAndLodgingData()
+    {
+        $card = $this->initCreditCardData();
+
+        $transaction = $card->authorize(50)
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+
+        $transaction = $transaction->additionalAuth(10)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+        $this->assertEquals(60, $transaction->authorizedAmount);
+    }
+
+    public function testIncrementalAuth_ZeroAmount()
+    {
+        $card = $this->initCreditCardData();
+
+        $transaction = $card->authorize(50)
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+
+        $transaction = $transaction->additionalAuth(0)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+        $this->assertEquals(50, $transaction->authorizedAmount);
+    }
+
+    public function testIncrementalAuth_ChargeTransaction()
+    {
+        $card = $this->initCreditCardData();
+
+        $charge = $card->charge(50)
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertNotNull($charge);
+        $this->assertEquals('SUCCESS', $charge->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $charge->responseMessage);
+
+        $exceptionCaught = false;
+        try {
+            $charge->additionalAuth(10)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40290', $e->responseCode);
+            $this->assertContains('Status Code: INVALID_ACTION - Cannot PROCESS Incremental Authorization over a transaction that does not have a status of PREAUTHORIZED.', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testIncrementalAuth_WithoutAmount()
+    {
+        $card = $this->initCreditCardData();
+
+        $transaction = $card->authorize(50)
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
+
+        $exceptionCaught = false;
+        try {
+            $transaction->additionalAuth()
+                ->withCurrency($this->currency)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40005', $e->responseCode);
+            $this->assertContains('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields [amount]', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testIncrementalAuth_TransactionNotFound()
+    {
+        $transaction = new Transaction();
+        $transaction->transactionId = GenerationUtils::getGuid();
+
+        $exceptionCaught = false;
+        try {
+            $transaction->additionalAuth()
+                ->withCurrency($this->currency)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40008', $e->responseCode);
+            $this->assertContains(sprintf('Status Code: RESOURCE_NOT_FOUND - Transaction %s not found at this location.', $transaction->transactionId), $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
     }
 
     private function initCreditCardData()

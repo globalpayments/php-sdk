@@ -358,6 +358,20 @@ class ThreeDSecure
      */
     public $liabilityShift;
 
+    /**
+     * Reference Number assigned by the ACS.
+     *
+     * @var string
+     */
+    public $acsReferenceNumber;
+
+    /**
+     * The reference created by the 3DSecure provider to identify the specific authentication attempt.
+     *
+     * @var string
+     */
+    public $providerServerTransRef;
+
     public function __construct()
     {
         $this->paymentDataType = '3DSecure';
@@ -414,6 +428,8 @@ class ThreeDSecure
             $this->exemptStatus = $this->mergeValue($this->exemptStatus, $secureEcom->exemptStatus);
             $this->exemptReason = $this->mergeValue($this->exemptStatus, $secureEcom->exemptReason);
             $this->liabilityShift = $this->mergeValue($this->liabilityShift, $secureEcom->liabilityShift);
+            $this->acsReferenceNumber = $this->mergeValue($this->acsReferenceNumber, $secureEcom->acsReferenceNumber);
+            $this->providerServerTransRef = $this->mergeValue($this->providerServerTransRef, $secureEcom->providerServerTransRef);
         }
     }
 

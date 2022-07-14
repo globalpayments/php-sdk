@@ -12,6 +12,7 @@ use GlobalPayments\Api\Entities\HostedPaymentData;
 use GlobalPayments\Api\Entities\Enums\HppVersion;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Services\HostedService;
+use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 
 // configure client, request and HPP settings
 $config = new GpEcomConfig();
@@ -74,6 +75,8 @@ try {
         ->withHostedPaymentData($hostedPaymentData)
         ->withAddress($billingAddress, AddressType::BILLING)
         ->withAddress($shippingAddress, AddressType::SHIPPING)
+        ->withPhoneNumber('44', '124 445 556', PhoneNumberType::WORK)
+        ->withPhoneNumber('44', '124 444 333', PhoneNumberType::HOME)
         ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
         ->serialize();
     //with this, we can pass our json to the client side

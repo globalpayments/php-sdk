@@ -6,6 +6,12 @@
 
 ## Latest version
 #### Enhancements:
+- GP-API: Add mapping for some missing fields on response 3DS2 initiate step
+- GP-ECOM: Add missing optional fields HPP_CUSTOMER_PHONENUMBER_HOME and HPP_CUSTOMER_PHONENUMBER_WORK
+- Update Open Banking endpoints
+
+## v4.0.3 (06/28/2022)
+#### Enhancements:
 - Add autoloader standalone
 - Add end-to-end example for GP-API with HF and 3DS2
 - Refacto on the folder structure in examples
@@ -25,6 +31,7 @@
 - GP-ECOM/GP-API: Structure refacto  
 - Upgrade to min PHP 7.1 
 - GP-API: Add example with Google Pay
+- GP-API: Add Dynamic Descriptor for authorize and charge
 
 ## v3.1.1 (05/17/2022)
 #### Enhancements:

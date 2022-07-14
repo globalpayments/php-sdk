@@ -28,6 +28,7 @@ use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Utils\StringUtils;
 
 class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringService, ISecure3dProvider
 {
@@ -375,6 +376,18 @@ class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                 'HPP_BILLING_COUNTRY',
                 CountryUtils::getNumericCodeByCountry($builder->billingAddress->country)
             );
+        }
+
+        if (!empty($builder->homePhone)) {
+            $this->setSerializeData('HPP_CUSTOMER_PHONENUMBER_HOME',
+                StringUtils::validateToNumber($builder->homePhone->countryCode) . '|' .
+                StringUtils::validateToNumber($builder->homePhone->number));
+        }
+
+        if (!empty($builder->workPhone)) {
+            $this->setSerializeData('HPP_CUSTOMER_PHONENUMBER_WORK',
+                StringUtils::validateToNumber($builder->workPhone->countryCode) . '|' .
+                StringUtils::validateToNumber($builder->workPhone->number));
         }
 
         $this->setSerializeData('VAR_REF', $builder->clientTransactionId);

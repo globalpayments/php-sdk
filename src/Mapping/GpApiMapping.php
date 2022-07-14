@@ -468,8 +468,8 @@ class GpApiMapping
     {
         $transaction = new Transaction();
         $threeDSecure = new ThreeDSecure();
-        $threeDSecure->serverTransactionId = !empty($response->id) ? $response->id :
-            (!empty($response->three_ds->server_trans_ref) ? $response->three_ds->server_trans_ref : null);
+        $threeDSecure->serverTransactionId = $response->id;
+
         if (!empty($response->three_ds->message_version)) {
             $messageVersion = $response->three_ds->message_version;
             switch (substr($messageVersion, 0, 2)) {
@@ -499,6 +499,8 @@ class GpApiMapping
         $threeDSecure->eci = !empty($response->three_ds->eci) ? $response->three_ds->eci : null;
         $threeDSecure->acsInfoIndicator = !empty($response->three_ds->acs_info_indicator) ?
             $response->three_ds->acs_info_indicator : null;
+        $threeDSecure->acsReferenceNumber = $response->three_ds->acs_reference_number ?? null;
+        $threeDSecure->providerServerTransRef = $response->three_ds->server_trans_ref ?? null;
         $threeDSecure->challengeMandated = !empty($response->three_ds->challenge_status) ?
             ($response->three_ds->challenge_status == 'MANDATED') : false;
         $threeDSecure->payerAuthenticationRequest = !empty($response->three_ds->method_data->encoded_method_data) ?

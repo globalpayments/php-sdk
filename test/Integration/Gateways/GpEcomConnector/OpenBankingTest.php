@@ -59,6 +59,10 @@ class OpenBankingTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals(1, $response->totalRecordCount);
         $this->assertEquals($trn->bankPaymentResponse->id, $response->result[0]->transactionId);
+        $this->assertNull($response->result[0]->bankPaymentResponse->iban);
+        $this->assertNull($response->result[0]->bankPaymentResponse->sortCode);
+        $this->assertNull($response->result[0]->bankPaymentResponse->accountNumber);
+        $this->assertNull($response->result[0]->bankPaymentResponse->accountName);
     }
 
     public function testSEPACharge()
@@ -73,6 +77,17 @@ class OpenBankingTest extends TestCase
         $this->assertOpenBankingResponse($trn);
 
 //        fwrite(STDERR, print_r($trn->bankPaymentResponse->redirectUrl, TRUE));
+        sleep(2);
+        $response = ReportingService::bankPaymentDetail($trn->bankPaymentResponse->id)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals(1, $response->totalRecordCount);
+        $this->assertEquals($trn->bankPaymentResponse->id, $response->result[0]->transactionId);
+        $this->assertNull($response->result[0]->bankPaymentResponse->iban);
+        $this->assertNull($response->result[0]->bankPaymentResponse->sortCode);
+        $this->assertNull($response->result[0]->bankPaymentResponse->accountNumber);
+        $this->assertNull($response->result[0]->bankPaymentResponse->accountName);
     }
 
     public function testBankPaymentList()
@@ -412,6 +427,24 @@ class OpenBankingTest extends TestCase
         } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('Status Code: 400 - Invalid Payment Scheme required fields ', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testSEPACharge_CADCurrency()
+    {
+        $bankPayment = $this->sepaConfig();
+
+        $exceptionCaught = false;
+        try {
+            $bankPayment->charge($this->amount)
+                ->withCurrency("CAD")
+                ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Status Code: 400 - payment.scheme cannot be null ', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }

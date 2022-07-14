@@ -743,13 +743,17 @@ class GpApi3DSecureTest extends TestCase
             ->withOrderTransactionType(OrderTransactionType::GOODS_SERVICE_PURCHASE)
             ->withMobileData($mobileData)
             ->execute();
+
         $this->assertNotNull($initAuth);
         $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $initAuth->status);
         $this->assertNotNull($initAuth->issuerAcsUrl);
         $this->assertNotNull($initAuth->payerAuthenticationRequest);
         $this->assertNotNull($initAuth->acsTransactionId);
+        $this->assertNotNull($initAuth->providerServerTransRef);
+        $this->assertNotNull($initAuth->acsReferenceNumber);
         $this->assertEquals("05", $initAuth->eci);
         $this->assertEquals("2.2.0", $initAuth->messageVersion);
+
 
         $secureEcom = Secure3dService::getAuthenticationData()
             ->withServerTransactionId($secureEcom->serverTransactionId)
