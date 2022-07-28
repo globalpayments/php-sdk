@@ -197,6 +197,21 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                         'http_response_code' => $builder->searchBuilder->httpResponseCode
                     ];
                 break;
+            case ReportType::PAYLINK_DETAIL:
+                $endpoint = GpApiRequest::PAYLINK_ENDPOINT . '/' . $builder->searchBuilder->payLinkId;
+                $verb = 'GET';
+                break;
+            case ReportType::FIND_PAYLINK_PAGED:
+                $endpoint = GpApiRequest::PAYLINK_ENDPOINT;
+                $verb = 'GET';
+                $this->addBasicParams($queryParams, $builder);
+                $queryParams['from_time_created'] = !empty($builder->searchBuilder->startDate) ?
+                    $builder->searchBuilder->startDate->format('Y-m-d') : null;
+                $queryParams['to_time_created'] = !empty($builder->searchBuilder->endDate) ?
+                    $builder->searchBuilder->endDate->format('Y-m-d') : null;
+                $queryParams['order'] = $builder->order;
+                $queryParams['order_by'] = $builder->payLinkOrderBy;
+                break;
             default:
                 return null;
         }

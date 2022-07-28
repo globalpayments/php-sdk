@@ -17,9 +17,12 @@ use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
+use GlobalPayments\Api\Entities\PayLinkData;
+use GlobalPayments\Api\Entities\PayLinkResponse;
 use GlobalPayments\Api\Entities\Reporting\ActionSummary;
 use GlobalPayments\Api\Entities\Reporting\DepositSummary;
 use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
+use GlobalPayments\Api\Entities\Reporting\PayLinkSummary;
 use GlobalPayments\Api\Entities\Reporting\StoredPaymentMethodSummary;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\ThreeDSecure;
@@ -30,7 +33,8 @@ use GlobalPayments\Api\Entities\MessageExtension;
 class GpApiMapping
 {
     const DCC_RESPONSE = 'RATE_LOOKUP';
-
+    const LINK_CREATE = "LINK_CREATE";
+    const LINK_EDIT = "LINK_EDIT";
     /**
      * Map a reponse to a Transaction object for further chaining
      *
@@ -44,20 +48,34 @@ class GpApiMapping
         if (empty($response)) {
             return $transaction;
         }
-        $transaction->transactionId = $response->id;
+        $transaction->responseCode = $response->action->result_code;
         $transaction->responseMessage = $response->status;
+
+        switch ($response->action->type) {
+            case self::LINK_CREATE:
+            case self::LINK_EDIT:
+                $transaction->payLinkResponse = self::mapPayLinkResponse($response);
+                if (!empty($response->transactions)) {
+                    $trn = $response->transactions;
+                    $transaction->balanceAmount = isset($trn->amount) ? StringUtils::toAmount($trn->amount) : null;
+                    $transaction->payLinkResponse->allowedPaymentMethods = $trn->allowed_payment_methods;
+                }
+
+                return $transaction;
+        }
+
+        $transaction->transactionId = $response->id;
         $transaction->balanceAmount = !empty($response->amount) ? StringUtils::toAmount($response->amount) : null;
         $transaction->authorizedAmount = ($response->status == TransactionStatus::PREAUTHORIZED && !empty($response->amount)) ?
             StringUtils::toAmount($response->amount) : null;
         $transaction->timestamp = !empty($response->time_created) ? $response->time_created : '';
-
         $transaction->referenceNumber = !empty($response->reference) ? $response->reference : null;
         $batchSummary = new BatchSummary();
         $batchSummary->batchReference = !empty($response->batch_id) ? $response->batch_id : null;
         $batchSummary->totalAmount = !empty($response->amount) ? $response->amount : null;
         $batchSummary->transactionCount = !empty($response->transaction_count) ? $response->transaction_count : null;
         $transaction->batchSummary = $batchSummary;
-        $transaction->responseCode = $response->action->result_code;
+
         $transaction->token = substr($response->id, 0, 4) === PaymentMethod::PAYMENT_METHOD_TOKEN_PREFIX ?
             $response->id : null;
         $transaction->tokenUsageMode = !empty($response->usage_mode) ? $response->usage_mode : null;
@@ -209,30 +227,31 @@ class GpApiMapping
                     array_push($report->result, self::mapActionsSummary($action));
                 }
                 break;
+            case ReportType::PAYLINK_DETAIL:
+                $report = self::mapPayLinkSummary($response);
+                break;
+            case ReportType::FIND_PAYLINK_PAGED:
+                $report = self::setPagingInfo($response);
+                foreach ($response->links as $link) {
+                    array_push($report->result, self::mapPayLinkSummary($link));
+                }
+                break;
             default:
                 throw new ApiException("Report type not supported!");
         }
 
         return $report;
     }
+
     /**
+     * Map the response from the search transaction request
+     *
      * @param $response
      * @return TransactionSummary
-     * @throws \Exception
      */
     public static function mapTransactionSummary($response)
     {
-        $summary = new TransactionSummary();
-
-        $summary->transactionId = isset($response->id) ? $response->id : null;
-        $summary->transactionDate = new \DateTime($response->time_created);
-        $summary->transactionStatus = $response->status;
-        $summary->transactionType = $response->type;
-        $summary->channel = !empty($response->channel) ? $response->channel : null;
-        $summary->amount = StringUtils::toAmount($response->amount);
-        $summary->currency = $response->currency;
-        $summary->referenceNumber = $response->reference;
-        $summary->clientTransactionId = $response->reference;
+        $summary = self::createTransactionSummary($response);
         $summary->transactionLocalDate = !empty($response->time_created_reference) ?
             new \DateTime($response->time_created_reference) : '';
         $summary->batchSequenceNumber = $response->batch_id;
@@ -294,6 +313,8 @@ class GpApiMapping
     }
 
     /**
+     * Map the response from the search deposit request
+     *
      * @param Object $response
      *
      * @return DepositSummary
@@ -345,6 +366,8 @@ class GpApiMapping
     }
 
     /**
+     * Map the response from the search dispute response
+     *
      * @param Object $response
      *
      * @return DisputeSummary
@@ -601,11 +624,11 @@ class GpApiMapping
         $paymentMethodApm = $response->payment_method->apm;
         $apm->redirectUrl = !empty($response->payment_method->redirect_url) ? $response->payment_method->redirect_url : null;
         $apm->providerName = $paymentMethodApm->provider;
-        $apm->ack = $paymentMethodApm->ack;
+        $apm->ack = $paymentMethodApm->ack ?? null;
         $apm->sessionToken = !empty($paymentMethodApm->session_token) ? $paymentMethodApm->session_token : null;
-        $apm->correlationReference = $paymentMethodApm->correlation_reference;
-        $apm->versionReference = $paymentMethodApm->version_reference;
-        $apm->buildReference = $paymentMethodApm->build_reference;
+        $apm->correlationReference = $paymentMethodApm->correlation_reference ?? null;
+        $apm->versionReference = $paymentMethodApm->version_reference ?? null;
+        $apm->buildReference = $paymentMethodApm->build_reference ?? null;
         $apm->timeCreatedReference = !empty($paymentMethodApm->time_created_reference) ?
             new \DateTime($paymentMethodApm->time_created_reference) : null;
         $apm->transactionReference = !empty($paymentMethodApm->transaction_reference) ?
@@ -645,6 +668,87 @@ class GpApiMapping
         }
 
         $transaction->alternativePaymentResponse = $apm;
+
+        return $transaction;
+    }
+
+    /**
+     * @param $response
+     * @return PayLinkSummary
+     */
+    public static function mapPayLinkSummary($response)
+    {
+        $summary = new PayLinkSummary();
+
+        $summary->id = $response->id ?? null;
+        $summary->merchantId = $response->merchant_id ?? null;
+        $summary->merchantName = $response->merchant_name ?? null;
+        $summary->accountId = $response->account_id ?? null;
+        $summary->accountName = $response->account_name ?? null;
+        $summary->url = $response->url ?? null;
+        $summary->status = $response->status ?? null;
+        $summary->type = $response->type ?? null;
+        $summary->allowedPaymentMethods = $response->allowed_payment_methods ?? null; //@TODO check
+        $summary->usageMode = $response->usage_mode ?? null;
+        $summary->usageCount = $response->usage_count ?? null;
+        $summary->reference = $response->reference ?? null;
+        $summary->name = $response->name ?? null;
+        $summary->description = $response->description ?? null;
+        $summary->shippable = $response->shippable ?? null;
+        $summary->viewedCount = $response->viewed_count ?? null;
+        $summary->expirationDate = !empty($response->expiration_date) ?
+            new \DateTime($response->expiration_date) : null;
+        $summary->images = $response->images ?? null;
+
+        if (!empty($response->transactions)) {
+            foreach ($response->transactions as $transaction) {
+                $summary->transactions[] =  self::createTransactionSummary($transaction);
+            }
+
+        }
+
+        return $summary;
+    }
+
+
+    public static function mapPayLinkResponse($response)
+    {
+        $payLinkResponse = new PayLinkResponse();
+        $payLinkResponse->id = $response->id;
+        $payLinkResponse->accountName = $response->account_name ?? null;
+        $payLinkResponse->url = $response->url ?? null;
+        $payLinkResponse->status = $response->status ?? null;
+        $payLinkResponse->type = $response->type ?? null;
+        $payLinkResponse->usageMode = $response->usage_mode ?? null;
+        $payLinkResponse->usageLimit = $response->usage_limit ?? null;
+        $payLinkResponse->reference = $response->reference ?? null;
+        $payLinkResponse->name = $response->name ?? null;
+        $payLinkResponse->description = $response->description ?? null;
+        $payLinkResponse->isShippable = $response->shippable ?? null;
+        $payLinkResponse->viewedCount = $response->viewed_count ?? null;
+        $payLinkResponse->expirationDate = !empty($response->expiration_date) ? new \DateTime($response->expiration_date) : null;
+
+        return $payLinkResponse;
+    }
+
+    /**
+     * Create an new TransactionSummary object
+     *
+     * @param $response
+     *
+     * @return TransactionSummary
+     */
+    private static function createTransactionSummary($response)
+    {
+        $transaction = new TransactionSummary();
+        $transaction->transactionId = isset($response->id) ? $response->id : null;
+        $transaction->transactionDate = $response->time_created;
+        $transaction->transactionStatus = $response->status;
+        $transaction->transactionType = $response->type;
+        $transaction->channel = !empty($response->channel) ? $response->channel : null;
+        $transaction->amount = StringUtils::toAmount($response->amount);
+        $transaction->currency = $response->currency;
+        $transaction->referenceNumber = $transaction->clientTransactionId = $response->reference;
 
         return $transaction;
     }

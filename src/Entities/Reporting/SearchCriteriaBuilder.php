@@ -495,6 +495,14 @@ class SearchCriteriaBuilder
      */
     public $returnPii;
 
+    /**
+     * This is the PayLink id
+     *
+     * @var string
+     */
+    public $payLinkId;
+
+
     /** END Open Banking search criteria */
     
     public function __construct(TransactionReportBuilder $reportBuilder = null)

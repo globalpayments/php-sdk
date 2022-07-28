@@ -27,4 +27,6 @@ class ReportType extends Enum
     const STORED_PAYMENT_METHOD_DETAIL = 2097152; // 1 << 21
     const FIND_ACTIONS_PAGED = 4194304; // 1 << 22
     const ACTION_DETAIL = 8388608; // 1 << 23
+    const PAYLINK_DETAIL = 16777216; // 1 << 24
+    const FIND_PAYLINK_PAGED = 33554432; // 1 << 25
 }

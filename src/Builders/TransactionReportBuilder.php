@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Builders;
 use GlobalPayments\Api\Entities\Enums\ActionSortProperty;
 use GlobalPayments\Api\Entities\Enums\DepositSortProperty;
 use GlobalPayments\Api\Entities\Enums\DisputeSortProperty;
+use GlobalPayments\Api\Entities\Enums\PayLinkSortProperty;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Enums\StoredPaymentMethodSortProperty;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
@@ -73,6 +74,9 @@ class TransactionReportBuilder extends ReportBuilder
      * @var  ActionSortProperty
      */
     public $actionOrderBy;
+
+    /** @var PayLinkSortProperty */
+    public $payLinkOrderBy;
 
     /**
      * @var SortDirection
@@ -257,6 +261,12 @@ class TransactionReportBuilder extends ReportBuilder
         return $this;
     }
 
+    public function withPayLinkId($payLinkId)
+    {
+        $this->searchBuilder->payLinkId = $payLinkId;
+        return $this;
+    }
+
     /**
      * Set the gateway order for the criteria
      * @param string $sortProperty sorting property
@@ -293,6 +303,10 @@ class TransactionReportBuilder extends ReportBuilder
                 $this->actionOrderBy = $sortProperty;
                 $this->order = $sortDirection;
                 break;
+            case ReportType::FIND_PAYLINK_PAGED:
+                $this->payLinkOrderBy = $sortProperty;
+                $this->order = $sortDirection;
+                break;
             default:
                 throw new \InvalidArgumentException("Invalid order found");
         }
@@ -318,5 +332,8 @@ class TransactionReportBuilder extends ReportBuilder
 
         $this->validations->of(ReportType::DOCUMENT_DISPUTE_DETAIL)
             ->check('disputeDocumentId')->isNotNullInSubProperty('searchBuilder');
+
+        $this->validations->of(ReportType::PAYLINK_DETAIL)
+            ->check('payLinkId')->isNotNullInSubProperty('searchBuilder');
     }
 }

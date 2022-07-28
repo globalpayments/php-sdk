@@ -301,6 +301,9 @@ class Transaction
      */
     public $bankPaymentResponse;
 
+    /** @var PayLinkResponse */
+    public $payLinkResponse;
+
     /**
      * Creates a `Transaction` object from a stored transaction ID.
      *

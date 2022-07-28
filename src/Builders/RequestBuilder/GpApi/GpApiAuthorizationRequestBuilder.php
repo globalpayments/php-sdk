@@ -12,6 +12,7 @@ use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
 use GlobalPayments\Api\Entities\Enums\CaptureMode;
+use GlobalPayments\Api\Entities\Enums\PayLinkStatus;
 use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
 use GlobalPayments\Api\Entities\Enums\PaymentType;
 use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
@@ -22,6 +23,7 @@ use GlobalPayments\Api\Entities\GpApi\DTO\Card;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\IRequestBuilder;
+use GlobalPayments\Api\Entities\PayLinkData;
 use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Mapping\EnumMapping;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
@@ -114,6 +116,41 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                 $requestData['reference'] = !empty($builder->clientTransactionId) ?
                     $builder->clientTransactionId : GenerationUtils::getGuid();
                 $requestData['payment_method'] = $this->createPaymentMethodParam($builder, $config);
+                break;
+            case TransactionType::CREATE:
+                if ($builder->payLinkData instanceof PayLinkData) {
+                    /** @var PayLinkData $payLink */
+                    $payLink = $builder->payLinkData;
+                    $endpoint = GpApiRequest::PAYLINK_ENDPOINT;
+                    $verb = 'POST';
+                    $requestData['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
+                    $requestData['type'] = $payLink->type;
+                    $requestData['usage_mode'] = $payLink->usageMode;
+                    $requestData['usage_limit'] = (string) $payLink->usageLimit;
+                    $requestData['reference'] = $builder->clientTransactionId;
+                    $requestData['name'] = $payLink->name;
+                    $requestData['description'] = $builder->description;
+                    $requestData['shippable'] = isset($payLink->isShippable) ?
+                        json_encode($payLink->isShippable) : false;
+                    $requestData['shipping_amount'] = StringUtils::toNumeric($payLink->shippingAmount);
+                    $requestData['expiration_date'] = !empty($payLink->expirationDate) ?
+                        (new \DateTime($payLink->expirationDate))->format('Y-m-d\TH:i:s\Z') : null;
+                    //@TODO - remove status when GP-API will fix the issue (status shouldn't be sent in request)
+                    $requestData['status'] = PayLinkStatus::ACTIVE;
+                    $requestData['images'] = $payLink->images;
+                    $requestData['transactions'] = [
+                        'amount' => StringUtils::toNumeric($builder->amount),
+                        'channel' => $config->channel,
+                        'currency' => $builder->currency,
+                        'country' => $config->country,
+                        'allowed_payment_methods' => $payLink->allowedPaymentMethods
+                    ];
+                    $requestData['notifications'] = [
+                        'return_url' => $payLink->returnUrl,
+                        'status_url' => $payLink->statusUpdateUrl,
+                        'cancel_url' => $payLink->cancelUrl
+                    ];
+                }
                 break;
             default:
                 return '';

@@ -18,5 +18,6 @@ class GpApiRequest extends Request
     const BATCHES_ENDPOINT = '/batches';
     const ACTIONS_ENDPOINT = '/actions';
     const MERCHANT_MANAGEMENT_ENDPOINT = '/merchants';
-    const DCC_ENDPOINT= '/currency-conversions';
+    const DCC_ENDPOINT = '/currency-conversions';
+    const PAYLINK_ENDPOINT = '/links';
 }

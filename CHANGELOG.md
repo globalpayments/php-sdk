@@ -6,6 +6,13 @@
 
 ## Latest version
 #### Enhancements:
+- GP-API: Add PayLink service
+
+#### Bug Fixes:
+- GP-API: Fix mapping issue on APMs
+
+## v4.0.4 (07/14/2022)
+#### Enhancements:
 - GP-API: Add mapping for some missing fields on response 3DS2 initiate step
 - GP-ECOM: Add missing optional fields HPP_CUSTOMER_PHONENUMBER_HOME and HPP_CUSTOMER_PHONENUMBER_WORK
 - Update Open Banking endpoints

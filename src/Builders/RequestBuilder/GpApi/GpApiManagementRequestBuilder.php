@@ -190,6 +190,29 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                         ]
                     ];
                 break;
+            case TransactionType::PAYLINK_UPDATE:
+                $endpoint = GpApiRequest::PAYLINK_ENDPOINT . '/' . $builder->paymentLinkId;
+                $verb = 'PATCH';
+                $payload = [
+                    'usage_mode'=> $builder->payLinkData->usageMode ?? null,
+                    'usage_limit' => $builder->payLinkData->usageLimit ?? null,
+                    'name' => $builder->payLinkData->name ?? null,
+                    'description' => $builder->description ?? null,
+                    'type' => $builder->payLinkData->type ?? null,
+                    'status' => $builder->payLinkData->status ?? null,
+                    'shippable' => isset($builder->payLinkData->shippable) ?
+                        json_encode($builder->payLinkData->shippable) : null,
+                    'shipping_amount' => !empty($builder->payLinkData->shippingAmount) ?
+                        StringUtils::toNumeric($builder->payLinkData->shippingAmount) : null,
+                    'transactions' => [
+                        'amount' => !empty($builder->amount) ? StringUtils::toNumeric($builder->amount) : null
+                    ],
+                    'expiration_date' => !empty($payLink->expirationDate) ?
+                        (new \DateTime($payLink->expirationDate))->format('Y-m-d\TH:i:s\Z') : null,
+
+                    'images' => $builder->payLinkData->images ?? null,
+                ];
+                break;
             default:
                 return null;
         }
