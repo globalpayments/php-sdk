@@ -28,7 +28,7 @@ class ReportingDisputesTest extends TestCase
     private $startDate;
     private $endDate;
 
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
@@ -693,7 +693,7 @@ class ReportingDisputesTest extends TestCase
         } catch (GatewayException $ex) {
             $exceptionCaught = true;
             $this->assertEquals("40067", $ex->responseCode);
-            $this->assertContains("INVALID_DISPUTE_ACTION", $ex->getMessage());
+            $this->assertStringContainsString("INVALID_DISPUTE_ACTION", $ex->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -807,7 +807,7 @@ class ReportingDisputesTest extends TestCase
         } catch (GatewayException $ex) {
             $exceptionCaught = true;
             $this->assertEquals("40060", $ex->responseCode);
-            $this->assertContains("INVALID_DISPUTE_ACTION", $ex->getMessage());
+            $this->assertStringContainsString("INVALID_DISPUTE_ACTION", $ex->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }

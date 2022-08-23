@@ -10,7 +10,7 @@ use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 
 class HpaVerificationTests extends TestCase
 {
-    public function setup()
+    public function setup() : void
     {
         $this->device = DeviceService::create($this->getConfig());
         
@@ -31,7 +31,7 @@ class HpaVerificationTests extends TestCase
         return $config;
     }
 
-    public function tearDown()
+    public function tearDown() : void
     {
         sleep(3);
         $this->device->reset();

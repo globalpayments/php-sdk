@@ -232,24 +232,28 @@ class GpEcomHppClient
 
             $this->addAddressDetails(
                 $gatewayRequest,
-                $tssInfo['BILLING_ADDRESS']['CODE'],
-                $tssInfo['BILLING_ADDRESS']['COUNTRY'],
+                $tssInfo['BILLING_ADDRESS']['CODE'] ?? '',
+                $tssInfo['BILLING_ADDRESS']['COUNTRY'] ?? '',
                 AddressType::BILLING
             );
 
             $this->addAddressDetails(
                 $gatewayRequest,
-                $tssInfo['SHIPPING_ADDRESS']['CODE'],
-                $tssInfo['SHIPPING_ADDRESS']['COUNTRY'],
+                $tssInfo['SHIPPING_ADDRESS']['CODE'] ?? '',
+                $tssInfo['SHIPPING_ADDRESS']['COUNTRY'] ?? '',
                 AddressType::SHIPPING
             );
 
             $gatewayRequest
-                    ->withProductId($tssInfo['PRODID']) // prodid
-                    ->withClientTransactionId($tssInfo['VARREF']) // varref
-                    ->withCustomerId($tssInfo['CUSTNUM']) // custnum
-                    ->withCustomerIpAddress($tssInfo['CUSTIPADDRESS'])
+                    ->withProductId($tssInfo['PRODID'] ?? '') // prodid
+                    ->withClientTransactionId($tssInfo['VARREF'] ?? '') // varref
+                    ->withCustomerId($tssInfo['CUSTNUM'] ?? '') // custnum
+                    ->withCustomerIpAddress($tssInfo['CUSTIPADDRESS'] ?? '');
+
+            if (isset($this->paymentData['HPP_FRAUDFILTER_MODE'])) {
+                $gatewayRequest
                     ->withFraudFilter($this->paymentData['HPP_FRAUDFILTER_MODE'], $this->getFraudRules());
+            }
         }
     }
 

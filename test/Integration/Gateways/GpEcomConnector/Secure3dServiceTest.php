@@ -48,7 +48,7 @@ class Secure3dServiceTest extends TestCase
      */
     private $gatewayProvider;
 
-    public function setup()
+    public function setup() : void
     {
         $config = $this->getConfig();
         ServicesContainer::configureService($config);
@@ -878,14 +878,4 @@ class Secure3dServiceTest extends TestCase
         $this->assertNotNull($secureEcom);
         $this->assertFalse((bool)$secureEcom->enrolled);
     }
-
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
-    // public function testCheckVersion_Not_ISecure3d()
-    // {
-    //     $secureEcom = Secure3dService::checkEnrollment(new DebitTrackData)
-    //         ->execute(Secure3dVersion::ANY);
-    //     $this->assertNotNull($secureEcom);
-    // }
 }

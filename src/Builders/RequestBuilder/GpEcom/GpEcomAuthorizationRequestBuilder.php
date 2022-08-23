@@ -66,10 +66,10 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
         $request->setAttribute("timestamp", $timestamp);
         $request->setAttribute("type", $transactionType);
 
-        $request->appendChild($xml->createElement("merchantid", $config->merchantId));
+        $request->appendChild($xml->createElement("merchantid", $config->merchantId ?? ''));
 
         if ($config->accountId !== null) {
-            $request->appendChild($xml->createElement("account", $config->accountId));
+            $request->appendChild($xml->createElement("account", $config->accountId ?? ''));
         }
         if ($config->channel !== null && !($builder->paymentMethod instanceof AlternativePaymentMethod)) {
             $request->appendChild($xml->createElement("channel", $config->channel));
@@ -77,7 +77,7 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
 
         if (isset($builder->amount)) {
             $amount = $xml->createElement("amount", preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount)));
-            $amount->setAttribute("currency", $builder->currency);
+            $amount->setAttribute("currency", $builder->currency ?? '');
             $request->appendChild($amount);
         }
 
@@ -95,15 +95,15 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
         if (!empty($builder->customerData)) {
             $customerValue = $builder->customerData;
             $customer = $xml->createElement("customer");
-            $customer->appendChild($xml->createElement("customerid", $customerValue->id));
-            $customer->appendChild($xml->createElement("firstname", $customerValue->firstName));
-            $customer->appendChild($xml->createElement("lastname", $customerValue->lastName));
-            $customer->appendChild($xml->createElement("dateofbirth", $customerValue->dateOfBirth));
-            $customer->appendChild($xml->createElement("customerpassword", $customerValue->customerPassword));
-            $customer->appendChild($xml->createElement("email", $customerValue->email));
-            $customer->appendChild($xml->createElement("domainname", $customerValue->domainName));
-            $customer->appendChild($xml->createElement("devicefingerprint", $customerValue->deviceFingerPrint));
-            $customer->appendChild($xml->createElement("phonenumber", $customerValue->homePhone));
+            $customer->appendChild($xml->createElement("customerid", $customerValue->id ?? ''));
+            $customer->appendChild($xml->createElement("firstname", $customerValue->firstName ?? ''));
+            $customer->appendChild($xml->createElement("lastname", $customerValue->lastName ?? ''));
+            $customer->appendChild($xml->createElement("dateofbirth", $customerValue->dateOfBirth ?? ''));
+            $customer->appendChild($xml->createElement("customerpassword", $customerValue->customerPassword ?? ''));
+            $customer->appendChild($xml->createElement("email", $customerValue->email ?? ''));
+            $customer->appendChild($xml->createElement("domainname", $customerValue->domainName ?? ''));
+            $customer->appendChild($xml->createElement("devicefingerprint", $customerValue->deviceFingerPrint ?? ''));
+            $customer->appendChild($xml->createElement("phonenumber", $customerValue->homePhone ?? ''));
             $request->appendChild($customer);
         }
 
@@ -114,13 +114,13 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
 
             foreach ($productValues as $prod) {
                 $product = $xml->createElement("product");
-                $product->appendChild($xml->createElement('product_id', $prod['product_id']));
-                $product->appendChild($xml->createElement('productname', $prod['productname']));
-                $product->appendChild($xml->createElement('quantity', $prod['quantity']));
-                $product->appendChild($xml->createElement('unitprice', $prod['unitprice']));
-                $product->appendChild($xml->createElement('gift', $prod['gift']));
-                $product->appendChild($xml->createElement('type', $prod['type']));
-                $product->appendChild($xml->createElement('risk', $prod['risk']));
+                $product->appendChild($xml->createElement('product_id', $prod['product_id'] ?? ''));
+                $product->appendChild($xml->createElement('productname', $prod['productname'] ?? ''));
+                $product->appendChild($xml->createElement('quantity', $prod['quantity'] ?? ''));
+                $product->appendChild($xml->createElement('unitprice', $prod['unitprice'] ?? ''));
+                $product->appendChild($xml->createElement('gift', $prod['gift'] ?? ''));
+                $product->appendChild($xml->createElement('type', $prod['type'] ?? ''));
+                $product->appendChild($xml->createElement('risk', $prod['risk'] ?? ''));
                 $product->appendChild($products);
                 $request->appendChild($product);
             }
@@ -130,20 +130,20 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
             $dmValues = $builder->decisionManager;
             $fraud = $xml->createElement("fraud");
             $dm = $fraud->appendChild($xml->createElement('dm'));
-            $dm->appendChild($xml->createElement('billtohostname', $dmValues->billToHostName));
+            $dm->appendChild($xml->createElement('billtohostname', $dmValues->billToHostName ?? ''));
             $dm->appendChild($xml->createElement(
                 'billtohttpbrowsercookiesaccepted',
                 ($dmValues->billToHttpBrowserCookiesAccepted) != true ? 'false' : 'true'
             ));
-            $dm->appendChild($xml->createElement('billtohttpbrowseremail', $dmValues->billToHttpBrowserEmail));
-            $dm->appendChild($xml->createElement('billtohttpbrowsertype', $dmValues->billToHttpBrowserType));
-            $dm->appendChild($xml->createElement('billtoipnetworkaddress', $dmValues->billToIpNetworkAddress));
+            $dm->appendChild($xml->createElement('billtohttpbrowseremail', $dmValues->billToHttpBrowserEmail ?? ''));
+            $dm->appendChild($xml->createElement('billtohttpbrowsertype', $dmValues->billToHttpBrowserType ?? ''));
+            $dm->appendChild($xml->createElement('billtoipnetworkaddress', $dmValues->billToIpNetworkAddress ?? ''));
             $dm->appendChild($xml->createElement(
                 'businessrulesscorethreshold',
-                $dmValues->businessRulessCoreThresHold
+                $dmValues->businessRulessCoreThresHold ?? ''
             ));
-            $dm->appendChild($xml->createElement('billtopersonalid', $dmValues->billToPersonalId));
-            $dm->appendChild($xml->createElement('invoiceheadertendertype', $dmValues->invoiceHeaderTenderType));
+            $dm->appendChild($xml->createElement('billtopersonalid', $dmValues->billToPersonalId ?? ''));
+            $dm->appendChild($xml->createElement('invoiceheadertendertype', $dmValues->invoiceHeaderTenderType ?? ''));
             $dm->appendChild($xml->createElement(
                 'invoiceheaderisgift',
                 ($dmValues->invoiceHeaderIsGift) != true ? 'false' : 'true'
@@ -153,12 +153,12 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
                 'invoiceheaderreturnsaccepted',
                 ($dmValues->invoiceHeaderReturnsAccepted) != true ? 'false' : 'true'
             ));
-            $dm->appendChild($xml->createElement('itemhosthedge', $dmValues->itemHostHedge));
-            $dm->appendChild($xml->createElement('itemnonsensicalhedge', $dmValues->itemNonsensicalHedge));
-            $dm->appendChild($xml->createElement('itemobscenitieshedge', $dmValues->itemObscenitiesHedge));
-            $dm->appendChild($xml->createElement('itemphonehedge', $dmValues->itemPhoneHedge));
-            $dm->appendChild($xml->createElement('itemtimehedge', $dmValues->itemTimeHedge));
-            $dm->appendChild($xml->createElement('itemvelocityhedge', $dmValues->itemVelocityHedge));
+            $dm->appendChild($xml->createElement('itemhosthedge', $dmValues->itemHostHedge ?? ''));
+            $dm->appendChild($xml->createElement('itemnonsensicalhedge', $dmValues->itemNonsensicalHedge ?? ''));
+            $dm->appendChild($xml->createElement('itemobscenitieshedge', $dmValues->itemObscenitiesHedge ?? ''));
+            $dm->appendChild($xml->createElement('itemphonehedge', $dmValues->itemPhoneHedge ?? ''));
+            $dm->appendChild($xml->createElement('itemtimehedge', $dmValues->itemTimeHedge ?? ''));
+            $dm->appendChild($xml->createElement('itemvelocityhedge', $dmValues->itemVelocityHedge ?? ''));
             $request->appendChild($dm);
         }
 
@@ -167,10 +167,10 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
             $custom = $xml->createElement("custom");
 
             foreach ($customValues as $cust) {
-                $custom->appendChild($xml->createElement('field01', $cust['field01']));
-                $custom->appendChild($xml->createElement('field02', $cust['field02']));
-                $custom->appendChild($xml->createElement('field03', $cust['field03']));
-                $custom->appendChild($xml->createElement('field04', $cust['field04']));
+                $custom->appendChild($xml->createElement('field01', $cust['field01'] ?? ''));
+                $custom->appendChild($xml->createElement('field02', $cust['field02'] ?? ''));
+                $custom->appendChild($xml->createElement('field03', $cust['field03'] ?? ''));
+                $custom->appendChild($xml->createElement('field04', $cust['field04'] ?? ''));
                 $request->appendChild($custom);
             }
         }
@@ -186,12 +186,12 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
                 "type",
                 !empty($builder->dccRateData->dccType) ? $builder->dccRateData->dccType : "1")
             );
-            $dccinfo->appendChild($xml->createElement("ratetype", $builder->dccRateData->dccRateType));
+            $dccinfo->appendChild($xml->createElement("ratetype", $builder->dccRateData->dccRateType ?? ''));
             if ($builder->transactionType !== TransactionType::DCC_RATE_LOOKUP) {
                 $amount = $xml->createElement("amount", preg_replace('/[^0-9]/', '', $builder->dccRateData->cardHolderAmount));
-                $amount->setAttribute("currency", $builder->dccRateData->cardHolderCurrency);
+                $amount->setAttribute("currency", $builder->dccRateData->cardHolderCurrency ?? '');
                 $dccinfo->appendChild($amount);
-                $dccinfo->appendChild($xml->createElement("rate", $builder->dccRateData->cardHolderRate));
+                $dccinfo->appendChild($xml->createElement("rate", $builder->dccRateData->cardHolderRate ?? ''));
             }
             $request->appendChild($dccinfo);
         }
@@ -214,28 +214,28 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
             $card = $builder->paymentMethod;
 
             if ($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE) {
-                $request->appendChild($xml->createElement("token", $card->token));
-                $request->appendChild($xml->createElement("mobile", $card->mobileType));
+                $request->appendChild($xml->createElement("token", $card->token ?? ''));
+                $request->appendChild($xml->createElement("mobile", $card->mobileType ?? ''));
             } else {
                 $cardElement = $xml->createElement("card");
-                $cardElement->appendChild($xml->createElement("number", $card->number));
-                $cardElement->appendChild($xml->createElement("expdate", $card->getShortExpiry()));
-                $cardElement->appendChild($xml->createElement("chname", $card->cardHolderName));
+                $cardElement->appendChild($xml->createElement("number", $card->number ?? ''));
+                $cardElement->appendChild($xml->createElement("expdate", $card->getShortExpiry() ?? ''));
+                $cardElement->appendChild($xml->createElement("chname", $card->cardHolderName ?? ''));
 
                 $cardElement->appendChild($xml->createElement(
                     "type",
                     strtoupper(EnumMapping::mapCardType(GatewayProvider::GP_ECOM, CardUtils::getBaseCardType($card->getCardType())))
                 ));
 
-                if ($card->cvn !== null) {
+                if ($card->cvn !== null || isset($card->cvnPresenceIndicator)) {
                     //if cvn number is not empty indicator should be PRESENT
                     $cvnPresenceIndicator = (!empty($card->cvn)) ?
                         CvnPresenceIndicator::PRESENT:
                         $card->cvnPresenceIndicator;
 
                     $cvnElement = $xml->createElement("cvn");
-                    $cvnElement->appendChild($xml->createElement("number", $card->cvn));
-                    $cvnElement->appendChild($xml->createElement("presind", $cvnPresenceIndicator));
+                    $cvnElement->appendChild($xml->createElement("number", $card->cvn ?? ''));
+                    $cvnElement->appendChild($xml->createElement("presind", $cvnPresenceIndicator ?? ''));
                     $cardElement->appendChild($cvnElement);
                 }
                 $request->appendChild($cardElement);
@@ -266,10 +266,10 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
 
         if ($builder->paymentMethod instanceof RecurringPaymentMethod) {
             $recurring = $builder->paymentMethod;
-            $request->appendChild($xml->createElement("payerref", $recurring->customerKey));
+            $request->appendChild($xml->createElement("payerref", $recurring->customerKey ?? ''));
             $request->appendChild($xml->createElement(
                 "paymentmethod",
-                isset($recurring->key) ? $recurring->key : $recurring->id
+                isset($recurring->key) ? $recurring->key : (string) $recurring->id
             ));
 
             if ($builder->cvn !== null && $builder->cvn !== '') {
@@ -379,10 +379,10 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
         // stored credential
         if ($builder->storedCredential != null) {
             $storedCredential = $xml->createElement("storedcredential");
-            $storedCredential->appendChild($xml->createElement("type", $builder->storedCredential->type));
-            $storedCredential->appendChild($xml->createElement("initiator", $builder->storedCredential->initiator));
-            $storedCredential->appendChild($xml->createElement("sequence", $builder->storedCredential->sequence));
-            $storedCredential->appendChild($xml->createElement("srd", $builder->storedCredential->schemeId));
+            $storedCredential->appendChild($xml->createElement("type", $builder->storedCredential->type ?? ''));
+            $storedCredential->appendChild($xml->createElement("initiator", $builder->storedCredential->initiator ?? ''));
+            $storedCredential->appendChild($xml->createElement("sequence", $builder->storedCredential->sequence ?? ''));
+            $storedCredential->appendChild($xml->createElement("srd", $builder->storedCredential->schemeId ?? ''));
             $request->appendChild($storedCredential);
         }
 
@@ -395,18 +395,18 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
         if (!empty($builder->paymentMethod->threeDSecure)) {
             $secureEcom = $builder->paymentMethod->threeDSecure;
             $mpi = $xml->createElement("mpi");
-            $mpi->appendChild($xml->createElement("eci", $secureEcom->eci));
-            $mpi->appendChild($xml->createElement("cavv", $secureEcom->cavv));
-            $mpi->appendChild($xml->createElement("xid", $secureEcom->xid));
+            $mpi->appendChild($xml->createElement("eci", $secureEcom->eci ?? ''));
+            $mpi->appendChild($xml->createElement("cavv", $secureEcom->cavv ?? ''));
+            $mpi->appendChild($xml->createElement("xid", $secureEcom->xid ?? ''));
 
             if (
                 $secureEcom->directoryServerTransactionId != null ||
                 $secureEcom->authenticationValue != null ||
                 $secureEcom->messageVersion != null
             ) {
-                $mpi->appendChild($xml->createElement("ds_trans_id", $secureEcom->directoryServerTransactionId));
-                $mpi->appendChild($xml->createElement("authentication_value", $secureEcom->authenticationValue));
-                $mpi->appendChild($xml->createElement("message_version", $secureEcom->messageVersion));
+                $mpi->appendChild($xml->createElement("ds_trans_id", $secureEcom->directoryServerTransactionId ?? ''));
+                $mpi->appendChild($xml->createElement("authentication_value", $secureEcom->authenticationValue ?? ''));
+                $mpi->appendChild($xml->createElement("message_version", $secureEcom->messageVersion ?? ''));
             }
             if ($secureEcom->exemptStatus != null) {
                 $mpi->appendChild($xml->createElement("exempt_status", $secureEcom->exemptStatus));
@@ -421,17 +421,17 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
     {
         $request->appendChild($xml->createElement(
             "paymentmethod",
-            $builder->paymentMethod->alternativePaymentMethodType
+            $builder->paymentMethod->alternativePaymentMethodType ?? ''
         ));
 
         $paymentMethodDetails = $xml->createElement("paymentmethoddetails");
         list($returnUrl, $statusUpdateUrl, $cancelUrl) =
             $this->mapAPMUrls($builder->paymentMethod->alternativePaymentMethodType);
         $paymentMethodDetails->appendChild(
-            $xml->createElement($returnUrl, $builder->paymentMethod->returnUrl)
+            $xml->createElement($returnUrl, $builder->paymentMethod->returnUrl ?? '')
         );
         $paymentMethodDetails->appendChild(
-            $xml->createElement($statusUpdateUrl, $builder->paymentMethod->statusUpdateUrl)
+            $xml->createElement($statusUpdateUrl, $builder->paymentMethod->statusUpdateUrl ?? '')
         );
         if (!empty($builder->paymentMethod->cancelUrl)) {
             $paymentMethodDetails->appendChild(
@@ -445,10 +445,10 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
             );
         }
 
-        $paymentMethodDetails->appendChild($xml->createElement("country", $builder->paymentMethod->country));
+        $paymentMethodDetails->appendChild($xml->createElement("country", $builder->paymentMethod->country ?? ''));
         $paymentMethodDetails->appendChild($xml->createElement(
             "accountholdername",
-            $builder->paymentMethod->accountHolderName
+            $builder->paymentMethod->accountHolderName ?? ''
         ));
 
         $request->appendChild($paymentMethodDetails);
@@ -497,16 +497,16 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
             if (!empty($builder->billingAddress)) {
                 $billingAddress = $xml->createElement("address");
                 $billingAddress->setAttribute("type", 'billing');
-                $billingAddress->appendChild($xml->createElement("code", $builder->billingAddress->postalCode));
-                $billingAddress->appendChild($xml->createElement("country", $builder->billingAddress->country));
+                $billingAddress->appendChild($xml->createElement("code", $builder->billingAddress->postalCode ?? ''));
+                $billingAddress->appendChild($xml->createElement("country", $builder->billingAddress->country ?? ''));
                 $tssInfo->appendChild($billingAddress);
             }
 
             if (!empty($builder->shippingAddress)) {
                 $shippingAddress = $xml->createElement("address");
                 $shippingAddress->setAttribute("type", 'shipping');
-                $shippingAddress->appendChild($xml->createElement("code", $builder->shippingAddress->postalCode));
-                $shippingAddress->appendChild($xml->createElement("country", $builder->shippingAddress->country));
+                $shippingAddress->appendChild($xml->createElement("code", $builder->shippingAddress->postalCode ?? ''));
+                $shippingAddress->appendChild($xml->createElement("country", $builder->shippingAddress->country ?? ''));
                 $tssInfo->appendChild($shippingAddress);
             }
             if (!empty($tssInfo->childNodes->length)) {

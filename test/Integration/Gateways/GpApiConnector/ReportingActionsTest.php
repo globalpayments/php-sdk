@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 
 class ReportingActionsTest extends TestCase
 {
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
     }

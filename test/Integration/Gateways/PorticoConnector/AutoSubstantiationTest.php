@@ -9,8 +9,10 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 
-final class AutoSubstantiationTest extends TestCase {
-    public function setup() : void {
+final class AutoSubstantiationTest extends TestCase
+{
+    public function setup() : void
+    {
         $this->card = new CreditCardData();
         $this->card->number = '4111111111111111';
         $this->card->expMonth = 12;

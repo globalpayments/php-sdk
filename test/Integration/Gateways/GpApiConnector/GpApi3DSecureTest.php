@@ -65,7 +65,7 @@ class GpApi3DSecureTest extends TestCase
      */
     private $card;
 
-    public function setup()
+    public function setup() : void
     {
         $config = $this->setUpConfig();
         ServicesContainer::configureService($config);

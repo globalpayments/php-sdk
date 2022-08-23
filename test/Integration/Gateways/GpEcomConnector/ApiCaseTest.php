@@ -26,7 +26,7 @@ class ApiCaseTest extends TestCase
 {
     /* 01. Process Payment Authorisation */
 
-    public function setup()
+    public function setup() : void
     {
         $config = new GpEcomConfig();
         $config->merchantId = 'heartlandgpsandbox';
@@ -549,12 +549,10 @@ class ApiCaseTest extends TestCase
     
     /* 31. Mobile payment without Token value */
 
-    /**
-     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
-     * @expectedExceptionMessage  token cannot be null for this transaction type
-     */
     public function testauthMobileWithoutToken()
     {
+        $this->expectException(\GlobalPayments\Api\Entities\Exceptions\BuilderException::class);
+        $this->expectExceptionMessage("token cannot be null for this transaction type");
         // create the card object
         $card = new CreditCardData();
         $card->mobileType = EncyptedMobileType::GOOGLE_PAY;
@@ -567,12 +565,10 @@ class ApiCaseTest extends TestCase
     
     /* 32. Mobile payment without Mobile Type */
 
-    /**
-     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
-     * @expectedExceptionMessage  mobileType cannot be null for this transaction type
-     */
     public function testauthMobileWithoutType()
     {
+        $this->expectException(\GlobalPayments\Api\Entities\Exceptions\BuilderException::class);
+        $this->expectExceptionMessage("mobileType cannot be null for this transaction type");
         // create the card object
         $card = new CreditCardData();
         $card->token = '{"version":"EC_v1","data":"dvMNzlcy6WNB","header":{"ephemeralPublicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E","transactionId":"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3","publicKeyHash":"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk"}}';
@@ -585,12 +581,10 @@ class ApiCaseTest extends TestCase
     
     /* 33. Google payment without amount */
 
-    /**
-     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
-     * @expectedExceptionMessage  Amount and Currency cannot be null for google payment
-     */
     public function testauthMobileWithoutAmount()
     {
+        $this->expectException(\GlobalPayments\Api\Entities\Exceptions\BuilderException::class);
+        $this->expectExceptionMessage("Amount and Currency cannot be null for google payment");
         // create the card object
         $card = new CreditCardData();
         $card->token = '{"version":"EC_v1","data":"dvMNzlcy6WNB","header":{"ephemeralPublicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E","transactionId":"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3","publicKeyHash":"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk"}}';
@@ -604,12 +598,10 @@ class ApiCaseTest extends TestCase
     
     /* 34. Google payment without Currency */
 
-    /**
-     * @expectedException \GlobalPayments\Api\Entities\Exceptions\BuilderException
-     * @expectedExceptionMessage  Amount and Currency cannot be null for google payment
-     */
     public function testauthMobileWithoutCurrency()
     {
+        $this->expectException(\GlobalPayments\Api\Entities\Exceptions\BuilderException::class);
+        $this->expectExceptionMessage("Amount and Currency cannot be null for google payment");
         // create the card object
         $card = new CreditCardData();
         $card->token = '{"version":"EC_v1","data":"dvMNzlcy6WNB","header":{"ephemeralPublicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E","transactionId":"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3","publicKeyHash":"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk"}}';

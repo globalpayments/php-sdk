@@ -742,7 +742,9 @@ class GpApiMapping
     {
         $transaction = new TransactionSummary();
         $transaction->transactionId = isset($response->id) ? $response->id : null;
-        $transaction->transactionDate = $response->time_created;
+//        $transaction->transactionDate = $response->time_created;
+        $transaction->transactionDate = !empty($response->time_created) ?
+            new \DateTime($response->time_created) : '';
         $transaction->transactionStatus = $response->status;
         $transaction->transactionType = $response->type;
         $transaction->channel = !empty($response->channel) ? $response->channel : null;

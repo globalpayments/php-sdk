@@ -26,7 +26,7 @@ class DccCardPresentTest extends TestCase
     private $card;
     const DCC_RATE_CONFIG = 'dcc_rate';
 
-    public function setup()
+    public function setup() : void
     {
         $this->markTestIncomplete();
         $config = $this->setUpConfig();

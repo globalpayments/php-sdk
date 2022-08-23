@@ -23,7 +23,7 @@ class PaxReportTests extends TestCase
     private $transactionNumber;
     private $referenceNumber;
 
-    public function setup()
+    public function setup() : void
     {
         $this->device = DeviceService::create($this->getConfig());
         
@@ -47,7 +47,7 @@ class PaxReportTests extends TestCase
         $this->referenceNumber = $response->referenceNumber;
     }
 
-    public function tearDown()
+    public function tearDown() : void
     {
         sleep(3);
     }

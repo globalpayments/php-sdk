@@ -24,7 +24,7 @@ use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 
 class ReportingSettlementTransactionsTest extends TestCase
 {
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
     }

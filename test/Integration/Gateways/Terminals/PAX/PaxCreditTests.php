@@ -21,7 +21,7 @@ class PaxCreditTests extends TestCase
     protected $card;
     protected $address;
 
-    public function setup()
+    public function setup() : void
     {
         $this->device = DeviceService::create($this->getConfig());
         
@@ -37,7 +37,7 @@ class PaxCreditTests extends TestCase
         $this->address->postalCode = '12345';
     }
     
-    public function tearDown()
+    public function tearDown() : void
     {
         sleep(3);
     }

@@ -25,7 +25,7 @@ class PaxVerificationTests extends TestCase
     protected $address;
     private $config;
 
-    public function setup()
+    public function setup() : void
     {
         $this->device = DeviceService::create($this->getConfig());
         
@@ -41,7 +41,7 @@ class PaxVerificationTests extends TestCase
         $this->address->postalCode = '76321';
     }
     
-    public function tearDown()
+    public function tearDown() : void
     {
         sleep(3);
     }

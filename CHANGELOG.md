@@ -6,6 +6,11 @@
 
 ## Latest version
 #### Enhancements:
+- Support PHP v. >= 8.0
+- GP_API: Update PayLink unit tests
+
+## v4.0.5 (07/28/2022)
+#### Enhancements:
 - GP-API: Add PayLink service
 
 #### Bug Fixes:

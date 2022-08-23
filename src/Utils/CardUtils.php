@@ -183,8 +183,12 @@ class CardUtils
             }
         } elseif ($paymentMethod instanceof ICardData) {
             $card->number = $paymentMethod->number;
-            $card->expiry_month = str_pad($paymentMethod->expMonth, 2, '0', STR_PAD_LEFT);
-            $card->expiry_year = substr(str_pad($paymentMethod->expYear, 4, '0', STR_PAD_LEFT), 2, 2);
+            if (!empty($paymentMethod->expMonth)) {
+                $card->expiry_month = str_pad($paymentMethod->expMonth, 2, '0', STR_PAD_LEFT);
+            }
+            if (!empty($paymentMethod->expYear)) {
+                $card->expiry_year = substr(str_pad($paymentMethod->expYear, 4, '0', STR_PAD_LEFT), 2, 2);
+            }
             if (!empty($paymentMethod->cvn)) {
                 $card->cvv = $paymentMethod->cvn;
                 $cvnPresenceIndicator = !empty($paymentMethod->cvn) ? CvnPresenceIndicator::PRESENT :

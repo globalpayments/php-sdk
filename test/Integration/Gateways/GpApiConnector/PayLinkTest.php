@@ -47,7 +47,7 @@ class PayLinkTest extends TestCase
     private $shippingAddress;
     private $browserData;
 
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
@@ -618,7 +618,6 @@ class PayLinkTest extends TestCase
         }
     }
 
-    //TODO - error message different than create() + no logs
     public function testEditPayLink_MissingUsageMode()
     {
         $this->payLink->usageMode = null;
@@ -632,7 +631,6 @@ class PayLinkTest extends TestCase
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
-//            $this->assertEquals('40005', $e->responseCode);
             $this->assertEquals('usageMode cannot be null for this transaction type.', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
@@ -659,7 +657,6 @@ class PayLinkTest extends TestCase
         }
     }
 
-    //TODO - error message different than create() + no logs
     public function testEditPayLink_MissingType()
     {
         $this->payLink->type = null;
@@ -673,14 +670,12 @@ class PayLinkTest extends TestCase
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
-//            $this->assertEquals('40005', $e->responseCode);
             $this->assertEquals('type cannot be null for this transaction type.', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
     }
 
-    //TODO - error message different than create() + no logs
     public function testEditPayLink_MissingUsageLimit()
     {
         $this->payLink->usageLimit = null;
@@ -694,7 +689,6 @@ class PayLinkTest extends TestCase
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
-//            $this->assertEquals('40005', $e->responseCode);
             $this->assertEquals('usageLimit cannot be null for this transaction type.', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
@@ -718,7 +712,6 @@ class PayLinkTest extends TestCase
         }
     }
 
-    //TODO - error message different than create() + no logs
     public function testEditPayLink_MissingPayLinkData()
     {
         $exceptionCaught = false;
@@ -729,8 +722,24 @@ class PayLinkTest extends TestCase
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
-//            $this->assertEquals('40005', $e->responseCode);
             $this->assertEquals('Property `usageMode` does not exist on `GlobalPayments\Api\Builders\ManagementBuilder`', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testEditPayLink_MissingAmount()
+    {
+        $exceptionCaught = false;
+        try {
+            PayLinkService::edit(GenerationUtils::getGuid())
+                ->withAmount(null)
+                ->withPayLinkData($this->payLink)
+                ->withDescription('Update Paylink description')
+                ->execute();
+        } catch (ApiException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('amount cannot be null for this transaction type.', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }

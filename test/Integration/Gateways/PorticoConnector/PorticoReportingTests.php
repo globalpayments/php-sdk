@@ -24,8 +24,10 @@ class PorticoReportingTests extends TestCase
 {
     protected $card;
     private $enableCryptoUrl = true;
-    
-    public function setup()
+    /** @var ReportingService */
+    private $reportingService;
+
+    public function setup() : void
     {
         $this->card = new CreditCardData();
         $this->card->number = '4111111111111111';
@@ -156,7 +158,7 @@ class PorticoReportingTests extends TestCase
         $response = $this->reportingService->findTransactions()
             ->withTimeZoneConversion(TimeZoneConversion::MERCHANT)
             ->where('startDate', $dateMinus5Utc)
-            ->and('endDate', $nowUtc)
+            ->andWith('endDate', $nowUtc)
             ->execute();
             
         $this->assertNotNull($response);
@@ -168,7 +170,7 @@ class PorticoReportingTests extends TestCase
         $authorization = $this->card->authorize(14)
             ->withCurrency('USD')
             ->withAllowDuplicates(true)
-            ->withConvenienceAmount(2)
+            ->withConvenienceAmount(2.00)
             ->execute();
             
         $this->assertNotNull($authorization);
@@ -176,7 +178,7 @@ class PorticoReportingTests extends TestCase
         
         $report = $this->reportingService->transactionDetail($authorization->transactionId)->execute();
         $this->assertNotNull($report);
-        $this->assertEquals('2', $report->convenienceAmount);
+        $this->assertEquals('2.00', $report->convenienceAmount);
     }
     
     public function testCreditAuthWithShippingAmount()
@@ -184,7 +186,7 @@ class PorticoReportingTests extends TestCase
         $authorization = $this->card->authorize(14)
             ->withCurrency('USD')
             ->withAllowDuplicates(true)
-            ->withShippingAmount(2)
+            ->withShippingAmount(2.00)
             ->execute();
         
         $this->assertNotNull($authorization);
@@ -192,7 +194,7 @@ class PorticoReportingTests extends TestCase
         
         $report = $this->reportingService->transactionDetail($authorization->transactionId)->execute();
         $this->assertNotNull($report);
-        $this->assertEquals('2', $report->shippingAmount);
+        $this->assertEquals('2.00', $report->shippingAmount);
     }
     
     public function testCreditSaleWithConvenienceAmount()
@@ -200,7 +202,7 @@ class PorticoReportingTests extends TestCase
         $response = $this->card->charge(15)
             ->withCurrency('USD')
             ->withAllowDuplicates(true)
-            ->withConvenienceAmount(2)
+            ->withConvenienceAmount(2.00)
             ->execute();
             
         $this->assertNotNull($response);
@@ -208,7 +210,7 @@ class PorticoReportingTests extends TestCase
         
         $report = $this->reportingService->transactionDetail($response->transactionId)->execute();
         $this->assertNotNull($report);
-        $this->assertEquals('2', $report->convenienceAmount);
+        $this->assertEquals('2.00', $report->convenienceAmount);
     }
     
     public function testCreditSaleWithShippingAmount()
@@ -216,7 +218,7 @@ class PorticoReportingTests extends TestCase
         $response = $this->card->charge(15)
             ->withCurrency('USD')
             ->withAllowDuplicates(true)
-            ->withShippingAmount(2)
+            ->withShippingAmount(2.00)
             ->execute();
         
         $this->assertNotNull($response);
@@ -224,7 +226,7 @@ class PorticoReportingTests extends TestCase
         
         $report = $this->reportingService->transactionDetail($response->transactionId)->execute();
         $this->assertNotNull($report);
-        $this->assertEquals('2', $report->shippingAmount);
+        $this->assertEquals('2.00', $report->shippingAmount);
     }
     
     public function testCreditOfflineAuthWithConvenienceAmount()
@@ -233,7 +235,7 @@ class PorticoReportingTests extends TestCase
             ->withCurrency('USD')
             ->withOfflineAuthCode('12345')
             ->withAllowDuplicates(true)
-            ->withConvenienceAmount(2)
+            ->withConvenienceAmount(2.00)
             ->execute();
         
         $this->assertNotNull($response);
@@ -241,7 +243,7 @@ class PorticoReportingTests extends TestCase
         
         $report = $this->reportingService->transactionDetail($response->transactionId)->execute();
         $this->assertNotNull($report);
-        $this->assertEquals('2', $report->convenienceAmount);
+        $this->assertEquals('2.00', $report->convenienceAmount);
     }
     
     public function testCreditOfflineAuthWithShippingAmount()
@@ -250,7 +252,7 @@ class PorticoReportingTests extends TestCase
             ->withCurrency('USD')
             ->withOfflineAuthCode('12345')
             ->withAllowDuplicates(true)
-            ->withShippingAmount(2)
+            ->withShippingAmount(2.00)
             ->execute();
         
         $this->assertNotNull($response);
@@ -258,7 +260,7 @@ class PorticoReportingTests extends TestCase
         
         $report = $this->reportingService->transactionDetail($response->transactionId)->execute();
         $this->assertNotNull($report);
-        $this->assertEquals('2', $report->shippingAmount);
+        $this->assertEquals('2.00', $report->shippingAmount);
     }
     
     public function testCreditOfflineSaleWithConvenienceAmount()
@@ -267,7 +269,7 @@ class PorticoReportingTests extends TestCase
             ->withCurrency('USD')
             ->withOfflineAuthCode('12345')
             ->withAllowDuplicates(true)
-            ->WithConvenienceAmount(2)
+            ->WithConvenienceAmount(2.00)
             ->execute();
         
         $this->assertNotNull($response);
@@ -275,7 +277,7 @@ class PorticoReportingTests extends TestCase
         
         $report = $this->reportingService->transactionDetail($response->transactionId)->execute();
         $this->assertNotNull($report);
-        $this->assertEquals('2', $report->convenienceAmount);
+        $this->assertEquals('2.00', $report->convenienceAmount);
     }
 
     public function testCreditOfflineSaleWithShippingAmount()
@@ -284,7 +286,7 @@ class PorticoReportingTests extends TestCase
             ->withCurrency('USD')
             ->withOfflineAuthCode('12345')
             ->withAllowDuplicates(true)
-            ->withShippingAmount(2)
+            ->withShippingAmount(2.00)
             ->execute();
         
         $this->assertNotNull($response);
@@ -292,7 +294,7 @@ class PorticoReportingTests extends TestCase
         
         $report = $this->reportingService->transactionDetail($response->transactionId)->execute();
         $this->assertNotNull($report);
-        $this->assertEquals('2', $report->shippingAmount);
+        $this->assertEquals('2.00', $report->shippingAmount);
     }
 
     public function testReportTransactionAvsCvvDetail()

@@ -12,7 +12,7 @@ use GlobalPayments\Api\Tests\Integration\Gateways\ProPay\TestData\TestFundsData;
 class ProPayFundsTests extends TestCase
 {
     
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->getConfig());
     }

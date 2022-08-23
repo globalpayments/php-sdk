@@ -30,7 +30,7 @@ class Secure3DSExemptionsTest extends TestCase
      */
     private $gatewayProvider;
 
-    public function setup()
+    public function setup() : void
     {
         $config = $this->getConfig();
         ServicesContainer::configureService($config);
@@ -266,7 +266,7 @@ class Secure3DSExemptionsTest extends TestCase
                 ->withEnableExemptionOptimization(true)
                 ->execute();
         } catch (GatewayException $exception) {
-            $this->assertContains('Status Code: 202 - Blocked by Transaction Risk Analysis' , $exception->getMessage());
+            $this->assertStringContainsString('Status Code: 202 - Blocked by Transaction Risk Analysis' , $exception->getMessage());
         }
     }
 }

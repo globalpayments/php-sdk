@@ -21,7 +21,7 @@ class GpApiSdkCertificationTest extends TestCase
      */
     private $card;
 
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->card = new CreditCardData();
@@ -422,7 +422,7 @@ class GpApiSdkCertificationTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals("50013", $e->responseCode);
-            $this->assertContains("SYSTEM_ERROR_DOWNSTREAM", $e->getMessage());
+            $this->assertStringContainsString("SYSTEM_ERROR_DOWNSTREAM", $e->getMessage());
         }
     }
 
@@ -436,7 +436,7 @@ class GpApiSdkCertificationTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals("50024", $e->responseCode);
-            $this->assertContains("SYSTEM_ERROR_DOWNSTREAM", $e->getMessage());
+            $this->assertStringContainsString("SYSTEM_ERROR_DOWNSTREAM", $e->getMessage());
         }
     }
 
@@ -450,7 +450,7 @@ class GpApiSdkCertificationTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals("50013", $e->responseCode);
-            $this->assertContains("SYSTEM_ERROR_DOWNSTREAM", $e->getMessage());
+            $this->assertStringContainsString("SYSTEM_ERROR_DOWNSTREAM", $e->getMessage());
         }
     }
 
@@ -466,7 +466,7 @@ class GpApiSdkCertificationTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals("50013", $e->responseCode);
-            $this->assertContains("SYSTEM_ERROR_DOWNSTREAM", $e->getMessage());
+            $this->assertStringContainsString("SYSTEM_ERROR_DOWNSTREAM", $e->getMessage());
         }
     }
 
@@ -481,7 +481,7 @@ class GpApiSdkCertificationTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals("50013", $e->responseCode);
-            $this->assertContains("SYSTEM_ERROR_DOWNSTREAM", $e->getMessage());
+            $this->assertStringContainsString("SYSTEM_ERROR_DOWNSTREAM", $e->getMessage());
         }
     }
 
@@ -496,7 +496,7 @@ class GpApiSdkCertificationTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals("50013", $e->responseCode);
-            $this->assertContains("SYSTEM_ERROR_DOWNSTREAM", $e->getMessage());
+            $this->assertStringContainsString("SYSTEM_ERROR_DOWNSTREAM", $e->getMessage());
         }
     }
 
@@ -511,7 +511,7 @@ class GpApiSdkCertificationTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals("50013", $e->responseCode);
-            $this->assertContains("SYSTEM_ERROR_DOWNSTREAM", $e->getMessage());
+            $this->assertStringContainsString("SYSTEM_ERROR_DOWNSTREAM", $e->getMessage());
         }
     }
 }

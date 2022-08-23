@@ -26,7 +26,7 @@ use ReflectionClass;
 
 class ReportingTransactionsTest extends TestCase
 {
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
     }
@@ -59,8 +59,8 @@ class ReportingTransactionsTest extends TestCase
 
     public function testReportFindTransactionsByStartDateAndEndDate()
     {
-        $startDate = new \DateTime('2020-11-01 midnight');
-        $endDate = new \DateTime('2020-12-01 23:59');
+        $startDate = (new \DateTime())->modify('-30 days');
+        $endDate = (new \DateTime())->modify('-3 days');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED)
@@ -452,7 +452,7 @@ class ReportingTransactionsTest extends TestCase
             $this->assertTrue(is_array($response->result));
             /** @var TransactionSummary $rs */
             foreach ($response->result as $rs) {
-                $this->assertContains($value, $rs->entryMode);
+                $this->assertStringContainsString($value, $rs->entryMode);
             }
         }
     }
@@ -657,12 +657,15 @@ class ReportingTransactionsTest extends TestCase
 
     public function testReportFindTransactions_WithoutStartDate()
     {
-        try {
-            ReportingService::findTransactionsPaged(1, 10)
+        $response = ReportingService::findTransactionsPaged(1, 10)
                 ->execute();
-        } catch (ApiException $e) {
-            $this->assertEquals('40075', $e->responseCode);
-            $this->assertEquals("Status Code: MANDATORY_DATA_MISSING - Retrieving a list expects a date range to be populated", $e->getMessage());
+
+        $this->assertNotNull($response);
+        $this->assertTrue(is_array($response->result));
+        /** @var TransactionSummary $rs */
+        foreach ($response->result as $rs) {
+            $this->assertLessThanOrEqual(new \DateTime('today midnight'), $rs->transactionDate);
+            $this->assertGreaterThanOrEqual((new \DateTime())->modify('-30 days 00:00:00'), $rs->transactionDate);
         }
     }
 

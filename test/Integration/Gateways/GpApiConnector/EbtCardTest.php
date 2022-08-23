@@ -19,7 +19,7 @@ class EbtCardTest extends TestCase
     private $amount = 10;
     private $currency = 'USD';
 
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->card = TestCards::asEBTManual(TestCards::visaManual(true), '32539F50C245A6A93D123412324000AA');

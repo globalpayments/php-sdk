@@ -20,7 +20,7 @@ class DccCardNotPresentTest extends TestCase
     /** @var CreditCardData */
     private $card;
 
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->card = new CreditCardData();

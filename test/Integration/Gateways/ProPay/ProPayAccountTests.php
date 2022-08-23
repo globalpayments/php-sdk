@@ -16,7 +16,7 @@ use GlobalPayments\Api\Entities\PayFac\DeviceDetails;
 class ProPayAccountTests extends TestCase
 {
     
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->getConfig());
     }

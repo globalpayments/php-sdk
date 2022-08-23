@@ -77,10 +77,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                 $requestData =  $this->createFromAuthorizationBuilder($builder, $config);
                 break;
             case TransactionType::VERIFY:
-                if (
-                    $builder->requestMultiUseToken &&
-                    substr($builder->paymentMethod->token, 0, 4) != PaymentMethod::PAYMENT_METHOD_TOKEN_PREFIX
-                ) {
+                if ($builder->requestMultiUseToken && empty($builder->paymentMethod->token)) {
                     $endpoint = GpApiRequest::PAYMENT_METHODS_ENDPOINT;
                     $verb = 'POST';
                     $requestData = [];
@@ -95,8 +92,8 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $card = new Card();
                     $builderCard = $builder->paymentMethod;
                     $card->number = $builderCard->number;
-                    $card->expiry_month = (string)$builderCard->expMonth;
-                    $card->expiry_year = substr(str_pad($builderCard->expYear, 4, '0', STR_PAD_LEFT), 2, 2);
+                    $card->expiry_month = (string) $builderCard->expMonth;
+                    $card->expiry_year = substr(str_pad((string) $builderCard->expYear, 4, '0', STR_PAD_LEFT), 2, 2);
                     $card->cvv = $builderCard->cvn;
                     $requestData['card'] = $card;
                 } else {

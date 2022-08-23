@@ -65,7 +65,7 @@ class GpApi3DS2Test extends TestCase
      */
     private $card;
 
-    public function setup()
+    public function setup() : void
     {
         $config = $this->setUpConfig();
         ServicesContainer::configureService($config);
@@ -331,7 +331,7 @@ class GpApi3DS2Test extends TestCase
         } catch (ApiException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains('Idempotency Key seen before', $e->getMessage());
+            $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -457,7 +457,7 @@ class GpApi3DS2Test extends TestCase
         } catch (ApiException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains('Idempotency Key seen before', $e->getMessage());
+            $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -628,7 +628,7 @@ class GpApi3DS2Test extends TestCase
         } catch (ApiException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains('Idempotency Key seen before', $e->getMessage());
+            $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -720,7 +720,7 @@ class GpApi3DS2Test extends TestCase
         } catch (ApiException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains('Idempotency Key seen before', $e->getMessage());
+            $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -805,7 +805,7 @@ class GpApi3DS2Test extends TestCase
         } catch (ApiException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains('Idempotency Key seen before', $e->getMessage());
+            $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }

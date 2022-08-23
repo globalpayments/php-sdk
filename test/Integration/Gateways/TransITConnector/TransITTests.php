@@ -21,7 +21,7 @@ class CreditTest extends TestCase
     protected $tokenizedCard;
     protected $track;
 
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->getConfig());
 

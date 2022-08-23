@@ -184,21 +184,21 @@ async function start3DS(token){
             });
             console.log('Authentication Data:', authenticateData);
             // frictionless authentication success and authorization success
-            if (authenticateData.result == "AUTHORIZATION_SUCCESS") {
-                // TODO: proceed to success page or display success information
-                responseDiv.style.display = "block";
-                responseDiv.innerHTML+= "<strong>Success! Frictionless authentication and your transaction was authorized successfully.</strong>";
-                responseDiv.innerHTML+= "<br><br>Server Trans ID:" + authenticateData.serverTransId;
-                responseDiv.innerHTML+= "<br><br>Authentication Value: " + authenticateData.authenticationValue;
-                responseDiv.innerHTML+= "<br><br>DS Trans ID: " + authenticateData.dsTransId;
-                responseDiv.innerHTML+= "<br><br>Message Version: " + authenticateData.messageVersion;
-                responseDiv.innerHTML+= "<br><br>ECI: " + authenticateData.eci;
-                responseDiv.innerHTML+= "<br><br>Result: " + authenticateData.resultCode;
-                responseDiv.innerHTML+= "<br><br>Message: " + authenticateData.resultMessage;
-                responseDiv.innerHTML+= "<br><br>Order ID: " + authenticateData.orderId;
-                responseDiv.innerHTML+= "<br><br>Auth Code: " + authenticateData.authCode;
-                responseDiv.innerHTML+= "<br><br>Pasref: " + authenticateData.pasref;
-                responseDiv.innerHTML+= "<br><br>SRD: " + authenticateData.srd;
+            if (authenticateData.result == "SUCCESS_AUTHENTICATED" && authenticateData.liabilityShift == 'YES') {
+                var form = document.getElementById("payment-form");
+                form.setAttribute("action", "authorization.php");
+                var formServerTransId = document.createElement("input");
+                formServerTransId.setAttribute("type", "hidden");
+                formServerTransId.setAttribute("name", "serverTransactionId");
+                formServerTransId.setAttribute("value", authenticateData.serverTransactionId);
+                var paymentToken = document.createElement("input");
+                paymentToken.setAttribute("type", "hidden");
+                paymentToken.setAttribute("name", "tokenResponse");
+                paymentToken.setAttribute("value", token);
+                console.log('PMT:', token);
+                form.appendChild(formServerTransId);
+                form.appendChild(paymentToken);
+                form.submit();
             }
 
             // frictionless authentication success and authorization failure
@@ -231,7 +231,6 @@ async function start3DS(token){
                 if(authenticateData.status){responseDiv.innerHTML+= "<br><br>Status: " + authenticateData.status;}
                 if(authenticateData.statusReason){responseDiv.innerHTML+= "<br><br>Status Reason: " + authenticateData.statusReason;}
             }
-
                 // challenge success
             else if (authenticateData.challenge.response.data.transStatus == "Y") {
                 var serverTransactionId = authenticateData.challenge.response.data.threeDSServerTransID;

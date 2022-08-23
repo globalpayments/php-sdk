@@ -15,7 +15,7 @@ class HpaCreditTests extends TestCase
 
     private $device;
 
-    public function setup()
+    public function setup() : void
     {
         $this->device = DeviceService::create($this->getConfig());
 
@@ -23,7 +23,7 @@ class HpaCreditTests extends TestCase
         $this->device->openLane();
     }
     
-    public function tearDown()
+    public function tearDown() : void
     {
         $this->waitAndReset();
     }

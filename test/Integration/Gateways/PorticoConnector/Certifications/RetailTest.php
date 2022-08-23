@@ -28,7 +28,7 @@ class RetailTest extends TestCase
     private static $amextoken;
     private $enableCryptoUrl = true;
 
-    public function __construct()
+    protected function setup(): void
     {
         $config = new PorticoConfig();
         $config->secretApiKey = 'skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw';
@@ -1732,7 +1732,7 @@ class RetailTest extends TestCase
 
         $response = $card->activate(6.00)->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     public function testRetail096ActivateGift2Manual()
@@ -1741,7 +1741,7 @@ class RetailTest extends TestCase
 
         $response = $card->activate(7.00)->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     // ADD VALUE
@@ -1754,7 +1754,7 @@ class RetailTest extends TestCase
             ->withCurrency('USD')
             ->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     public function testRetail098AddValueGift2Manual()
@@ -1763,7 +1763,7 @@ class RetailTest extends TestCase
 
         $response = $card->activate(9.00)->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     // BALANCE INQUIRY
@@ -1784,7 +1784,7 @@ class RetailTest extends TestCase
 
         $response = $card->balanceInquiry()->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(10.00, $response->balanceAmount);
     }
 
@@ -1797,7 +1797,7 @@ class RetailTest extends TestCase
 
         $response = $oldCard->replaceWith($newCard)->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     public function testRetail102ReplaceGift2Manual()
@@ -1807,7 +1807,7 @@ class RetailTest extends TestCase
 
         $response = $oldCard->replaceWith($newCard)->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     // SALE / REDEEM
@@ -1820,7 +1820,7 @@ class RetailTest extends TestCase
             ->withCurrency('USD')
             ->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     public function testRetail104SaleGift2Manual()
@@ -1831,7 +1831,7 @@ class RetailTest extends TestCase
             ->withCurrency('USD')
             ->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     public function testRetail105SaleGift1VoidSwipe()
@@ -1842,12 +1842,12 @@ class RetailTest extends TestCase
             ->withCurrency('USD')
             ->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
 
         // test case 107
         $voidResponse = $response->void()->execute();
         $this->assertNotNull($voidResponse);
-        $this->assertEquals('0', $voidResponse->responseCode);
+        $this->assertEquals('00', $voidResponse->responseCode);
     }
 
     public function testRetail106SaleGift2ReversalManual()
@@ -1858,12 +1858,12 @@ class RetailTest extends TestCase
             ->withCurrency('USD')
             ->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
 
         //test case 108
         $voidResponse = $response->reverse(4.00)->execute();
         $this->assertNotNull($voidResponse);
-        $this->assertEquals('0', $voidResponse->responseCode);
+        $this->assertEquals('00', $voidResponse->responseCode);
     }
 
     // VOID
@@ -1888,7 +1888,7 @@ class RetailTest extends TestCase
 
         $response = $card->deactivate()->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     // RECEIPTS MESSAGING
@@ -1909,7 +1909,7 @@ class RetailTest extends TestCase
 
         $response = $card->balanceInquiry()->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertTrue($response->pointsBalanceAmount > 0);
     }
 
@@ -1919,7 +1919,7 @@ class RetailTest extends TestCase
 
         $response = $card->balanceInquiry()->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertTrue($response->pointsBalanceAmount > 0);
     }
 
@@ -1943,7 +1943,7 @@ class RetailTest extends TestCase
 
         $response = $card->addAlias('2145550199')->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     public function testRetail116AddAliasGift2()
@@ -1952,7 +1952,7 @@ class RetailTest extends TestCase
 
         $response = $card->addAlias('2145550199')->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     public function testRetail117DeleteAliasGift1()
@@ -1961,7 +1961,7 @@ class RetailTest extends TestCase
 
         $response = $card->removeAlias('2145550199')->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     public function testRetail999CloseBatch()

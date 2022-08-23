@@ -17,7 +17,7 @@ class CapabilitiesCardPresentTest extends TestCase
 {
     private $card;
 
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->card = new CreditCardData();

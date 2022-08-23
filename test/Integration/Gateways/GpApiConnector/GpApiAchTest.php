@@ -34,7 +34,7 @@ class GpApiAchTest extends TestCase
 
     private $customer;
 
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->eCheck = new ECheck();

@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 
 class ReportingStoredPaymentMethodsTest extends TestCase
 {
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
     }

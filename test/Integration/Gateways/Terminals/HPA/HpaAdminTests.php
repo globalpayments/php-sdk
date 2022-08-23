@@ -21,12 +21,12 @@ class HpaAdminTests extends TestCase
 
     private $device;
 
-    public function setup()
+    public function setup() : void
     {
         $this->device = DeviceService::create($this->getConfig());
     }
     
-    public function tearDown()
+    public function tearDown() : void
     {
         sleep(3);
         $this->device->reset();

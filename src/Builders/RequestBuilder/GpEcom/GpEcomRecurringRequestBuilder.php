@@ -61,7 +61,7 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
         switch ($builder->transactionType) {
             case TransactionType::CREATE:
             case TransactionType::EDIT:
-                $request->appendChild($xml->createElement("channel", $config->channel));
+                $request->appendChild($xml->createElement("channel", $config->channel ?? ''));
                 if ($config->accountId !== null) {
                     $request->appendChild($xml->createElement("account", $config->accountId));
                 }
@@ -134,27 +134,27 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
                         ])
                     );
 
-                    $request->appendChild($xml->createElement("scheduleref", $schedule->id));
-                    $request->appendChild($xml->createElement("alias",$schedule->name));
-                    $request->appendChild($xml->createElement("orderidstub",$schedule->orderPrefix));
+                    $request->appendChild($xml->createElement("scheduleref", $schedule->id ?? ''));
+                    $request->appendChild($xml->createElement("alias",$schedule->name ?? ''));
+                    $request->appendChild($xml->createElement("orderidstub",$schedule->orderPrefix ?? ''));
                     $request->appendChild($xml->createElement("transtype","auth"));
-                    $request->appendChild($xml->createElement("schedule", $frequency));
+                    $request->appendChild($xml->createElement("schedule", $frequency ?? ''));
                     if (!empty($schedule->startDate)) {
                         $request->appendChild($xml->createElement("startdate",$schedule->startDate->format('Ymd')));
                     }
-                    $request->appendChild($xml->createElement("numtimes",$schedule->numberOfPaymentsRemaining));
+                    $request->appendChild($xml->createElement("numtimes",$schedule->numberOfPaymentsRemaining ?? ''));
                     if (!empty($schedule->endDate)) {
                         $request->appendChild($xml->createElement("enddate",$schedule->endDate->format('Ymd')));
                     }
-                    $request->appendChild($xml->createElement("payerref",$schedule->customerKey));
-                    $request->appendChild($xml->createElement("paymentmethod",$schedule->paymentKey));
+                    $request->appendChild($xml->createElement("payerref",$schedule->customerKey ?? ''));
+                    $request->appendChild($xml->createElement("paymentmethod",$schedule->paymentKey ?? ''));
                     $amount = $xml->createElement("amount", $amount);
-                    $amount->setAttribute("currency", $schedule->currency);
+                    $amount->setAttribute("currency", $schedule->currency ?? '');
                     $request->appendChild($amount);
-                    $request->appendChild($xml->createElement("prodid",$schedule->productId));
-                    $request->appendChild($xml->createElement("varref",$schedule->poNumber));
-                    $request->appendChild($xml->createElement("custno",$schedule->customerNumber));
-                    $request->appendChild($xml->createElement("comment",$schedule->description ));
+                    $request->appendChild($xml->createElement("prodid",$schedule->productId ?? ''));
+                    $request->appendChild($xml->createElement("varref",$schedule->poNumber ?? ''));
+                    $request->appendChild($xml->createElement("custno",$schedule->customerNumber ?? ''));
+                    $request->appendChild($xml->createElement("comment",$schedule->description ?? ''));
                 }
 
                 //set hash value
@@ -162,7 +162,7 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
                 break;
             case TransactionType::DELETE:
                 if ($builder->entity instanceof RecurringPaymentMethod) {
-                    $request->appendChild($xml->createElement("channel", $config->channel));
+                    $request->appendChild($xml->createElement("channel", $config->channel ?? ''));
                     if ($config->accountId !== null) {
                         $request->appendChild($xml->createElement("account", $config->accountId));
                     }
@@ -170,7 +170,7 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
                     $paymentKey = (!empty($payment->key)) ? $payment->key : $payment->id;
                     $cardElement = $xml->createElement("card");
                     $cardElement->appendChild($xml->createElement("ref", $paymentKey));
-                    $cardElement->appendChild($xml->createElement("payerref", $payment->customerKey));
+                    $cardElement->appendChild($xml->createElement("payerref", $payment->customerKey ?? ''));
                     $request->appendChild($cardElement);
 
                     $hash = GenerationUtils::generateHash(
@@ -184,7 +184,7 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
                     );
                 } elseif ($builder->entity instanceof Schedule) {
                     $schedule = $builder->entity;
-                    $request->appendChild($xml->createElement("scheduleref", $schedule->key));
+                    $request->appendChild($xml->createElement("scheduleref", $schedule->key ?? ''));
                     $hash = GenerationUtils::generateHash(
                         $config->sharedSecret,
                         implode('.', [
@@ -201,7 +201,7 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
                         $scheduleRef = $builder->entity->key;
                         $request->appendChild($xml->createElement(
                             'scheduleref',
-                            $scheduleRef)
+                            $scheduleRef ?? '')
                         );
                         $hash = GenerationUtils::generateHash(
                             $config->sharedSecret,
@@ -264,22 +264,22 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
             GenerationUtils::generateRecurringKey());
         $payer->setAttribute("type", $type);
 
-        $payer->appendChild($xml->createElement("title", $customer->title));
-        $payer->appendChild($xml->createElement("firstname", $customer->firstName));
-        $payer->appendChild($xml->createElement("surname", $customer->lastName));
-        $payer->appendChild($xml->createElement("company", $customer->company));
+        $payer->appendChild($xml->createElement("title", $customer->title ?? ''));
+        $payer->appendChild($xml->createElement("firstname", $customer->firstName ?? ''));
+        $payer->appendChild($xml->createElement("surname", $customer->lastName ?? ''));
+        $payer->appendChild($xml->createElement("company", $customer->company ?? ''));
 
 
         if ($customer->address != null) {
             $address = $xml->createElement("address");
-            $address->appendChild($xml->createElement("line1", $customer->address->streetAddress1));
-            $address->appendChild($xml->createElement("line2", $customer->address->streetAddress2));
-            $address->appendChild($xml->createElement("line3", $customer->address->streetAddress3));
-            $address->appendChild($xml->createElement("city", $customer->address->city));
-            $address->appendChild($xml->createElement("county", $customer->address->getProvince()));
-            $address->appendChild($xml->createElement("postcode", $customer->address->postalCode));
+            $address->appendChild($xml->createElement("line1", $customer->address->streetAddress1 ?? ''));
+            $address->appendChild($xml->createElement("line2", $customer->address->streetAddress2 ?? ''));
+            $address->appendChild($xml->createElement("line3", $customer->address->streetAddress3 ?? ''));
+            $address->appendChild($xml->createElement("city", $customer->address->city ?? ''));
+            $address->appendChild($xml->createElement("county", $customer->address->getProvince() ?? ''));
+            $address->appendChild($xml->createElement("postcode", $customer->address->postalCode ?? ''));
 
-            $country = $xml->createElement("country", $customer->address->country);
+            $country = $xml->createElement("country", $customer->address->country ?? '');
             if (!empty($customer->address->countryCode)) {
                 $country->setAttribute("code", $customer->address->countryCode);
             }
@@ -289,13 +289,13 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
         }
 
         $phonenumbers = $xml->createElement("phonenumbers");
-        $phonenumbers->appendChild($xml->createElement("home", $customer->homePhone));
-        $phonenumbers->appendChild($xml->createElement("work", $customer->workPhone));
-        $phonenumbers->appendChild($xml->createElement("fax", $customer->fax));
-        $phonenumbers->appendChild($xml->createElement("mobile", $customer->mobilePhone));
+        $phonenumbers->appendChild($xml->createElement("home", $customer->homePhone ?? ''));
+        $phonenumbers->appendChild($xml->createElement("work", $customer->workPhone ?? ''));
+        $phonenumbers->appendChild($xml->createElement("fax", $customer->fax ?? ''));
+        $phonenumbers->appendChild($xml->createElement("mobile", $customer->mobilePhone ?? ''));
 
         $payer->appendChild($phonenumbers);
-        $payer->appendChild($xml->createElement("email", $customer->email));
+        $payer->appendChild($xml->createElement("email", $customer->email ?? ''));
 
         return $payer;
     }
@@ -305,11 +305,11 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
         $card = $payment->paymentMethod;
         $cardElement = $xml->createElement("card");
         $cardElement->appendChild($xml->createElement("ref", $paymentKey));
-        $cardElement->appendChild($xml->createElement("payerref", $payment->customerKey));
-        $cardElement->appendChild($xml->createElement("number", $card->number));
-        $cardElement->appendChild($xml->createElement("expdate", $card->getShortExpiry()));
-        $cardElement->appendChild($xml->createElement("chname", $card->cardHolderName));
-        $cardElement->appendChild($xml->createElement("type", strtoupper($card->getCardType())));
+        $cardElement->appendChild($xml->createElement("payerref", $payment->customerKey ?? ''));
+        $cardElement->appendChild($xml->createElement("number", $card->number ?? ''));
+        $cardElement->appendChild($xml->createElement("expdate", $card->getShortExpiry() ?? ''));
+        $cardElement->appendChild($xml->createElement("chname", $card->cardHolderName ?? ''));
+        $cardElement->appendChild($xml->createElement("type", strtoupper($card->getCardType() ?? '')));
 
         return $cardElement;
     }

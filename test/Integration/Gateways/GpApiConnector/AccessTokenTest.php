@@ -24,7 +24,7 @@ class AccessTokenTest extends TestCase
      */
     private $config;
 
-    public function setup()
+    public function setUp() : void
     {
         $this->setUpConfig();
     }

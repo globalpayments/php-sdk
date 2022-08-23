@@ -33,7 +33,7 @@ class CreditCardPresentTest extends TestCase
     private $currency = 'USD';
     private $amount = 15.11;
 
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
     }
@@ -233,7 +233,7 @@ class CreditCardPresentTest extends TestCase
         } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains(sprintf('Status Code: DUPLICATE_ACTION - Idempotency Key seen before: id=%s, status=PREAUTHORIZED', $reauthorized->transactionId), $e->getMessage());
+            $this->assertStringContainsString(sprintf('Status Code: DUPLICATE_ACTION - Idempotency Key seen before: id=%s', $reauthorized->transactionId), $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -281,7 +281,7 @@ class CreditCardPresentTest extends TestCase
         } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40213', $e->responseCode);
-            $this->assertContains('Status Code: INVALID_REQUEST_DATA', $e->getMessage());
+            $this->assertStringContainsString('Status Code: INVALID_REQUEST_DATA', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -304,7 +304,7 @@ class CreditCardPresentTest extends TestCase
         } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40044', $e->responseCode);
-            $this->assertContains('Status Code: INVALID_REQUEST_DATA - 36, Invalid original transaction for reauthorization-This error is returned from a CreditAuth or CreditSale if the original transaction referenced by GatewayTxnId cannot be found. This is typically because the original does not meet the criteria for the sale or authorization by GatewayTxnID. This error can also be returned if the original transaction is found, but the card number has been written over with nulls after 30 days.', $e->getMessage());
+            $this->assertStringContainsString('Status Code: INVALID_REQUEST_DATA - 36, Invalid original transaction for reauthorization-This error is returned from a CreditAuth or CreditSale if the original transaction referenced by GatewayTxnId cannot be found. This is typically because the original does not meet the criteria for the sale or authorization by GatewayTxnID. This error can also be returned if the original transaction is found, but the card number has been written over with nulls after 30 days.', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -321,7 +321,7 @@ class CreditCardPresentTest extends TestCase
         } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40008', $e->responseCode);
-            $this->assertContains(sprintf('Status Code: RESOURCE_NOT_FOUND - Transaction %s not found at this location.', $transaction->transactionId), $e->getMessage());
+            $this->assertStringContainsString(sprintf('Status Code: RESOURCE_NOT_FOUND - Transaction %s not found at this location.', $transaction->transactionId), $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -591,7 +591,7 @@ class CreditCardPresentTest extends TestCase
         } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40008', $e->responseCode);
-            $this->assertContains(sprintf('Status Code: RESOURCE_NOT_FOUND - Transaction %s not found at this location.', $transaction->transactionId), $e->getMessage());
+            $this->assertStringContainsString(sprintf('Status Code: RESOURCE_NOT_FOUND - Transaction %s not found at this location.', $transaction->transactionId), $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -700,7 +700,7 @@ class CreditCardPresentTest extends TestCase
         } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40290', $e->responseCode);
-            $this->assertContains('Status Code: INVALID_ACTION - Cannot PROCESS Incremental Authorization over a transaction that does not have a status of PREAUTHORIZED.', $e->getMessage());
+            $this->assertStringContainsString('Status Code: INVALID_ACTION - Cannot PROCESS Incremental Authorization over a transaction that does not have a status of PREAUTHORIZED.', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -726,7 +726,7 @@ class CreditCardPresentTest extends TestCase
         } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40005', $e->responseCode);
-            $this->assertContains('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields [amount]', $e->getMessage());
+            $this->assertStringContainsString('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields [amount]', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -745,7 +745,7 @@ class CreditCardPresentTest extends TestCase
         } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40008', $e->responseCode);
-            $this->assertContains(sprintf('Status Code: RESOURCE_NOT_FOUND - Transaction %s not found at this location.', $transaction->transactionId), $e->getMessage());
+            $this->assertStringContainsString(sprintf('Status Code: RESOURCE_NOT_FOUND - Transaction %s not found at this location.', $transaction->transactionId), $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }

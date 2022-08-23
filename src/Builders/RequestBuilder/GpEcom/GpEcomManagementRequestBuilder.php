@@ -46,46 +46,46 @@ class GpEcomManagementRequestBuilder extends GpEcomRequestBuilder
         $request->setAttribute("timestamp", $timestamp);
         $request->setAttribute("type", $transactionType);
 
-        $request->appendChild($xml->createElement("merchantid", $config->merchantId));
+        $request->appendChild($xml->createElement("merchantid", $config->merchantId ?? ''));
 
         if ($config->accountId !== null) {
-            $request->appendChild($xml->createElement("account", $config->accountId));
+            $request->appendChild($xml->createElement("account", $config->accountId ?? ''));
         }
         if (is_null($builder->alternativePaymentType)) {
-            $request->appendChild($xml->createElement("channel", $config->channel));
+            $request->appendChild($xml->createElement("channel", $config->channel ?? ''));
         }
 
         if ($builder->amount !== null) {
             $amount = $xml->createElement("amount", preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount)));
-            $amount->setAttribute("currency", $builder->currency);
+            $amount->setAttribute("currency", $builder->currency ?? '');
             $request->appendChild($amount);
         } elseif ($builder->transactionType === TransactionType::CAPTURE) {
             throw new BuilderException("Amount cannot be null for capture.");
         }
 
         $request->appendChild($xml->createElement("orderid", $orderId));
-        $request->appendChild($xml->createElement("pasref", $builder->transactionId));
+        $request->appendChild($xml->createElement("pasref", $builder->transactionId ?? ''));
 
         // rebate hash
         if ($builder->transactionType === TransactionType::REFUND &&
             is_null($builder->alternativePaymentType)) {
-            $request->appendChild($xml->createElement("authcode", $builder->paymentMethod->authCode));
+            $request->appendChild($xml->createElement("authcode", $builder->paymentMethod->authCode ?? ''));
         }
 
         // reason code
         if ($builder->reasonCode !== null) {
-            $request->appendChild($xml->createElement("reasoncode", $builder->reasonCode));
+            $request->appendChild($xml->createElement("reasoncode", $builder->reasonCode ?? ''));
         }
 
         if ($builder->alternativePaymentType !== null) {
-            $request->appendChild($xml->createElement("paymentmethod", $builder->alternativePaymentType));
+            $request->appendChild($xml->createElement("paymentmethod", $builder->alternativePaymentType ?? ''));
             if ($builder->transactionType == TransactionType::CONFIRM) {
                 $paymentMethodDetails = $xml->createElement("paymentmethoddetails");
                 $apmResponse = $builder->paymentMethod->alternativePaymentResponse;
-                if ($builder->alternativePaymentType == AlternativePaymentType::PAYPAL) {
-                    $paymentMethodDetails->appendChild($xml->createElement('Token', $apmResponse->sessionToken));
+                if ($builder->alternativePaymentType == AlternativePaymentType::PAYPAL && isset($apmResponse)) {
+                    $paymentMethodDetails->appendChild($xml->createElement('Token', $apmResponse->sessionToken ?? ''));
                     $paymentMethodDetails->appendChild(
-                        $xml->createElement('PayerID', $apmResponse->providerReference)
+                        $xml->createElement('PayerID', $apmResponse->providerReference ?? '')
                     );
                 }
                 $request->appendChild($paymentMethodDetails);
@@ -93,7 +93,7 @@ class GpEcomManagementRequestBuilder extends GpEcomRequestBuilder
         }
 
         if ($builder->transactionType === TransactionType::VERIFY_SIGNATURE) {
-            $request->appendChild($xml->createElement("pares", $builder->payerAuthenticationResponse));
+            $request->appendChild($xml->createElement("pares", $builder->payerAuthenticationResponse ?? ''));
         }
 
         //supplementarydata
@@ -107,7 +107,7 @@ class GpEcomManagementRequestBuilder extends GpEcomRequestBuilder
         // comments needs to be multiple
         if ($builder->description !== null) {
             $comments = $xml->createElement("comments");
-            $comment = $xml->createElement("comment", $builder->description);
+            $comment = $xml->createElement("comment", $builder->description ?? '');
             $comment->setAttribute("id", "1");
             $comments->appendChild($comment);
             $request->appendChild($comments);

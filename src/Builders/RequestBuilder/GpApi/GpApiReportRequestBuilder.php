@@ -134,8 +134,8 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                     $paymentMethod = $builder->searchBuilder->paymentMethod;
                     $card = [
                         'number' => $paymentMethod->number,
-                        'expiry_month' => str_pad($paymentMethod->expMonth, 2, '0', STR_PAD_LEFT),
-                        'expiry_year' => substr(str_pad($paymentMethod->expYear, 4, '0', STR_PAD_LEFT), 2, 2)
+                        'expiry_month' => str_pad((string) $paymentMethod->expMonth, 2, '0', STR_PAD_LEFT),
+                        'expiry_year' => substr(str_pad((string) $paymentMethod->expYear, 4, '0', STR_PAD_LEFT), 2, 2)
                     ];
                     $payload = [
                         'account_name' => $config->accessTokenInfo->tokenizationAccountName,

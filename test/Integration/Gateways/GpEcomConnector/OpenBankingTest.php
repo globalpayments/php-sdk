@@ -21,7 +21,7 @@ class OpenBankingTest extends TestCase
     private $currency = 'GBP';
     private $amount = 10.99;
 
-    public function setup()
+    public function setup() : void
     {
         $config = $this->getConfig();
         ServicesContainer::configureService($config);
@@ -444,7 +444,7 @@ class OpenBankingTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('Status Code: 400 - payment.scheme cannot be null ', $e->getMessage());
+            $this->assertStringContainsString(' Merchant currency is not enabled for Open Banking', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }

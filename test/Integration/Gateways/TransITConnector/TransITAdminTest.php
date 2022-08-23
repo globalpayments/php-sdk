@@ -13,7 +13,7 @@ class TransITAdminTest extends TestCase
 {
     protected $card;
 
-    public function setup()
+    public function setup() : void
     {
         $this->card = TestCards::visaManual();
         
@@ -55,7 +55,7 @@ class TransITAdminTest extends TestCase
         $config->acceptorConfig = new AcceptorConfig();
         
         ServicesContainer::configureService($config);
-        $provider = ServicesContainer::instance()->getClient();
+        $provider = ServicesContainer::instance()->getClient("default");
         
         //create Transaction Key
         $response = $provider->getTransactionKey();
@@ -85,7 +85,7 @@ class TransITAdminTest extends TestCase
         $config->gatewayProvider = GatewayProvider::TRANSIT;
         
         ServicesContainer::configureService($config);
-        $provider = ServicesContainer::instance()->getClient();
+        $provider = ServicesContainer::instance()->getClient("default");
         
         //create new Transaction Key
         $response = $provider->getTransactionKey();

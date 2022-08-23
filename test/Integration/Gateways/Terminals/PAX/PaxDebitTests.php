@@ -15,12 +15,12 @@ class PaxDebitTests extends TestCase
     private $device;
     protected $address;
 
-    public function setup()
+    public function setup() : void
     {
         $this->device = DeviceService::create($this->getConfig());
     }
 
-    public function tearDown()
+    public function tearDown() : void
     {
         sleep(3);
     }

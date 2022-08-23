@@ -46,7 +46,7 @@ class CreditCardNotPresentTest extends TestCase
 
     private $currency = 'GBP';
 
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->card = new CreditCardData();
@@ -206,7 +206,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains('Idempotency Key seen before', $e->getMessage());
+            $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
         }
     }
 
@@ -304,7 +304,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains('Idempotency Key seen before', $e->getMessage());
+            $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
         }
     }
 
@@ -366,7 +366,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('40087', $e->responseCode);
-            $this->assertContains("INVALID_REQUEST_DATA - You may only refund up to 100% of the original amount", $e->getMessage());
+            $this->assertStringContainsString("INVALID_REQUEST_DATA - You may only refund up to 100% of the original amount", $e->getMessage());
         }
     }
 
@@ -440,7 +440,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains('Idempotency Key seen before', $e->getMessage());
+            $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
         }
     }
 
@@ -524,10 +524,9 @@ class CreditCardNotPresentTest extends TestCase
             $exceptionCaught = true;
             $this->assertEquals(
                 sprintf(
-                    "Status Code: %s - Idempotency Key seen before: id=%s, status=%s",
+                    "Status Code: %s - Idempotency Key seen before: id=%s",
                     'DUPLICATE_ACTION',
-                    $response->transactionId,
-                    TransactionStatus::CAPTURED
+                    $response->transactionId
                 ), $e->getMessage()
             );
         } finally {
@@ -605,7 +604,7 @@ class CreditCardNotPresentTest extends TestCase
         } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains('Idempotency Key seen before', $e->getMessage());
+            $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -687,7 +686,7 @@ class CreditCardNotPresentTest extends TestCase
             $tokenizedCard->verify()->withIdempotencyKey($this->idempotencyKey)->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains('Idempotency Key seen before', $e->getMessage());
+            $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
         }
     }
 
@@ -770,7 +769,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains('Idempotency Key seen before', $e->getMessage());
+            $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
         }
     }
 
@@ -784,7 +783,7 @@ class CreditCardNotPresentTest extends TestCase
             $tokenizedCard->deleteToken();
         } catch (ApiException $e) {
             $this->assertEquals('40116', $e->responseCode);
-            $this->assertContains(sprintf('Status Code: RESOURCE_NOT_FOUND - payment_method %s not found at this location', $tokenizedCard->token), $e->getMessage());
+            $this->assertStringContainsString(sprintf('Status Code: RESOURCE_NOT_FOUND - payment_method %s not found at this location', $tokenizedCard->token), $e->getMessage());
         }
     }
 
@@ -823,7 +822,7 @@ class CreditCardNotPresentTest extends TestCase
             $tokenizedCard->updateTokenExpiry();
         } catch (ApiException $e) {
             $this->assertEquals('40116', $e->responseCode);
-            $this->assertContains(sprintf('Status Code: RESOURCE_NOT_FOUND - payment_method %s not found at this location', $tokenizedCard->token), $e->getMessage());
+            $this->assertStringContainsString(sprintf('Status Code: RESOURCE_NOT_FOUND - payment_method %s not found at this location', $tokenizedCard->token), $e->getMessage());
         }
     }
 
@@ -857,7 +856,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (ApiException $e) {
             $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains('Idempotency Key seen before', $e->getMessage());
+            $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
         }
 
         $response = $tokenizedCard->verify()->withCurrency($this->currency)->execute();
@@ -880,7 +879,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('40008', $e->responseCode);
-            $this->assertContains('RESOURCE_NOT_FOUND', $e->getMessage());
+            $this->assertStringContainsString('RESOURCE_NOT_FOUND', $e->getMessage());
         }
     }
 
@@ -904,7 +903,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains('Idempotency Key seen before', $e->getMessage());
+            $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
         }
     }
 
@@ -974,7 +973,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('40008', $e->responseCode);
-            $this->assertContains('RESOURCE_NOT_FOUND', $e->getMessage());
+            $this->assertStringContainsString('RESOURCE_NOT_FOUND', $e->getMessage());
         }
     }
 
@@ -1011,7 +1010,7 @@ class CreditCardNotPresentTest extends TestCase
         } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40039', $e->responseCode);
-            $this->assertContains('Status Code: DUPLICATE_ACTION - Idempotency Key seen before: ', $e->getMessage());
+            $this->assertStringContainsString('Status Code: DUPLICATE_ACTION - Idempotency Key seen before: ', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -1111,7 +1110,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('50020', $e->responseCode);
-            $this->assertContains("INVALID_REQUEST_DATA - Can't settle for more than 115% of that which you authorised", $e->getMessage());
+            $this->assertStringContainsString("INVALID_REQUEST_DATA - Can't settle for more than 115% of that which you authorised", $e->getMessage());
         }
     }
 
@@ -1159,7 +1158,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('40087', $e->responseCode);
-            $this->assertContains("INVALID_REQUEST_DATA - You may only refund up to 115% of the original amount", $e->getMessage());
+            $this->assertStringContainsString("INVALID_REQUEST_DATA - You may only refund up to 115% of the original amount", $e->getMessage());
         }
     }
 
@@ -1187,7 +1186,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('40087', $e->responseCode);
-            $this->assertContains("INVALID_REQUEST_DATA - You may only refund up to 100% of the original amount", $e->getMessage());
+            $this->assertStringContainsString("INVALID_REQUEST_DATA - You may only refund up to 100% of the original amount", $e->getMessage());
         }
 
         if (!empty($response)) {

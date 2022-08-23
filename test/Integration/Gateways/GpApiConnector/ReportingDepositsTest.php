@@ -19,7 +19,7 @@ class ReportingDepositsTest extends TestCase
     private $startDate;
     private $endDate;
 
-    public function setup()
+    public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);

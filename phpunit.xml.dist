@@ -1,51 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit backupGlobals="false"
-         backupStaticAttributes="false"
-         bootstrap="./test/setup.php"
-         colors="true"
-         processIsolation="false"
-         stopOnFailure="false"
->
-    <php>
-        <ini name="zend.enable_gc" value="0"/>
-        <ini name="memory_limit" value="-1"/>
-        <!-- error_reporting(E_ALL); -->
-        <ini name="error_reporting" value="32767"/>
-    </php>
-
-    <testsuites>
-        <testsuite name="all">
-            <directory>./test/</directory>
-        </testsuite>
-        <testsuite name="unit">
-            <directory>./test/Unit/</directory>
-        </testsuite>
-        <testsuite name="integration">
-            <directory>./test/Integration/</directory>
-        </testsuite>
-        <testsuite name="certification">
-            <directory>./test/Integration/Gateways/PorticoConnector/Certifications/</directory>
-            <directory>./test/Integration/Gateways/GpEcomConnector/Certifications/</directory>
-            <directory>./test/Integration/Gateways/GpApiConnector/Certifications/</directory>
-        </testsuite>
-        <testsuite name="portico">
-            <directory>./test/Integration/Gateways/PorticoConnector/</directory>
-        </testsuite>
-        <testsuite name="gpecom">
-            <directory>./test/Integration/Gateways/GpEcomConnector/</directory>
-        </testsuite>
-        <testsuite name="gpapi">
-            <directory>./test/Integration/Gateways/GpApiConnector/</directory>
-        </testsuite>
-    </testsuites>
-
-    <filter>
-        <whitelist>
-            <directory>./src/</directory>
-            <exclude>
-                <directory>./test/</directory>
-            </exclude>
-        </whitelist>
-    </filter>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" backupGlobals="false" backupStaticAttributes="false" bootstrap="./test/setup.php" colors="true" processIsolation="false" stopOnFailure="false" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+<!--  <coverage>-->
+<!--    <include>-->
+<!--      <directory>./src/</directory>-->
+<!--    </include>-->
+<!--    <exclude>-->
+<!--      <directory>./test/</directory>-->
+<!--    </exclude>-->
+<!--  </coverage>-->
+  <php>
+    <ini name="zend.enable_gc" value="0"/>
+    <ini name="memory_limit" value="-1"/>
+    <!-- error_reporting(E_ALL); -->
+    <ini name="error_reporting" value="32767"/>
+  </php>
+  <testsuites>
+    <testsuite name="all">
+      <directory>./test/</directory>
+    </testsuite>
+    <testsuite name="unit">
+      <directory>./test/Unit/</directory>
+    </testsuite>
+    <testsuite name="integration">
+      <directory>./test/Integration/</directory>
+    </testsuite>
+    <testsuite name="certification">
+      <directory>./test/Integration/Gateways/PorticoConnector/Certifications/</directory>
+      <directory>./test/Integration/Gateways/GpEcomConnector/Certifications/</directory>
+      <directory>./test/Integration/Gateways/GpApiConnector/Certifications/</directory>
+    </testsuite>
+    <testsuite name="portico">
+      <directory>./test/Integration/Gateways/PorticoConnector/</directory>
+    </testsuite>
+    <testsuite name="gpecom">
+      <directory>./test/Integration/Gateways/GpEcomConnector/</directory>
+    </testsuite>
+    <testsuite name="gpapi">
+      <directory>./test/Integration/Gateways/GpApiConnector/</directory>
+    </testsuite>
+  </testsuites>
 </phpunit>
 <!-- vim: set ft=xml -->

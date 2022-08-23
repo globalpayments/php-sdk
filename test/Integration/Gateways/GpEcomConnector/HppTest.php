@@ -7,6 +7,7 @@ use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 use GlobalPayments\Api\Entities\Enums\BankPaymentStatus;
 use GlobalPayments\Api\Entities\Enums\ShaHashType;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\FraudRuleCollection;
 use GlobalPayments\Api\PaymentMethods\BankPayment;
 use GlobalPayments\Api\Services\HostedService;
@@ -36,7 +37,7 @@ class HppTest extends TestCase
         ''
     ];
 
-    public function setup()
+    public function setup() : void
     {
         // billing address
         $this->billingAddress = new Address();
@@ -184,56 +185,44 @@ class HppTest extends TestCase
         }
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testAuthNoAmount()
     {
+        $this->expectException(BuilderException::class);
         $service = $this->basicSetup();
         $service->authorize(null)->withCurrency("USD")->serialize();
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testAuthNoCurrency()
     {
+        $this->expectException(BuilderException::class);
         $service = $this->basicSetup();
         $service->authorize(10)->serialize();
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testSaleNoAmount()
     {
+        $this->expectException(BuilderException::class);
         $service = $this->basicSetup();
         $service->charge(null)->withCurrency("USD")->serialize();
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testSaleNoCurrency()
     {
+        $this->expectException(BuilderException::class);
         $service = $this->basicSetup();
         $service->charge(10)->serialize();
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testVerifyNoCurrency()
     {
+        $this->expectException(BuilderException::class);
         $service = $this->basicSetup();
         $service->verify()->serialize();
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testVerifyWithAmount()
     {
+        $this->expectException(BuilderException::class);
         $service = $this->basicSetup();
         $service->verify()->withAmount(10)->serialize();
     }
@@ -710,7 +699,9 @@ class HppTest extends TestCase
             // Base64 encode values
             $iterator = new \RecursiveIteratorIterator(new \RecursiveArrayIterator(json_decode($response, true)));
             foreach ($iterator as $key => $value) {
-                $iterator->getInnerIterator()->offsetSet($key, base64_encode($value));
+                if (!empty($value)) {
+                    $iterator->getInnerIterator()->offsetSet($key, base64_encode($value));
+                }
             }
 
             $response = json_encode($iterator->getArrayCopy());

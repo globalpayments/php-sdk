@@ -47,7 +47,7 @@ class PartnershipModeTest extends TestCase
 
     private $merchantId = 'MER_7e3e2c7df34f42819b3edee31022ee3f';
 
-    public function setup()
+    public function setup() : void
     {
         $this->baseConfig = $this->setUpConfig();
         /** @var \GlobalPayments\Api\Entities\GpApi\AccessTokenInfo $accessTokenInfo */
@@ -405,7 +405,7 @@ class PartnershipModeTest extends TestCase
         } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40041', $e->responseCode);
-            $this->assertContains(' INVALID_REQUEST_DATA - Merchant configuration does not exist', $e->getMessage());
+            $this->assertStringContainsString(' INVALID_REQUEST_DATA - Merchant configuration does not exist', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }

@@ -13,7 +13,7 @@ class DebitTest extends TestCase
     protected $track;
     private $enableCryptoUrl = true;
 
-    public function setup()
+    public function setup(): void
     {
         $this->track = TestCards::asDebit(TestCards::visaSwipeEncrypted(), '32539F50C245A6A93D123412324000AA');
 

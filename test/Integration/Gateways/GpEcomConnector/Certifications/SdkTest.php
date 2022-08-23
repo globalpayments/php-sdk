@@ -2,6 +2,8 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector\Certifications;
 
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Transaction;
@@ -15,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 
 class SdkTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown() : void
     {
         usleep(1500000);
     }
@@ -421,11 +423,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth009b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "E";
@@ -443,11 +443,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth009c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOMMERCE";
@@ -618,11 +616,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testAuth011d()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -655,11 +651,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth012b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -675,11 +669,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth012c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -695,11 +687,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testAuth012d()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -731,11 +721,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth013b1()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -754,11 +742,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth013b2()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -777,11 +763,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth013c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -817,20 +801,17 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth014b()
     {
-        $this->markTestSkipped('Exception not thrown');
-        
+        $this->expectException(GatewayException::class);
+//        $this->markTestSkipped('Exception not thrown');
+
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
-        $card->expMonth = 12;
-        $card->expYear = TestCards::validCardExpYear();
+        $card->cardHolderName = null;
 
         // request
         $response = $card->charge(100.01)
@@ -841,11 +822,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth014c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -918,11 +897,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth015c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -940,18 +917,17 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth015d()
     {
-        $this->markTestSkipped('Exception not thrown');
-        
+        $this->expectException(GatewayException::class);
+
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
+        $card->expMonth = null;
+        $card->expYear = null;
 
         // request
         $response = $card->charge(100.01)
@@ -1064,11 +1040,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth019b1()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -1104,11 +1078,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth019c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -1228,20 +1200,16 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth020b()
     {
-        $this->markTestSkipped('Exception not thrown');
-        
+        $this->expectException(GatewayException::class);
+
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
         // create card
         $card = $this->getBaseCardData();
-        $card->expMonth = 12;
-        $card->expYear = TestCards::validCardExpYear();
+        $card->cvn = null;
         $card->cvnPresenceIndicator = 5;
 
         // request
@@ -1749,11 +1717,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth028c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -1770,11 +1736,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth028d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -1826,11 +1790,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth029c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -1847,11 +1809,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth029d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -1903,11 +1863,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth030c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -1924,11 +1882,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth030d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -1980,11 +1936,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth031c1()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -2001,11 +1955,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth031c2()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -2121,12 +2073,10 @@ class SdkTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->responseCode);
     }
-    
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
+
     public function testAuth033c1()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -2147,11 +2097,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth033c2()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -2243,11 +2191,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth034c1()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -2268,11 +2214,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAuth034c2()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -2502,11 +2446,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation002d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -2578,11 +2520,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation002f()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -2654,11 +2594,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation002h()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -2765,11 +2703,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation003c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -2805,11 +2741,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation003d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -2845,11 +2779,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation003e()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -2992,13 +2924,11 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation003i()
     {
-        $this->markTestSkipped('Exception not thrown');
-        
+        $this->expectException(GatewayException::class);
+//        $this->markTestSkipped('Exception not thrown');
+
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -3016,6 +2946,8 @@ class SdkTest extends TestCase
 
         // create card
         $card = $this->getBaseCardData();
+        $card->expMonth = null;
+        $card->expYear = null;
 
         // request
         $response = $card->charge(100.01)
@@ -3067,11 +2999,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation004b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -3108,11 +3038,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation004c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -3188,11 +3116,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation004e()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -3381,11 +3307,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation005a()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -3457,11 +3381,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation005c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -3498,11 +3420,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation005d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -3538,11 +3458,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation005e()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -3578,11 +3496,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation005f()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -3619,11 +3535,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation005g()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -3659,11 +3573,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation005h()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -3770,11 +3682,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation006c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -3810,11 +3720,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation006d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -3850,11 +3758,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation006e()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -3967,11 +3873,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation007d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -4008,11 +3912,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation007e()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -4049,11 +3951,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation007f()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -4130,11 +4030,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation008c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -4172,11 +4070,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation008d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -4214,11 +4110,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation009b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -4255,11 +4149,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation009c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -4296,11 +4188,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testValidation009d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOM";
@@ -4337,11 +4227,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAVS001a()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -4378,11 +4266,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAVS001b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -4419,11 +4305,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAVS001c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -4460,11 +4344,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAVS001d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -4499,11 +4381,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAVS001e()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -4540,11 +4420,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAVS001f()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -4581,11 +4459,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAVS001g()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -4622,11 +4498,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAVS003a()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -4663,11 +4537,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAVS003b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -4704,11 +4576,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAVS003c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -4745,11 +4615,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAVS003d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -4787,11 +4655,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAVS003e()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -4828,11 +4694,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAVS003f()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -4869,11 +4733,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAVS003g()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -4908,11 +4770,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testAVS003h()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -5568,11 +5428,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testSettle009c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOm";
@@ -5598,11 +5456,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testSettle009d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECO#";
@@ -5871,11 +5727,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testSettle012c()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -5901,11 +5755,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testSettle012d()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -5958,11 +5810,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testSettle012f()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -6015,11 +5865,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testSettle013b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -6045,11 +5893,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testSettle013c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -6370,11 +6216,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testSettle017b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->sharedSecret = 'secreto';
         $config->timeout = 5000;
@@ -6921,11 +6765,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testVoid009e()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "EC";
@@ -7002,11 +6844,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testVoid009c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOm";
@@ -7031,11 +6871,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testVoid009d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECO#";
@@ -8068,11 +7906,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testRebate009b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "EC";
@@ -8098,11 +7934,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testRebate009c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOm";
@@ -8128,11 +7962,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testRebate009d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECO#";
@@ -8266,11 +8098,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testRebate011b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -8296,11 +8126,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testRebate011c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -8326,11 +8154,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testRebate011d()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -8409,11 +8235,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testRebate012c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -8439,11 +8263,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testRebate012d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -8496,11 +8318,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testRebate012f()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -8903,11 +8723,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testRebate017b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->sharedSecret = 'secreto';
         $config->timeout = 5000;
@@ -9725,11 +9543,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testOTB013c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -9816,11 +9632,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testOTB014c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -9841,11 +9655,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testOTB014d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -9976,11 +9788,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testOTB017b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -10002,11 +9812,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testOTB017c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -10052,11 +9860,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testOTB017f()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -10078,11 +9884,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testOTB017g()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -10126,11 +9930,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testOTB018b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->sharedSecret = 'secreto';
         $config->timeout = 5000;
@@ -10832,7 +10634,7 @@ class SdkTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->responseCode);
     }
-    
+
     public function testCredit013b()
     {
         $config = $this->getBaseConfig();
@@ -10854,11 +10656,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testCredit013c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -10945,11 +10745,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testCredit014d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -11102,11 +10900,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testCredit017c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -11152,11 +10948,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testCredit017f()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -11179,11 +10973,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testCredit017g()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -11381,11 +11173,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testCredit020b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->sharedSecret = 'secreto';
         $config->timeout = 5000;
@@ -11451,11 +11241,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testCredit021c()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -11476,11 +11264,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testCredit021d()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -11523,11 +11309,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testCredit021f()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -11570,11 +11354,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testCredit022b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -11595,11 +11377,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testCredit022c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -11620,11 +11400,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testCredit022d()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -12049,11 +11827,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testHold007d()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         ServicesContainer::configureService($config);
@@ -12068,11 +11844,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testHold007e()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         ServicesContainer::configureService($config);
@@ -12141,11 +11915,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testHold008c()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         ServicesContainer::configureService($config);
@@ -12160,11 +11932,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testHold008d()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         ServicesContainer::configureService($config);
@@ -12179,11 +11949,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testHold008e()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         ServicesContainer::configureService($config);
@@ -12225,11 +11993,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testHold009d()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -12246,11 +12012,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testHold009e()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -12321,11 +12085,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testHold010c()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -12503,11 +12265,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testHold012b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->sharedSecret = 'secreto';
         $config->timeout = 5000;
@@ -12561,11 +12321,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testHold013b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "EC";
@@ -12591,11 +12349,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testHold013c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOOOOOOOOM";
@@ -13146,11 +12902,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testRelease007d()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         ServicesContainer::configureService($config);
@@ -13165,11 +12919,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testRelease007e()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         ServicesContainer::configureService($config);
@@ -13184,11 +12936,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testRelease008c()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         ServicesContainer::configureService($config);
@@ -13203,11 +12953,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testRelease008d()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         ServicesContainer::configureService($config);
@@ -13222,11 +12970,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testRelease008e()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         ServicesContainer::configureService($config);
@@ -13241,11 +12987,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testRelease009d()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -13262,11 +13006,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testRelease009e()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -13337,11 +13079,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testRelease010c()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOM";
@@ -13519,11 +13259,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testRelease012b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->sharedSecret = 'secreto';
         $config->timeout = 5000;
@@ -13577,11 +13315,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testRelease013b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "EC";
@@ -13607,11 +13343,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testRelease013c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 5000;
         $config->channel = "ECOOOOOOOOM";
@@ -14189,11 +13923,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual009b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "E";
@@ -14219,11 +13951,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual009c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 20000;
         $config->channel = "ECOMMERCE";
@@ -14474,11 +14204,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testManual011d()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -14527,11 +14255,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual012b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -14555,11 +14281,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual012c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -14583,11 +14307,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     */
     public function testManual012d()
     {
+        $this->expectException(BuilderException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -14754,11 +14476,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual014c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -14863,11 +14583,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual015c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -14893,11 +14611,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual015d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -15073,11 +14789,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual019b1()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -15104,11 +14818,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->ResponseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual019b2()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -15135,11 +14847,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->ResponseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual019c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -15306,7 +15016,7 @@ class SdkTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->responseCode);
     }
-    
+
     public function testManual020b()
     {
         $config = $this->getBaseConfig();
@@ -16064,11 +15774,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual028c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -16093,11 +15801,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual028d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -16173,11 +15879,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual029c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -16202,11 +15906,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual029d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -16282,11 +15984,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual030c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -16311,11 +16011,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual030d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -16391,11 +16089,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual031c1()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -16420,11 +16116,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual031c2()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -16581,11 +16275,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual033c1()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -16614,11 +16306,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual033c2()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -16742,11 +16432,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual034c1()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -16775,11 +16463,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testManual034c2()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         ServicesContainer::configureService($config);
 
@@ -17065,11 +16751,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testverifyenrolled015a()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
         ServicesContainer::configureService($config);
@@ -17291,11 +16975,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testverifyenrolled016a()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
         ServicesContainer::configureService($config);
@@ -18321,11 +18003,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testverifyenrolled023b2()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
         ServicesContainer::configureService($config);
@@ -18347,11 +18027,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testverifyenrolled023c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
         ServicesContainer::configureService($config);
@@ -18396,11 +18074,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testverifyenrolled024b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
         ServicesContainer::configureService($config);
@@ -18408,10 +18084,7 @@ class SdkTest extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
-        $card->expMonth = 12;
-        $card->expYear = TestCards::validCardExpYear();
-        $card->cvn = "123";
-        $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
+        $card->cardHolderName = null;
 
         // request
         $response = $card->verify()
@@ -18422,11 +18095,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testverifyenrolled024c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
         ServicesContainer::configureService($config);
@@ -18519,11 +18190,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testverifyenrolled025c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
         ServicesContainer::configureService($config);
@@ -18545,11 +18214,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testverifyenrolled025d()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
         ServicesContainer::configureService($config);
@@ -18557,8 +18224,8 @@ class SdkTest extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
-        $card->cvn = "123";
-        $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
+        $card->expMonth = null;
+        $card->expYear = null;
 
         // request
         $response = $card->verify()
@@ -18707,11 +18374,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testverifyenrolled029b1()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
         ServicesContainer::configureService($config);
@@ -18733,11 +18398,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testverifyenrolled029b2()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
         ServicesContainer::configureService($config);
@@ -18759,11 +18422,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testverifyenrolled029c()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
         ServicesContainer::configureService($config);
@@ -18902,11 +18563,9 @@ class SdkTest extends TestCase
         $this->assertEquals("00", $response->responseCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     */
     public function testverifyenrolled030b()
     {
+        $this->expectException(GatewayException::class);
         $config = $this->getBaseConfig();
         $config->timeout = 60000;
         ServicesContainer::configureService($config);
@@ -18914,9 +18573,7 @@ class SdkTest extends TestCase
         // create card
         $card = $this->getBaseCardData();
         $card->number = "4012001037141112";
-        $card->expMonth = 12;
-        $card->expYear = TestCards::validCardExpYear();
-        $card->cvn = "123";
+        $card->cvn = null;
         $card->cvnPresenceIndicator = 5;
 
         // request

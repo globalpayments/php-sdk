@@ -27,7 +27,7 @@ class CheckTest extends TestCase
         return $config;
     }
 
-    protected function setup()
+    protected function setup() : void
     {
         ServicesContainer::configureService($this->config());
 

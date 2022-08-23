@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\Services\CreditService;
 use GlobalPayments\Api\ServicesContainer;
@@ -18,7 +19,7 @@ class CreditTest extends TestCase
 {
     protected $card;
 
-    public function setup()
+    public function setup() : void
     {
         $card = new CreditCardData();
         $card->number = '4111111111111111';
@@ -228,13 +229,11 @@ class CreditTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->responseCode, $response->responseMessage);
     }
-    
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     * @expectedExceptionMessage Unexpected Gateway Response: 105 - Cannot find DCC information for that card
-     */
+
     public function testCreditDccInfoNotFound()
     {
+        $this->expectException(GatewayException::class);
+        $this->expectExceptionMessage("Unexpected Gateway Response: 105 - Cannot find DCC information for that card");
         $this->dccSetup();
         
         $this->card->number = '4002933640008365';
@@ -246,13 +245,11 @@ class CreditTest extends TestCase
             ->withOrderId($orderId)
             ->execute();
     }
-    
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\GatewayException
-     * @expectedExceptionMessage Unexpected Gateway Response: 508 - Incorrect DCC information - doesn't correspond to dccrate request
-     */
+
     public function testCreditDccInfoMismatch()
     {
+        $this->expectException(GatewayException::class);
+        $this->expectExceptionMessage("Unexpected Gateway Response: 508 - Incorrect DCC information - doesn't correspond to dccrate request");
         $this->dccSetup();
         
         $this->card->number = '4006097467207025';

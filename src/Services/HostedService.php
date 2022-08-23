@@ -106,7 +106,9 @@ class HostedService
         if ($encoded) {
             $iterator = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($response));
             foreach ($iterator as $key => $value) {
-                $iterator->getInnerIterator()->offsetSet($key, base64_decode($value));
+                if (!empty($value)) {
+                    $iterator->getInnerIterator()->offsetSet($key, base64_decode($value));
+                }
             }
 
             $response = $iterator->getArrayCopy();
