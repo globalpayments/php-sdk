@@ -30,6 +30,7 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\ICardData;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IEncryptable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPinProtected;
+use GlobalPayments\Api\PaymentMethods\Interfaces\IReferencable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITrackData;
 use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
@@ -375,6 +376,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         if ($builder->paymentMethod instanceof TransactionReference) {
             $block1->appendChild($xml->createElement('GatewayTxnId', $builder->paymentMethod->transactionId));
             $block1->appendChild($xml->createElement('ClientTxnId', $builder->paymentMethod->clientTransactionId));
+        }
+        else if ($builder->paymentMethod instanceof IReferencable && !empty($builder->paymentMethod->transactionId)) {
+            $block1->appendChild($xml->createElement('GatewayTxnId', $builder->paymentMethod->transactionId));
         }
 
         if ($builder->paymentMethod instanceof RecurringPaymentMethod) {

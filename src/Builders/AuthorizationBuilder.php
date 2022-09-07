@@ -1055,7 +1055,11 @@ class AuthorizationBuilder extends TransactionBuilder
      */
     public function withTransactionId($transactionId)
     {
-        $this->paymentMethod = new TransactionReference($transactionId);
+        if ($this->paymentMethod === null)
+            $this->paymentMethod = new TransactionReference();
+
+        $this->paymentMethod->transactionId = $transactionId;
+
         return $this;
     }
 

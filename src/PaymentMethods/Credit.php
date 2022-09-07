@@ -19,18 +19,18 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\IChargable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IEncryptable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPrePayable;
+use GlobalPayments\Api\PaymentMethods\Interfaces\IReferencable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IRefundable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IReversable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ISecure3d;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IVerifyable;
 
 abstract class Credit implements
     IPaymentMethod,
     IEncryptable,
-    ITokenizable,
     IChargable,
     IAuthable,
+    IReferencable,
     IRefundable,
     IReversable,
     IVerifyable,
