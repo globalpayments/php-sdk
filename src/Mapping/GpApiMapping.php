@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Mapping;
 
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\BatchSummary;
+use GlobalPayments\Api\Entities\CardIssuerResponse;
 use GlobalPayments\Api\Entities\DisputeDocument;
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
@@ -105,6 +106,9 @@ class GpApiMapping
                     $card->avs_postal_code_result : null;
                 $transaction->avsAddressResponse = !empty($card->avs_address_result) ? $card->avs_address_result : null;
                 $transaction->avsResponseMessage = !empty($card->avs_action) ? $card->avs_action : null;
+                if (!empty($card->provider)) {
+                    self::mapCardIssuerResponse($transaction, $card->provider);
+                }
             }
             if (!empty($response->payment_method->bank_transfer)) {
                 $bankTransfer = $response->payment_method->bank_transfer;
@@ -704,7 +708,6 @@ class GpApiMapping
             foreach ($response->transactions as $transaction) {
                 $summary->transactions[] =  self::createTransactionSummary($transaction);
             }
-
         }
 
         return $summary;
@@ -753,5 +756,21 @@ class GpApiMapping
         $transaction->referenceNumber = $transaction->clientTransactionId = $response->reference;
 
         return $transaction;
+    }
+
+    /**
+     * Map the result codes directly from the card issuer.
+     *
+     * @param Transaction $transaction
+     * @param $cardIssuerResponse
+     */
+    private static function mapCardIssuerResponse(Transaction &$transaction, $cardIssuerResponse)
+    {
+        $transaction->cardIssuerResponse = new CardIssuerResponse();
+        $transaction->cardIssuerResponse->result = $cardIssuerResponse->result ?? null;
+        $transaction->cardIssuerResponse->avsResult = $cardIssuerResponse->avs_result ?? null;
+        $transaction->cardIssuerResponse->cvvResult = $cardIssuerResponse->cvv_result ?? null;
+        $transaction->cardIssuerResponse->avsAddressResult = $cardIssuerResponse->avs_address_result ?? null;
+        $transaction->cardIssuerResponse->avsPostalCodeResult = $cardIssuerResponse->avs_postal_code_result ?? null;
     }
 }

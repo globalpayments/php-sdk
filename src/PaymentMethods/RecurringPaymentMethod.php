@@ -8,6 +8,7 @@ use GlobalPayments\Api\Entities\RecurringEntity;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use GlobalPayments\Api\Entities\Schedule;
+use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IAuthable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IChargable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
@@ -124,6 +125,11 @@ class RecurringPaymentMethod extends RecurringEntity implements
      * @var bool
      */
     public $cardBrandTransactionId;
+
+    /**
+     * @var StoredCredential
+     */
+    public $storedCredential;
 
     /**
      * @param string|IPaymentMethod $customerIdOrPaymentMethod

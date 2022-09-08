@@ -14,6 +14,7 @@ use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Schedule;
+use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
@@ -140,6 +141,35 @@ class RecurringTest extends TestCase
         try {
             $paymentMethod = $this->newCustomer
                 ->addPaymentMethod($this->getPaymentId("Credit"), $card)
+                ->create();
+
+            $this->assertNotNull($paymentMethod);
+            $this->assertEquals("Successful", $paymentMethod->responseMessage);
+        } catch (GatewayException $exc) {
+            if ($exc->responseCode != '501' && $exc->responseCode != '520') {
+                throw $exc;
+            }
+        }
+    }
+
+    /* 09.01 Card Storage Store Card with Stored Credential */
+    /* Request Type: card-new  */
+
+    public function testcardStorageStoreCardWithStoredCredential()
+    {
+        $card = new CreditCardData();
+        $card->number = "4012001037141112";
+        $card->expMonth = 10;
+        $card->expYear = TestCards::validCardExpYear();
+        $card->cvn = '123';
+        $card->cardHolderName = 'James Mason';
+
+        $storedCredential = new StoredCredential();
+        $storedCredential->schemeId = 'YOUR_DESIRED_SCHEME_ID';
+        $paymentId = sprintf("%s-RealexStoredCredential-%s", (new \DateTime())->format("Ymd"), 'Credit');
+        try {
+            $paymentMethod = $this->newCustomer
+                ->addPaymentMethod($paymentId, $card, $storedCredential)
                 ->create();
 
             $this->assertNotNull($paymentMethod);
@@ -328,6 +358,28 @@ class RecurringTest extends TestCase
     public function testcardStorageUpdateCard()
     {
         $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
+
+        $paymentMethod->paymentMethod = new CreditCardData();
+        $paymentMethod->paymentMethod->number = "5425230000004415";
+        $paymentMethod->paymentMethod->expMonth = 10;
+        $paymentMethod->paymentMethod->expYear = TestCards::validCardExpYear();
+        $paymentMethod->paymentMethod->cardHolderName = "Philip Marlowe";
+
+        $response = $paymentMethod->SaveChanges();
+
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->responseCode);
+    }
+
+    /* 17.01 Card Storage UpdateCard with StoredCredential */
+    /* Request Type: card-update-card */
+
+    public function testcardStorageUpdateCardWithStoredCredential()
+    {
+        $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
+        $storedCredential = new StoredCredential();
+        $storedCredential->schemeId = 'YOUR_DESIRED_SCHEME_ID';
+        $paymentMethod->storedCredential = $storedCredential;
 
         $paymentMethod->paymentMethod = new CreditCardData();
         $paymentMethod->paymentMethod->number = "5425230000004415";

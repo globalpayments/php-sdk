@@ -42,6 +42,7 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
      */
     public function buildRequest(BaseBuilder $builder, $config)
     {
+        /** @var RecurringBuilder $builder */
         $xml = new DOMDocument();
         $timestamp = GenerationUtils::generateTimestamp();
         $orderId = $builder->orderId ? $builder->orderId : GenerationUtils::generateOrderId();
@@ -113,6 +114,12 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
                     }
                     $request->appendChild($xml->createElement("orderid", $orderId));
                     $request->appendChild($this->buildCardElement($xml, $payment, $paymentKey));
+                    // stored credential
+                    if ($payment->storedCredential != null) {
+                        $storedCredential = $xml->createElement("storedcredential");
+                        $storedCredential->appendChild($xml->createElement("srd", $payment->storedCredential->schemeId));
+                        $request->appendChild($storedCredential);
+                    }
                     $request->appendChild($xml->createElement("defaultcard", 1));
                 } elseif ($builder->entity instanceof Schedule) {
                     $schedule = $builder->entity;

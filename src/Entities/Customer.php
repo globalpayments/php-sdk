@@ -136,10 +136,11 @@ class Customer extends RecurringEntity
      *
      * @param string $paymentId An application derived ID for the payment method
      * @param IPaymentMethod $paymentMethod The payment method
+     * @param ?StoredCredential $storedCredential
      *
      * @return RecurringPaymentMethod
      */
-    public function addPaymentMethod($paymentId, IPaymentMethod $paymentMethod)
+    public function addPaymentMethod($paymentId, IPaymentMethod $paymentMethod, ?StoredCredential $storedCredential = null)
     {
         $nameOnAccount = sprintf('%s %s', $this->firstName, $this->lastName);
         if (empty(str_replace(' ', '', $nameOnAccount))) {
@@ -151,6 +152,7 @@ class Customer extends RecurringEntity
         $payment->customerKey = $this->key;
         $payment->id = $paymentId;
         $payment->nameOnAccount = $nameOnAccount;
+        $payment->storedCredential = $storedCredential;
         return $payment;
     }
 }

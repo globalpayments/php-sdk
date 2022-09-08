@@ -6,6 +6,11 @@
 
 ## Latest version
 #### Enhancements:
+GP-API: Add new mapping for card issuer avs/cvv result 
+GP-ECOM: Add srd tag to card storage request
+
+## v5.0.0 (08/23/2022)
+#### Enhancements:
 - Support PHP v. >= 8.0
 - GP_API: Update PayLink unit tests
 
