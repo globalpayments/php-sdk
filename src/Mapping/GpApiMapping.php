@@ -9,6 +9,7 @@ use GlobalPayments\Api\Entities\DisputeDocument;
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
 use GlobalPayments\Api\Entities\Enums\CaptureMode;
+use GlobalPayments\Api\Entities\Enums\FraudFilterResult;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\ReportType;
@@ -16,6 +17,8 @@ use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\FraudManagementResponse;
+use GlobalPayments\Api\Entities\FraudRule;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\PayLinkData;
@@ -37,7 +40,7 @@ class GpApiMapping
     const LINK_CREATE = "LINK_CREATE";
     const LINK_EDIT = "LINK_EDIT";
     /**
-     * Map a reponse to a Transaction object for further chaining
+     * Map a response to a Transaction object for further chaining
      *
      * @param Object $response
      * @return Transaction
@@ -134,8 +137,50 @@ class GpApiMapping
 
         $transaction->dccRateData = self::mapDccInfo($response);
         $transaction->multiCapture = (!empty($response->capture_mode) && $response->capture_mode == CaptureMode::MULTIPLE);
-
+        $transaction->fraudFilterResponse = !empty($response->risk_assessment) ?
+            self::mapFraudManagement(reset($response->risk_assessment)) : null;
         return $transaction;
+    }
+
+    private static function mapFraudManagement($fraudResponse)
+    {
+        $fraudFilterResponse = new FraudManagementResponse();
+        $fraudFilterResponse->fraudResponseMode = $fraudResponse->mode ?? null;
+        $fraudFilterResponse->fraudResponseResult = !empty($fraudResponse->result) ?
+            self::mapFraudResponseResult($fraudResponse->result) : '';
+        $fraudFilterResponse->fraudResponseMessage = $fraudResponse->message ?? null;
+        if (!empty($fraudResponse->rules)) {
+            foreach ($fraudResponse->rules as $rule) {
+                $fraudRule = new FraudRule();
+                $fraudRule->key = $rule->reference ?? null;
+                $fraudRule->mode = $rule->mode ?? null;
+                $fraudRule->description = $rule->description ?? null;
+                $fraudRule->result = !empty($rule->result) ? self::mapFraudResponseResult($rule->result) : null;
+                $fraudFilterResponse->fraudResponseRules[] = $fraudRule;
+            }
+        }
+
+        return $fraudFilterResponse;
+    }
+
+    private static function mapFraudResponseResult($fraudResponseResult)
+    {
+        switch ($fraudResponseResult) {
+            case 'PENDING_REVIEW':
+                return FraudFilterResult::HOLD;
+            case 'ACCEPTED':
+                return FraudFilterResult::PASS;
+            case 'REJECTED':
+                return FraudFilterResult::BLOCK;
+            case 'NOT_EXECUTED':
+                return FraudFilterResult::NOT_EXECUTED;
+            case 'RELEASE_SUCCESSFULL':
+                return FraudFilterResult::RELEASE_SUCCESSFUL;
+            case 'HOLD_SUCCESSFULL':
+                return FraudFilterResult::HOLD_SUCCESSFUL;
+            default:
+                return 'UNKNOWN';
+        }
     }
 
     private static function mapDccInfo($response)
@@ -312,6 +357,9 @@ class GpApiMapping
                 $summary->brandReference = isset($card->brand_reference) ? $card->brand_reference : null;
             }
         }
+
+        $summary->fraudManagementResponse = !empty($response->risk_assessment) ?
+            self::mapFraudManagement($response->risk_assessment) : null;
 
         return $summary;
     }

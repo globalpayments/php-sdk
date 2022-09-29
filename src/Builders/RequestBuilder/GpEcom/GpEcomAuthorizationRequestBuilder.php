@@ -498,7 +498,7 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
                 $billingAddress = $xml->createElement("address");
                 $billingAddress->setAttribute("type", 'billing');
                 $billingAddress->appendChild($xml->createElement("code", $builder->billingAddress->postalCode ?? ''));
-                $billingAddress->appendChild($xml->createElement("country", $builder->billingAddress->country ?? ''));
+                $billingAddress->appendChild($xml->createElement("country", $builder->billingAddress->countryCode ?? ''));
                 $tssInfo->appendChild($billingAddress);
             }
 
@@ -506,7 +506,7 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
                 $shippingAddress = $xml->createElement("address");
                 $shippingAddress->setAttribute("type", 'shipping');
                 $shippingAddress->appendChild($xml->createElement("code", $builder->shippingAddress->postalCode ?? ''));
-                $shippingAddress->appendChild($xml->createElement("country", $builder->shippingAddress->country ?? ''));
+                $shippingAddress->appendChild($xml->createElement("country", $builder->shippingAddress->countryCode ?? ''));
                 $tssInfo->appendChild($shippingAddress);
             }
             if (!empty($tssInfo->childNodes->length)) {

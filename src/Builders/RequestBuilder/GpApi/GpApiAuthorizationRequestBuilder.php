@@ -43,6 +43,9 @@ use GlobalPayments\Api\Utils\StringUtils;
 
 class GpApiAuthorizationRequestBuilder implements IRequestBuilder
 {
+    /** @var AuthorizationBuilder */
+    private $builder;
+
     /***
      * @param AuthorizationBuilder $builder
      *
@@ -64,10 +67,9 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
      */
     public function buildRequest(BaseBuilder $builder, $config)
     {
+        $this->builder = $builder;
         $requestData = null;
-        /**
-         * @var AuthorizationBuilder $builder
-         */
+        /** @var AuthorizationBuilder $builder */
         switch ($builder->transactionType) {
             case TransactionType::SALE:
             case TransactionType::REFUND:
@@ -172,9 +174,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
 
     private function createFromAuthorizationBuilder($builder, GpApiConfig $config)
     {
-        /**
-         * @var AuthorizationBuilder $builder
-         */
+        /** @var AuthorizationBuilder $builder */
         $captureMode = $this->getCaptureMode($builder);
 
         $requestBody = [];
@@ -197,6 +197,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $requestBody['cashback_amount'] = StringUtils::toNumeric($builder->cashBackAmount);
         $requestBody['ip_address'] = $builder->customerIpAddress;
         $requestBody['payment_method'] = $this->createPaymentMethodParam($builder, $config);
+        $requestBody['risk_assessment'] = !empty($builder->fraudFilter) ? [$this->mapFraudManagement()] : null;
         if (!empty($builder->paymentLinkId)) {
             $requestBody['link'] = [
                 'id' => $builder->paymentLinkId
@@ -439,7 +440,12 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             );
             $paymentMethod->digital_wallet = $digitalWallet;
         }
-
+        if (!empty($builder->cardBrandTransactionId)) {
+            if (!$paymentMethod->card instanceof Card) {
+                $paymentMethod->card = new Card();
+            }
+            $paymentMethod->card->brand_reference = $builder->cardBrandTransactionId;
+        }
         $paymentMethod->storage_mode = $builder->requestMultiUseToken == true ? 'ON_SUCCESS' : null;
 
         return $paymentMethod;
@@ -623,5 +629,22 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $requestBody['order'] = $order;
 
         return $requestBody;
+    }
+
+    public function mapFraudManagement()
+    {
+        if (!empty($this->builder->fraudRules)) {
+            foreach ($this->builder->fraudRules as $fraudRule) {
+                $rules[] = [
+                    'reference'=> $fraudRule->key,
+                    'mode' => $fraudRule->mode
+                ];
+            }
+        }
+
+        return [
+            'mode' => $this->builder->fraudFilter,
+            'rules' => $rules ?? null
+        ];
     }
 }

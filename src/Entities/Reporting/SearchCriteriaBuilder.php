@@ -7,9 +7,12 @@ use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\DepositStatus;
 use GlobalPayments\Api\Entities\Enums\DisputeStage;
 use GlobalPayments\Api\Entities\Enums\DisputeStatus;
+use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
+use GlobalPayments\Api\Entities\Enums\FraudFilterResult;
 use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
 use GlobalPayments\Api\Entities\Enums\PaymentType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
+use GlobalPayments\Api\Entities\Enums\ReasonCode;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
@@ -502,9 +505,22 @@ class SearchCriteriaBuilder
      */
     public $payLinkId;
 
-
     /** END Open Banking search criteria */
     
+
+    /** START FRAUD MANAGEMENT search criteria */
+
+    /** @var FraudFilterMode */
+    public $riskAssessmentMode;
+
+    /** @var FraudFilterResult */
+    public $riskAssessmentResult;
+
+    /** @var ReasonCode */
+    public $riskAssessmentReasonCode;
+
+    /** END FRAUD MANAGEMENT search criteria */
+
     public function __construct(TransactionReportBuilder $reportBuilder = null)
     {
         $this->reportBuilder = $reportBuilder;

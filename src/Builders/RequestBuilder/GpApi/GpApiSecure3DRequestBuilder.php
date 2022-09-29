@@ -157,6 +157,10 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
                 'country_code' => $builder->workCountryCode,
                 'subscriber_number' => $builder->workNumber
             ],
+            'mobile_phone' => [
+                'country_code' => $builder->mobileCountryCode,
+                'subscriber_number' => $builder->mobileNumber
+            ],
             'payment_account_creation_date' => !empty($builder->paymentAccountCreateDate) ?
                 (new \DateTime($builder->paymentAccountCreateDate))->format('Y-m-d') : null,
             'payment_account_age_indicator' => (string) $builder->paymentAgeIndicator,
@@ -169,6 +173,17 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
                 (new \DateTime($builder->shippingAddressCreateDate))->format('Y-m-d') : null,
             'shipping_address_creation_indicator' => (string) $builder->shippingAddressUsageIndicator
         ];
+        if (!empty($builder->billingAddress)) {
+            $threeDS['payer']['billing_address'] = [
+                'line1' => $builder->billingAddress->streetAddress1,
+                'line2' => $builder->billingAddress->streetAddress2,
+                'line3' => $builder->billingAddress->streetAddress3,
+                'city' => $builder->billingAddress->city,
+                'postal_code' => $builder->billingAddress->postalCode,
+                'state' => $builder->billingAddress->state,
+                'country' => CountryUtils::getNumericCodeByCountry($builder->billingAddress->countryCode)
+            ];
+        }
 
         $threeDS['payer_prior_three_ds_authentication_data'] = [
             'authentication_method' => (string) $builder->priorAuthenticationMethod,

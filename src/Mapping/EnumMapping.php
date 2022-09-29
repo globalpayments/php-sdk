@@ -6,7 +6,9 @@ use GlobalPayments\Api\Entities\Enums\AccountType;
 use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
+use GlobalPayments\Api\Entities\Enums\FraudFilterResult;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\Api\Entities\Enums\ReasonCode;
 use GlobalPayments\Api\Entities\Enums\ScheduleFrequency;
 use GlobalPayments\Api\Entities\Enums\MessageCategory;
 use GlobalPayments\Api\Entities\Enums\SdkUiType;
@@ -163,5 +165,55 @@ class EnumMapping
             default:
                 return $value;
         }
+    }
+
+    public static function mapReasonCode($gateway, $value)
+    {
+        switch ($gateway) {
+            case GatewayProvider::GP_API:
+                switch ($value) {
+                    case ReasonCode::FALSE_POSITIVE:
+                        return 'FALSE_POSITIVE';
+                    case ReasonCode::IN_STOCK:
+                        return 'IN_STOCK';
+                    case ReasonCode::NOT_GIVEN:
+                        return 'NOT_GIVEN';
+                    case ReasonCode::OUT_OF_STOCK:
+                        return 'OUT_OF_STOCK';
+                    default:
+                        break;
+                }
+            default:
+                break;
+        }
+
+        return $value;
+    }
+
+    public static function mapFraudFilterResult($gateway, $value)
+    {
+        switch ($gateway) {
+            case GatewayProvider::GP_API:
+                switch ($value) {
+                    case FraudFilterResult::HOLD:
+                        return  'PENDING_REVIEW';
+                    case FraudFilterResult::PASS:
+                        return 'ACCEPTED';
+                    case FraudFilterResult::BLOCK:
+                        return 'REJECTED';
+                    case FraudFilterResult::NOT_EXECUTED:
+                        return 'NOT_EXECUTED';
+                    case FraudFilterResult::RELEASE_SUCCESSFUL:
+                        return 'RELEASE_SUCCESSFULL';
+                    case FraudFilterResult::HOLD_SUCCESSFUL:
+                        return 'HOLD_SUCCESSFULL';
+                    default:
+                        return $value;
+                }
+            default:
+                break;
+        }
+
+        return $value;
     }
 }

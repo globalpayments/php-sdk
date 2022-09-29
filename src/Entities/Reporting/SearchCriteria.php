@@ -75,4 +75,7 @@ class SearchCriteria extends Enum
     const PAYMENT_METHOD = 'paymentMethod';
     const PAYMENT_METHOD_NAME = 'paymentMethodName';
     const RETURN_PII = 'returnPii';
+    const RISK_ASSESSMENT_MODE = 'riskAssessmentMode';
+    const RISK_ASSESSMENT_RESULT = 'riskAssessmentResult';
+    const RISK_ASSESSMENT_REASON_CODE = 'riskAssessmentReasonCode';
 }

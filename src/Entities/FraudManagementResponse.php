@@ -27,4 +27,7 @@ class FraudManagementResponse
      * @var array
      */
     public $fraudResponseRules;
+
+    /** @var string */
+    public $fraudResponseMessage;
 }

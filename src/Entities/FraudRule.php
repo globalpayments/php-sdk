@@ -15,4 +15,10 @@ class FraudRule
      * @var FraudFilterMode
      */
     public $mode;
+
+    /** @var string */
+    public $description;
+
+    /** @var string */
+    public $result;
 }

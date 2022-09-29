@@ -213,6 +213,20 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                     'images' => $builder->payLinkData->images ?? null,
                 ];
                 break;
+            case TransactionType::RELEASE:
+                $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/release';
+                $verb = 'POST';
+                $payload = [
+                    'reason_code' => EnumMapping::mapReasonCode(GatewayProvider::GP_API, $builder->reasonCode) ?? null
+                ];
+                break;
+            case TransactionType::HOLD:
+                $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/hold';
+                $verb = 'POST';
+                $payload = [
+                    'reason_code' => EnumMapping::mapReasonCode(GatewayProvider::GP_API, $builder->reasonCode) ?? null
+                ];
+                break;
             default:
                 return null;
         }

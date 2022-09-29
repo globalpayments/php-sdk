@@ -5,9 +5,11 @@ namespace GlobalPayments\Api\Builders\RequestBuilder\GpApi;
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\ReportBuilder;
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
+use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\IRequestBuilder;
+use GlobalPayments\Api\Mapping\EnumMapping;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Utils\StringUtils;
@@ -65,20 +67,28 @@ class GpApiReportRequestBuilder implements IRequestBuilder
             case ReportType::FIND_TRANSACTIONS_PAGED:
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT;
                 $verb = 'GET';
+                $queryParams = [
+                    'id' => $builder->transactionId,
+                    'type' => $builder->searchBuilder->paymentType,
+                    'channel' => $builder->searchBuilder->channel,
+                    'amount' => StringUtils::toNumeric($builder->searchBuilder->amount),
+                    'currency' => $builder->searchBuilder->currency,
+                    'token_first6' => $builder->searchBuilder->tokenFirstSix,
+                    'token_last4' => $builder->searchBuilder->tokenLastFour,
+                    'account_name' => $builder->searchBuilder->accountName,
+                    'country' => $builder->searchBuilder->country,
+                    'batch_id' => $builder->searchBuilder->batchId,
+                    'entry_mode' => $builder->searchBuilder->paymentEntryMode,
+                    'name' => $builder->searchBuilder->name,
+                    'payment_method' => $builder->searchBuilder->paymentMethodName,
+                    'risk_assessment_mode' => $builder->searchBuilder->riskAssessmentMode,
+                    'risk_assessment_result' => EnumMapping::mapFraudFilterResult(
+                        GatewayProvider::GP_API,
+                        $builder->searchBuilder->riskAssessmentResult),
+                    'risk_assessment_reason_code' => $builder->searchBuilder->riskAssessmentReasonCode
+                ];
+
                 $this->addBasicParams($queryParams, $builder);
-                $queryParams['id'] = $builder->transactionId;
-                $queryParams['type'] = $builder->searchBuilder->paymentType;
-                $queryParams['channel'] = $builder->searchBuilder->channel;
-                $queryParams['amount'] = StringUtils::toNumeric($builder->searchBuilder->amount);
-                $queryParams['currency'] = $builder->searchBuilder->currency;
-                $queryParams['token_first6'] = $builder->searchBuilder->tokenFirstSix;
-                $queryParams['token_last4'] = $builder->searchBuilder->tokenLastFour;
-                $queryParams['account_name'] = $builder->searchBuilder->accountName;
-                $queryParams['country'] = $builder->searchBuilder->country;
-                $queryParams['batch_id'] = $builder->searchBuilder->batchId;
-                $queryParams['entry_mode'] = $builder->searchBuilder->paymentEntryMode;
-                $queryParams['name'] = $builder->searchBuilder->name;
-                $queryParams['payment_method'] = $builder->searchBuilder->paymentMethodName;
                 $queryParams = array_merge($queryParams,  $this->getTransactionParams($builder));
                 break;
             case ReportType::FIND_SETTLEMENT_TRANSACTIONS_PAGED:

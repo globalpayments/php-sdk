@@ -164,7 +164,6 @@ class CardUtils
     {
         $paymentMethod = $builder->paymentMethod;
         $transactionType = $builder->transactionType;
-        $funding = ($paymentMethod->paymentMethodType == PaymentMethodType::DEBIT) ? 'DEBIT' : 'CREDIT';
         $card = new Card();
         if ($paymentMethod instanceof ITrackData) {
             $card->track = $paymentMethod->value;
@@ -179,7 +178,6 @@ class CardUtils
                 if (!empty($builder->emvChipCondition)) {
                     $card->chip_condition = EnumMapping::mapEmvLastChipRead($gatewayProvider, $builder->emvChipCondition);
                 }
-                $card->funding = $funding;
             }
         } elseif ($paymentMethod instanceof ICardData) {
             $card->number = $paymentMethod->number;
@@ -195,7 +193,6 @@ class CardUtils
                     (!empty($paymentMethod->cvnPresenceIndicator) ? $paymentMethod->cvnPresenceIndicator : '');
                 $card->cvv_indicator = self::getCvvIndicator($cvnPresenceIndicator);
             }
-            $card->funding = $funding;
             //we can't have tag and chip_condition in the same time in the request
             if (!empty($builder->emvLastChipRead) && empty($builder->tagData)) {
                 $card->chip_condition = EnumMapping::mapEmvLastChipRead($gatewayProvider, $builder->emvLastChipRead);

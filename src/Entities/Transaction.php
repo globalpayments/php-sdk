@@ -237,7 +237,7 @@ class Transaction
      * The Dcc Response
      *
      * @internal
-     * @var fraudFilterResponse
+     * @var FraudManagementResponse
      */
     public $fraudFilterResponse;
     

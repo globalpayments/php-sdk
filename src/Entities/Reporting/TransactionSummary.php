@@ -3,7 +3,9 @@ namespace GlobalPayments\Api\Entities\Reporting;
 
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\BankPaymentResponse;
+use GlobalPayments\Api\Entities\Enums\FraudFilterResult;
 use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
+use GlobalPayments\Api\Entities\FraudManagementResponse;
 use GlobalPayments\Api\Entities\LodgingData;
 
 class TransactionSummary
@@ -527,4 +529,7 @@ class TransactionSummary
 
     /** @var BankPaymentResponse */
     public $bankPaymentResponse;
+
+    /** @var FraudManagementResponse */
+    public $fraudManagementResponse;
 }

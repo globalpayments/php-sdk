@@ -6,8 +6,14 @@
 
 ## Latest version
 #### Enhancements:
-GP-API: Add new mapping for card issuer avs/cvv result 
-GP-ECOM: Add srd tag to card storage request
+- GP-API: Add fraud management feature 
+- GP-ECOM: Billing/Shipping country value should be ISO2 country code
+- GP-API: Add missing request properties for /transactions and /initiate endpoints
+
+## v5.0.1 (09/08/2022)
+#### Enhancements:
+- GP-API: Add new mapping for card issuer avs/cvv result 
+- GP-ECOM: Add srd tag to card storage request
 
 ## v5.0.0 (08/23/2022)
 #### Enhancements:
