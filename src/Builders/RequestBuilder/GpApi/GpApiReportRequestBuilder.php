@@ -221,6 +221,16 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                     $builder->searchBuilder->endDate->format('Y-m-d') : null;
                 $queryParams['order'] = $builder->order;
                 $queryParams['order_by'] = $builder->payLinkOrderBy;
+                $queryParams['status'] = $builder->searchBuilder->payLinkStatus;
+                $queryParams['usage_mode'] = $builder->searchBuilder->paymentMethodUsageMode;
+                $queryParams['name'] = $builder->searchBuilder->displayName;
+                $queryParams['amount'] = StringUtils::toNumeric($builder->searchBuilder->amount);;
+                $queryParams['description'] = $builder->searchBuilder->description;
+                $queryParams['reference'] = $builder->searchBuilder->referenceNumber;
+                $queryParams['country'] = $builder->searchBuilder->country;
+                $queryParams['currency'] = $builder->searchBuilder->currency;
+                $queryParams['expiration_date'] = !empty($builder->searchBuilder->expirationDate) ?
+                    $builder->searchBuilder->expirationDate->format('Y-m-d') : null;
                 break;
             default:
                 return null;

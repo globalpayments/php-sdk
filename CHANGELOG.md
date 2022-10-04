@@ -6,6 +6,10 @@
 
 ## Latest version
 #### Enhancements:
+- GP-API: PayLink enhancements
+
+## v5.0.2 (09/29/2022)
+#### Enhancements:
 - GP-API: Add fraud management feature 
 - GP-ECOM: Billing/Shipping country value should be ISO2 country code
 - GP-API: Add missing request properties for /transactions and /initiate endpoints

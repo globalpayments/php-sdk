@@ -9,7 +9,9 @@ use GlobalPayments\Api\Entities\Enums\DisputeStage;
 use GlobalPayments\Api\Entities\Enums\DisputeStatus;
 use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
 use GlobalPayments\Api\Entities\Enums\FraudFilterResult;
+use GlobalPayments\Api\Entities\Enums\PayLinkStatus;
 use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\Enums\PaymentType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\ReasonCode;
@@ -479,6 +481,25 @@ class SearchCriteriaBuilder
      */
     public $paymentMethod;
 
+    /**
+     * This is the PayLink id
+     *
+     * @var string
+     */
+    public $payLinkId;
+
+    /** @var PaymentMethodUsageMode */
+    public $paymentMethodUsageMode;
+
+    /** @var string */
+    public $description;
+
+    /** @var \DateTime */
+    public $expirationDate;
+
+    /** @var PayLinkStatus */
+    public $payLinkStatus;
+    
     /** ******************************
      * Open banking search criteria *
      ********************************/
@@ -497,13 +518,6 @@ class SearchCriteriaBuilder
      * @var boolean
      */
     public $returnPii;
-
-    /**
-     * This is the PayLink id
-     *
-     * @var string
-     */
-    public $payLinkId;
 
     /** END Open Banking search criteria */
     

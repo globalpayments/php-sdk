@@ -129,8 +129,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $requestData['reference'] = $builder->clientTransactionId;
                     $requestData['name'] = $payLink->name;
                     $requestData['description'] = $builder->description;
-                    $requestData['shippable'] = isset($payLink->isShippable) ?
-                        json_encode($payLink->isShippable) : false;
+                    $requestData['shippable'] = $payLink->isShippable == true ? 'YES' : 'NO';
                     $requestData['shipping_amount'] = StringUtils::toNumeric($payLink->shippingAmount);
                     $requestData['expiration_date'] = !empty($payLink->expirationDate) ?
                         (new \DateTime($payLink->expirationDate))->format('Y-m-d\TH:i:s\Z') : null;

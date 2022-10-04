@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Mapping;
 
+use _PHPStan_76800bfb5\Nette\Utils\DateTime;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\BatchSummary;
 use GlobalPayments\Api\Entities\CardIssuerResponse;
@@ -703,7 +704,7 @@ class GpApiMapping
         if (!empty($response->payment_method->authorization)) {
             $authorization = $response->payment_method->authorization;
             $apm->authStatus = !empty($authorization->status) ? $authorization->status : null;
-            $apm->authAmount = !empty($authorization->amount) ? $authorization->amount : null;
+            $apm->authAmount = !empty($authorization->amount) ? StringUtils::toAmount($authorization->amount) : null;
             $apm->authAck = !empty($authorization->ack) ? $authorization->ack : null;
             $apm->authCorrelationReference = !empty($authorization->correlation_reference) ?
                 $authorization->correlation_reference : null;
@@ -731,36 +732,41 @@ class GpApiMapping
     public static function mapPayLinkSummary($response)
     {
         $summary = new PayLinkSummary();
-
-        $summary->id = $response->id ?? null;
         $summary->merchantId = $response->merchant_id ?? null;
         $summary->merchantName = $response->merchant_name ?? null;
         $summary->accountId = $response->account_id ?? null;
         $summary->accountName = $response->account_name ?? null;
+        $summary->id = $response->id ?? null;
         $summary->url = $response->url ?? null;
         $summary->status = $response->status ?? null;
         $summary->type = $response->type ?? null;
-        $summary->allowedPaymentMethods = $response->allowed_payment_methods ?? null; //@TODO check
         $summary->usageMode = $response->usage_mode ?? null;
-        $summary->usageCount = $response->usage_count ?? null;
+        $summary->usageLimit = $response->usage_limit ?? null; //@TODO
         $summary->reference = $response->reference ?? null;
         $summary->name = $response->name ?? null;
         $summary->description = $response->description ?? null;
-        $summary->shippable = $response->shippable ?? null;
         $summary->viewedCount = $response->viewed_count ?? null;
         $summary->expirationDate = !empty($response->expiration_date) ?
             new \DateTime($response->expiration_date) : null;
+
+        $summary->shippable = $response->shippable ?? null;
+        $summary->usageCount = $response->usage_count ?? null;
         $summary->images = $response->images ?? null;
+        $summary->shippingAmount = $response->shipping_amount ?? null;
 
         if (!empty($response->transactions)) {
-            foreach ($response->transactions as $transaction) {
-                $summary->transactions[] =  self::createTransactionSummary($transaction);
+            $summary->amount = StringUtils::toAmount($response->transactions->amount) ?? null;
+            $summary->currency = $response->transactions->currency ?? null;
+            $summary->allowedPaymentMethods = $response->transactions->allowed_payment_methods ?? null; //@TODO check
+            if (!empty($response->transactions->transaction_list)) {
+                foreach ($response->transactions->transaction_list as $transaction) {
+                    $summary->transactions[] =  self::createTransactionSummary($transaction);
+                }
             }
         }
 
         return $summary;
     }
-
 
     public static function mapPayLinkResponse($response)
     {
@@ -775,9 +781,9 @@ class GpApiMapping
         $payLinkResponse->reference = $response->reference ?? null;
         $payLinkResponse->name = $response->name ?? null;
         $payLinkResponse->description = $response->description ?? null;
-        $payLinkResponse->isShippable = $response->shippable ?? null;
         $payLinkResponse->viewedCount = $response->viewed_count ?? null;
         $payLinkResponse->expirationDate = !empty($response->expiration_date) ? new \DateTime($response->expiration_date) : null;
+        $payLinkResponse->isShippable = $response->shippable ?? null;
 
         return $payLinkResponse;
     }
@@ -793,9 +799,8 @@ class GpApiMapping
     {
         $transaction = new TransactionSummary();
         $transaction->transactionId = isset($response->id) ? $response->id : null;
-//        $transaction->transactionDate = $response->time_created;
-        $transaction->transactionDate = !empty($response->time_created) ?
-            new \DateTime($response->time_created) : '';
+        $timeCreated = self::validateStringDate($response->time_created);
+        $transaction->transactionDate = !empty($timeCreated) ? new \DateTime($timeCreated) : '';
         $transaction->transactionStatus = $response->status;
         $transaction->transactionType = $response->type;
         $transaction->channel = !empty($response->channel) ? $response->channel : null;
@@ -804,6 +809,20 @@ class GpApiMapping
         $transaction->referenceNumber = $transaction->clientTransactionId = $response->reference;
 
         return $transaction;
+    }
+
+    private static function validateStringDate($date)
+    {
+        try {
+            new \DateTime($date);
+        } catch (\Exception $e) {
+            $errors = \DateTime::getLastErrors();
+            if (isset($errors['error_count']) && $errors['error_count'] > 0) {
+                return current(explode('.', $date));
+            }
+        }
+
+        return $date;
     }
 
     /**

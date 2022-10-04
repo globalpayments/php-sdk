@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector;
 
+use _PHPStan_76800bfb5\Nette\Utils\DateTime;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\BrowserData;
 use GlobalPayments\Api\Entities\Enums\AddressType;
@@ -23,6 +24,7 @@ use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\Entities\PayLinkData;
+use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\PayLinkSummary;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Transaction;
@@ -46,6 +48,7 @@ class PayLinkTest extends TestCase
     private $card;
     private $shippingAddress;
     private $browserData;
+    private $payLinkId;
 
     public function setup() : void
     {
@@ -95,6 +98,15 @@ class PayLinkTest extends TestCase
         $this->browserData->challengWindowSize = ChallengeWindowSize::WINDOWED_600X400;
         $this->browserData->timeZone = "0";
         $this->browserData->userAgent = "Mozilla/5.0 (Windows NT 6.1; Win64, x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36";
+
+        $response = PayLinkService::findPayLink(1, 1)
+            ->orderBy(PayLinkSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->where(SearchCriteria::START_DATE, $this->startDate)
+            ->andWith(SearchCriteria::END_DATE, $this->endDate)
+            ->execute();
+        if (count($response->result) == 1) {
+            $this->payLinkId = $response->result[0]->id;
+        }
     }
 
     public function setUpConfig()
@@ -620,11 +632,12 @@ class PayLinkTest extends TestCase
 
     public function testEditPayLink_MissingUsageMode()
     {
+        $this->assertNotNull($this->payLinkId);
         $this->payLink->usageMode = null;
 
         $exceptionCaught = false;
         try {
-            PayLinkService::edit(GenerationUtils::getGuid())
+            PayLinkService::edit($this->payLinkId)
                 ->withAmount($this->amount)
                 ->withPayLinkData($this->payLink)
                 ->withDescription('Update Paylink description')
@@ -639,11 +652,12 @@ class PayLinkTest extends TestCase
 
     public function testEditPayLink_MissingName()
     {
+        $this->assertNotNull($this->payLinkId);
         $this->payLink->name = null;
 
         $exceptionCaught = false;
         try {
-            PayLinkService::edit(GenerationUtils::getGuid())
+            PayLinkService::edit($this->payLinkId)
                 ->withAmount($this->amount)
                 ->withPayLinkData($this->payLink)
                 ->withDescription('Update Paylink description')
@@ -659,11 +673,12 @@ class PayLinkTest extends TestCase
 
     public function testEditPayLink_MissingType()
     {
+        $this->assertNotNull($this->payLinkId);
         $this->payLink->type = null;
 
         $exceptionCaught = false;
         try {
-            PayLinkService::edit(GenerationUtils::getGuid())
+            PayLinkService::edit($this->payLinkId)
                 ->withAmount($this->amount)
                 ->withPayLinkData($this->payLink)
                 ->withDescription('Update Paylink description')
@@ -678,11 +693,12 @@ class PayLinkTest extends TestCase
 
     public function testEditPayLink_MissingUsageLimit()
     {
+        $this->assertNotNull($this->payLinkId);
         $this->payLink->usageLimit = null;
 
         $exceptionCaught = false;
         try {
-            PayLinkService::edit(GenerationUtils::getGuid())
+            PayLinkService::edit($this->payLinkId)
                 ->withAmount($this->amount)
                 ->withPayLinkData($this->payLink)
                 ->withDescription('Update Paylink description')
@@ -697,16 +713,17 @@ class PayLinkTest extends TestCase
 
     public function testEditPayLink_MissingDescription()
     {
+        $this->assertNotNull($this->payLinkId);
         $exceptionCaught = false;
         try {
-            PayLinkService::edit(GenerationUtils::getGuid())
+            PayLinkService::edit($this->payLinkId)
                 ->withAmount($this->amount)
                 ->withPayLinkData($this->payLink)
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('40005', $e->responseCode);
             $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following field description', $e->getMessage());
+            $this->assertEquals('40005', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -714,9 +731,10 @@ class PayLinkTest extends TestCase
 
     public function testEditPayLink_MissingPayLinkData()
     {
+        $this->assertNotNull($this->payLinkId);
         $exceptionCaught = false;
         try {
-            PayLinkService::edit(GenerationUtils::getGuid())
+            PayLinkService::edit($this->payLinkId)
                 ->withAmount($this->amount)
                 ->withDescription('Update Paylink description')
                 ->execute();
@@ -730,9 +748,10 @@ class PayLinkTest extends TestCase
 
     public function testEditPayLink_MissingAmount()
     {
+        $this->assertNotNull($this->payLinkId);
         $exceptionCaught = false;
         try {
-            PayLinkService::edit(GenerationUtils::getGuid())
+            PayLinkService::edit($this->payLinkId)
                 ->withAmount(null)
                 ->withPayLinkData($this->payLink)
                 ->withDescription('Update Paylink description')
@@ -761,6 +780,82 @@ class PayLinkTest extends TestCase
         } finally {
             $this->assertTrue($exceptionCaught);
         }
+    }
+
+    public function testFindPayLinkByStatus()
+    {
+        $response = PayLinkService::findPayLink(1, 10)
+            ->orderBy(PayLinkSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->where(SearchCriteria::START_DATE, $this->startDate)
+            ->andWith(SearchCriteria::END_DATE, $this->endDate)
+            ->andWith(SearchCriteria::PAYLINK_STATUS, PayLinkStatus::EXPIRED)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertNotEmpty($response->result);
+        /** @var PayLinkSummary $randomPayLink */
+        $randomPayLink = $response->result[array_rand($response->result)];
+        $this->assertNotNull($randomPayLink);
+        $this->assertInstanceOf(PayLinkSummary::class, $randomPayLink);
+        $this->assertEquals(PayLinkStatus::EXPIRED, $randomPayLink->status);
+    }
+
+    public function testFindPayLinkUsageModeAndName()
+    {
+        $name = 'iphone 14';
+        $response = PayLinkService::findPayLink(1, 10)
+            ->orderBy(PayLinkSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->where(SearchCriteria::START_DATE, $this->startDate)
+            ->andWith(SearchCriteria::END_DATE, $this->endDate)
+            ->andWith(SearchCriteria::PAYMENT_METHOD_USAGE_MODE, PaymentMethodUsageMode::SINGLE)
+            ->andWith(SearchCriteria::DISPLAY_NAME, $name)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertNotEmpty($response->result);
+        /** @var PayLinkSummary $randomPayLink */
+        $randomPayLink = $response->result[array_rand($response->result)];
+        $this->assertNotNull($randomPayLink);
+        $this->assertInstanceOf(PayLinkSummary::class, $randomPayLink);
+        $this->assertEquals(PaymentMethodUsageMode::SINGLE, $randomPayLink->usageMode);
+        $this->assertEquals($name, $randomPayLink->name);
+    }
+
+    public function testFindPayLinkByAmount()
+    {
+        $amount = 10.00;
+        $response = PayLinkService::findPayLink(1, 10)
+            ->orderBy(PayLinkSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->where(SearchCriteria::START_DATE, $this->startDate)
+            ->andWith(SearchCriteria::END_DATE, $this->endDate)
+            ->andWith(DataServiceCriteria::AMOUNT, $amount)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertNotEmpty($response->result);
+        /** @var PayLinkSummary $randomPayLink */
+        $randomPayLink = $response->result[array_rand($response->result)];
+        $this->assertNotNull($randomPayLink);
+        $this->assertInstanceOf(PayLinkSummary::class, $randomPayLink);
+        $this->assertEquals($amount, $randomPayLink->amount);
+    }
+    public function testFindPayLinkByExpireDate()
+    {
+        $date = new \DateTime('2024-05-09');
+        $response = PayLinkService::findPayLink(1, 10)
+            ->orderBy(PayLinkSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->where(SearchCriteria::START_DATE, $this->startDate)
+            ->andWith(SearchCriteria::END_DATE, $this->endDate)
+            ->andWith(SearchCriteria::EXPIRATION_DATE, $date)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertNotEmpty($response->result);
+        /** @var PayLinkSummary $randomPayLink */
+        $randomPayLink = $response->result[array_rand($response->result)];
+        $this->assertNotNull($randomPayLink);
+        $this->assertInstanceOf(PayLinkSummary::class, $randomPayLink);
+        $this->assertEquals($date->format('Y-m-d'), $randomPayLink->expirationDate->format('Y-m-d'));
     }
 
     private function assertPayLinkResponse(Transaction $response)

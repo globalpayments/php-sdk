@@ -98,6 +98,9 @@ class PayLinkSummary
      */
     public $shippable;
 
+    /** @var string */
+    public $shippingAmount;
+
     /**
      * The number of times a link has been viewed.
      * @var string
@@ -118,9 +121,17 @@ class PayLinkSummary
     public $images;
 
     /**
+     * @var string
+     */
+    public $amount;
+
+    /** @var string */
+    public $currency;
+
+    /**
      * List of transactions attached to this payment link
      *
      * @var array<TransactionSummary>
      */
-    public $transactions;
+    public $transactions = [];
 }
