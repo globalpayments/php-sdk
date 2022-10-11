@@ -1996,16 +1996,16 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         if ($builder->billingAddress !== null) {
             $holder->appendChild(
-                $xml->createElement($isCheck ? 'Address1' : 'CardHolderAddr', htmlentities($builder->billingAddress->streetAddress1))
+                $xml->createElement($isCheck ? 'Address1' : 'CardHolderAddr', htmlentities($builder->billingAddress->streetAddress1 ?? ''))
             );
             $holder->appendChild(
-                $xml->createElement($isCheck ? 'City' : 'CardHolderCity', htmlentities($builder->billingAddress->city))
+                $xml->createElement($isCheck ? 'City' : 'CardHolderCity', htmlentities($builder->billingAddress->city ?? ''))
             );
             $holder->appendChild(
-                $xml->createElement($isCheck ? 'State' : 'CardHolderState', $builder->billingAddress->getProvince())
+                $xml->createElement($isCheck ? 'State' : 'CardHolderState', $builder->billingAddress->getProvince() ?? '')
             );
             $holder->appendChild(
-                $xml->createElement($isCheck ? 'Zip' : 'CardHolderZip', $address->checkZipCode($builder->billingAddress->postalCode))
+                $xml->createElement($isCheck ? 'Zip' : 'CardHolderZip', $address->checkZipCode($builder->billingAddress->postalCode) ?? '')
             );
         }
 
