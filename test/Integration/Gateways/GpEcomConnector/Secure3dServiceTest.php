@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 use GlobalPayments\Api\Entities\CustomWebProxy;
 use GlobalPayments\Api\Entities\Enums\MerchantInitiatedRequestType;
 use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\MerchantDataCollection;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
@@ -121,38 +122,17 @@ class Secure3dServiceTest extends TestCase
         $card->expYear = TestCards::validCardExpYear();
         $card->cardHolderName = 'John Smith';
 
-        $secureEcom = Secure3dService::checkEnrollment($card)
-            ->withAmount(10.01)
-            ->withCurrency('USD')
-            ->execute('default', Secure3dVersion::ONE);
-        $this->assertEquals(Secure3dVersion::ONE, $secureEcom->getVersion());
-        
-        if ($secureEcom->enrolled) {
-            // authenticate
-            $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
-            $authClient->setGatewayProvider($this->gatewayProvider);
-            $authResponse = $authClient->authenticate(
-                $secureEcom->payerAuthenticationRequest,
-                $secureEcom->getMerchantData()->toString()
-            );
-        
-            $payerAuthenticationResponse = $authResponse->getAuthResponse();
-            $md = MerchantDataCollection::parse($authResponse->getMerchantData());
-
-            $secureEcom = Secure3dService::getAuthenticationData()
-                ->withPayerAuthenticationResponse($payerAuthenticationResponse)
-                ->withMerchantData($md)
-                ->execute();
-            $card->threeDSecure = $secureEcom;
-            if (in_array($secureEcom->status, ['Y', 'A'])) {
-                $response = $card->charge()->execute();
-                $this->assertNotNull($response);
-                $this->assertEquals('00', $response->responseCode);
-            } else {
-                $this->fail('Signature verification failed.');
-            }
-        } else {
-            $this->fail('Card not enrolled.');
+        $errorFound = false;
+        try {
+            Secure3dService::checkEnrollment($card)
+                ->withAmount(10.01)
+                ->withCurrency('USD')
+                ->execute('default', Secure3dVersion::ONE);
+        } catch (BuilderException $e) {
+            $errorFound = true;
+            $this->assertEquals('3D Secure ONE is no longer supported!', $e->getMessage());
+        } finally {
+            $this->assertTrue($errorFound);
         }
     }
 
@@ -870,12 +850,21 @@ class Secure3dServiceTest extends TestCase
     public function testCheckVersion_Not_Enrolled()
     {
         $card = new CreditCardData();
-        $card->number = 4012001037141112;
+        $card->number = 4917000000000087;
         $card->expMonth = 12;
         $card->expYear = TestCards::validCardExpYear();
-        $secureEcom = Secure3dService::checkEnrollment($card)
-            ->execute();
-        $this->assertNotNull($secureEcom);
-        $this->assertFalse((bool)$secureEcom->enrolled);
+
+        $errorFound = false;
+        try {
+            Secure3dService::checkEnrollment($card)
+                ->withAmount(10.01)
+                ->withCurrency('USD')
+                ->execute('default', Secure3dVersion::ONE);
+        } catch (BuilderException $e) {
+            $errorFound = true;
+            $this->assertEquals('3D Secure ONE is no longer supported!', $e->getMessage());
+        } finally {
+            $this->assertTrue($errorFound);
+        }
     }
 }

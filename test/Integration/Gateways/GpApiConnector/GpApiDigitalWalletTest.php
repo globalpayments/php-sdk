@@ -1,15 +1,14 @@
 <?php
 
-use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
-use GlobalPayments\Api\Entities\Enums\Environment;
+namespace Gateways\GpApiConnector;
+
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use PHPUnit\Framework\TestCase;
 
 class GpApiDigitalWalletTest extends TestCase
@@ -35,14 +34,7 @@ class GpApiDigitalWalletTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
-        $config->appKey = '9pArW2uWoA8enxKc';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardNotPresent;
-        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
     public function testPayWithApplePayEncrypted()

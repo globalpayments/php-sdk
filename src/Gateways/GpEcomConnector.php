@@ -9,7 +9,9 @@ use GlobalPayments\Api\Builders\ReportBuilder;
 use GlobalPayments\Api\Builders\RequestBuilder\RequestBuilderFactory;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Customer;
+use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\IRequestBuilder;
@@ -197,31 +199,7 @@ class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringS
      */
     public function processSecure3d(Secure3dBuilder $builder)
     {
-        $transType = $builder->getTransactionType();
-
-        if ($transType === TransactionType::VERIFY_ENROLLED) {
-            $authBuilder = (new AuthorizationBuilder($transType, $builder->getPaymentMethod()))
-                ->withAmount($builder->getAmount())
-                ->withCurrency($builder->getCurrency())
-                ->withOrderId($builder->getOrderId());
-
-            return $this->processAuthorization($authBuilder);
-        } elseif ($transType === TransactionType::VERIFY_SIGNATURE) {
-            // Get our three d secure object
-            $secureEcom = $builder->getThreeDSecure();
-
-            // Create our transaction reference
-            $reference = new TransactionReference();
-            $reference->orderId = $secureEcom->getOrderId();
-            
-            $managementBuilder = (new ManagementBuilder($transType))
-                ->withAmount($secureEcom->getAmount())
-                ->withCurrency($secureEcom->getCurrency())
-                ->withPayerAuthenticationResponse($builder->getPayerAuthenticationResponse())
-                ->withPaymentMethod($reference);
-            return $this->manageTransaction($managementBuilder);
-        }
-        throw new UnsupportedTransactionException(sprintf("Unknown transaction type %s", $transType));
+        throw new BuilderException(sprintf('3D Secure %s is no longer supported by %s',Secure3dVersion::ONE, GatewayProvider::GP_ECOM));
     }
 
     public function serializeRequest(AuthorizationBuilder $builder)

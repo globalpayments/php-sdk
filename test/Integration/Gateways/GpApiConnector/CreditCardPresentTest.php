@@ -5,7 +5,6 @@ namespace Gateways\GpApiConnector;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\EntryMethod;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\LodgingItemType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodProgram;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
@@ -20,12 +19,10 @@ use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 
 class CreditCardPresentTest extends TestCase
@@ -33,21 +30,14 @@ class CreditCardPresentTest extends TestCase
     private $currency = 'USD';
     private $amount = 15.11;
 
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
     }
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'x0lQh0iLV0fOkmeAyIDyBqrP9U5QaiKc';
-        $config->appKey = 'DYcEE2GpSzblo0ib';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardPresent;
-//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
     }
 
     public function testCardPresentWithChipTransaction()
@@ -173,19 +163,19 @@ class CreditCardPresentTest extends TestCase
     {
         $startDate = (new \DateTime())->modify('-29 days')->setTime(0, 0, 0);
 
-        $response = ReportingService::findTransactionsPaged(1, 10)
-            ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+        $response = ReportingService::findTransactionsPaged(1, 1)
+            ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::TRANSACTION_STATUS, TransactionStatus::PREAUTHORIZED)
             ->andWith(SearchCriteria::CHANNEL, Channel::CardPresent)
             ->andWith(SearchCriteria::START_DATE, $startDate)
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertTrue(count($response->result) > 0);
+        $this->assertCount(1, $response->result);
         /**
          * @var TransactionSummary $result
          */
-        $result = $response->result[rand(0, count($response->result) - 1)];
+        $result = $response->result[0];
         $transaction = new Transaction();
         $transaction->transactionId = $result->transactionId;
 

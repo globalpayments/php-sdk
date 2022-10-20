@@ -2,7 +2,6 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector;
 
-use _PHPStan_76800bfb5\Nette\Utils\DateTime;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\BrowserData;
 use GlobalPayments\Api\Entities\Enums\AddressType;
@@ -103,6 +102,7 @@ class PayLinkTest extends TestCase
             ->orderBy(PayLinkSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::START_DATE, $this->startDate)
             ->andWith(SearchCriteria::END_DATE, $this->endDate)
+            ->andWith(SearchCriteria::PAYLINK_STATUS, PayLinkStatus::ACTIVE)
             ->execute();
         if (count($response->result) == 1) {
             $this->payLinkId = $response->result[0]->id;
@@ -193,6 +193,7 @@ class PayLinkTest extends TestCase
             ->execute();
 
         $this->assertPayLinkResponse($response);
+        $this->assertEquals("YES", $response->payLinkResponse->isShippable);
 
         fwrite(STDERR, print_r($response->payLinkResponse->url, TRUE));
     }
@@ -233,6 +234,7 @@ class PayLinkTest extends TestCase
             ->execute();
 
         $this->assertPayLinkResponse($response);
+        $this->assertEquals("NO", $response->payLinkResponse->isShippable);
 
         fwrite(STDERR, print_r($response->payLinkResponse->url, TRUE));
 
@@ -564,19 +566,14 @@ class PayLinkTest extends TestCase
     {
         $this->payLink->isShippable = null;
 
-        $exceptionCaught = false;
-        try {
-            PayLinkService::create($this->payLink, $this->amount)
-                ->withCurrency('GBP')
-                ->withDescription('March and April Invoice')
-                ->execute();
-        } catch (ApiException $e) {
-            $exceptionCaught = true;
-            $this->assertEquals('50001', $e->responseCode);
-            $this->assertEquals('Status Code: SYSTEM_ERROR - Internal Server Error', $e->getMessage());
-        } finally {
-            $this->assertTrue($exceptionCaught);
-        }
+        $response = PayLinkService::create($this->payLink, $this->amount)
+            ->withCurrency('GBP')
+            ->withClientTransactionId(GenerationUtils::getGuid())
+            ->withDescription('March and April Invoice')
+            ->execute();
+
+        $this->assertPayLinkResponse($response);
+        $this->assertEquals("NO", $response->payLinkResponse->isShippable);
     }
 
     public function testCreatePayLink_MissingShippingAmount()
@@ -588,11 +585,12 @@ class PayLinkTest extends TestCase
             PayLinkService::create($this->payLink, $this->amount)
                 ->withCurrency('GBP')
                 ->withDescription('March and April Invoice')
+                ->withClientTransactionId(GenerationUtils::getGuid())
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('40251', $e->responseCode);
             $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields: shipping_amount.', $e->getMessage());
+            $this->assertEquals('40251', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
         }

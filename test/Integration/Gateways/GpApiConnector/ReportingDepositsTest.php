@@ -2,33 +2,44 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector;
 
-use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\DepositSortProperty;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\DepositSummary;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use PHPUnit\Framework\TestCase;
 
 class ReportingDepositsTest extends TestCase
 {
     private $startDate;
     private $endDate;
+    /** @var DepositSummary */
+    private $depositSummary;
 
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
-        $this->startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
-        $this->endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
+
+        $this->startDate = $startDate = (new \DateTime())->modify('-1 year')->setTime(0, 0, 0);
+        $this->endDate = $endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
+        $response = ReportingService::findDepositsPaged(1, 1)
+            ->orderBy(DepositSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->where(SearchCriteria::START_DATE, $startDate)
+            ->andWith(SearchCriteria::END_DATE, $endDate)
+            ->execute();
+        if (count($response->result) == 1) {
+            $this->depositSummary = $response->result[0];
+        }
     }
 
     public function testReportDepositDetail()
     {
-        $depositId = 'DEP_2342423443';
+        $depositId = !empty($this->depositSummary) ? $this->depositSummary->depositId : 'DEP_2342423443';
         try {
             /** @var DepositSummary $response */
             $response = ReportingService::depositDetail($depositId)
@@ -152,7 +163,7 @@ class ReportingDepositsTest extends TestCase
 
     public function testReportFindDepositsByNotFoundAmount()
     {
-        $amount = 140;
+        $amount = 1;
 
         try {
             $response = ReportingService::findDepositsPaged(1, 10)
@@ -170,7 +181,7 @@ class ReportingDepositsTest extends TestCase
 
     public function testReportFindDepositsByAmount()
     {
-        $amount = 141;
+        $amount = $amount = !empty($this->depositSummary) ? $this->depositSummary->amount : 100;
 
         try {
             $response = ReportingService::findDepositsPaged(1, 10)
@@ -195,11 +206,6 @@ class ReportingDepositsTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
-        $config->appKey = 'DHUGdzpjXfTbjZeo';
-        $config->environment = Environment::TEST;
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 }

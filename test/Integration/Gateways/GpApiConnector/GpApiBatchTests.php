@@ -1,21 +1,20 @@
 <?php
 
+namespace Gateways\GpApiConnector;
+
 use GlobalPayments\Api\Builders\ManagementBuilder;
-use GlobalPayments\Api\Entities\Enums\EntryMethod;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\BatchService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 
 class GpApiBatchTests extends TestCase
@@ -52,14 +51,7 @@ class GpApiBatchTests extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg';
-        $config->appKey = 'ockJr6pv6KFoGiZA';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardPresent;
-//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
     }
 
     public function testBatchClose()
@@ -254,8 +246,8 @@ class GpApiBatchTests extends TestCase
             BatchService::closeBatch($transaction->batchSummary->batchReference);
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('40017', $e->responseCode);
             $this->assertEquals('Status Code: INVALID_BATCH_ACTION - 9,No transaction associated with batch', $e->getMessage());
+            $this->assertEquals('40017', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -280,8 +272,8 @@ class GpApiBatchTests extends TestCase
             BatchService::closeBatch($transaction->batchSummary->batchReference);
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('40014', $e->responseCode);
             $this->assertEquals('Status Code: INVALID_BATCH_ACTION - 5,No current batch', $e->getMessage());
+            $this->assertEquals('40014', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -313,12 +305,7 @@ class GpApiBatchTests extends TestCase
 
     public function testBatchClose_CardNotPresentChannel()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg';
-        $config->appKey = 'ockJr6pv6KFoGiZA';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardNotPresent;
-
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
         ServicesContainer::configureService($config);
 
         $transaction = $this->creditCardData->charge($this->amount)
@@ -333,8 +320,8 @@ class GpApiBatchTests extends TestCase
             BatchService::closeBatch($transaction->batchSummary->batchReference);
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('50002', $e->responseCode);
             $this->assertEquals('Status Code: UNAUTHORIZED_DOWNSTREAM - -2,Authentication error—Verify and correct credentials', $e->getMessage());
+            $this->assertEquals('50002', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
         }

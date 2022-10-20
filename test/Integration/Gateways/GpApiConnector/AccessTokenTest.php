@@ -1,9 +1,7 @@
 <?php
 
-
 namespace Gateways\GpApiConnector;
 
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
@@ -11,20 +9,18 @@ use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\GpApiService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use PHPUnit\Framework\TestCase;
 
 class AccessTokenTest extends TestCase
 {
-    private $environment = Environment::TEST;
-    private $appId = "i872l4VgZRtSrykvSn8Lkah8RE1jihvT";
-    private $appKey = "9pArW2uWoA8enxKc";
     /**
      * @var GpApiConfig $config
      */
     private $config;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         $this->setUpConfig();
     }
@@ -51,8 +47,8 @@ class AccessTokenTest extends TestCase
 
         $this->assertNotNull($accessTokenInfo);
         $this->assertNotNull($accessTokenInfo->accessToken);
-        $this->assertEquals("Tokenization", $accessTokenInfo->tokenizationAccountName);
-        $this->assertEquals("Transaction_Processing", $accessTokenInfo->transactionProcessingAccountName);
+        $this->assertEquals("tokenization", $accessTokenInfo->tokenizationAccountName);
+        $this->assertEquals("transaction_processing", $accessTokenInfo->transactionProcessingAccountName);
         $this->assertNull($accessTokenInfo->dataAccountName);
         $this->assertNull($accessTokenInfo->disputeManagementAccountName);
     }
@@ -96,7 +92,7 @@ class AccessTokenTest extends TestCase
 
     public function testGenerateAccessTokenWrongAppId()
     {
-        $this->config->appId = $this->appId . 'a';
+        $this->config->appId = BaseGpApiTestConfig::$appId . 'a';
         try {
             GpApiService::generateTransactionKey($this->config);
         } catch (GatewayException $e) {
@@ -107,7 +103,7 @@ class AccessTokenTest extends TestCase
 
     public function testGenerateAccessTokenWrongAppKey()
     {
-        $this->config->appKey = $this->appKey . 'a';
+        $this->config->appKey = BaseGpApiTestConfig::$appKey . 'a';
         try {
             GpApiService::generateTransactionKey($this->config);
         } catch (GatewayException $e) {
@@ -199,17 +195,16 @@ class AccessTokenTest extends TestCase
         $this->assertNotNull($accessTokenInfo);
         $this->assertNotNull($accessTokenInfo->accessToken);
 
-        $this->assertEquals("Settlement Reporting", $accessTokenInfo->dataAccountName);
-        $this->assertEquals("Dispute Management", $accessTokenInfo->disputeManagementAccountName);
-        $this->assertEquals("Tokenization", $accessTokenInfo->tokenizationAccountName);
-        $this->assertEquals("Transaction_Processing", $accessTokenInfo->transactionProcessingAccountName);
+        $this->assertEquals("settlement_reporting", $accessTokenInfo->dataAccountName);
+        $this->assertEquals("dispute_management", $accessTokenInfo->disputeManagementAccountName);
+        $this->assertEquals("tokenization", $accessTokenInfo->tokenizationAccountName);
+        $this->assertEquals("transaction_processing", $accessTokenInfo->transactionProcessingAccountName);
     }
 
     public function setUpConfig()
     {
-        $this->config = new GpApiConfig();
-        $this->config->appId = $this->appId;
-        $this->config->appKey = $this->appKey;
-        $this->config->environment = $this->environment;
+        $this->config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+
+        return $this->config;
     }
 }

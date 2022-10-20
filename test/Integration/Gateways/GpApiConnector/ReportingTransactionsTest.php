@@ -3,7 +3,6 @@
 namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Enums\Channel;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\PaymentType;
@@ -15,13 +14,11 @@ use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use PHPUnit\Framework\TestCase;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use ReflectionClass;
 
 class ReportingTransactionsTest extends TestCase
@@ -33,7 +30,7 @@ class ReportingTransactionsTest extends TestCase
 
     public function testTransactionDetailsReport()
     {
-        $transactionId = 'TRN_piIDuelPio1Vk1JWE7bNatWngfxUQT';
+        $transactionId = 'TRN_RyWZELCUbOq12IPDowbOevTC9BZxZi_6827116a3d1b';
         try {
             /** @var TransactionSummary $response */
             $response = ReportingService::transactionDetail($transactionId)->execute();
@@ -75,14 +72,14 @@ class ReportingTransactionsTest extends TestCase
         $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
         foreach ($response->result as $rs) {
-            $this->assertLessThanOrEqual($endDate, $rs->transactionDate);
-            $this->assertGreaterThanOrEqual($startDate, $rs->transactionDate);
+            $this->assertLessThanOrEqual($endDate->format('Y-m-d'), $rs->transactionDate->format('Y-m-d'));
+            $this->assertGreaterThanOrEqual($startDate->format('Y-m-d'), $rs->transactionDate->format('Y-m-d'));
         }
     }
 
     public function testReportFindTransactionsById()
     {
-        $transactionId = 'TRN_mCBetNCJSP0xdJK1QdlfBsMVzemHHt';
+        $transactionId = 'TRN_RyWZELCUbOq12IPDowbOevTC9BZxZi_6827116a3d1b';
         $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
@@ -692,12 +689,6 @@ class ReportingTransactionsTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
-        $config->appKey = 'DHUGdzpjXfTbjZeo';
-        $config->environment = Environment::TEST;
-//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 }

@@ -2,21 +2,13 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GeniusConnector;
 
-use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\AutoSubstantiation;
-use GlobalPayments\Api\Entities\EncryptionData;
-use GlobalPayments\Api\Entities\Enums\GatewayProvider;
-use GlobalPayments\Api\Entities\Enums\MobilePaymentMethodType;
+use GlobalPayments\Api\Entities\{Address, AutoSubstantiation};
+use GlobalPayments\Api\Entities\Enums\{Environment, GatewayProvider, MobilePaymentMethodType};
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\PaymentMethods\CreditTrackData;
 use GlobalPayments\Api\Services\BatchService;
-use GlobalPayments\Api\Services\CreditService;
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
-use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Gateways\GeniusConnector;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GeniusConfig;
 
 class CreditTest extends TestCase
@@ -28,7 +20,7 @@ class CreditTest extends TestCase
     protected $tokenizedCard;
     protected $track;
 
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->getConfig());
 
@@ -70,7 +62,7 @@ class CreditTest extends TestCase
         $response = $this->card->charge(10)
             ->withCurrency('USD')
             ->execute();
-        
+
         $this->assertNotNull($response);
         $this->assertEquals('APPROVED', $response->responseMessage);
 

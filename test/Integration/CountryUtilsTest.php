@@ -194,9 +194,25 @@ class CountryUtilsTest extends TestCase
         $this->assertNotNull($result);
         $this->assertEquals('840', $result);
     }
+
     public function testGetNumericCodeByFakeCountry()
     {
         $result = CountryUtils::getNumericCodeByCountry('FakeCountry');
         $this->assertNull($result);
+    }
+
+    public function testGetPhoneByCountry()
+    {
+        $result = CountryUtils::getPhoneCodesByCountry('United State of America');
+        $this->assertNotNull($result);
+        $this->assertEquals(['1'], $result);
+
+        $result = CountryUtils::getPhoneCodesByCountry('840');
+        $this->assertNotNull($result);
+        $this->assertEquals(['1'], $result);
+
+        $result = CountryUtils::getPhoneCodesByCountry('US');
+        $this->assertNotNull($result);
+        $this->assertEquals(['1'], $result);
     }
 }

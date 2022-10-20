@@ -6,6 +6,13 @@
 
 ## Latest version
 #### Enhancements:
+- GP-API/GP-ECOM: Sunset 3DS1
+- Add method on CountryUtil to extract phone country code based on ISO-2/ISO-3/the name of the country 
+- GP-API Update unit tests with new set of credentials for GP-API
+- Genius - Fix Configuration for service URL
+
+## v5.0.3 (10/04/2022)
+#### Enhancements:
 - GP-API: PayLink enhancements
 
 ## v5.0.2 (09/29/2022)

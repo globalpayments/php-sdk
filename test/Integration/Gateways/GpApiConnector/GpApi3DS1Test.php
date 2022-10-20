@@ -1,8 +1,10 @@
 <?php
 
+namespace Gateways\GpApiConnector;
+
 use GlobalPayments\Api\Entities\Enums\ChallengeRequestIndicator;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialReason;
@@ -12,14 +14,14 @@ use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Tests\Data\GpApi3DSTestCards;
 use GlobalPayments\Api\Tests\Integration\Gateways\ThreeDSecureAcsClient;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 class GpApi3DS1Test extends TestCase
 {
@@ -41,7 +43,7 @@ class GpApi3DS1Test extends TestCase
      */
     private $card;
 
-    public function setup() : void
+    public function setup(): void
     {
         $config = $this->setUpConfig();
         ServicesContainer::configureService($config);
@@ -58,17 +60,7 @@ class GpApi3DS1Test extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
-        $config->appKey = 'DHUGdzpjXfTbjZeo';
-        $config->environment = Environment::TEST;
-        $config->country = 'GB';
-        $config->channel = Channel::CardNotPresent;
-        $config->challengeNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
-        $config->methodNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
-        $config->merchantContactUrl = 'https://enp4qhvjseljg.x.pipedream.net/';
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
     /**
@@ -376,6 +368,7 @@ class GpApi3DS1Test extends TestCase
         $this->assertNotNull($secureEcom->payerAuthenticationRequest);
         $this->assertEmpty($secureEcom->eci);
         $this->assertEquals("1.0.0", $secureEcom->messageVersion);
+        $this->assertEquals("NO", $secureEcom->liabilityShift);
     }
 
     private function assertCheckEnrollmentCardNotEnrolledV1(ThreeDSecure $secureEcom)
@@ -384,8 +377,9 @@ class GpApi3DS1Test extends TestCase
         $this->assertEquals(Secure3dVersion::ONE, $secureEcom->getVersion());
         $this->assertEquals(Secure3dStatus::NOT_ENROLLED, $secureEcom->enrolled);
         $this->assertEquals(Secure3dStatus::NOT_ENROLLED, $secureEcom->status);
-        $this->assertEquals('6', $secureEcom->eci);
+        $this->assertEmpty($secureEcom->eci);
         $this->assertEquals('1.0.0', $secureEcom->messageVersion);
+        $this->assertEquals("NO", $secureEcom->liabilityShift);
     }
 
 }

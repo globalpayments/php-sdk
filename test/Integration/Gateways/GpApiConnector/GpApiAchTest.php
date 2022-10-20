@@ -1,30 +1,29 @@
 <?php
 
+namespace Gateways\GpApiConnector;
+
+use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Enums\AccountType;
+use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Enums\PaymentType;
+use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
+use GlobalPayments\Api\Entities\Enums\SecCode;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Enums\TransactionSortProperty;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
-use GlobalPayments\Api\Entities\Enums\SecCode;
+use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
+use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\PaymentMethods\ECheck;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
-use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\Channel;
-use GlobalPayments\Api\PaymentMethods\ECheck;
-use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\Enums\TransactionStatus;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use PHPUnit\Framework\TestCase;
-use GlobalPayments\Api\Entities\Transaction;
-use GlobalPayments\Api\Entities\Enums\PaymentType;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
-use GlobalPayments\Api\Entities\PhoneNumber;
-use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 
 class GpApiAchTest extends TestCase
 {
@@ -34,7 +33,7 @@ class GpApiAchTest extends TestCase
 
     private $customer;
 
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->eCheck = new ECheck();
@@ -66,7 +65,7 @@ class GpApiAchTest extends TestCase
         $this->address->state = "IL";
         $this->address->countryCode = "US";
 
-        $this->customer =  new Customer();
+        $this->customer = new Customer();
         $this->customer->id = "e193c21a-ce64-4820-b5b6-8f46715de931";
         $this->customer->firstName = "James";
         $this->customer->lastName = "Mason";
@@ -77,14 +76,7 @@ class GpApiAchTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
-        $config->appKey = 'DHUGdzpjXfTbjZeo';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardNotPresent;
-        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
     public function testCheckSale()
@@ -114,7 +106,7 @@ class GpApiAchTest extends TestCase
 
     public function testCheckRefundExistingSale()
     {
-      $this->markTestSkipped('GP-API sandbox limitation');
+        $this->markTestSkipped('GP-API sandbox limitation');
         $startDate = (new DateTime())->modify('-1 year');
         $endDate = (new DateTime())->modify('-2 days');
 
@@ -150,8 +142,8 @@ class GpApiAchTest extends TestCase
         $this->eCheck->secCode = SecCode::PPD;
         $this->eCheck->accountNumber = '051904524';
         $this->eCheck->routingNumber = '123456780';
-        $startDate = (new DateTime())->modify('-1 year');
-        $endDate = (new DateTime())->modify('-2 days');
+        $startDate = (new \DateTime())->modify('-1 year');
+        $endDate = (new \DateTime())->modify('-2 days');
         $amount = '1.29';
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)

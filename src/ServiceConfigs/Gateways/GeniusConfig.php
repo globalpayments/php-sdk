@@ -2,10 +2,8 @@
 
 namespace GlobalPayments\Api\ServiceConfigs\Gateways;
 
-use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\ConfiguredServices;
-use GlobalPayments\Api\Entities\Enums\ServiceEndpoints;
+use GlobalPayments\Api\Entities\Enums\{Environment, GatewayProvider, ServiceEndpoints};
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
 use GlobalPayments\Api\Gateways\GeniusConnector;
 
@@ -42,7 +40,7 @@ class GeniusConfig extends GatewayConfig
         $gateway->timeout = $this->timeout;
         $gateway->serviceUrl = $this->serviceUrl;
         $gateway->webProxy = $this->webProxy;
-        
+
         $services->gatewayConnector = $gateway;
     }
 

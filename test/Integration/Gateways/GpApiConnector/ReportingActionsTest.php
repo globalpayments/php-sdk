@@ -1,40 +1,53 @@
 <?php
 
-use GlobalPayments\Api\Entities\Enums\Environment;
+namespace Gateways\GpApiConnector;
+
+use DateTime;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Enums\StoredPaymentMethodSortProperty;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Reporting\ActionSummary;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 
 class ReportingActionsTest extends TestCase
 {
+    private $startDate;
+    private $endDate;
+    /** @var ActionSummary */
+    private $actionSummary;
+
     public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
+        $this->startDate = (new DateTime())->modify('-30 days')->setTime(0, 0, 0);
+        $this->endDate = (new DateTime())->modify('-3 days')->setTime(0, 0, 0);
+
+        $response = ReportingService::findActionsPaged(1, 1)
+            ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->where(SearchCriteria::START_DATE, $this->startDate)
+            ->andWith(SearchCriteria::END_DATE, $this->endDate)
+            ->andWith(SearchCriteria::RESOURCE, 'TRANSACTIONS')
+            ->execute();
+
+        if (count($response->result) == 1) {
+            $this->actionSummary = $response->result[0];
+        }
     }
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
-        $config->appKey = '9pArW2uWoA8enxKc';
-        $config->environment = Environment::TEST;
-//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
     public function testReportActionDetail()
     {
-        $actionId = 'ACT_SDe8C3FL8w4d4yHf7btgL1xPWQac5j';
+        $actionId = $this->actionSummary->id ?? 'ACT_9r5Vy2uFjXI4nR3uTLYdiaUWMDgYFp';
         $response = ReportingService::actionDetail($actionId)
             ->execute();
 
@@ -62,13 +75,10 @@ class ReportingActionsTest extends TestCase
 
     public function testFindActions_By_StartDateAndEndDate()
     {
-        $startDate = (new DateTime())->modify('-30 days')->setTime(0, 0, 0);
-        $endDate = (new DateTime())->modify('-3 days')->setTime(0, 0, 0);
-
         $response = ReportingService::findActionsPaged(1, 10)
             ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)
-            ->where(SearchCriteria::START_DATE, $startDate)
-            ->andWith(SearchCriteria::END_DATE, $endDate)
+            ->where(SearchCriteria::START_DATE, $this->startDate)
+            ->andWith(SearchCriteria::END_DATE, $this->endDate)
             ->execute();
 
         $this->assertNotNull($response);
@@ -81,8 +91,8 @@ class ReportingActionsTest extends TestCase
         /** @var ActionSummary $rs */
         foreach ($response->result as $index => $rs) {
             $this->assertSame($actionsList[$index], $rs);
-            $this->assertGreaterThanOrEqual($startDate, $rs->timeCreated);
-            $this->assertLessThanOrEqual($endDate, $rs->timeCreated);
+            $this->assertGreaterThanOrEqual($this->startDate, $rs->timeCreated);
+            $this->assertLessThanOrEqual($this->endDate, $rs->timeCreated);
         }
     }
 
@@ -176,11 +186,9 @@ class ReportingActionsTest extends TestCase
 
     public function testFindActions_FilterBy_ResourceId()
     {
-        $this->markTestSkipped('You need a valid resourceId in order to run this test.');
-        $resourceId = 'TRN_cf4e1008-c921-4096-bec9-2372cb9476d8';
+        $resourceId = $this->actionSummary->resourceId ?? 'TRN_cf4e1008-c921-4096-bec9-2372cb9476d8';
         $response = ReportingService::findActionsPaged(1, 10)
             ->where(SearchCriteria::RESOURCE_ID, $resourceId)
-            ->andWith(SearchCriteria::RESOURCE, 'TRANSACTION')
             ->execute();
 
         $this->assertNotNull($response);
@@ -207,7 +215,7 @@ class ReportingActionsTest extends TestCase
 
     public function testFindActions_FilterBy_MerchantName()
     {
-        $merchantName = 'Sandbox_merchant_2';
+        $merchantName = 'Sandbox_merchant_3';
         $response = ReportingService::findActionsPaged(1, 10)
             ->where(SearchCriteria::MERCHANT_NAME, $merchantName)
             ->execute();
@@ -262,7 +270,7 @@ class ReportingActionsTest extends TestCase
 
     public function testFindActions_FilterBy_AppName()
     {
-        $appName = 'demo_app';
+        $appName = 'SDK_TESTING_APP';
         $response = ReportingService::findActionsPaged(1, 10)
             ->where(SearchCriteria::APP_NAME, $appName)
             ->execute();

@@ -4,22 +4,21 @@ namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\DisputeDocument;
 use GlobalPayments\Api\Entities\Enums\CardType;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\DisputeSortProperty;
 use GlobalPayments\Api\Entities\Enums\DisputeStage;
 use GlobalPayments\Api\Entities\Enums\DisputeStatus;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 
 class ReportingDisputesTest extends TestCase
@@ -37,13 +36,7 @@ class ReportingDisputesTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
-        $config->appKey = 'DHUGdzpjXfTbjZeo';
-        $config->environment = Environment::TEST;
-        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
     #region Report Disputes
@@ -386,6 +379,42 @@ class ReportingDisputesTest extends TestCase
             $exceptionCaught = true;
             $this->assertEquals('40071', $e->responseCode);
             $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - 128,No document found, please recheck the values provided', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testFindDocumentAssociatedWithDispute_MissingDocId()
+    {
+        $disputeId = 'DIS_SAND_abcd1235';
+//        $documentId = 'DOC_MyEvidence_234234AVCDE-1';
+
+        $exceptionCaught = false;
+        try {
+            ReportingService::documentDisputeDetail($disputeId)
+                ->execute();
+        } catch (BuilderException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('disputeDocumentId cannot be null for this transaction type.', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testFindDocumentAssociatedWithDispute_EmptyDisputeId()
+    {
+        $disputeId = null;
+        $documentId = 'DOC_MyEvidence_234234AVCDE-1';
+
+        $exceptionCaught = false;
+        try {
+            ReportingService::documentDisputeDetail($disputeId)
+                ->where(SearchCriteria::DISPUTE_DOCUMENT_ID, $documentId)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('404', $e->responseCode);
+            $this->assertEquals('Status Code: Invalid Resource. - Unproccesable resource found.', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }

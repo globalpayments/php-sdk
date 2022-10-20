@@ -54,10 +54,10 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $queryParams['order_by'] = $builder->depositOrderBy;
                 $queryParams['order'] = $builder->order;
                 $queryParams['amount'] = StringUtils::toNumeric($builder->searchBuilder->amount);
-                $queryParams['from_time_created'] = !empty($builder->startDate) ?
-                    $builder->startDate->format('Y-m-d') : null;
-                $queryParams['to_time_created'] = !empty($builder->endDate) ?
-                    $builder->endDate->format('Y-m-d') : null;
+                $queryParams['from_time_created'] = !empty($builder->searchBuilder->startDate) ?
+                    $builder->searchBuilder->startDate->format('Y-m-d') : null;
+                $queryParams['to_time_created'] = !empty($builder->searchBuilder->endDate) ?
+                    $builder->searchBuilder->endDate->format('Y-m-d') : null;
                 $queryParams['id'] = $builder->searchBuilder->depositId;
                 $queryParams['status'] = $builder->searchBuilder->depositStatus;
                 $queryParams['masked_account_number_last4'] = $builder->searchBuilder->accountNumberLastFour;

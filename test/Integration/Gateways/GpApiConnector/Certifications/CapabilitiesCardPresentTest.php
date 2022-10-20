@@ -2,22 +2,22 @@
 
 namespace Certifications;
 
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\EntryMethod;
-use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use PHPUnit\Framework\TestCase;
+
 
 class CapabilitiesCardPresentTest extends TestCase
 {
     private $card;
 
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->card = new CreditCardData();
@@ -30,13 +30,7 @@ class CapabilitiesCardPresentTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
-        $config->appKey = '9pArW2uWoA8enxKc';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardPresent;
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
     }
 
     public function testDebitSaleWithChipCondition()

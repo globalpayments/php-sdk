@@ -1,16 +1,20 @@
 <?php
 
+namespace Gateways\GpApiConnector;
+
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\BrowserData;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
 use GlobalPayments\Api\Entities\Enums\ChallengeRequestIndicator;
 use GlobalPayments\Api\Entities\Enums\ChallengeWindowSize;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\ColorDepth;
 use GlobalPayments\Api\Entities\Enums\DeliveryTimeFrame;
-use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
+use GlobalPayments\Api\Entities\Enums\SdkInterface;
+use GlobalPayments\Api\Entities\Enums\SdkUiType;
+use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\ShippingMethod;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
@@ -22,18 +26,14 @@ use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Tests\Data\GpApi3DSTestCards;
 use GlobalPayments\Api\Tests\Integration\Gateways\ThreeDSecureAcsClient;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use PHPUnit\Framework\TestCase;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
-use GlobalPayments\Api\Entities\Enums\SdkUiType;
-use GlobalPayments\Api\Entities\Enums\SdkInterface;
+use ReflectionClass;
 
 class GpApi3DS2Test extends TestCase
 {
@@ -65,7 +65,7 @@ class GpApi3DS2Test extends TestCase
      */
     private $card;
 
-    public function setup() : void
+    public function setup(): void
     {
         $config = $this->setUpConfig();
         ServicesContainer::configureService($config);
@@ -104,18 +104,7 @@ class GpApi3DS2Test extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
-        $config->appKey = 'DHUGdzpjXfTbjZeo';
-        $config->environment = Environment::TEST;
-        $config->country = 'GB';
-        $config->channel = Channel::CardNotPresent;
-        $config->challengeNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
-        $config->methodNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
-        $config->merchantContactUrl = 'https://enp4qhvjseljg.x.pipedream.net/';
-//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
     /**

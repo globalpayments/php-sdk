@@ -3,11 +3,11 @@
 namespace GlobalPayments\Api\Builders;
 
 use GlobalPayments\Api\Entities\Enums\DecoupledFlowRequest;
-use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Enums\WhiteListStatus;
 use GlobalPayments\Api\Entities\MobileData;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Gateways\GpApiConnector;
+use GlobalPayments\Api\Gateways\GpEcomConnector;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
@@ -26,6 +26,7 @@ use GlobalPayments\Api\Entities\Enums\MessageCategory;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 
 class Secure3dBuilder extends BaseBuilder
 {
@@ -1366,9 +1367,22 @@ class Secure3dBuilder extends BaseBuilder
 
         // get the provider
         $provider = ServicesContainer::instance()->getSecure3d($configName, $version);
+        if (
+            $version === Secure3dVersion::ONE &&
+            (
+                $provider instanceof GpApiConnector ||
+                $provider instanceof GpEcomConnector
+            )
+        ) {
+            throw new BuilderException(sprintf("3D Secure %s is no longer supported!", $version));
+        }
         if (!empty($provider)) {
             $canDowngrade = false;
-            if ($provider->getVersion() === Secure3dVersion::TWO && $version === Secure3dVersion::ANY) {
+            if (
+                $provider->getVersion() === Secure3dVersion::TWO &&
+                $version === Secure3dVersion::ANY &&
+                (!$provider instanceof GpEcomConnector && !$provider instanceof GpApiConnector)
+            ) {
                 try {
                     $oneProvider = ServicesContainer::instance()->getSecure3d($configName, Secure3dVersion::ONE);
                     $canDowngrade = (bool)(!empty($oneProvider));

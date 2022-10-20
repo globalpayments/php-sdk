@@ -1,18 +1,19 @@
 <?php
 
-use GlobalPayments\Api\Entities\Enums\Environment;
+namespace Gateways\GpApiConnector;
+
+use DateTime;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Enums\StoredPaymentMethodSortProperty;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\StoredPaymentMethodSummary;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 
 class ReportingStoredPaymentMethodsTest extends TestCase
@@ -24,13 +25,7 @@ class ReportingStoredPaymentMethodsTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
-        $config->appKey = '9pArW2uWoA8enxKc';
-        $config->environment = Environment::TEST;
-//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
     public function testFindStoredPaymentMethod_By_StartDateAndEndDate()

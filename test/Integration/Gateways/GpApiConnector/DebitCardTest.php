@@ -1,23 +1,20 @@
 <?php
 
-
 namespace Gateways\GpApiConnector;
 
-
 use GlobalPayments\Api\Entities\EncryptionData;
-use GlobalPayments\Api\Entities\Enums\EntryMethod;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\BatchService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use PHPUnit\Framework\TestCase;
 
 class DebitCardTest extends TestCase
 {
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
     }
@@ -29,10 +26,10 @@ class DebitCardTest extends TestCase
         $debitCard->pinBlock = '32539F50C245A6A93D123412324000AA';
         $debitCard->entryMethod = EntryMethod::SWIPE;
 
-      $response = $debitCard->charge(18)
-        ->withCurrency("EUR")
-        ->withAllowDuplicates(true)
-        ->execute();
+        $response = $debitCard->charge(18)
+            ->withCurrency("EUR")
+            ->withAllowDuplicates(true)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
@@ -159,12 +156,6 @@ class DebitCardTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
-        $config->appKey = '9pArW2uWoA8enxKc';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardPresent;
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
     }
 }

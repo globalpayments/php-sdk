@@ -2,11 +2,10 @@
 
 namespace Gateways\GpApiConnector;
 
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 
@@ -19,7 +18,7 @@ class EbtCardTest extends TestCase
     private $amount = 10;
     private $currency = 'USD';
 
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->card = TestCards::asEBTManual(TestCards::visaManual(true), '32539F50C245A6A93D123412324000AA');
@@ -28,14 +27,7 @@ class EbtCardTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        //this is gpapistuff stuff
-        $config->appId = 'VuKlC2n1cr5LZ8fzLUQhA7UObVks6tFF';
-        $config->appKey = 'NmGM0kg92z2gA7Og';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardPresent;
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
     }
 
     public function testEbtSale_Manual()

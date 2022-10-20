@@ -1,25 +1,24 @@
 <?php
 
-use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
-use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
-use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\Channel;
-use GlobalPayments\Api\Entities\Enums\TransactionStatus;
-use PHPUnit\Framework\TestCase;
-use GlobalPayments\Api\Services\ReportingService;
-use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Entities\Transaction;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
-use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
+namespace Gateways\GpApiConnector;
+
 use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\Enums\AddressType;
-use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
-use GlobalPayments\Api\Entities\OrderDetails;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
+use GlobalPayments\Api\Entities\Enums\AddressType;
+use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
+use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
+use GlobalPayments\Api\Entities\Enums\TransactionStatus;
+use GlobalPayments\Api\Entities\OrderDetails;
+use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
+use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
+use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
+use GlobalPayments\Api\Services\ReportingService;
+use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
+use PHPUnit\Framework\TestCase;
 
 class GpApiApmTest extends TestCase
 {
@@ -27,7 +26,7 @@ class GpApiApmTest extends TestCase
     private $currency;
     private $shippingAddress;
 
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
 
@@ -55,14 +54,7 @@ class GpApiApmTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
-        $config->appKey = 'DHUGdzpjXfTbjZeo';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardNotPresent;
-        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
     /**
@@ -103,7 +95,7 @@ class GpApiApmTest extends TestCase
         $this->assertEquals(TransactionStatus::PENDING, $transactionSummary->transactionStatus);
         $this->assertNotNull($transactionSummary->alternativePaymentResponse->providerReference);
 
-        $transaction = Transaction::fromId($transactionSummary->transactionId, null,PaymentMethodType::APM);
+        $transaction = Transaction::fromId($transactionSummary->transactionId, null, PaymentMethodType::APM);
         $transaction->alternativePaymentResponse = $transactionSummary->alternativePaymentResponse;
 
         $response = $transaction->confirm()->execute();
@@ -145,7 +137,7 @@ class GpApiApmTest extends TestCase
         $this->assertEquals(TransactionStatus::PENDING, $transactionSummary->transactionStatus);
         $this->assertNotNull($transactionSummary->alternativePaymentResponse->providerReference);
 
-        $transaction = Transaction::fromId($transactionSummary->transactionId, null,PaymentMethodType::APM);
+        $transaction = Transaction::fromId($transactionSummary->transactionId, null, PaymentMethodType::APM);
         $transaction->alternativePaymentResponse = $transactionSummary->alternativePaymentResponse;
         $response = $transaction->confirm()->execute();
 
@@ -191,7 +183,7 @@ class GpApiApmTest extends TestCase
         $this->assertEquals(TransactionStatus::PENDING, $transactionSummary->transactionStatus);
         $this->assertNotNull($transactionSummary->alternativePaymentResponse->providerReference);
 
-        $transaction = Transaction::fromId($transactionSummary->transactionId, null,PaymentMethodType::APM);
+        $transaction = Transaction::fromId($transactionSummary->transactionId, null, PaymentMethodType::APM);
         $transaction->alternativePaymentResponse = $transactionSummary->alternativePaymentResponse;
 
         $response = $transaction->confirm()->execute();
@@ -239,7 +231,7 @@ class GpApiApmTest extends TestCase
         $this->assertEquals(TransactionStatus::PENDING, $transactionSummary->transactionStatus);
         $this->assertNotNull($transactionSummary->alternativePaymentResponse->providerReference);
 
-        $transaction = Transaction::fromId($transactionSummary->transactionId, null,PaymentMethodType::APM);
+        $transaction = Transaction::fromId($transactionSummary->transactionId, null, PaymentMethodType::APM);
         $transaction->alternativePaymentResponse = $transactionSummary->alternativePaymentResponse;
 
         $response = $transaction->confirm()->execute();

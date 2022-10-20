@@ -9,7 +9,6 @@ use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
 use GlobalPayments\Api\Entities\Enums\ChallengeWindowSize;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\ColorDepth;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
 use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
@@ -21,10 +20,9 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\GpApiService;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Tests\Integration\Gateways\ThreeDSecureAcsClient;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 
 class PartnershipModeTest extends TestCase
@@ -88,19 +86,15 @@ class PartnershipModeTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'zKxybfLqH7vAOtBQrApxD5AUpS3ITaPz';
-        $config->appKey = 'GAMlgEojm6hxZTLI';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardNotPresent;
-        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
+        BaseGpApiTestConfig::$appId = 'zKxybfLqH7vAOtBQrApxD5AUpS3ITaPz';
+        BaseGpApiTestConfig::$appKey = 'GAMlgEojm6hxZTLI';
 
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
     public function testCreditSaleWithPartnerMode()
     {
-        $merchants = ['MER_7e3e2c7df34f42819b3edee31022ee3f','MER_c4c0df11039c48a9b63701adeaa296c3'];
+        $merchants = ['MER_7e3e2c7df34f42819b3edee31022ee3f'];
 
         $address = new Address();
         $address->streetAddress1 = "123 Main St.";

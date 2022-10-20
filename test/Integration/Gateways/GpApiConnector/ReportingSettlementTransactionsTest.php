@@ -2,7 +2,7 @@
 
 namespace Gateways\GpApiConnector;
 
-use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\DepositStatus;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Enums\TransactionSortProperty;
@@ -13,14 +13,12 @@ use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 
 class ReportingSettlementTransactionsTest extends TestCase
 {
@@ -558,12 +556,6 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        //this is gpapistuff stuff
-        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
-        $config->appKey = '9pArW2uWoA8enxKc';
-        $config->environment = Environment::TEST;
-//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 }

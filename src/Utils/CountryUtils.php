@@ -1,8 +1,6 @@
 <?php
 
-
 namespace GlobalPayments\Api\Utils;
-
 
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\IsoCountries;
@@ -109,6 +107,7 @@ class CountryUtils
      *      [numeric] => 840
      *      [alpha2] => US
      *      [alpha3] => USA
+     *      [phoneCode] => ["1"]
      *   ]
      *
      * @param string $country
@@ -215,5 +214,12 @@ class CountryUtils
         $countryInfo = self::getCountryInfo($country);
 
         return !empty($countryInfo['numeric']) ? $countryInfo['numeric'] : null;
+    }
+
+    public static function getPhoneCodesByCountry($country)
+    {
+        $countryInfo = self::getCountryInfo($country);
+
+        return !empty($countryInfo['phoneCode']) ? $countryInfo['phoneCode'] : [];
     }
 }

@@ -23,13 +23,11 @@ use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Tests\Data\GpApiAvsCheckTestCards;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 
 class CreditCardNotPresentTest extends TestCase
@@ -310,12 +308,7 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testCreditSale_WithoutPermissions()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
-        $config->appKey = '9pArW2uWoA8enxKc';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardNotPresent;
-        $config->country = 'GB';
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
         $config->permissions = ["TRN_POST_Capture"];
 
         ServicesContainer::configureService($config);
@@ -1462,12 +1455,7 @@ class CreditCardNotPresentTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
-        $config->appKey = 'DHUGdzpjXfTbjZeo';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardNotPresent;
-        $config->country = 'GB';
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
         //DO NO DELETE - usage example for some settings
 //        $config->dynamicHeaders = [
 //            'x-gp-platform' => 'prestashop;version=1.7.2',

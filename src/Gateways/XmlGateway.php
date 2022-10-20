@@ -13,13 +13,14 @@ abstract class XmlGateway extends Gateway
 
     /**
      * @param string $request Raw request XML
+     * @param string $endpoint
      *
      * @throws GatewayException
      * @return string
      */
-    protected function doTransaction($request)
+    protected function doTransaction($request, $endpoint = "")
     {
-        $response = $this->sendRequest('POST', '', $request);
+        $response = $this->sendRequest('POST', $endpoint, $request);
 
         if (200 !== $response->statusCode) {
             throw new GatewayException(

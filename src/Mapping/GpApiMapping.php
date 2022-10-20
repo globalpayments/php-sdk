@@ -2,7 +2,6 @@
 
 namespace GlobalPayments\Api\Mapping;
 
-use _PHPStan_76800bfb5\Nette\Utils\DateTime;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\BatchSummary;
 use GlobalPayments\Api\Entities\CardIssuerResponse;

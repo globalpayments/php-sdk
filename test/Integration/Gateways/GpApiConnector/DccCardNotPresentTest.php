@@ -1,16 +1,15 @@
 <?php
 
+namespace Gateways\GpApiConnector;
+
 use GlobalPayments\Api\Entities\Enums\Channel;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 
 class DccCardNotPresentTest extends TestCase
@@ -20,7 +19,7 @@ class DccCardNotPresentTest extends TestCase
     /** @var CreditCardData */
     private $card;
 
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->card = new CreditCardData();
@@ -32,16 +31,10 @@ class DccCardNotPresentTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'mivbnCh6tcXhrc6hrUxb3SU8bYQPl9pd';
-        $config->appKey = 'Yf6MJDNJKiqObYAb';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardNotPresent;
-        $config->country = 'GB';
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
         $accessTokenInfo = new AccessTokenInfo();
         $accessTokenInfo->transactionProcessingAccountName = 'dcc';
         $config->accessTokenInfo = $accessTokenInfo;
-        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
         return $config;
     }
 
@@ -332,8 +325,8 @@ class DccCardNotPresentTest extends TestCase
         $this->assertEquals('SUCCESS', $transaction->responseCode);
         $this->assertEquals($transactionStatus, $transaction->responseMessage);
         if ($transactionStatus !== TransactionStatus::REVERSED) {
-                    $this->assertEquals($expectedDccValue, $transaction->dccRateData->cardHolderAmount);
-                }
+            $this->assertEquals($expectedDccValue, $transaction->dccRateData->cardHolderAmount);
+        }
     }
 
     private function getAmount($dccDetails)

@@ -1,22 +1,22 @@
 <?php
 
+namespace Gateways\GpApiConnector;
+
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\EntryMethod;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\GpApiService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
-
 
 class DccCardPresentTest extends TestCase
 {
@@ -26,7 +26,7 @@ class DccCardPresentTest extends TestCase
     private $card;
     const DCC_RATE_CONFIG = 'dcc_rate';
 
-    public function setup() : void
+    public function setup(): void
     {
         $this->markTestIncomplete();
         $config = $this->setUpConfig();
@@ -47,27 +47,16 @@ class DccCardPresentTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'mivbnCh6tcXhrc6hrUxb3SU8bYQPl9pd';
-        $config->appKey = 'Yf6MJDNJKiqObYAb';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardPresent;
-        $config->country = 'GB';
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
         $accessTokenInfo = new AccessTokenInfo();
         $accessTokenInfo->transactionProcessingAccountName = 'dcc';
         $config->accessTokenInfo = $accessTokenInfo;
-        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
         return $config;
     }
 
     public function setUpConfigDcc()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'mivbnCh6tcXhrc6hrUxb3SU8bYQPl9pd';
-        $config->appKey = 'Yf6MJDNJKiqObYAb';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardPresent;
-        $config->country = 'GB';
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
         $accessTokenInfo = new AccessTokenInfo();
         $accessTokenInfo->transactionProcessingAccountName = 'dcc_rate';
         $config->accessTokenInfo = $accessTokenInfo;
@@ -243,8 +232,8 @@ class DccCardPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('40211', $e->responseCode);
             $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - 37,Request expects the following field  payer_amount payer_currency exchange_rate commission_percentage  from the Merchant.', $e->getMessage());
+            $this->assertEquals('40211', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -273,8 +262,8 @@ class DccCardPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('50001', $e->responseCode);
             $this->assertEquals('Status Code: UNAUTHORIZED_DOWNSTREAM - -21,Unauthorized', $e->getMessage());
+            $this->assertEquals('50001', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
         }

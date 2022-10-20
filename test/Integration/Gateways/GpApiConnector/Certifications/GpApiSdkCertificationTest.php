@@ -1,18 +1,15 @@
 <?php
 
-
 namespace Certifications;
 
-
-use GlobalPayments\Api\Entities\Enums\CvnPresenceIndicator;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\CvnPresenceIndicator;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
-use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
-use GlobalPayments\Api\ServicesContainer;
-use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
+use PHPUnit\Framework\TestCase;
 
 class GpApiSdkCertificationTest extends TestCase
 {
@@ -21,7 +18,7 @@ class GpApiSdkCertificationTest extends TestCase
      */
     private $card;
 
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->card = new CreditCardData();
@@ -34,14 +31,7 @@ class GpApiSdkCertificationTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        //this is gpapistuff stuff
-        $config->appId = 'i872l4VgZRtSrykvSn8Lkah8RE1jihvT';
-        $config->appKey = '9pArW2uWoA8enxKc';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardNotPresent;
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
     public function testCreditCard_Visa_Success()

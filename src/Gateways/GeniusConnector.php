@@ -4,42 +4,11 @@ namespace GlobalPayments\Api\Gateways;
 
 use DOMDocument;
 use DOMElement;
-use GlobalPayments\Api\Builders\AuthorizationBuilder;
-use GlobalPayments\Api\Builders\BaseBuilder;
-use GlobalPayments\Api\Builders\ManagementBuilder;
-use GlobalPayments\Api\Builders\ReportBuilder;
 use GlobalPayments\Api\Builders\TransactionBuilder;
-use GlobalPayments\Api\Entities\BatchSummary;
-use GlobalPayments\Api\Entities\Transaction;
-use GlobalPayments\Api\Entities\Enums\AccountType;
-use GlobalPayments\Api\Entities\Enums\AliasAction;
-use GlobalPayments\Api\Entities\Enums\CheckType;
-use GlobalPayments\Api\Entities\Enums\EntryMethod;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Entities\Enums\TaxType;
-use GlobalPayments\Api\Entities\Enums\TransactionModifier;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\Exceptions\GatewayException;
-use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
-use GlobalPayments\Api\Entities\Reporting\CheckData;
-use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\PaymentMethods\ECheck;
-use GlobalPayments\Api\PaymentMethods\GiftCard;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IBalanceable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ICardData;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IEncryptable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IPinProtected;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ITrackData;
-use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
-use GlobalPayments\Api\PaymentMethods\TransactionReference;
-use GlobalPayments\Api\Entities\Enums\ReportType;
-use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
-use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
-use GlobalPayments\Api\Entities\Reporting\SearchCriteriaBuilder;
-use GlobalPayments\Api\PaymentMethods\CreditTrackData;
-use GlobalPayments\Api\Services\ReportingService;
+use GlobalPayments\Api\Entities\{BatchSummary, Transaction};
+use GlobalPayments\Api\Entities\Enums\{PaymentMethodType, TransactionModifier, TransactionType};
+use GlobalPayments\Api\Entities\Exceptions\{GatewayException, UnsupportedTransactionException};
+use GlobalPayments\Api\PaymentMethods\{CreditCardData, CreditTrackData};
 
 class GeniusConnector extends XmlGateway implements IPaymentGateway
 {
@@ -53,10 +22,11 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
     public $merchantKey;
     public $registerNumber;
     public $terminalId;
+    public $endpoint;
 
     public $supportsHostedPayments = false;
     private $xmlNamespace = 'http://schemas.merchantwarehouse.com/merchantware/v45/';
-    
+
     const CREDIT_SERVICE_END_POINT = 'RetailTransaction/v45/Credit.asmx';
     const GIFT_SERVICE_END_POINT = 'ExtensionServices/v46/Giftcard.asmx';
 
@@ -64,8 +34,8 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
     {
         $xml = new DOMDocument();
         $paymentMethod = $builder->paymentMethod;
-        
-        $this->setGatewayParams($paymentMethod);
+
+        $endpoint = $this->setGatewayParams($paymentMethod);
 
         $transaction = $xml->createElement($this->mapRequestType($builder));
         $transaction->setAttribute('xmlns', $this->xmlNamespace);
@@ -75,7 +45,7 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
         $credentials->appendChild($xml->createElement('MerchantName', $this->merchantName));
         $credentials->appendChild($xml->createElement('MerchantSiteId', $this->merchantSiteId));
         $credentials->appendChild($xml->createElement('MerchantKey', $this->merchantKey));
-        
+
         $transaction->appendChild($credentials);
 
         // Payment Data
@@ -113,7 +83,7 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
             $healthcare->appendChild($xml->createElement('HealthCareTotalAmount', $auto->getTotalHealthcareAmount()));
             $healthcare->appendChild($xml->createElement('PrescriptionAmount', $auto->getPrescriptionSubTotal()));
             $healthcare->appendChild($xml->createElement('VisionAmount', $auto->getVisionSubTotal()));
-            
+
             $request->appendChild($healthcare);
         }
 
@@ -126,7 +96,7 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
         $request->appendChild($xml->createElement('ForceDuplicate', $builder->allowDuplicates));
 
         $transaction->appendChild($request);
-        $response = $this->doTransaction($this->buildEnvelope($xml, $transaction));
+        $response = $this->doTransaction($this->buildEnvelope($xml, $transaction), $endpoint);
         return $this->mapResponse($builder, $response);
     }
 
@@ -134,7 +104,8 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
     {
         $xml = new DOMDocument();
         $transactionType = $builder->transactionType;
-        $this->setGatewayParams($builder->paymentMethod);
+
+        $endpoint = $this->setGatewayParams($builder->paymentMethod);
 
         $transaction = $xml->createElement($this->mapRequestType($builder));
         $transaction->setAttribute('xmlns', $this->xmlNamespace);
@@ -144,7 +115,7 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
         $credentials->appendChild($xml->createElement('MerchantName', $this->merchantName));
         $credentials->appendChild($xml->createElement('MerchantSiteId', $this->merchantSiteId));
         $credentials->appendChild($xml->createElement('MerchantKey', $this->merchantKey));
-        
+
         $transaction->appendChild($credentials);
 
         // Payment Data
@@ -186,8 +157,8 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
         }
 
         $transaction->appendChild($request);
-    
-        $response = $this->doTransaction($this->buildEnvelope($xml, $transaction));
+
+        $response = $this->doTransaction($this->buildEnvelope($xml, $transaction), $endpoint);
         return $this->mapResponse($builder, $response);
     }
 
@@ -266,12 +237,12 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
     public function mapResponse($builder, $rawResponse)
     {
         $root = $this->xml2object($rawResponse);
-        
-        $item = $root->{$this->mapRequestType($builder).'Result'};
-        
+
+        $item = $root->{$this->mapRequestType($builder) . 'Result'};
+
         $errorCode = (string) $item->ErrorCode;
         $errorMessage = (string) $item->ErrorMessage;
-        
+
         if (!empty($errorMessage)) {
             throw new GatewayException(
                 sprintf(
@@ -281,7 +252,7 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
                 )
             );
         }
-        
+
         $response = new Transaction();
 
         $response->responseCode = '00';
@@ -302,16 +273,16 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
             $response->batchSummary->totalAmount = (string)$item->BatchAmount;
             $response->batchSummary->transactionCount = (string)$item->TransactionCount;
         }
-        
+
         if (isset($item->Gift)) {
             $response->authorizedAmount = (string)$item->Gift->ApprovedAmount;
             $response->balanceAmount = (string)$item->Gift->RedeemableBalance;
         }
-        
+
         if (isset($item->Loyalty)) {
             $response->pointsBalanceAmount = (string)$item->Loyalty->PointsBalance;
         }
-        
+
         return $response;
     }
 
@@ -346,18 +317,20 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
     public function processReport($builder)
     {
     }
-    
+
     private function setGatewayParams($paymentMethod)
     {
-        if (!empty($paymentMethod->paymentMethodType) &&
-            $paymentMethod->paymentMethodType === PaymentMethodType::GIFT) {
-                $this->xmlNamespace = 'http://schemas.merchantwarehouse.com/merchantware/46/Giftcard';
-                $this->serviceUrl .= self::GIFT_SERVICE_END_POINT;
+        if (
+            !empty($paymentMethod->paymentMethodType) &&
+            $paymentMethod->paymentMethodType === PaymentMethodType::GIFT
+        ) {
+            $this->xmlNamespace = 'http://schemas.merchantwarehouse.com/merchantware/46/Giftcard';
+            return self::GIFT_SERVICE_END_POINT;
         } else {
-            $this->serviceUrl .= self::CREDIT_SERVICE_END_POINT;
+            return self::CREDIT_SERVICE_END_POINT;
         }
     }
-    
+
     private function hydratePaymentData($xml, $paymentData, $paymentMethod)
     {
         if ($paymentMethod->paymentMethodType === PaymentMethodType::GIFT) {
@@ -373,7 +346,7 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
         } else {
             if ($paymentMethod instanceof CreditCardData) {
                 $card = $paymentMethod;
-                
+
                 if (!empty($card->token)) {
                     if (!empty($card->mobileType)) {
                         $paymentData->appendChild($xml->createElement('Source', 'Wallet'));
@@ -395,7 +368,7 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
                 }
             } elseif ($paymentMethod instanceof CreditTrackData) {
                 $paymentData->appendChild($xml->createElement('Source', 'READER'));
-                
+
                 $track = $paymentMethod;
                 $paymentData->appendChild($xml->createElement('TrackData', $track->value));
             }
