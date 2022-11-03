@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once ('../../../../../autoload_standalone.php');
+require_once('../../../../../autoload_standalone.php');
 
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
@@ -22,12 +22,21 @@ $config->secure3dVersion = Secure3dVersion::ANY;
 $config->merchantContactUrl = 'https://www.example.com';
 ServicesContainer::configureService($config);
 
-$requestData = json_decode(file_get_contents('php://input'));
+$requestData = "";
+try {
+    if (file_exists('php://input')) {
+        $requestData = json_decode(file_get_contents($requestData));
+    }
+} catch (Exception $e) {
+    // TODO: add your error handling here
+    print_r($e);
+}
+
 $cardData = $requestData->card;
 $card = new CreditCardData();
 $card->number = $cardData->number;
 $card->cvn = $cardData->securityCode;
-$expDate = explode('/',$cardData->cardExpiration);
+$expDate = explode('/', $cardData->cardExpiration);
 $card->expYear = $expDate[1];
 $card->expMonth = $expDate[0];
 $card->cardHolderName = $cardData->cardHolderName;

@@ -13,5 +13,5 @@ if (!isset($_POST['cres'])) {
 
 $decodedString = base64_decode($_POST['cres']);
 echo "<script>
-        window.parent.postMessage({ data: $decodedString}, window.location.origin);
+        window.parent.postMessage({ data: " . isset($decodedString) ? $decodedString : "" . "}, window.location.origin);
     </script>";

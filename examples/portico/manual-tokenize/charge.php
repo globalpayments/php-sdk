@@ -1,6 +1,6 @@
 <?php
 
-require_once ('../../../autoload_standalone.php');
+require_once('../../../autoload_standalone.php');
 
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServicesContainer;
@@ -27,18 +27,19 @@ $address->postalCode = preg_replace('/[^0-9]/', '', $_GET["billing-zip"]);
 $address->country = "United States";
 
 try {
+    $invoiceNumber = $_GET["invoice-number"];
     $response = $card->charge(15)
-            ->withCurrency('USD')
-            ->withAddress($address)
-            ->withInvoiceNumber($_GET["invoice-number"])
-            ->withAllowDuplicates(true)
-            ->execute();
+        ->withCurrency('USD')
+        ->withAddress($address)
+        ->withInvoiceNumber($invoiceNumber)
+        ->withAllowDuplicates(true)
+        ->execute();
 
     $body = '<h1>Success!</h1>';
     $body .= '<p>Thank you, ' . $_GET['first-name'] . ', for your order of $' . $_GET["payment-amount"] . '.</p>';
 
     echo "Transaction Id: " . $response->transactionId;
-    echo "<br />Invoice Number: " . $_GET["invoice-number"];
+    echo "<br />Invoice Number: " . $invoiceNumber ? $invoiceNumber : "";
 
     // i'm running windows, so i had to update this:
     //ini_set("SMTP", "my-mail-server");
@@ -49,7 +50,8 @@ try {
     exit;
 }
 
-function sendEmail($to, $from, $subject, $body, $isHtml) {
+function sendEmail($to, $from, $subject, $body, $isHtml)
+{
     $message = '<html><body>';
     $message .= $body;
     $message .= '</body></html>';

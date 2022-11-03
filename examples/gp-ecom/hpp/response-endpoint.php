@@ -22,7 +22,7 @@ $service = new HostedService($config);
  * '"CARD_PAYMENT_BUTTON":"Place Order","AVSADDRESSRESULT":"M","AVSPOSTCODERESULT":"M","BATCHID":"445196",' .
  * '"MESSAGE":"[ test system ] Authorised","PASREF":"15011597872195765","CVNRESULT":"M","HPP_FRAUDFILTER_RESULT":"PASS"}";
  */
-$responseJson = $_POST['hppResponse'];
+$responseJson = isset($_POST['hppResponse']) ? $_POST['hppResponse'] : "";
 
 try {
     // create the response object from the response JSON
@@ -33,11 +33,11 @@ try {
     $responseMessage = $parsedResponse->responseMessage; // [ test system ] Authorised
     $responseValues = $parsedResponse->responseValues; // get values accessible by key
     echo "<pre>";
-    echo "Response Code : $responseCode \n";
-    echo "Response Message : $responseMessage \n";
-    echo "Response Values : ";
-    print_r($responseValues);
-
+    echo "Response Code : " . !empty($responseCode) ? $responseCode : "";
+    echo "\n Response Message : " . !empty($responseMessage) ? $responseMessage : "";
+    echo "\n Response Values : ";
+    if (!empty($responseValues))
+        print_r($responseValues);
 } catch (ApiException $e) {
     print_r($e);
     // For example if the SHA1HASH doesn't match what is expected

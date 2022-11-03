@@ -14,7 +14,16 @@ use \GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 
 // TODO: consume card data sent from the JS Library ($requestData)
 
-$rawData = file_get_contents("php://input");
+$rawData = "";
+try {
+   if (file_exists('php://input')) {
+      $rawData = json_decode(file_get_contents($rawData));
+   }
+} catch (ApiException $e) {
+   // TODO: add your error handling here
+   print_r($e);
+}
+
 $decodedData = json_decode($rawData);
 $paymenttoken = $decodedData->tokenResponse;
 
@@ -36,9 +45,9 @@ $card->token = $paymenttoken;
 
 try {
    $threeDSecureData = Secure3dService::checkEnrollment($card)
-   ->withCurrency("EUR")
-   ->withAmount(100)
-   ->execute();
+      ->withCurrency("EUR")
+      ->withAmount(100)
+      ->execute();
 } catch (ApiException $e) {
    // TODO: add your error handling here
    print_r($e);

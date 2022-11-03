@@ -27,8 +27,8 @@ class HostedService
     public $shaHashType = ShaHashType::SHA1;
 
     private static $supportedShaType = [
-      ShaHashType::SHA1,
-      ShaHashType::SHA256
+        ShaHashType::SHA1,
+        ShaHashType::SHA256
     ];
 
     /**
@@ -59,7 +59,7 @@ class HostedService
     public function authorize($amount = null)
     {
         return (new AuthorizationBuilder(TransactionType::AUTH))
-                        ->withAmount($amount);
+            ->withAmount($amount);
     }
 
     /**
@@ -72,7 +72,7 @@ class HostedService
     public function charge($amount = null)
     {
         return (new AuthorizationBuilder(TransactionType::SALE))
-                        ->withAmount($amount);
+            ->withAmount($amount);
     }
 
     /**
@@ -83,7 +83,7 @@ class HostedService
     public function verify($amount = null)
     {
         return (new AuthorizationBuilder(TransactionType::VERIFY))
-                        ->withAmount($amount);
+            ->withAmount($amount);
     }
 
     public function void($transaction = null)
@@ -96,11 +96,15 @@ class HostedService
         }
 
         return (new ManagementBuilder(TransactionType::VOID))
-                        ->withPaymentMethod($transaction);
+            ->withPaymentMethod($transaction);
     }
 
     public function parseResponse($response, $encoded = false)
     {
+        if (empty($response)) {
+            throw new ApiException("Enable to parse : empty response");
+        }
+
         $response = json_decode($response, true);
 
         if ($encoded) {
@@ -128,13 +132,13 @@ class HostedService
         $hash = GenerationUtils::generateNewHash(
             $this->sharedSecret,
             implode('.', [
-                    $timestamp,
-                    $merchantId,
-                    $orderId,
-                    $result,
-                    $message,
-                    $transactionId,
-                    $authCode
+                $timestamp,
+                $merchantId,
+                $orderId,
+                $result,
+                $message,
+                $transactionId,
+                $authCode
             ]),
             $this->shaHashType
         );
@@ -154,13 +158,13 @@ class HostedService
         if (isset($response["AMOUNT"])) {
             $trans->authorizedAmount = $response["AMOUNT"];
         }
-        
+
         $trans->cvnResponseCode = $response["CVNRESULT"];
         $trans->responseCode = $result;
         $trans->responseMessage = $message;
         $trans->avsResponseCode = $response["AVSPOSTCODERESULT"];
         $trans->transactionReference = $ref;
-        
+
         $trans->responseValues = $response;
 
         return $trans;

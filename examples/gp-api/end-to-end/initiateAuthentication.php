@@ -1,10 +1,10 @@
 <?php
 
 /**
-* This sample code is not specific to the Global Payments SDK and is intended as a simple example and
-* should not be treated as Production-ready code. You'll need to add your own message parsing and
-* security in line with your application or website
-*/
+ * This sample code is not specific to the Global Payments SDK and is intended as a simple example and
+ * should not be treated as Production-ready code. You'll need to add your own message parsing and
+ * security in line with your application or website
+ */
 
 /**
  * Merchant integration endpoint responsible for performing the authentication request
@@ -26,7 +26,15 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\ServicesContainer;
 
-$requestData = json_decode(file_get_contents( 'php://input' ));
+$requestData = "";
+try {
+    if (file_exists('php://input')) {
+        $requestData = json_decode(file_get_contents($requestData));
+    }
+} catch (Exception $e) {
+    // TODO: add your error handling here
+    print_r($e);
+}
 
 $config = new GpApiConfig();
 $config->appId = GenerateToken::APP_ID;
@@ -38,7 +46,7 @@ $config->merchantContactUrl = "https://www.example.com/contact-us";
 $config->methodNotificationUrl =  $_SERVER['HTTP_ORIGIN'] . '/examples/gp-api/end-to-end/methodNotificationUrl.php';
 $config->challengeNotificationUrl =  $_SERVER['HTTP_ORIGIN'] . '/examples/gp-api/end-to-end/challengeNotificationUrl.php';
 
-ServicesContainer::configureService( $config );
+ServicesContainer::configureService($config);
 
 $billingAddress = new Address();
 $billingAddress->streetAddress1 = "Apartment 852";
@@ -80,20 +88,19 @@ $threeDSecureData->serverTransactionId = $requestData->serverTransactionId;
 $methodUrlCompletion = MethodUrlCompletion::YES;
 try {
     $threeDSecureData = Secure3dService::initiateAuthentication($paymentMethod, $threeDSecureData)
-    ->withAmount($requestData->order->amount)
-    ->withCurrency($requestData->order->currency)
-    ->withOrderCreateDate(date('Y-m-d H:i:s'))
-    ->withAddress($billingAddress, AddressType::BILLING )
-    ->withAddress($shippingAddress, AddressType::SHIPPING)
-    ->withAddressMatchIndicator(false)
-    ->withAuthenticationSource($requestData->authenticationSource)
-    ->withBrowserData($browserData)
-    ->withMethodUrlCompletion($methodUrlCompletion)
-    ->execute();
-    
+        ->withAmount($requestData->order->amount)
+        ->withCurrency($requestData->order->currency)
+        ->withOrderCreateDate(date('Y-m-d H:i:s'))
+        ->withAddress($billingAddress, AddressType::BILLING)
+        ->withAddress($shippingAddress, AddressType::SHIPPING)
+        ->withAddressMatchIndicator(false)
+        ->withAuthenticationSource($requestData->authenticationSource)
+        ->withBrowserData($browserData)
+        ->withMethodUrlCompletion($methodUrlCompletion)
+        ->execute();
 } catch (ApiException $e) {
     // TODO: add your error handling here
-    print_r ($e);
+    print_r($e);
 }
 
 $status = $threeDSecureData->status;
@@ -117,4 +124,6 @@ if ($status !== "CHALLENGE_REQUIRED") {
 }
 $response = json_encode($response);
 
-echo $response;
+if (!empty($response)) {
+    echo $response;
+}

@@ -1,6 +1,6 @@
 <?php
 
-require_once ('../../../autoload_standalone.php');
+require_once('../../../autoload_standalone.php');
 
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServicesContainer;
@@ -17,6 +17,7 @@ ServicesContainer::configureService($config);
 
 $card = new CreditCardData();
 $card->token = $_GET['token_value'];
+$invoiceNumber = $_GET["invoice_number"];
 
 $address = new Address();
 $address->streetAddress1 = $_GET["Address"];
@@ -27,16 +28,16 @@ $address->country = "United States";
 
 try {
     $response = $card->charge(15)
-            ->withCurrency('USD')
-            ->withAddress($address)
-            ->withInvoiceNumber($_GET["invoice_number"])
-            ->execute();
+        ->withCurrency('USD')
+        ->withAddress($address)
+        ->withInvoiceNumber($invoiceNumber)
+        ->execute();
 
     $body = '<h1>Success!</h1>';
     $body .= '<p>Thank you, ' . $_GET['cardholder_name'] . ', for your order of $' . $_GET["payment_amount"] . '.</p>';
 
     echo "<b>Transaction Success! </b><br/> Transaction Id: " . $response->transactionId;
-    echo "<br />Invoice Number: " . $_GET["invoice_number"];
+    echo "<br />Invoice Number: " . isset($invoiceNumber) ? $invoiceNumber : "";
 
     // i'm running windows, so i had to update this:
     //ini_set("SMTP", "my-mail-server");
@@ -47,7 +48,8 @@ try {
     exit;
 }
 
-function sendEmail($to, $from, $subject, $body, $isHtml) {
+function sendEmail($to, $from, $subject, $body, $isHtml)
+{
     $message = '<html><body>';
     $message .= $body;
     $message .= '</body></html>';

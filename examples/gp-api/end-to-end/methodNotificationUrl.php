@@ -11,8 +11,10 @@ $threeDSMethodData = $_REQUEST["threeDSMethodData"];
 
 try {
    $decodedThreeDSMethodData = base64_decode($threeDSMethodData);
-   $convertedThreeDSMethodData = json_decode($decodedThreeDSMethodData, true);
-   $serverTransID = $convertedThreeDSMethodData['threeDSServerTransID'];
+   if (!empty($decodedThreeDSMethodData)) {
+      $convertedThreeDSMethodData = json_decode($decodedThreeDSMethodData, true);
+      $serverTransID = $convertedThreeDSMethodData['threeDSServerTransID'];
+   }
 
    // TODO: notify client-side that the Method URL step is complete
    // optional to return decoded JSON string, see below
@@ -22,5 +24,7 @@ try {
 ?>
 <script src="globalpayments-3ds.js"></script>
 <script>
-GlobalPayments.ThreeDSecure.handleMethodNotification(<?php echo '"' . $serverTransID . '"'; ?>);
+   <?php if (isset($serverTransID)) { ?>
+      GlobalPayments.ThreeDSecure.handleMethodNotification(<?php echo '"' . $serverTransID . '"'; ?>);
+   <?php  } ?>
 </script>
