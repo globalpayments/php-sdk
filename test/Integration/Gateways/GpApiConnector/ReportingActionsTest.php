@@ -40,6 +40,11 @@ class ReportingActionsTest extends TestCase
         }
     }
 
+    public static function tearDownAfterClass()
+    {
+        BaseGpApiTestConfig::resetGpApiConfig();
+    }
+
     public function setUpConfig()
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);

@@ -74,6 +74,11 @@ class GpApiAchTest extends TestCase
         $this->customer->homePhone = new PhoneNumber('+1', '12345899', PhoneNumberType::HOME);
     }
 
+    public static function tearDownAfterClass()
+    {
+        BaseGpApiTestConfig::resetGpApiConfig();
+    }
+
     public function setUpConfig()
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
@@ -145,33 +150,32 @@ class GpApiAchTest extends TestCase
         $startDate = (new \DateTime())->modify('-1 year');
         $endDate = (new \DateTime())->modify('-2 days');
         $amount = '1.29';
-        try {
-            $response = ReportingService::findTransactionsPaged(1, 10)
-                ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
-                ->andWith(SearchCriteria::END_DATE, $endDate)
-                ->andWith(SearchCriteria::PAYMENT_METHOD_NAME, PaymentMethodName::BANK_TRANSFER)
-                ->andWith(SearchCriteria::PAYMENT_TYPE, PaymentType::SALE)
-                ->andWith(DataServiceCriteria::AMOUNT, $amount)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Find transactions by type failed: ' . $e->getMessage());
-        }
-        $this->assertNotNull($response);
-        $this->assertNotEmpty($response->result);
-        /** @var \GlobalPayments\Api\Entities\Reporting\TransactionSummary $transactionSummary */
-        $transactionSummary = reset($response->result);
-        $this->assertNotNull($transactionSummary);
-        $this->assertEquals($amount, $transactionSummary->amount);
-        $transaction = Transaction::fromId($transactionSummary->transactionId, null, PaymentMethodType::ACH);
-
-        $response = $transaction->reauthorized()
-            ->withDescription('Resubmitting ' . $transaction->referenceNumber)
-            ->withBankTransferData($this->eCheck)
+        $response = ReportingService::findTransactionsPaged(1, 10)
+            ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
+            ->where(SearchCriteria::START_DATE, $startDate)
+            ->andWith(SearchCriteria::END_DATE, $endDate)
+            ->andWith(SearchCriteria::PAYMENT_METHOD_NAME, PaymentMethodName::BANK_TRANSFER)
+            ->andWith(SearchCriteria::PAYMENT_TYPE, PaymentType::SALE)
+            ->andWith(DataServiceCriteria::AMOUNT, $amount)
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        if (count($response->result) > 0) {
+            $this->assertNotEmpty($response->result);
+            /** @var \GlobalPayments\Api\Entities\Reporting\TransactionSummary $transactionSummary */
+            $transactionSummary = reset($response->result);
+            $this->assertNotNull($transactionSummary);
+            $this->assertEquals($amount, $transactionSummary->amount);
+            $transaction = Transaction::fromId($transactionSummary->transactionId, null, PaymentMethodType::ACH);
+
+            $response = $transaction->reauthorized()
+                ->withDescription('Resubmitting ' . $transaction->referenceNumber)
+                ->withBankTransferData($this->eCheck)
+                ->execute();
+
+            $this->assertNotNull($response);
+            $this->assertEquals('SUCCESS', $response->responseCode);
+        }
     }
 
     public function testCheckSaleThenRefund()

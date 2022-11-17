@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Builders\RequestBuilder;
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiAuthorizationRequestBuilder;
 use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiManagementRequestBuilder;
+use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiPayFacRequestBuilder;
 use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiReportRequestBuilder;
 use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiSecure3DRequestBuilder;
 use GlobalPayments\Api\Builders\RequestBuilder\GpEcom\GpEcomAuthorizationRequestBuilder;
@@ -26,7 +27,8 @@ class RequestBuilderFactory
             GpApiAuthorizationRequestBuilder::class,
             GpApiManagementRequestBuilder::class,
             GpApiReportRequestBuilder::class,
-            GpApiSecure3DRequestBuilder::class
+            GpApiSecure3DRequestBuilder::class,
+            GpApiPayFacRequestBuilder::class
         ]
     ];
 

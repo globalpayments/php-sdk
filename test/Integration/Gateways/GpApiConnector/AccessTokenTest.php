@@ -25,6 +25,11 @@ class AccessTokenTest extends TestCase
         $this->setUpConfig();
     }
 
+    public static function tearDownAfterClass()
+    {
+        BaseGpApiTestConfig::resetGpApiConfig();
+    }
+
     public function testGenerateAccessToken()
     {
         $accessTokenInfo = GpApiService::generateTransactionKey($this->config);

@@ -6,6 +6,20 @@
 
 ## Latest version
 #### Enhancements:
+- GP-API: Onboard merchants feature
+- GP-API: Decoupled Authentication
+
+#### Bug Fixes:
+- GP-API: Fix phone country code for ISO code "DO"
+- GP-API/GP-ECOM: Fix end-to-end examples
+- Portico: APPLE PAY / GOOGLE PAY fix
+
+## v6.0.0 (11/03/2022)
+#### Enhancements:
+- Security vulnerabilities fixes
+
+## v6.0.0 (10/20/2022)
+#### Enhancements:
 - GP-API/GP-ECOM: Sunset 3DS1
 - Add method on CountryUtil to extract phone country code based on ISO-2/ISO-3/the name of the country 
 - GP-API Update unit tests with new set of credentials for GP-API

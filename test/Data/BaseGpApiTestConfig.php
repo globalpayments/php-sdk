@@ -5,14 +5,17 @@ namespace GlobalPayments\Api\Tests\Data;
 use GlobalPayments\Api\Entities\CustomWebProxy;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
+use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 
 class BaseGpApiTestConfig
 {
+    const APP_ID = '4gPqnGBkppGYvoE5UX9EWQlotTxGUDbs';
+    const APP_KEY = 'FQyJA5VuEQfcji2M';
 
-    public static $appId = '4gPqnGBkppGYvoE5UX9EWQlotTxGUDbs';
-    public static $appKey = 'FQyJA5VuEQfcji2M';
+    public static $appId = self::APP_ID;
+    public static $appKey = self::APP_KEY;
 
     private static $logEnabled = true;
     private static $dynamicHeaderEnabled = false;
@@ -54,4 +57,10 @@ class BaseGpApiTestConfig
         return $config;
     }
 
+    static function resetGpApiConfig()
+    {
+        ServicesContainer::removeConfiguration();
+        self::$appId = self::APP_ID;
+        self::$appKey = self::APP_KEY;
+    }
 }

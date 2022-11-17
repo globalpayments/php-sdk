@@ -2,6 +2,8 @@
 
 namespace GlobalPayments\Api\Entities\PayFac;
 
+use GlobalPayments\Api\Entities\Address;
+
 class BankAccountData
 {
     /**
@@ -34,9 +36,9 @@ class BankAccountData
     
     /**
      * Valid values are:
-            C – Checking
-            S – Savings
-            G – General Ledger
+            C - Checking
+            S - Savings
+            G - General Ledger
      *
      * @var string
      */
@@ -57,9 +59,14 @@ class BankAccountData
     public $routingNumber;
     
     /**
-     * Bank account-holder’s name. *Required if payment method is a bank account.
+     * Bank account-holder's name. *Required if payment method is a bank account.
      *
      * @var string
      */
     public $accountHolderName;
+
+    /**
+     * @var Address
+     */
+    public $bankAddress;
 }

@@ -26,15 +26,7 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\ServicesContainer;
 
-$requestData = "";
-try {
-    if (file_exists('php://input')) {
-        $requestData = json_decode(file_get_contents($requestData));
-    }
-} catch (Exception $e) {
-    // TODO: add your error handling here
-    print_r($e);
-}
+$requestData = json_decode(file_get_contents('php://input'));
 
 $config = new GpApiConfig();
 $config->appId = GenerateToken::APP_ID;

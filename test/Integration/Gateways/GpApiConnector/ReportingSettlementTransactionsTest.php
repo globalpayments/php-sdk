@@ -27,6 +27,11 @@ class ReportingSettlementTransactionsTest extends TestCase
         ServicesContainer::configureService($this->setUpConfig());
     }
 
+    public static function tearDownAfterClass()
+    {
+        BaseGpApiTestConfig::resetGpApiConfig();
+    }
+
     public function testReportFindSettlementTransactionsByStartDateAndEndDate()
     {
         $startDate = (new \DateTime())->modify('-30 days');

@@ -23,6 +23,11 @@ class ReportingStoredPaymentMethodsTest extends TestCase
         ServicesContainer::configureService($this->setUpConfig());
     }
 
+    public static function tearDownAfterClass()
+    {
+        BaseGpApiTestConfig::resetGpApiConfig();
+    }
+
     public function setUpConfig()
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);

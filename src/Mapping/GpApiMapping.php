@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Mapping;
 
+use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\BatchSummary;
 use GlobalPayments\Api\Entities\CardIssuerResponse;
@@ -12,6 +13,7 @@ use GlobalPayments\Api\Entities\Enums\CaptureMode;
 use GlobalPayments\Api\Entities\Enums\FraudFilterResult;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
@@ -21,24 +23,38 @@ use GlobalPayments\Api\Entities\FraudManagementResponse;
 use GlobalPayments\Api\Entities\FraudRule;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
-use GlobalPayments\Api\Entities\PayLinkData;
 use GlobalPayments\Api\Entities\PayLinkResponse;
+use GlobalPayments\Api\Entities\PaymentMethodList;
+use GlobalPayments\Api\Entities\Person;
+use GlobalPayments\Api\Entities\PersonList;
+use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Entities\Reporting\ActionSummary;
 use GlobalPayments\Api\Entities\Reporting\DepositSummary;
 use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
+use GlobalPayments\Api\Entities\Reporting\MerchantSummary;
 use GlobalPayments\Api\Entities\Reporting\PayLinkSummary;
 use GlobalPayments\Api\Entities\Reporting\StoredPaymentMethodSummary;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\Entities\User;
+use GlobalPayments\Api\Entities\UserLinks;
+use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\PaymentMethods\ECheck;
 use GlobalPayments\Api\Utils\StringUtils;
 use GlobalPayments\Api\Entities\MessageExtension;
+use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 
 class GpApiMapping
 {
     const DCC_RESPONSE = 'RATE_LOOKUP';
     const LINK_CREATE = "LINK_CREATE";
     const LINK_EDIT = "LINK_EDIT";
+    const MERCHANT_CREATE = 'MERCHANT_CREATE';
+    const MERCHANT_LIST = 'MERCHANT_LIST';
+    const MERCHANT_SINGLE = 'MERCHANT_SINGLE';
+    const MERCHANT_EDIT = 'MERCHANT_EDIT';
+    const MERCHANT_EDIT_INITIATED = 'MERCHANT_EDIT_INITIATED';
     /**
      * Map a response to a Transaction object for further chaining
      *
@@ -285,6 +301,12 @@ class GpApiMapping
                     array_push($report->result, self::mapPayLinkSummary($link));
                 }
                 break;
+            case ReportType::FIND_MERCHANTS_PAGED:
+                $report = self::setPagingInfo($response);
+                foreach ($response->merchants as $merchant) {
+                    array_push($report->result, self::mapMerchantSummary($merchant));
+                }
+                return $report;
             default:
                 throw new ApiException("Report type not supported!");
         }
@@ -627,8 +649,7 @@ class GpApiMapping
             $response->three_ds->liability_shift : null;
         $threeDSecure->authenticationType = !empty($response->three_ds->authentication_request_type) ?
             $response->three_ds->authentication_request_type : null;
-        $threeDSecure->acsInfoIndicator = !empty($response->three_ds->acs_decoupled_response_indicator) ?
-            $response->three_ds->acs_decoupled_response_indicator : null;
+        $threeDSecure->decoupledResponseIndicator = $response->three_ds->acs_decoupled_response_indicator ?? null;
         $threeDSecure->whitelistStatus = !empty($response->three_ds->whitelist_status) ?
             $response->three_ds->whitelist_status : null;
         if (!empty($response->three_ds->message_extension)) {
@@ -810,7 +831,152 @@ class GpApiMapping
         return $transaction;
     }
 
-    private static function validateStringDate($date)
+    private static function mapMerchantSummary($merchant): MerchantSummary
+    {
+        $merchantInfo = new MerchantSummary();
+        $merchantInfo->id = $merchant->id;
+        $merchantInfo->name = $merchant->name;
+        $merchantInfo->status = $merchant->status ?? '';
+        if (!empty($merchant->links)) {
+            foreach ($merchant->links as $link) {
+                $userLink = new UserLinks();
+                $userLink->rel = $link->rel ?? null;
+                $userLink->href = $link->href ?? null;
+                $merchantInfo->links[] = $userLink;
+            }
+        }
+
+        return $merchantInfo;
+    }
+
+    public static function mapMerchantsEndpointResponse($response): User
+    {
+        if (empty($response->action->type)) {
+            throw new UnsupportedTransactionException(sprintf("Empty action type response!"));
+        }
+
+        switch ($response->action->type) {
+            case self::MERCHANT_CREATE:
+            case self::MERCHANT_EDIT:
+            case self::MERCHANT_EDIT_INITIATED:
+            case self::MERCHANT_SINGLE:
+                $user = new User();
+                $user->userId = $response->id;
+                $user->name = $response->name ?? null;
+                $user->userStatus = $response->status;
+                $user->userType = $response->type;
+                $user->timeCreate = !empty($response->time_created) ? new \DateTime($response->time_created) : null;
+                $user->timeLastUpdated = !empty($response->time_last_updated) ?
+                    new \DateTime($response->time_last_updated) : null;
+                $user->responseCode = $response->action->result_code ?? null;
+                $user->statusDescription = $response->status_description ?? null;
+                $user->email = $response->email ?? null;
+                if (!empty($response->address)) {
+                    foreach ($response->address as $address) {
+                        $user->addresses[] = self::mapAddressObject($address);
+                    }
+                }
+                if (
+                    !empty($response->contact_phone->country_code) &&
+                    !empty($response->contact_phone->subscriber_number)
+                ) {
+                    $user->contactPhone = new PhoneNumber(
+                        $response->contact_phone->country_code,
+                        $response->contact_phone->subscriber_number,
+                        PhoneNumberType::WORK
+                    );
+                }
+                if (!empty($response->persons)) {
+                    self::mapMerchantPersonList($response->persons, $user);
+                }
+                if (!empty($response->payment_methods)) {
+                    self::mapMerchantPaymentMethods($response->payment_methods,$user);
+                }
+                return $user;
+            default:
+                throw new UnsupportedTransactionException(sprintf("Unknown action type %s", $response->action->type));
+        }
+    }
+
+    /**
+     * @param $paymentMethods
+     * @param User $user
+     */
+    private static function mapMerchantPaymentMethods($paymentMethods, &$user)
+    {
+        $pmList = new PaymentMethodList();
+        foreach ($paymentMethods as $paymentMethod) {
+            if (isset($paymentMethod->bank_transfer)) {
+                $bankTransfer = $paymentMethod->bank_transfer;
+                $pm = new ECheck();
+                $pm->checkType = $bankTransfer->account_holder_type ?? null;
+                $pm->accountNumber = $bankTransfer->account_number ?? null;
+                $pm->accountType = $bankTransfer->account_type ?? null;
+                if (isset($bankTransfer->bank)) {
+                    $pm->routingNumber = $bankTransfer->bank->code ?? null;
+                    $pm->bankName = $bankTransfer->bank->name ?? null;
+                }
+                $pm->checkHolderName = $paymentMethod->name ?? null;
+            }
+            if (isset($paymentMethod->card)) {
+                $card = $paymentMethod->card;
+                $pm = new CreditCardData();
+                $pm->cardHolderName = $card->name ?? null;
+                $pm->number = $card->number ?? null;
+                $pm->expYear = $card->expiry_year ?? null;
+            }
+            $functions = $paymentMethod->functions ?? null;
+            $pmList->append(['functions' => $functions, 'payment_method' => $pm]);
+        }
+        $user->paymentMethodList = $pmList;
+    }
+
+    private static function mapAddressObject()
+    {
+        $userAddress = new Address();
+        $userAddress->streetAddress1 = $address->line_1 ?? null;
+        $userAddress->streetAddress2 = $address->line_2 ?? null;
+        $userAddress->streetAddress3 = $address->line_3 ?? null;
+        $userAddress->city = $address->city ?? null;
+        $userAddress->state = $address->state ?? null;
+        $userAddress->postalCode = $address->postal_code ?? null;
+        $userAddress->countryCode = $address->country ?? null;
+        $userAddress->type = !empty($address->functions) ? $address->functions[0] : null;
+
+        return $userAddress;
+    }
+
+    private static function mapMerchantPersonList($persons, &$user)
+    {
+        $personList = new PersonList();
+        foreach ($persons as $person) {
+            $newPerson = new Person();
+            $newPerson->functions = $person->functions;
+            $newPerson->firstName = $person->first_name;
+            $newPerson->middleName = $person->middle_name;
+            $newPerson->lastName = $person->last_name;
+            $newPerson->email = $person->email;
+            if (!empty($person->address)) {
+                $newPerson->address = new Address();
+                $newPerson->address->streetAddress1 = $person->address->line_1 ?? null;
+                $newPerson->address->streetAddress2 = $person->address->line_2 ?? null;
+                $newPerson->address->streetAddress3 = $person->address->line_3 ?? null;
+                $newPerson->address->city = $person->address->city ?? null;
+                $newPerson->address->state = $person->address->state ?? null;
+                $newPerson->address->postalCode = $person->address->postal_code ?? null;
+                $newPerson->address->country = $person->address->country ?? null;
+            }
+
+            $newPerson->workPhone = !empty($person->work_phone) ?
+                new PhoneNumber('', $person->work_phone->subscriber_number, PhoneNumberType::WORK) : null;
+            $newPerson->homePhone = !empty($person->contact_phone) ?
+                new PhoneNumber('', $person->contact_phone->subscriber_number, PhoneNumberType::HOME) : null;
+            $personList->append($newPerson);
+        }
+        $user->personList = $personList;
+    }
+
+    private static function validateStringDate($date): string
     {
         try {
             new \DateTime($date);

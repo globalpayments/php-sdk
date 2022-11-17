@@ -34,6 +34,11 @@ class GpApiSdkCertificationTest extends TestCase
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
+    public static function tearDownAfterClass()
+    {
+        ServicesContainer::removeConfiguration();
+    }
+
     public function testCreditCard_Visa_Success()
     {
         $this->card->number = "4263970000005262";

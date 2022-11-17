@@ -70,7 +70,7 @@ class IsoCountries
         ["name" => "Denmark", "numeric" => "208", "alpha2" => "DK", "alpha3" => "DNK", "phoneCode" => ["45"]],
         ["name" => "Djibouti", "numeric" => "262", "alpha2" => "DJ", "alpha3" => "DJI", "phoneCode" => ["253"]],
         ["name" => "Dominica", "numeric" => "212", "alpha2" => "DM", "alpha3" => "DMA", "phoneCode" => ["1-767"]],
-        ["name" => "Dominican Republic", "numeric" => "214", "alpha2" => "DO", "alpha3" => "DOM", "phoneCode" => ["1-809, 1-829, 1-849"]],
+        ["name" => "Dominican Republic", "numeric" => "214", "alpha2" => "DO", "alpha3" => "DOM", "phoneCode" => ["1-809", "1-829", "1-849"]],
         ["name" => "Ecuador", "numeric" => "218", "alpha2" => "EC", "alpha3" => "ECU", "phoneCode" => ["593"]],
         ["name" => "Egypt", "numeric" => "818", "alpha2" => "EG", "alpha3" => "EGY", "phoneCode" => ["20"]],
         ["name" => "El Salvador", "numeric" => "222", "alpha2" => "SV", "alpha3" => "SLV", "phoneCode" => ["503"]],

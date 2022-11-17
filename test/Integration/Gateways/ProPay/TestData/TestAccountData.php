@@ -147,7 +147,7 @@ class TestAccountData
         $card = new CreditCardData();
         $card->number = '4111111111111111';
         $card->expMonth = 12;
-        $card->expYear = 2025;
+        $card->expYear = date('Y', strtotime('+1 year'));
         $card->cvn = '123';
         $card->cardHolderName = 'Joe Smith';
         

@@ -14,17 +14,7 @@ use \GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 
 // TODO: consume card data sent from the JS Library ($requestData)
 
-$rawData = "";
-try {
-   if (file_exists('php://input')) {
-      $rawData = json_decode(file_get_contents($rawData));
-   }
-} catch (ApiException $e) {
-   // TODO: add your error handling here
-   print_r($e);
-}
-
-$decodedData = json_decode($rawData);
+$decodedData = json_decode(file_get_contents('php://input'));
 $paymenttoken = $decodedData->tokenResponse;
 
 // configure client & request settings

@@ -884,11 +884,7 @@ class Secure3dBuilder extends BaseBuilder
      */
     public function withDecoupledFlowRequest($decoupledFlowRequest)
     {
-        if ($decoupledFlowRequest == true) {
-            $this->decoupledFlowRequest = "TRUE";
-        } else {
-            $this->decoupledFlowRequest = "FALSE";
-        }
+        $this->decoupledFlowRequest = $decoupledFlowRequest;
         return $this;
     }
 

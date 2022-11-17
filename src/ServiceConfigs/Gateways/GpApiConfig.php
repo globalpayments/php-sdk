@@ -96,6 +96,7 @@ class GpApiConfig extends GatewayConfig
         $services->gatewayConnector = $gateway;
         $services->reportingService = $gateway;
 
+        $services->setPayFacProvider($gateway);
         $services->setSecure3dProvider(Secure3dVersion::ONE, $gateway);
         $services->setSecure3dProvider(Secure3dVersion::TWO, $gateway);
     }

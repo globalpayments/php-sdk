@@ -7,18 +7,21 @@ use GlobalPayments\Api\Builders\ReportBuilder;
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\ReportType;
+use GlobalPayments\Api\Entities\Enums\TransactionModifier;
+use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Mapping\EnumMapping;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Utils\StringUtils;
+use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 
 class GpApiReportRequestBuilder implements IRequestBuilder
 {
     public static function canProcess($builder)
     {
-        if ($builder instanceof TransactionReportBuilder) {
+        if ($builder instanceof ReportBuilder) {
             return true;
         }
 
@@ -232,8 +235,14 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $queryParams['expiration_date'] = !empty($builder->searchBuilder->expirationDate) ?
                     $builder->searchBuilder->expirationDate->format('Y-m-d') : null;
                 break;
+            case ReportType::FIND_MERCHANTS_PAGED:
+                $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT;
+                $verb = 'GET';
+                $queryParams['page'] = $builder->page;
+                $queryParams['page_size'] = $builder->pageSize;
+                break;
             default:
-                return null;
+                throw new ArgumentException(sprintf("Unknown report type!"));
         }
 
         return new GpApiRequest($endpoint, $verb, $payload, $queryParams);

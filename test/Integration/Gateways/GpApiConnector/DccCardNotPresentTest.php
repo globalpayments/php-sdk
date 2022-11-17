@@ -29,6 +29,11 @@ class DccCardNotPresentTest extends TestCase
         $this->card->cardHolderName = "James Mason";
     }
 
+    public static function tearDownAfterClass()
+    {
+        BaseGpApiTestConfig::resetGpApiConfig();
+    }
+
     public function setUpConfig()
     {
         $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);

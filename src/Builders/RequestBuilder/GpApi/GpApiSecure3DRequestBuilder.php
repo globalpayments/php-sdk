@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Builders\RequestBuilder\GpApi;
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
 use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
+use GlobalPayments\Api\Entities\Enums\DecoupledFlowRequest;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
@@ -79,8 +80,8 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
         $threeDS['payment_method'] = $this->setPaymentMethodParam($builder->paymentMethod);
         $threeDS['notifications'] = [
             'challenge_return_url' => $config->challengeNotificationUrl,
-            'three_ds_method_return_url' => $config->methodNotificationUrl
-
+            'three_ds_method_return_url' => $config->methodNotificationUrl,
+            'decoupled_notification_url' => $builder->decoupledNotificationUrl ?? null
         ];
         if (!empty($builder->storedCredential)) {
             $this->setStoreCredentialParam($builder->storedCredential, $threeDS);
@@ -91,7 +92,6 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
 
     private function initiateAuthenticationData(Secure3dBuilder $builder, GpApiConfig $config)
     {
-        $threeDS = [];
         $threeDS['three_ds'] = [
             'source' => (string) $builder->authenticationSource,
             'preference' => $builder->challengeRequestIndicator,
@@ -233,6 +233,14 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
                 'sdk_trans_reference' => $builder->mobileData->sdkTransReference
             ];
         }
+        $threeDS['notifications'] = [
+            'decoupled_notification_url' => $builder->decoupledNotificationUrl ?? null
+        ];
+        if (isset($builder->decoupledFlowRequest)) {
+            $threeDS['decoupled_flow_request'] = $builder->decoupledFlowRequest === true ? DecoupledFlowRequest::DECOUPLED_PREFERRED :
+                DecoupledFlowRequest::DO_NOT_USE_DECOUPLED;
+        }
+        $threeDS['decoupled_flow_timeout'] = $builder->decoupledFlowTimeout ?? null;
 
         return $threeDS;
     }

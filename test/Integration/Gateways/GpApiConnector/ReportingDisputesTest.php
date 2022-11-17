@@ -39,6 +39,11 @@ class ReportingDisputesTest extends TestCase
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
+    public static function tearDownAfterClass()
+    {
+        BaseGpApiTestConfig::resetGpApiConfig();
+    }
+
     #region Report Disputes
 
     public function testReportDisputeDetail()

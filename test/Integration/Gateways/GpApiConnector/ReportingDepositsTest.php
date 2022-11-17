@@ -37,6 +37,11 @@ class ReportingDepositsTest extends TestCase
         }
     }
 
+    static function tearDownAfterClass()
+    {
+        BaseGpApiTestConfig::resetGpApiConfig();
+    }
+
     public function testReportDepositDetail()
     {
         $depositId = !empty($this->depositSummary) ? $this->depositSummary->depositId : 'DEP_2342423443';

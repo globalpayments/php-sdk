@@ -18,6 +18,7 @@ use GlobalPayments\Api\Entities\PayFac\RenewAccountData;
 use GlobalPayments\Api\Entities\PayFac\SingleSignOnData;
 use GlobalPayments\Api\Entities\PayFac\OwnerDetailsResponseData;
 use GlobalPayments\Api\Entities\PayFac\DeviceDetails;
+use GlobalPayments\Api\Entities\User;
 
 class ProPayConnector extends XmlGateway implements IPayFacProvider
 {
@@ -661,5 +662,10 @@ class ProPayConnector extends XmlGateway implements IPayFacProvider
         $xmlTrans->appendChild($devicesList);
         
         $xmlTrans->appendChild($xml->createElement('TimeZone', $deviceDetails->timezone));
+    }
+
+    public function processBoardingUser(PayFacBuilder $builder) : User
+    {
+        throw new UnsupportedTransactionException(sprintf('Method %s not supported', __METHOD__));
     }
 }

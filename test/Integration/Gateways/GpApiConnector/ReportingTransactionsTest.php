@@ -23,9 +23,19 @@ use ReflectionClass;
 
 class ReportingTransactionsTest extends TestCase
 {
+    private $startDate;
+    private $endDate;
+
     public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
+        $this->startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
+        $this->endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
+    }
+
+    public static function tearDownAfterClass()
+    {
+        BaseGpApiTestConfig::resetGpApiConfig();
     }
 
     public function testTransactionDetailsReport()
@@ -56,13 +66,11 @@ class ReportingTransactionsTest extends TestCase
 
     public function testReportFindTransactionsByStartDateAndEndDate()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
-        $endDate = (new \DateTime())->modify('-3 days');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED)
-                ->where(SearchCriteria::START_DATE, $startDate)
-                ->andWith(SearchCriteria::END_DATE, $endDate)
+                ->where(SearchCriteria::START_DATE, $this->startDate)
+                ->andWith(SearchCriteria::END_DATE, $this->endDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail("Find transactions failed with " . $e->getMessage());
@@ -72,19 +80,18 @@ class ReportingTransactionsTest extends TestCase
         $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
         foreach ($response->result as $rs) {
-            $this->assertLessThanOrEqual($endDate->format('Y-m-d'), $rs->transactionDate->format('Y-m-d'));
-            $this->assertGreaterThanOrEqual($startDate->format('Y-m-d'), $rs->transactionDate->format('Y-m-d'));
+            $this->assertLessThanOrEqual($this->endDate->format('Y-m-d'), $rs->transactionDate->format('Y-m-d'));
+            $this->assertGreaterThanOrEqual($this->startDate->format('Y-m-d'), $rs->transactionDate->format('Y-m-d'));
         }
     }
 
     public function testReportFindTransactionsById()
     {
         $transactionId = 'TRN_RyWZELCUbOq12IPDowbOevTC9BZxZi_6827116a3d1b';
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->withTransactionId($transactionId)
-                ->where(SearchCriteria::START_DATE, $startDate)
+                ->where(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail("Find transactions by Id failed: " . $e->getMessage());
@@ -99,11 +106,10 @@ class ReportingTransactionsTest extends TestCase
     public function testReportFindTransactionsById_WrongId()
     {
         $transactionId = GenerationUtils::getGuid();;
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->withTransactionId($transactionId)
-                ->where(SearchCriteria::START_DATE, $startDate)
+                ->where(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail("Find transactions by Id failed: " . $e->getMessage());
@@ -117,12 +123,12 @@ class ReportingTransactionsTest extends TestCase
     public function testReportFindTransactionsByBatchId()
     {
         $batchId = 'BAT_870078';
-        $startDate = new \DateTime('2020-11-01 midnight');
+
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                 ->where(SearchCriteria::BATCH_ID, $batchId)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by batch id failed: ' . $e->getMessage());
@@ -139,12 +145,11 @@ class ReportingTransactionsTest extends TestCase
     public function testReportFindTransactionsByType()
     {
         $paymentType = PaymentType::SALE;
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                 ->where(SearchCriteria::PAYMENT_TYPE, $paymentType)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by type failed: ' . $e->getMessage());
@@ -162,7 +167,7 @@ class ReportingTransactionsTest extends TestCase
             $responseRefund = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                 ->where(SearchCriteria::PAYMENT_TYPE, $paymentTypeRefund)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by type failed: ' . $e->getMessage());
@@ -183,12 +188,11 @@ class ReportingTransactionsTest extends TestCase
         $amount = 19.99;
         $currency = 'USD'; //case sensitive
         $country = 'US'; //case sensitive
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                 ->where(DataServiceCriteria::AMOUNT, $amount)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->andWith(DataServiceCriteria::CURRENCY, $currency)
                 ->andWith(DataServiceCriteria::COUNTRY, $country)
                 ->execute();
@@ -209,12 +213,11 @@ class ReportingTransactionsTest extends TestCase
     public function testReportFindTransactionsByChannel()
     {
         $channel = Channel::CardNotPresent;
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                 ->where(SearchCriteria::CHANNEL, $channel)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by channel failed: ' . $e->getMessage());
@@ -232,7 +235,7 @@ class ReportingTransactionsTest extends TestCase
             $responseCP = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                 ->where(SearchCriteria::CHANNEL, $channelCP)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by channel failed: ' . $e->getMessage());
@@ -251,12 +254,11 @@ class ReportingTransactionsTest extends TestCase
     public function testReportFindTransactionsByStatus()
     {
         $transactionStatus = TransactionStatus::CAPTURED;
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                 ->where(SearchCriteria::TRANSACTION_STATUS, $transactionStatus)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by status failed: ' . $e->getMessage());
@@ -272,8 +274,6 @@ class ReportingTransactionsTest extends TestCase
 
     public function testReportFindTransactionsBy_AllStatuses()
     {
-        $startDate = new \DateTime('2020-11-01 midnight');
-
         $transactionStatus = new TransactionStatus();
         $reflectionClass = new ReflectionClass($transactionStatus);
         foreach ($reflectionClass->getConstants() as $value) {
@@ -281,7 +281,7 @@ class ReportingTransactionsTest extends TestCase
                 $response = ReportingService::findTransactionsPaged(1, 10)
                     ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                     ->where(SearchCriteria::TRANSACTION_STATUS, $value)
-                    ->andWith(SearchCriteria::START_DATE, $startDate)
+                    ->andWith(SearchCriteria::START_DATE, $this->startDate)
                     ->execute();
             } catch (ApiException $e) {
                 $this->fail('Find transactions by status failed: ' . $e->getMessage());
@@ -300,12 +300,11 @@ class ReportingTransactionsTest extends TestCase
     {
         $cardBrand = 'VISA';
         $authCode = '12345';
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                 ->where(SearchCriteria::CARD_BRAND, $cardBrand)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->andWith(SearchCriteria::AUTH_CODE, $authCode)
                 ->execute();
         } catch (ApiException $e) {
@@ -323,8 +322,6 @@ class ReportingTransactionsTest extends TestCase
 
     public function testReportFindTransactionsBy_AllCardBrands()
     {
-        $startDate = new \DateTime('2020-11-01 midnight');
-
         //"MC", "DINERS", "JCB" not supported in sandbox env
         $cardBrand = array("VISA", "AMEX", "DISCOVER", "CUP");
         foreach ($cardBrand as $value) {
@@ -332,7 +329,7 @@ class ReportingTransactionsTest extends TestCase
                 $response = ReportingService::findTransactionsPaged(1, 10)
                     ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                     ->where(SearchCriteria::CARD_BRAND, $value)
-                    ->andWith(SearchCriteria::START_DATE, $startDate)
+                    ->andWith(SearchCriteria::START_DATE, $this->startDate)
                     ->execute();
             } catch (ApiException $e) {
                 $this->fail('Find transactions by card brand failed: ' . $e->getMessage());
@@ -350,12 +347,11 @@ class ReportingTransactionsTest extends TestCase
     public function testReportFindTransactionsByReference()
     {
         $referenceNumber = '1010000158841908572';
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                 ->where(SearchCriteria::REFERENCE_NUMBER, $referenceNumber)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by reference number failed: ' . $e->getMessage());
@@ -372,12 +368,11 @@ class ReportingTransactionsTest extends TestCase
     public function testReportFindTransactionsBy_WrongReference()
     {
         $referenceNumber = GenerationUtils::getGuid();;
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                 ->where(SearchCriteria::REFERENCE_NUMBER, $referenceNumber)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by reference number failed: ' . $e->getMessage());
@@ -391,12 +386,11 @@ class ReportingTransactionsTest extends TestCase
     public function testReportFindTransactionsByBrandReference()
     {
         $brandReference = 's9RpaDwXq1sPRkbP';
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                 ->where(SearchCriteria::BRAND_REFERENCE, $brandReference)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by brand reference failed: ' . $e->getMessage());
@@ -413,12 +407,11 @@ class ReportingTransactionsTest extends TestCase
     public function testReportFindTransactionsBy_WrongBrandReference()
     {
         $brandReference = GenerationUtils::getGuid();;
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                 ->where(SearchCriteria::BRAND_REFERENCE, $brandReference)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by brand reference failed: ' . $e->getMessage());
@@ -431,7 +424,6 @@ class ReportingTransactionsTest extends TestCase
 
     public function testReportFindTransactionsByEntryMode()
     {
-        $startDate = new \DateTime('2020-11-01 midnight');
         $entryMode = new PaymentEntryMode();
         $reflectionClass = new ReflectionClass($entryMode);
         foreach ($reflectionClass->getConstants() as $value) {
@@ -439,7 +431,7 @@ class ReportingTransactionsTest extends TestCase
                 $response = ReportingService::findTransactionsPaged(1, 10)
                     ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
                     ->where(SearchCriteria::PAYMENT_ENTRY_MODE, $value)
-                    ->andWith(SearchCriteria::START_DATE, $startDate)
+                    ->andWith(SearchCriteria::START_DATE, $this->startDate)
                     ->execute();
             } catch (ApiException $e) {
                 $this->fail('Find transactions by entry mode failed: ' . $e->getMessage());
@@ -459,13 +451,12 @@ class ReportingTransactionsTest extends TestCase
         $numberFirst6 = "411111";
         $numberLast4 = "1111";
 
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED)
                 ->where(SearchCriteria::CARD_NUMBER_FIRST_SIX, $numberFirst6)
                 ->andWith(SearchCriteria::CARD_NUMBER_LAST_FOUR, $numberLast4)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by first6 and last4 of card number  failed: ' . $e->getMessage());
@@ -484,13 +475,12 @@ class ReportingTransactionsTest extends TestCase
     {
         $tokenFirst6 = "516730";
         $tokenLast4 = "5507";
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED)
                 ->where(SearchCriteria::TOKEN_FIRST_SIX, $tokenFirst6)
                 ->andWith(SearchCriteria::TOKEN_LAST_FOUR, $tokenLast4)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by first6 and last4 of token failed: ' . $e->getMessage());
@@ -508,14 +498,13 @@ class ReportingTransactionsTest extends TestCase
     {
         $tokenFirst6 = "516730";
         $tokenLast4 = "5507";
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED)
                 ->where(SearchCriteria::TOKEN_FIRST_SIX, $tokenFirst6)
                 ->andWith(SearchCriteria::TOKEN_LAST_FOUR, $tokenLast4)
                 ->andWith(SearchCriteria::PAYMENT_METHOD_NAME, PaymentMethodName::DIGITAL_WALLET)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by first6 and last4 of token failed: ' . $e->getMessage());
@@ -533,14 +522,13 @@ class ReportingTransactionsTest extends TestCase
     {
         $tokenFirst6 = "516730";
         $tokenLast4 = "5507";
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED)
                 ->where(SearchCriteria::TOKEN_FIRST_SIX, $tokenFirst6)
                 ->andWith(SearchCriteria::TOKEN_LAST_FOUR, $tokenLast4)
                 ->andWith(SearchCriteria::PAYMENT_METHOD_NAME, PaymentMethodName::CARD)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->assertEquals('40043', $e->responseCode);
@@ -553,11 +541,10 @@ class ReportingTransactionsTest extends TestCase
         $paymentMethodName = new PaymentMethodName();
         $reflectionClass = new ReflectionClass($paymentMethodName);
         foreach ($reflectionClass->getConstants() as $value) {
-            $startDate = new \DateTime('2020-11-01 midnight');
             try {
                 $response = ReportingService::findTransactionsPaged(1, 10)
                     ->where(SearchCriteria::PAYMENT_METHOD, $value)
-                    ->andWith(SearchCriteria::START_DATE, $startDate)
+                    ->andWith(SearchCriteria::START_DATE, $this->startDate)
                     ->execute();
             } catch (ApiException $e) {
                 $this->fail('Find transactions by payment method failed: ' . $e->getMessage());
@@ -570,11 +557,10 @@ class ReportingTransactionsTest extends TestCase
     public function testReportFindTransactionsBy_Name()
     {
         $name = "NAME NOT PROVIDED";
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->where(SearchCriteria::CARDHOLDER_NAME, $name)
-                ->andWith(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
                 ->execute();
         } catch (ApiException $e) {
             $this->fail('Find transactions by name failed: ' . $e->getMessage());
@@ -640,10 +626,9 @@ class ReportingTransactionsTest extends TestCase
 
     public function testReportFindTransactions_InvalidAccountName()
     {
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             ReportingService::findTransactionsPaged(1, 10)
-                ->where(SearchCriteria::START_DATE, $startDate)
+                ->where(SearchCriteria::START_DATE, $this->startDate)
                 ->andWith(SearchCriteria::ACCOUNT_NAME, "12345")
                 ->execute();
         } catch (ApiException $e) {
@@ -668,11 +653,10 @@ class ReportingTransactionsTest extends TestCase
 
     public function testReportFindTransactionsByPaymentMethod()
     {
-        $startDate = new \DateTime('2020-11-01 midnight');
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
-                ->where(SearchCriteria::START_DATE, $startDate)
+                ->where(SearchCriteria::START_DATE, $this->startDate)
                 ->andWith(SearchCriteria::PAYMENT_METHOD_NAME, PaymentMethodName::BANK_TRANSFER)
                 ->execute();
         } catch (ApiException $e) {

@@ -34,7 +34,8 @@ class TestCards
         return intval(date('Y')) + 1;
     }
 
-    public static function expiredCardExpYear() {
+    public static function expiredCardExpYear()
+    {
         return 2012;
     }
 
@@ -333,12 +334,12 @@ class EcommerceTest extends TestCase
         $config = new PorticoConfig();
         $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
-                              'https://cert.api2-c.heartlandportico.com/':
-                              'https://cert.api2.heartlandportico.com';
+            'https://cert.api2-c.heartlandportico.com/' :
+            'https://cert.api2.heartlandportico.com';
         return $config;
     }
 
-    protected function setup() : void
+    protected function setup(): void
     {
         ServicesContainer::configureService($this->config());
         $this->publicKey = 'pkapi_cert_jKc1FtuyAydZhZfbB3';
@@ -353,7 +354,8 @@ class EcommerceTest extends TestCase
             $response = BatchService::closeBatch();
             $this->assertNotNull($response);
         } catch (ApiException $e) {
-            if (false === strpos($e->getMessage(), static::BATCH_NOT_OPEN)
+            if (
+                false === strpos($e->getMessage(), static::BATCH_NOT_OPEN)
                 && false === strpos($e->getMessage(), static::NO_TRANS_IN_BATCH)
             ) {
                 $this->fail($e->getMessage());
@@ -1949,63 +1951,64 @@ class EcommerceTest extends TestCase
             // printf('batch id: %s', $response->id);
             // printf('sequence number: %s', $response->sequenceNumber);
         } catch (ApiException $e) {
-            if (false === strpos($e->getMessage(), static::BATCH_NOT_OPEN)
+            if (
+                false === strpos($e->getMessage(), static::BATCH_NOT_OPEN)
                 && false === strpos($e->getMessage(), static::NO_TRANS_IN_BATCH)
             ) {
                 $this->fail($e->getMessage());
             }
         }
     }
-    
+
     public function test100ChargeVisaEcommerceInfo()
     {
         $address = new Address();
         $address->streetAddress1 = '6860 Dallas Pkwy';
         $address->postalCode = '75024';
-        
+
         $secureEcom = new ThreeDSecure();
         $secureEcom->cavv = 'AAACBllleHchZTBWIGV4AAAAAAA=';
         $secureEcom->xid = 'crqAeMwkEL9r4POdxpByWJ1/wYg=';
         $secureEcom->eci = '5';
         $secureEcom->paymentDataSource = Secure3dPaymentDataSource::VISA_3DSECURE;
         $secureEcom->paymentDataType = '3DSecure';
-        
+
         $card = TestCards::visaManual();
         $card->threeDSecure = $secureEcom;
-        
+
         $response = $card->charge()
-        ->withCurrency('USD')
-        ->withAmount(13.01)
-        ->withAddress($address)
-        // ->withEcommerceInfo($this->ecommerceInfo)
-        ->withInvoiceNumber('12345')
-        ->withAllowDuplicates(true)
-        ->execute();
-        
+            ->withCurrency('USD')
+            ->withAmount(13.01)
+            ->withAddress($address)
+            // ->withEcommerceInfo($this->ecommerceInfo)
+            ->withInvoiceNumber('12345')
+            ->withAllowDuplicates(true)
+            ->execute();
+
         $this->assertEquals(true, $response != null);
         $this->assertEquals('00', $response->responseCode);
     }
-    
-    public function testEcomWithWalletData()
+
+    public function testEcomWithoutWalletData()
     {
         $secureEcom = new ThreeDSecure();
         $secureEcom->cavv = 'XXXXf98AAajXbDRg3HSUMAACAAA=';
         $secureEcom->paymentDataSource = Secure3dPaymentDataSource::APPLEPAY;
         $secureEcom->setVersion(Secure3dVersion::ONE);
-        
+
         $card = TestCards::visaManual();
         $card->threeDSecure = $secureEcom;
-        
+
         $response = $card->charge(10)
-        ->withCurrency('USD')
-        ->withInvoiceNumber('12345')
-        ->withAllowDuplicates(true)
-        ->execute();
-        
+            ->withCurrency('USD')
+            ->withInvoiceNumber('12345')
+            ->withAllowDuplicates(true)
+            ->execute();
+
         $this->assertEquals(true, $response != null);
         $this->assertEquals('00', $response->responseCode);
     }
-    
+
     public function testEcomWithSecure3D()
     {
         $secureEcom = new ThreeDSecure();
@@ -2013,43 +2016,36 @@ class EcommerceTest extends TestCase
         $secureEcom->xid = '0l35fwh1sys3ojzyxelu4ddhmnu5zfke5vst';
         $secureEcom->eci = '5';
         $secureEcom->setVersion(Secure3dVersion::ONE);
-        
+
         $card = TestCards::visaManual();
         $card->threeDSecure = $secureEcom;
-        
+
         $response = $card->charge(10)
-        ->withCurrency('USD')
-        ->withInvoiceNumber('12345')
-        ->withAllowDuplicates(true)
-        ->execute();
-        
+            ->withCurrency('USD')
+            ->withInvoiceNumber('12345')
+            ->withAllowDuplicates(true)
+            ->execute();
+
         $this->assertEquals(true, $response != null);
         $this->assertEquals('00', $response->responseCode);
-    }    
-    
+    }
+
     public function testEcomWithWalletDataMobileType()
     {
-        $secureEcom = new ThreeDSecure();
-        $secureEcom->cavv = 'XXXXf98AAajXbDRg3HSUMAACAAA=';
-        $secureEcom->paymentDataSource = Secure3dPaymentDataSource::APPLEPAY;
-        
-        $card = TestCards::visaManual();
-        $token = $card->tokenize()->execute()->token;
-        
-        $this->assertTrue(!empty($token), 'TOKEN COULD NOT BE GENERATED.');
-        
-        $card->threeDSecure = $secureEcom;
+        $this->markTestSkipped('You need a valid ApplePay token that it is valid only for 60 sec');
+
+        $card = new CreditCardData();
         $card->mobileType = MobilePaymentMethodType::APPLEPAY;
-        $card->token = $token;
-        
+        $card->paymentSource = Secure3dPaymentDataSource::APPLEPAYWEB;
+        $card->token = "{\"signature\":\"MEYCIQDn1WUTJSbe0HTenhQBanye9MNlEEbJ9nvk2YDE11JO1wIhAOkA99r3sMpuHsQqdR1C8u9R7C7dm9w7wNniXtYr01gv\",\"protocolVersion\":\"ECv1\",\"signedMessage\":\"{\\\"encryptedMessage\\\":\\\"BxaNW7Rxei+P0lBvb2jvE8+HQ04/uAFrHIXynZqsM7p6rxFDmgt7JxE8XnTnGacTyOXAITFlHnqD5eZJ6dQGMn/DHdhjmi/El25J2rpOzZiJPQk394YQLY2xjUm1xIDR3GB1ATfBIRKoqtf2iXiYQ/u50XINut0ivK/u+qc3lbDAC3IrDUq5DED7uPcPhijF2snKL5sROatKiecfTQRzWMJioTZXDaYfQseoWhhFVvO/UpEcK5CZh5b3CQT89yzDPPdwa1XSH+8DYK6UxvBoelaLYIxpLUNBFcUurLukBM24VlzG5Rs8os8hOXXLixcIcDuiFH4MS7wMIAW4DtKvZF7E78xvh2IvlxckoJ6uZsVuyGBgXgjIgbn95lqeMZsR398YcY/lDl5N/HCpxDJbvSQfd7YNf/hEK/NAa15AAScQ6sorFYcFF1W1iU3+gBR+fuIODT/1VQ\\\\u003d\\\\u003d\\\",\\\"ephemeralPublicKey\\\":\\\"BLTKhwsuoS/Izu5fYd08D+HAd2TAc+FTmEpa7L4wo45p3hQbZ3agZ9J60v8agMsXiDIXpbN1VlBpibKezSFxfoU\\\\u003d\\\",\\\"tag\\\":\\\"hbkBnamtgcDYeDrJvY3IKAzOU4E4aFS2cJUK4f5VVxM\\\\u003d\\\"}\"}";
+
         $response = $card->charge(10)
-        ->withCurrency('USD')
-        ->withInvoiceNumber('12345')
-        ->withAllowDuplicates(true)
-        ->execute();
-        
+            ->withCurrency('USD')
+            ->withInvoiceNumber('12345')
+            ->withAllowDuplicates(true)
+            ->execute();
+
         $this->assertEquals(true, $response != null);
         $this->assertEquals('00', $response->responseCode);
-    }  
-       
+    }
 }

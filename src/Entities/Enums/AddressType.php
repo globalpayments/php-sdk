@@ -8,4 +8,5 @@ class AddressType extends Enum
 {
     const BILLING = 'BILLING';
     const SHIPPING = 'SHIPPING';
+    const BUSINESS = 'BUSINESS';
 }

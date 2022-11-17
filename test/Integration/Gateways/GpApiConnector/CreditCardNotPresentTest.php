@@ -56,6 +56,11 @@ class CreditCardNotPresentTest extends TestCase
         $this->idempotencyKey = GenerationUtils::getGuid();
     }
 
+    public static function tearDownAfterClass()
+    {
+        BaseGpApiTestConfig::resetGpApiConfig();
+    }
+
     public function testCreditSale()
     {
         $address = new Address();

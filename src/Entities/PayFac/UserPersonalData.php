@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Entities\PayFac;
 
 use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\Enums\UserType;
 
 class UserPersonalData
 {
@@ -28,7 +29,7 @@ class UserPersonalData
     public $lastName;
     
     /**
-     * Merchant/Individual Date of birth. Must be in ‘mm-dd-yyyy’ format. *Individual must be 18+ to obtain an
+     * Merchant/Individual Date of birth. Must be in "mm-dd-yyyy" format. *Individual must be 18+ to obtain an
         account. The value 01-01-1981 will give a successful response. All others will return a Status 66 (Failed KYC)
      *
      * @var string
@@ -44,7 +45,7 @@ class UserPersonalData
     public $ssn;
     
     /**
-     * Merchant/Individual email address. Must be unique in ProPay system. *ProPay’s system will send automated
+     * Merchant/Individual email address. Must be unique in ProPay system. *ProPay's system will send automated
         emails to the email address on file unless NotificationEmail is provided.
        *Truncated, if value provided is greater than max value
      *
@@ -67,7 +68,7 @@ class UserPersonalData
     public $eveningPhone;
     
     /**
-     * Communication Email Address. *ProPay’s system will send automated emails to the email address on file rather
+     * Communication Email Address. *ProPay's system will send automated emails to the email address on file rather
         than the Source Email.
      *
      * @var string
@@ -90,14 +91,14 @@ class UserPersonalData
     public $tier;
     
     /**
-     * This is a partner’s own unique identifier. Typically used as the distributor or consultant ID.
+     * This is a partner's own unique identifier. Typically used as the distributor or consultant ID.
      *
      * @var string
      */
     public $externalId;
     
     /**
-     * Numeric value which will give a user access to ProPay’s IVR system. Can also be used to reset password.
+     * Numeric value which will give a user access to ProPay's IVR system. Can also be used to reset password.
      *
      * @var string
      */
@@ -124,7 +125,58 @@ provided.
      * @var GlobalPayments\Api\Entities\Address
      */
     public $mailingAddress;
-    
+
+    /**
+     * The legal business name of the merchant being boarded.
+     *
+     * @var string
+     */
+    public $legalName;
+
+    /**
+     *
+     * @var string
+     */
+    public $userName;
+
+    /**
+     * The merchant's DBA (Doing Business As) name or the alternate name the merchant may be known as.
+     *
+     * @var string
+     */
+    public $dba;
+
+    /**
+     * A four-digit number used to classify the merchant into an industry or market segment.
+     *
+     * @var integer
+     */
+    public $merchantCategoryCode;
+
+    /**
+     * The merchant's business website URL
+     *
+     * @var string
+     */
+    public $website;
+
+    /** @var UserType */
+    public $type;
+
+    /**
+     * Indicates to Global Payments where the user(example: merchant) wants to receive notifications of certain events that occur
+     * on the Global Payments system.
+     *
+     * @var string
+     */
+    public $notificationStatusUrl;
+
+    /**
+     * The merchants tax identification number. For example, in the US the (EIN) Employer Identification Number would be used.
+     *
+     * @var string
+     */
+    public $taxIdReference;
     
     public function __construct()
     {

@@ -16,7 +16,9 @@ use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\AliasAction;
 use GlobalPayments\Api\Entities\Enums\CheckType;
 use GlobalPayments\Api\Entities\Enums\EntryMethod;
+use GlobalPayments\Api\Entities\Enums\MobilePaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Enums\Secure3dPaymentDataSource;
 use GlobalPayments\Api\Entities\Enums\TaxType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
@@ -141,12 +143,14 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         $transaction = $xml->createElement($this->mapRequestType($builder));
         $block1 = $xml->createElement('Block1');
 
-        if ($builder->paymentMethod->paymentMethodType !== PaymentMethodType::GIFT
+        if (
+            $builder->paymentMethod->paymentMethodType !== PaymentMethodType::GIFT
             && $builder->paymentMethod->paymentMethodType !== PaymentMethodType::ACH
             && ($builder->transactionType === TransactionType::AUTH
                 || $builder->transactionType === TransactionType::SALE)
         ) {
-            if ($builder->paymentMethod->paymentMethodType !== PaymentMethodType::RECURRING
+            if (
+                $builder->paymentMethod->paymentMethodType !== PaymentMethodType::RECURRING
                 || $builder->paymentMethod->paymentType !== 'ACH'
             ) {
                 $block1->appendChild(
@@ -157,7 +161,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 );
             }
 
-            if ($builder->transactionModifier === TransactionModifier::NONE
+            if (
+                $builder->transactionModifier === TransactionModifier::NONE
                 && $builder->paymentMethod->paymentMethodType !== PaymentMethodType::EBT
                 && $builder->paymentMethod->paymentMethodType !== PaymentMethodType::RECURRING
             ) {
@@ -219,7 +224,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 && $builder->paymentMethod->paymentType === 'ACH');
 
         $propertyName = $isCheck ? 'checkHolderName' : 'cardHolderName';
-        if ($isCheck
+        if (
+            $isCheck
             || $builder->billingAddress !== null
             || isset($builder->paymentMethod->{$propertyName})
         ) {
@@ -255,8 +261,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                     $hasToken,
                     $tokenValue
                 )
-            );           
-            
+            );
         } elseif ($builder->paymentMethod instanceof ITrackData) {
             $trackData = $this->hydrateTrackData(
                 $xml,
@@ -428,13 +433,15 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $block1->appendChild($data);
         }
 
-        if ($builder->paymentMethod instanceof IPinProtected
+        if (
+            $builder->paymentMethod instanceof IPinProtected
             && $builder->transactionType !== TransactionType::REVERSAL
         ) {
             $block1->appendChild($xml->createElement('PinBlock', $builder->paymentMethod->pinBlock));
         }
 
-        if ($builder->paymentMethod instanceof IEncryptable
+        if (
+            $builder->paymentMethod instanceof IEncryptable
             && isset($builder->paymentMethod->encryptionData)
             && null !== $builder->paymentMethod->encryptionData
         ) {
@@ -459,10 +466,14 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         if ($cardData->childNodes->length > 0 && $builder->aliasAction !== AliasAction::CREATE) {
             $block1->appendChild($cardData);
         }
-        
+
         //secure 3d
-        if ($builder->paymentMethod instanceof CreditCardData && !empty($builder->paymentMethod->threeDSecure)) {
-            $this->hydrateThreeDSecureData($xml, $builder, $block1);
+        if ($builder->paymentMethod instanceof CreditCardData) {
+            if (!empty($builder->paymentMethod->threeDSecure)) {
+                $this->hydrateThreeDSecureData($xml, $builder, $block1);
+            } else {
+                $this->hydrateWalletData($xml, $builder, $block1, $cardData);
+            }
         }
 
         if ($builder->paymentMethod instanceof IBalanceable && $builder->balanceInquiryType !== null) {
@@ -473,7 +484,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $block1->appendChild($xml->createElement('CPCReq', 'Y'));
         }
 
-        if ($builder->customerId !== null
+        if (
+            $builder->customerId !== null
             || $builder->description !== null
             || $builder->invoiceNumber !== null
         ) {
@@ -497,7 +509,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                     $direct->appendChild($xml->createElement('DirectMktShipDay', $builder->ecommerceInfo->shipDay));
                 }
                 $block1->appendChild($direct);
-            }            
+            }
         }
 
         if ($builder->dynamicDescriptor !== null) {
@@ -549,7 +561,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         }
 
         $transaction->appendChild($block1);
-        
+
         $response = $this->doTransaction($this->buildEnvelope($xml, $transaction, $builder->clientTransactionId));
         return $this->mapResponse($response, $builder, $this->buildEnvelope($xml, $transaction));
     }
@@ -575,7 +587,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         if ($builder->transactionType !== TransactionType::BATCH_CLOSE) {
             $root = null;
-            if ($builder->transactionType === TransactionType::REVERSAL
+            if (
+                $builder->transactionType === TransactionType::REVERSAL
                 || $builder->transactionType === TransactionType::REFUND
                 || $builder->paymentMethod->paymentMethodType === PaymentMethodType::GIFT
                 || $builder->paymentMethod->paymentMethodType === PaymentMethodType::ACH
@@ -600,7 +613,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             }
 
             // Level II Data
-            if ($builder->transactionType === TransactionType::EDIT
+            if (
+                $builder->transactionType === TransactionType::EDIT
                 && $builder->transactionModifier === TransactionModifier::LEVEL_II
             ) {
                 $cpc = $xml->createElement('CPCData');
@@ -656,7 +670,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
                 if ($builder->cardType == 'Visa') {
                     $visaCorporateDataNode = $xml->createElement('Visa');
-                    
+
                     if (!empty($builder->commercialData->summaryCommodityCode)) {
                         $visaCorporateDataNode->appendChild($xml->createElement('SummaryCommodityCode', $builder->commercialData->summaryCommodityCode));
                     }
@@ -766,7 +780,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                     if (!empty($lineItemsNode)) {
                         $visaCorporateDataNode->appendChild($lineItemsNode);
                     }
-                    
+
                     $commercialDataNode->appendChild($visaCorporateDataNode);
                     $root->appendChild($commercialDataNode);
                 } elseif ($builder->cardType == 'MC') {
@@ -826,7 +840,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             }
 
             // Token Management
-            if ($builder->transactionType === TransactionType::TOKEN_UPDATE
+            if (
+                $builder->transactionType === TransactionType::TOKEN_UPDATE
                 || $builder->transactionType === TransactionType::TOKEN_DELETE
             ) {
                 $token = $builder->paymentMethod;
@@ -860,7 +875,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 $root->appendChild($addons);
             }
 
-            if ($builder->transactionType === TransactionType::REVERSAL
+            if (
+                $builder->transactionType === TransactionType::REVERSAL
                 || $builder->transactionType === TransactionType::REFUND
                 || $builder->paymentMethod->paymentMethodType === PaymentMethodType::GIFT
                 || $builder->paymentMethod->paymentMethodType === PaymentMethodType::ACH
@@ -1244,7 +1260,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             : $gatewayRspText;
 
         if (isset($item) && (isset($item->AuthAmt) || isset($item->SplitTenderCardAmt))) {
-            $result->authorizedAmount = 
+            $result->authorizedAmount =
                 isset($item->SplitTenderCardAmt)
                 ? (string)$item->SplitTenderCardAmt
                 : (string)$item->AuthAmt;
@@ -1359,9 +1375,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         if (isset($item) && isset($item->CardBrandTxnId)) {
             $result->cardBrandTransactionId = (string)$item->CardBrandTxnId;
         }
-        
-        if(!empty($root->PaymentFacilitatorTxnId) || !empty($root->PaymentFacilitatorTxnNbr)){
-            $result->payFacData = new PayFacResponseData();            
+
+        if (!empty($root->PaymentFacilitatorTxnId) || !empty($root->PaymentFacilitatorTxnNbr)) {
+            $result->payFacData = new PayFacResponseData();
             $result->payFacData->transactionId = !empty($root->PaymentFacilitatorTxnId) ? (string) $root->PaymentFacilitatorTxnId : '';
             $result->payFacData->transactionNumber = !empty($root->PaymentFacilitatorTxnNbr) ? (string) $root->PaymentFacilitatorTxnNbr : '';
         }
@@ -1375,8 +1391,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         $doc = $root->Transaction->{$this->mapReportType($builder)};
 
         if ((($builder->reportType === ReportType::ACTIVITY)
-            || ($builder->reportType === ReportType::FIND_TRANSACTIONS))
-            && isset($doc->Transactions)) {
+                || ($builder->reportType === ReportType::FIND_TRANSACTIONS))
+            && isset($doc->Transactions)
+        ) {
             $response = [];
             foreach ($doc->Transactions as $item) {
                 $response[] = $this->hydrateTransactionSummary($item);
@@ -1385,7 +1402,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         }
 
         if ($builder->reportType === ReportType::TRANSACTION_DETAIL) {
-            if(isset($doc->Data))
+            if (isset($doc->Data))
                 return $this->hydrateTransactionSummary($doc->Data);
         }
 
@@ -1447,9 +1464,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             if (isset($item->CardHolderData->CardHolderZip)) {
                 $summary->cardHolderZip = (string)$item->CardHolderData->CardHolderZip;
             }
-        }
-        else
-        {
+        } else {
             if (isset($item->CardHolderFirstName)) {
                 $summary->cardHolderFirstName = (string)$item->CardHolderFirstName;
             }
@@ -1847,9 +1862,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 throw new UnsupportedTransactionException('Transaction not supported for this payment method.');
             case TransactionType::EDIT:
                 if (
-                    $builder->transactionModifier === TransactionModifier::LEVEL_II || 
-                    $builder->transactionModifier === TransactionModifier::LEVEL_III
-                    ) {
+                    $builder->transactionModifier === TransactionModifier::LEVEL_II
+                    || $builder->transactionModifier === TransactionModifier::LEVEL_III
+                ) {
                     return 'CreditCPCEdit';
                 } else {
                     return 'CreditTxnEdit';
@@ -2040,7 +2055,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 $holder->appendChild($xml->createElement('DLState', $builder->paymentMethod->driversLicenseState));
             }
 
-            if ($builder->paymentMethod->ssnLast4 !== null
+            if (
+                $builder->paymentMethod->ssnLast4 !== null
                 || $builder->paymentMethod->birthYear !== null
             ) {
                 $identity = $xml->createElement('IdentityInfo');
@@ -2237,19 +2253,32 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
     {
         return $this->supportsHostedPayments;
     }
-    
-    protected function hydrateThreeDSecureData(DOMDocument $xml, BaseBuilder $builder, $block1){
+
+    /**
+     * To hydrate ThreeDSecure Data
+     *
+     * @param DOMDocument $xml XML instance
+     * @param BaseBuilder $builder Request builder
+     * @param DOMDocument $block1
+     *
+     * @return DOMElement
+     */
+    protected function hydrateThreeDSecureData(DOMDocument $xml, BaseBuilder $builder, $block1)
+    {
         //3dseccure
-        if (!empty($builder->paymentMethod->threeDSecure->eci)) {
+        if (
+            !empty($builder->paymentMethod->threeDSecure->eci)
+            && !$this->isAppleOrGooglePay($builder->paymentMethod->threeDSecure->paymentDataSource)
+        ) {
             $secure = $xml->createElement('Secure3D');
-            
+
             $secure->appendChild(
                 $xml->createElement(
                     'Version',
                     $this->getSecure3DVersion($builder->paymentMethod->threeDSecure->getVersion())
-                    )
-                );
-            
+                )
+            );
+
             if (!empty($builder->paymentMethod->threeDSecure->cavv)) {
                 $secure->appendChild($xml->createElement('AuthenticationValue', $builder->paymentMethod->threeDSecure->cavv));
             }
@@ -2258,41 +2287,99 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             }
             if (!empty($builder->paymentMethod->threeDSecure->xid)) {
                 $secure->appendChild($xml->createElement('DirectoryServerTxnId', $builder->paymentMethod->threeDSecure->xid));
-            }            
-            
+            }
+
             $block1->appendChild($secure);
         }
-        
+        if ($this->isAppleOrGooglePay($builder->paymentMethod->threeDSecure->paymentDataSource)) {
+            $secure = $xml->createElement('WalletData');
+
+            if (!empty($builder->paymentMethod->threeDSecure->cavv)) {
+                $secure->appendChild($xml->createElement('PaymentSource', $builder->paymentMethod->threeDSecure->paymentDataSource));
+            }
+            if (!empty($builder->paymentMethod->threeDSecure->xid)) {
+                $secure->appendChild($xml->createElement('Cryptogram', $builder->paymentMethod->threeDSecure->cavv));
+            }
+            if (!empty($builder->paymentMethod->threeDSecure->eci)) {
+                $secure->appendChild($xml->createElement('ECI', $builder->paymentMethod->threeDSecure->eci));
+            }
+
+            $block1->appendChild($secure);
+        }
+    }
+
+    /**
+     * To hydrate Wallet Data
+     *
+     * @param DOMDocument $xml XML instance
+     * @param BaseBuilder $builder Request builder
+     * @param DOMDocument $block1
+     * @param DOMDocument $cardData
+     * @return DOMElement
+     */
+    private function hydrateWalletData(DOMDocument $xml, BaseBuilder $builder, $block1, $cardData)
+    {
         //wallet data
-        if (!empty($builder->paymentMethod->threeDSecure->paymentDataSource)) {
+        if (
+            $builder->paymentMethod->mobileType == MobilePaymentMethodType::APPLEPAY
+            || $builder->paymentMethod->mobileType == MobilePaymentMethodType::GOOGLEPAY
+            && !empty($builder->paymentMethod->threeDSecure->paymentDataSource)
+            && $this->isAppleOrGooglePay($builder->paymentMethod->threeDSecure->paymentDataSource)
+        ) {
             $walletData  = $xml->createElement('WalletData');
-            
-            $walletData->appendChild(
-                $xml->createElement(
-                    'PaymentSource',
-                    $builder->paymentMethod->threeDSecure->paymentDataSource
-                    )
-                );
-            
+
             if (!empty($builder->paymentMethod->threeDSecure->cavv)) {
                 $walletData->appendChild($xml->createElement('Cryptogram', $builder->paymentMethod->threeDSecure->cavv));
             }
             if (!empty($builder->paymentMethod->threeDSecure->eci)) {
                 $walletData->appendChild($xml->createElement('ECI', $builder->paymentMethod->threeDSecure->eci));
             }
-            if (!empty($builder->paymentMethod->mobileType)) {
-                $walletData->appendChild($xml->createElement('DigitalPaymentToken', $builder->paymentMethod->token));
+            if (!empty($builder->paymentMethod->paymentSource)) {
+                $walletData->appendChild($xml->createElement('PaymentSource', $builder->paymentMethod->paymentSource));
             }
-            
+
+            if ($builder->paymentMethod->mobileType) {
+                $digitalToken = $walletData->appendChild($xml->createElement('DigitalPaymentToken'));
+                $digitalToken->appendChild($xml->createCDATASection($builder->paymentMethod->token));
+                $block1->removeChild($cardData);
+            }
+
             $block1->appendChild($walletData);
-        }        
+        }
     }
-    
-    private function getSecure3DVersion($version){
-        if($version == null){
+
+    /**
+     * To check ApplePay or GooglePay
+     *
+     * @param string $paymentDataSource
+     * @return boolean
+     */
+    private function isAppleOrGooglePay($paymentDataSource)
+    {
+        if (
+            $paymentDataSource == Secure3dPaymentDataSource::APPLEPAY
+            || $paymentDataSource == Secure3dPaymentDataSource::APPLEPAYAPP
+            || $paymentDataSource == Secure3dPaymentDataSource::APPLEPAYWEB
+            || $paymentDataSource == Secure3dPaymentDataSource::GOOGLEPAYAPP
+            || $paymentDataSource == Secure3dPaymentDataSource::GOOGLEPAYWEB
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * To get Secure3dVersion
+     *
+     * @param string $version
+     * @return int
+     */
+    private function getSecure3DVersion($version)
+    {
+        if ($version == null) {
             return 1;
         }
-        switch ($version){
+        switch ($version) {
             case 'TWO':
                 return 2;
             case 'ONE':

@@ -3,7 +3,10 @@
 namespace GlobalPayments\Api\Services;
 
 use GlobalPayments\Api\Builders\PayFacBuilder;
+use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\Entities\Enums\UserType;
+use GlobalPayments\Api\Entities\PayFac\UserReference;
 
 class PayFacService
 {
@@ -65,7 +68,7 @@ class PayFacService
     }
     /*
      *  This method can be used to send an image file to ProPay, and is specifically designed to support the documents 
-     *  you use to dispute a credit card chargeback. This version of document upload has you “tag” the 
+     *  you use to dispute a credit card chargeback. This version of document upload has you "tag" the
      *  document to a specific transaction that has been charged-back
      *
      */
@@ -76,7 +79,7 @@ class PayFacService
     /*
      *  This method can be used to send an image file to ProPay. The ProPay Risk team may request that you perform this 
      *  action to underwrite an account that was denied via automated boarding, to increase the processing limit on 
-     *  accounts, or to provide data when we’ve had to put an accounts ability to process on hold. 
+     *  accounts, or to provide data when we've had to put an accounts ability to process on hold.
      *
      */
     public static function UploadDocument()
@@ -142,5 +145,22 @@ class PayFacService
     public static function getAccountBalance()
     {
         return new PayFacBuilder(TransactionType::GET_ACCOUNT_BALANCE);
+    }
+
+    public static function createMerchant()
+    {
+        return (new PayFacBuilder(TransactionType::CREATE))
+            ->withModifier(TransactionModifier::MERCHANT);
+    }
+
+    public static function getMerchantInfo($merchantId)
+    {
+        $userReference = new UserReference();
+        $userReference->userId = $merchantId;
+        $userReference->userType = UserType::MERCHANT;
+
+        return (new PayFacBuilder(TransactionType::FETCH))
+            ->withModifier(TransactionModifier::MERCHANT)
+            ->withUserReference($userReference);
     }
 }

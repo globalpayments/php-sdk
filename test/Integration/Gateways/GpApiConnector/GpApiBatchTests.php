@@ -49,6 +49,11 @@ class GpApiBatchTests extends TestCase
         $this->creditCardData->cardPresent = true;
     }
 
+    public static function tearDownAfterClass()
+    {
+        BaseGpApiTestConfig::resetGpApiConfig();
+    }
+
     public function setUpConfig()
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);

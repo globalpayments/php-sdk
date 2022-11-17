@@ -1,6 +1,13 @@
 <?php
 namespace GlobalPayments\Api\Builders;
 
+use GlobalPayments\Api\Entities\Customer;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodFunction;
+use GlobalPayments\Api\Entities\Enums\StatusChangeReason;
+use GlobalPayments\Api\Entities\PayFac\UserReference;
+use GlobalPayments\Api\Entities\PaymentStatistics;
+use GlobalPayments\Api\Entities\PersonList;
+use GlobalPayments\Api\Entities\User;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\PayFac\BankAccountData;
 use GlobalPayments\Api\Entities\PayFac\BeneficialOwnerData;
@@ -12,6 +19,9 @@ use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 
+/**
+ * @property string $userId
+ */
 class PayFacBuilder extends BaseBuilder
 {
     public $transactionType;
@@ -23,6 +33,9 @@ class PayFacBuilder extends BaseBuilder
     public $threatRiskData;
     public $userPersonalData;
     public $creditCardInformation;
+    /**
+     * @var BankAccountData
+     */
     public $achInformation;
     public $secondaryBankInformation;
     public $grossBillingInformation;
@@ -43,7 +56,49 @@ class PayFacBuilder extends BaseBuilder
     public $externalId;
     public $sourceEmail;
     public $deviceDetails;
-    
+    /** @var string */
+    public $description;
+    /**
+     * @var array<Product>
+     */
+    public $productData = [];
+
+    /**
+     * @var PersonList
+     */
+    public $personsData;
+
+    /**
+     * @var integer
+     */
+    public $page;
+
+    /**
+     * @var integer
+     */
+    public $pageSize;
+
+    /**
+     * @var PaymentStatistics
+     */
+    public $paymentStatistics;
+
+    /**
+     * @var StatusChangeReason
+     */
+    public $statusChangeReason;
+
+    /** @var User */
+    public $userReference;
+
+    /**
+     * @var array
+     */
+    public $paymentMethodsFunctions;
+
+    /** @var string */
+    public $idempotencyKey;
+
     const UPLOAD_FILE_TYPES = [
         'tif', 'tiff', 'bmp', 'jpg', 'jpeg', 'gif', 'png', 'doc', 'docx'
     ];
@@ -72,9 +127,34 @@ class PayFacBuilder extends BaseBuilder
     public function execute($configName = 'default')
     {
         parent::execute($configName);
-
         $client = ServicesContainer::instance()->getPayFac($configName);
-        return $client->processPayFac($this);
+        switch ($this->transactionModifier)
+        {
+            case TransactionModifier::MERCHANT:
+                return $client->processBoardingUser($this);
+            default:
+                return $client->processPayFac($this);
+        }
+    }
+
+    public function __get($name)
+    {
+        switch ($name) {
+            case 'userId':
+                if ($this->userReference instanceof UserReference) {
+                    return $this->userReference->userId;
+                }
+                return null;
+            default:
+                break;
+        }
+    }
+
+    public function __isset($name)
+    {
+        return in_array($name, [
+                'userId',
+            ]) || isset($this->{$name});
     }
 
     protected function setupValidations()
@@ -87,7 +167,7 @@ class PayFacBuilder extends BaseBuilder
             ->check('businessData')->isNotNull()
             ->check('userPersonalData')->isNotNull()
             ->check('creditCardInformation')->isNotNull();
-        
+
         $this->validations->of(
             TransactionType::EDIT |
             TransactionType::RESET_PASSWORD |
@@ -108,31 +188,31 @@ class PayFacBuilder extends BaseBuilder
         )
             ->with(TransactionModifier::NONE)
             ->check('accountNumber')->isNotNull();
-        
+
         $this->validations->of(
             TransactionType::UPDATE_OWNERSHIP_DETAILS
         )
             ->with(TransactionModifier::NONE)
             ->check('beneficialOwnerData')->isNotNull();
-        
+
         $this->validations->of(
             TransactionType::UPLOAD_CHARGEBACK_DOCUMENT
         )
             ->with(TransactionModifier::NONE)
             ->check('uploadDocumentData')->isNotNull();
-        
+
         $this->validations->of(
             TransactionType::OBTAIN_SSO_KEY
         )
             ->with(TransactionModifier::NONE)
             ->check('singleSignOnData')->isNotNull();
-            
+
         $this->validations->of(
             TransactionType::UPDATE_BANK_ACCOUNT_OWNERSHIP
         )
             ->with(TransactionModifier::NONE)
             ->check('beneficialOwnerData')->isNotNull();
-        
+
         $this->validations->of(
             TransactionType::ADD_FUNDS |
                 TransactionType::SWEEP_FUNDS |
@@ -143,30 +223,37 @@ class PayFacBuilder extends BaseBuilder
         )
                 ->with(TransactionModifier::NONE)
                 ->check('amount')->isNotNull();
-        
+
         $this->validations->of(TransactionType::ADD_CARD_FLASH_FUNDS)
                 ->with(TransactionModifier::NONE)
                 ->check('flashFundsPaymentCardData')->isNotNull();
-        
+
         $this->validations->of(TransactionType::DISBURSE_FUNDS)
                 ->with(TransactionModifier::NONE)
                 ->check('receivingAccountNumber')->isNotNull();
-        
+
         $this->validations->of(TransactionType::SPEND_BACK)
                 ->with(TransactionModifier::NONE)
                 ->check('allowPending')->isNotNull()
                 ->check('receivingAccountNumber')->isNotNull();
-        
+
         $this->validations->of(TransactionType::SPLIT_FUNDS)
                 ->with(TransactionModifier::NONE)
                 ->check('transNum')->isNotNull()
                 ->check('receivingAccountNumber')->isNotNull();
-        
+
         $this->validations->of(TransactionType::REVERSE_SPLITPAY)
             ->with(TransactionModifier::NONE)
             ->check('transNum')->isNotNull()
             ->check('requireCCRefund')->isNotNull()
             ->check('ccAmount')->isNotNull();
+
+        $this->validations->of(
+            TransactionType::FETCH |
+            TransactionType::EDIT
+        )
+            ->with(TransactionModifier::MERCHANT)
+            ->check('userId')->isNotNull();
     }
 
     /*
@@ -174,9 +261,13 @@ class PayFacBuilder extends BaseBuilder
      *
      * var Object GlobalPayments\Api\Entities\PayFac\BankAccountData;
      */
-    public function withBankAccountData(BankAccountData $bankAccountData)
+    public function withBankAccountData(BankAccountData $bankAccountData, $paymentMethodFunction =  null)
     {
         $this->bankAccountData = $bankAccountData;
+        if (!empty($paymentMethodFunction)) {
+            $paymentMethodFunction = PaymentMethodFunction::validate($paymentMethodFunction);
+            $this->paymentMethodsFunctions[get_class($bankAccountData)] = $paymentMethodFunction;
+        }
         return $this;
     }
     /*
@@ -232,9 +323,14 @@ class PayFacBuilder extends BaseBuilder
         return $this;
     }
     
-    public function withCreditCardData($creditCardInformation)
+    public function withCreditCardData($creditCardInformation, $paymentMethodFunction =  null)
     {
         $this->creditCardInformation = $creditCardInformation;
+        if (!empty($paymentMethodFunction)) {
+            $paymentMethodFunction = PaymentMethodFunction::validate($paymentMethodFunction);
+            $this->paymentMethodsFunctions[get_class($creditCardInformation)] = $paymentMethodFunction;
+        }
+
         return $this;
     }
     
@@ -390,5 +486,80 @@ class PayFacBuilder extends BaseBuilder
         $this->deviceDetails = $deviceDetails;
         return $this;
     }
-    
+
+    public function withDescription($description)
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    /**
+     * Set the request productData
+     *
+     * @param array $productData Request productData
+     *
+     * @return $this
+     */
+    public function withProductData(array $productData)
+    {
+        $this->productData = $productData;
+        return $this;
+    }
+
+    /**
+     * Set the request customer Data
+     *
+     * @param PersonList $personsData Request customer Data
+     *
+     * @return $this
+     */
+    public function withPersonsData(PersonList $personsData)
+    {
+        $this->personsData = $personsData;
+        return $this;
+    }
+
+    public function withUserReference(UserReference $userReference)
+    {
+        $this->userReference = $userReference;
+        return $this;
+    }
+
+    public function withModifier($transactionModifier)
+    {
+        $this->transactionModifier = $transactionModifier;
+        return $this;
+    }
+
+    public function withPaymentStatistics($paymentStatistics)
+    {
+        $this->paymentStatistics = $paymentStatistics;
+        return $this;
+    }
+
+    public function withStatusChangeReason($statusChangeReason)
+    {
+        $this->statusChangeReason = $statusChangeReason;
+        return $this;
+    }
+
+    /**
+     * Set the gateway paging criteria for the report
+     * @param $page
+     * @param $pageSize
+     * @return $this
+     */
+    public function withPaging($page, $pageSize)
+    {
+        $this->page = $page;
+        $this->pageSize = $pageSize;
+        return $this;
+    }
+
+    public function withIdempotencyKey($value)
+    {
+        $this->idempotencyKey = $value;
+
+        return $this;
+    }
 }

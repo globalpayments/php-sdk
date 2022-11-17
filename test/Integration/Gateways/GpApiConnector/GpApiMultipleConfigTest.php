@@ -48,5 +48,4 @@ class GpApiMultipleConfigTest extends TestCase
         $this->assertNotSame($thirdResponse, $secondResponse);
         $this->assertEquals($firstResponse->result[0]->transactionId, $thirdResponse->result[0]->transactionId);
     }
-
 }

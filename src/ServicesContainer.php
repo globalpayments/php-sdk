@@ -203,4 +203,11 @@ class ServicesContainer
 
         throw new ApiException("The specified configuration has not been added for open banking.");
     }
+
+    public static function removeConfiguration($configName = 'default')
+    {
+        if (array_key_exists($configName, static::$configurations)) {
+            unset(self::$configurations[$configName]);
+        }
+    }
 }

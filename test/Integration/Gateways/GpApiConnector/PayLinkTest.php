@@ -32,6 +32,7 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\PayLinkService;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Tests\Data\GpApi3DSTestCards;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\Logging\Logger;
@@ -48,6 +49,11 @@ class PayLinkTest extends TestCase
     private $shippingAddress;
     private $browserData;
     private $payLinkId;
+
+    public static function tearDownAfterClass()
+    {
+        BaseGpApiTestConfig::resetGpApiConfig();
+    }
 
     public function setup() : void
     {
@@ -108,6 +114,7 @@ class PayLinkTest extends TestCase
             $this->payLinkId = $response->result[0]->id;
         }
     }
+
 
     public function setUpConfig()
     {
@@ -234,7 +241,7 @@ class PayLinkTest extends TestCase
             ->execute();
 
         $this->assertPayLinkResponse($response);
-        $this->assertEquals("NO", $response->payLinkResponse->isShippable);
+        $this->assertEquals("YES", $response->payLinkResponse->isShippable);
 
         fwrite(STDERR, print_r($response->payLinkResponse->url, TRUE));
 
@@ -456,6 +463,7 @@ class PayLinkTest extends TestCase
             ->orderBy(PayLinkSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::START_DATE, $this->startDate)
             ->andWith(SearchCriteria::END_DATE, $this->endDate)
+            ->andWith(SearchCriteria::PAYLINK_STATUS, PayLinkStatus::ACTIVE)
             ->execute();
 
         $this->assertNotNull($response);
@@ -648,27 +656,6 @@ class PayLinkTest extends TestCase
         }
     }
 
-    public function testEditPayLink_MissingName()
-    {
-        $this->assertNotNull($this->payLinkId);
-        $this->payLink->name = null;
-
-        $exceptionCaught = false;
-        try {
-            PayLinkService::edit($this->payLinkId)
-                ->withAmount($this->amount)
-                ->withPayLinkData($this->payLink)
-                ->withDescription('Update Paylink description')
-                ->execute();
-        } catch (ApiException $e) {
-            $exceptionCaught = true;
-            $this->assertEquals('40005', $e->responseCode);
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following field name', $e->getMessage());
-        } finally {
-            $this->assertTrue($exceptionCaught);
-        }
-    }
-
     public function testEditPayLink_MissingType()
     {
         $this->assertNotNull($this->payLinkId);
@@ -704,24 +691,6 @@ class PayLinkTest extends TestCase
         } catch (ApiException $e) {
             $exceptionCaught = true;
             $this->assertEquals('usageLimit cannot be null for this transaction type.', $e->getMessage());
-        } finally {
-            $this->assertTrue($exceptionCaught);
-        }
-    }
-
-    public function testEditPayLink_MissingDescription()
-    {
-        $this->assertNotNull($this->payLinkId);
-        $exceptionCaught = false;
-        try {
-            PayLinkService::edit($this->payLinkId)
-                ->withAmount($this->amount)
-                ->withPayLinkData($this->payLink)
-                ->execute();
-        } catch (ApiException $e) {
-            $exceptionCaught = true;
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following field description', $e->getMessage());
-            $this->assertEquals('40005', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
         }

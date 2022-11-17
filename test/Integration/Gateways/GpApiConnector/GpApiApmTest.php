@@ -57,6 +57,11 @@ class GpApiApmTest extends TestCase
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
+    public static function tearDownAfterClass()
+    {
+        BaseGpApiTestConfig::resetGpApiConfig();
+    }
+
     /**
      * How to have a success running test. When you will run the test in the console it will be printed the
      * paypal redirect url. You need to copy the link and open it in a browser, do the login wih your paypal

@@ -22,15 +22,7 @@ $config->secure3dVersion = Secure3dVersion::ANY;
 $config->merchantContactUrl = 'https://www.example.com';
 ServicesContainer::configureService($config);
 
-$requestData = "";
-try {
-    if (file_exists('php://input')) {
-        $requestData = json_decode(file_get_contents($requestData));
-    }
-} catch (Exception $e) {
-    // TODO: add your error handling here
-    print_r($e);
-}
+$requestData = json_decode(file_get_contents('php://input'));
 
 $cardData = $requestData->card;
 $card = new CreditCardData();

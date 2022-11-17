@@ -41,16 +41,6 @@ class TransactionReportBuilder extends ReportBuilder
     public $transactionId;
 
     /**
-     * @var integer
-     */
-    public $page;
-
-    /**
-     * @var integer
-     */
-    public $pageSize;
-
-    /**
      * @var TransactionSortProperty
      */
     public $transactionOrderBy;
@@ -202,19 +192,6 @@ class TransactionReportBuilder extends ReportBuilder
     public function withTransactionId($value)
     {
         $this->transactionId = $value;
-        return $this;
-    }
-
-    /**
-     * Set the gateway paging criteria for the report
-     * @param $page
-     * @param $pageSize
-     * @return $this
-     */
-    public function withPaging($page, $pageSize)
-    {
-        $this->page = $page;
-        $this->pageSize = $pageSize;
         return $this;
     }
 

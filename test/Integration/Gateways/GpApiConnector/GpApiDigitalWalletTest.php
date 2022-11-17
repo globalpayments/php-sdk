@@ -26,10 +26,15 @@ class GpApiDigitalWalletTest extends TestCase
         $this->card->expYear = date('Y', strtotime('+1 year'));
         $this->card->cardHolderName = "James Mason";
         $this->googlePayToken = '{
-          "signature": "MEYCIQCOGbdnafdPhLr2oMjwsh9nIWb1bBHX6vpKKaaWQVXN3gIhALB3ps64qkerCacD3Lqh4AGRuFW2WO+VzplVohRsT/iu",
+          "signature": "MEYCIQCmqtWzjV/HvFoTCbydIeFcuKvkLe2JqUOkqqLFxw98agIhAN1fo4hBVyPOfMz+hivwbtCUfsBJX3n5w2Z4V9c0/7gY",
           "protocolVersion": "ECv1",
-          "signedMessage": "{\"encryptedMessage\":\"ye3wPMhj0U+B77nyQ1H7EvTWP5xbSAiJ9AXmhvCBZiDuU2hJfVe+q+PkYvzM0o0hGOg+7lzTuBo4jdM9ZSz2EblbN6hCt6Am+Mlfnqsw1vJ0r0Pf710mrmvEl8+6H0Grclb8Aes/73OPGbQgN17nPmgUw6Yv8toE2QkjpTIll8kwV800FLAZU7cQAJhrV7r/ouh4WuEN4g8A6P1yMVf16nbWqoU6KUWdS44eHs6fNwlICA9ezVOYkzdt18J6J8t97LBBcenHqH/pT4ynOD5qZWpYvkrkjqgm2EMfmtErQHCg+wNmQTa9hCQ1l5uI/KAeyeNAtZo/rvwtuIWZ+C7kyA9wWeiTNdCf0xK+iE1q6VZnPHdTb7464D3Z/r7lT6TCPOvkdklVY8T77wthRkguz/HvlwDBc2nodmhs6tnADfMwJ9BX33StEHcDWBYLvAF2nWbx\",\"ephemeralPublicKey\":\"BIelcOVaB1LudeTtBav5gS4tglEUf/UpM5dO01mJEmuJVUX4oAFbTB5YyfaKztVaRKC9HusZ+ydyp24Xjqd9x2s\\u003d\",\"tag\":\"dMS/Yh/W7w3BhwW3kM1BmSbc9DJtap3ILjtdH1sDg2c\\u003d\"}"
+          "signedMessage": "{\"encryptedMessage\":\"QeiCtyFoWkjtYZl9aXOwh1KofQp0T8NurwZKJnpsPObWXWTkOTceXbTSqv1MvorX9I1qtDO6rrEbEfwzD3VJAl0LP2NePp5O4jTw4rh7qjXIQdskwx1+dEwOJSVFGtq4KU9DGRtnhtENezet08mlNGvOdT9Ufy+rX+pKHA5msMmlsdAREr+Fp2NppQE+IhiQDHVi7oiNMnPQLB9z+hr4f8pEg0gUD9qOUdtCalDBb7jwACXW4MvxtNz0Qin7nLQm/4AcRS8xM07uUeys6Z86v3It3WmOqgPNUERx37DIcUaZ2CcF7Oy7uvxpHCshjvpR/Gc0puRPPi1cDGSnqfMuXfyv15hMP3huYe8IHXPFJ855qhnIIeqKnVf+IcsLSYaX+bUc2niDC+VFmOb8RgGYwXrSNCFF8UXvAdNMxCQ1BulIRDxIseh89iwZKKBX3eNj2yxr\",\"ephemeralPublicKey\":\"BOwa6fGQkkFxxF3VnkZoMGmIebvsJ7KGSYtSE6V3nFcTv7UfQF1Txx/vfuSWPUoSQmVPshJ0S8EHIp4Kyf49ozU\\u003d\",\"tag\":\"zB2Bb1L6rOMKV3AiTrMzS4ZgBoKqDZSpf1jYV/8BDm4\\u003d\"}"
         }';
+    }
+
+    public static function tearDownAfterClass()
+    {
+        BaseGpApiTestConfig::resetGpApiConfig();
     }
 
     public function setUpConfig()

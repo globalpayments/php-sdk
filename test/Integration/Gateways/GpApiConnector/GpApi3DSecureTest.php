@@ -68,6 +68,7 @@ class GpApi3DSecureTest extends TestCase
     {
         $config = $this->setUpConfig();
         ServicesContainer::configureService($config);
+
         $this->gatewayProvider = $config->getGatewayProvider();
         $this->currency = 'GBP';
         $this->amount = '10.01';
@@ -98,6 +99,11 @@ class GpApi3DSecureTest extends TestCase
         $this->browserData->challengWindowSize = ChallengeWindowSize::WINDOWED_600X400;
         $this->browserData->timeZone = "0";
         $this->browserData->userAgent = "Mozilla/5.0 (Windows NT 6.1; Win64, x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36";
+    }
+
+    public static function tearDownAfterClass()
+    {
+        BaseGpApiTestConfig::resetGpApiConfig();
     }
 
     public function setUpConfig()
@@ -206,8 +212,7 @@ class GpApi3DSecureTest extends TestCase
             ->execute();
         $this->card->threeDSecure = $secureEcom;
         $this->assertEquals($status, $secureEcom->status);
-        $liabilityShift = $status == Secure3dStatus::SUCCESS_ATTEMPT_MADE ? 'YES' : 'NO';
-        $this->assertEquals($liabilityShift, $secureEcom->liabilityShift);
+        $this->assertEquals("NO", $secureEcom->liabilityShift);
 
         $response = $this->card->charge($this->amount)->withCurrency($this->currency)->execute();
         $this->assertNotNull($response);
@@ -822,4 +827,56 @@ class GpApi3DSecureTest extends TestCase
         $this->assertEquals('NO', $secureEcom->liabilityShift);
     }
 
+    public function testDecoupledAuth()
+    {
+        $this->card->number = GpApi3DSTestCards::CARD_AUTH_SUCCESSFUL_V2_1;
+
+        $response = $this->card->tokenize()->execute();
+        $tokenId = $response->token;
+
+        $tokenizedCard = new CreditCardData();
+        $tokenizedCard->token = $tokenId;
+        $tokenizedCard->cardHolderName = "James Mason";
+
+        $secureEcom = Secure3dService::checkEnrollment($tokenizedCard)
+            ->withCurrency($this->currency)
+            ->withAmount($this->amount)
+            ->withDecoupledFlowRequest('https://www.example.com/decoupledNotification')
+            ->execute();
+
+        $this->assertNotNull($secureEcom);
+        $this->assertEquals(Secure3dStatus::ENROLLED, $secureEcom->enrolled);
+        $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
+        $this->assertEquals(Secure3dStatus::AVAILABLE, $secureEcom->status);
+
+        $initAuth = Secure3dService::initiateAuthentication($tokenizedCard, $secureEcom)
+            ->withAmount($this->amount)
+            ->withCurrency($this->currency)
+            ->withAuthenticationSource(AuthenticationSource::BROWSER)
+            ->withMethodUrlCompletion(MethodUrlCompletion::YES)
+            ->withOrderCreateDate(date('Y-m-d H:i:s'))
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->withBrowserData($this->browserData)
+            ->withDecoupledFlowRequest(true)
+            ->withDecoupledFlowTimeout('9001')
+            ->withDecoupledFlowRequest('https://www.example.com/decoupledNotification')
+            ->execute();
+
+        $this->assertNotNull($initAuth);
+        $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $secureEcom->status);
+        $this->assertEquals('YES', $secureEcom->liabilityShift);
+
+        $secureEcom = Secure3dService::getAuthenticationData()
+            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->execute();
+
+        $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $secureEcom->status);
+        $this->assertEquals('YES', $secureEcom->liabilityShift);
+
+        $tokenizedCard->threeDSecure = $secureEcom;
+        $response = $tokenizedCard->charge($this->amount)->withCurrency($this->currency)->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+    }
 }

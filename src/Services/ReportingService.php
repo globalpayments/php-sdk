@@ -3,8 +3,11 @@
 namespace GlobalPayments\Api\Services;
 
 use GlobalPayments\Api\Builders\BankPaymentBuilder;
+use GlobalPayments\Api\Builders\PayFacBuilder;
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
+use GlobalPayments\Api\Builders\UserReportBuilder;
 use GlobalPayments\Api\Entities\Enums\ReportType;
+use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 
 class ReportingService
@@ -135,6 +138,13 @@ class ReportingService
     public static function findBankPaymentTransactions($page, $pageSize)
     {
         return (new TransactionReportBuilder(ReportType::FIND_BANK_PAYMENT))
+            ->withPaging($page, $pageSize);
+    }
+
+    public static function findMerchants($page, $pageSize)
+    {
+        return (new UserReportBuilder(ReportType::FIND_MERCHANTS_PAGED))
+            ->withModifier(TransactionModifier::MERCHANT)
             ->withPaging($page, $pageSize);
     }
 }

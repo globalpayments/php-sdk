@@ -4,13 +4,16 @@ namespace GlobalPayments\Api\Gateways;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
+use GlobalPayments\Api\Builders\PayFacBuilder;
 use GlobalPayments\Api\Builders\ReportBuilder;
 use GlobalPayments\Api\Builders\RequestBuilder\RequestBuilderFactory;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
+use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\GpApi\GpApiTokenResponse;
@@ -21,12 +24,13 @@ use GlobalPayments\Api\Entities\Reporting\DepositSummary;
 use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
+use GlobalPayments\Api\Entities\User;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Mapping\GpApiMapping;
 use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
 
-class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dProvider
+class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dProvider, IPayFacProvider
 {
     const GP_API_VERSION = '2021-03-22';
     const IDEMPOTENCY_HEADER = 'x-gp-idempotency';
@@ -136,6 +140,28 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
 
         return GpApiMapping::mapReportResponse($response, $builder->reportType);
     }
+
+    /**
+     * @param PayFacBuilder $builder
+     * @return User
+     * @throws ApiException
+     * @throws \GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException
+     */
+    public function processBoardingUser(PayFacBuilder $builder) : User
+    {
+        if (empty($this->accessToken)) {
+            $this->signIn();
+        }
+        $response = $this->executeProcess($builder);
+
+        return GpApiMapping::mapMerchantsEndpointResponse($response);
+    }
+
+    public function processPayFac(PayFacBuilder $builder)
+    {
+        throw new UnsupportedTransactionException(sprintf('Method %s not supported by %s', __METHOD__, $this->gpApiConfig->gatewayProvider));
+    }
+
 
     private function executeProcess($builder)
     {

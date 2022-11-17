@@ -21,6 +21,17 @@ abstract class ReportBuilder extends BaseBuilder
      */
     public $timeZoneConversion;
 
+
+    /**
+     * @var integer
+     */
+    public $page;
+
+    /**
+     * @var integer
+     */
+    public $pageSize;
+
     /**
      * @param ReportType $reportType
      *
@@ -51,5 +62,18 @@ abstract class ReportBuilder extends BaseBuilder
         }
 
         return $client->processReport($this);
+    }
+
+    /**
+     * Set the gateway paging criteria for the report
+     * @param $page
+     * @param $pageSize
+     * @return $this
+     */
+    public function withPaging($page, $pageSize)
+    {
+        $this->page = $page;
+        $this->pageSize = $pageSize;
+        return $this;
     }
 }

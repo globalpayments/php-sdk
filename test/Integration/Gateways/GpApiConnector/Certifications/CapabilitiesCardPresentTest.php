@@ -33,6 +33,11 @@ class CapabilitiesCardPresentTest extends TestCase
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
     }
 
+    public static function tearDownAfterClass()
+    {
+        ServicesContainer::removeConfiguration();
+    }
+
     public function testDebitSaleWithChipCondition()
     {
         $debitCard = new DebitTrackData();

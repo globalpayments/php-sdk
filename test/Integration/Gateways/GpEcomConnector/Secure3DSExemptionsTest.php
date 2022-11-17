@@ -25,16 +25,11 @@ class Secure3DSExemptionsTest extends TestCase
     private $shippingAddress;
     private $billingAddress;
     private $browserData;
-    /**
-     * @var string
-     */
-    private $gatewayProvider;
 
     public function setup() : void
     {
         $config = $this->getConfig();
         ServicesContainer::configureService($config);
-        $this->gatewayProvider = $config->getGatewayProvider();
 
         // create card data
         $this->card = new CreditCardData();
