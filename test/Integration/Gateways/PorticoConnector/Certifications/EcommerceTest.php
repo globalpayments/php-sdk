@@ -2,30 +2,36 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\PorticoConnector\Certifications;
 
-use GlobalPayments\Api\Entities\EncryptionData;
-use GlobalPayments\Api\Entities\Enums\EntryMethod;
-use GlobalPayments\Api\PaymentMethods\DebitTrackData;
-use GlobalPayments\Api\PaymentMethods\EBTCardData;
-use GlobalPayments\Api\PaymentMethods\EBTTrackData;
-use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\EcommerceInfo;
-use GlobalPayments\Api\Entities\Enums\EcommerceChannel;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Entities\Enums\TaxType;
-use GlobalPayments\Api\Entities\Enums\TransactionModifier;
+use GlobalPayments\Api\Entities\{
+    Address,
+    EncryptionData,
+    EcommerceInfo,
+    Transaction,
+    ThreeDSecure
+};
+use GlobalPayments\Api\Entities\Enums\{
+    EntryMethod,
+    EcommerceChannel,
+    MobilePaymentMethodType,
+    PaymentMethodType,
+    PaymentDataSourceType,
+    TaxType,
+    TransactionModifier,
+    Secure3dVersion
+};
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
-use GlobalPayments\Api\Entities\Transaction;
-use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\PaymentMethods\CreditTrackData;
-use GlobalPayments\Api\PaymentMethods\GiftCard;
+use GlobalPayments\Api\PaymentMethods\{
+    DebitTrackData,
+    EBTCardData,
+    EBTTrackData,
+    CreditCardData,
+    CreditTrackData,
+    GiftCard
+};
 use GlobalPayments\Api\ServicesContainer;
 use PHPUnit\Framework\TestCase;
-use GlobalPayments\Api\Entities\ThreeDSecure;
-use GlobalPayments\Api\Entities\Enums\Secure3dPaymentDataSource;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\Services\BatchService;
-use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
-use GlobalPayments\Api\Entities\Enums\MobilePaymentMethodType;
 
 class TestCards
 {
@@ -332,7 +338,7 @@ class EcommerceTest extends TestCase
     private function config()
     {
         $config = new PorticoConfig();
-        $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
+        $config->secretApiKey = 'skapi_cert_MY5OAAAQrmIF_IZDKbr1ecycRr7n1Q1SxNkVgzDhwg';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
             'https://cert.api2-c.heartlandportico.com/' :
             'https://cert.api2.heartlandportico.com';
@@ -1970,7 +1976,7 @@ class EcommerceTest extends TestCase
         $secureEcom->cavv = 'AAACBllleHchZTBWIGV4AAAAAAA=';
         $secureEcom->xid = 'crqAeMwkEL9r4POdxpByWJ1/wYg=';
         $secureEcom->eci = '5';
-        $secureEcom->paymentDataSource = Secure3dPaymentDataSource::VISA_3DSECURE;
+        $secureEcom->paymentDataSource = PaymentDataSourceType::VISA_3DSECURE;
         $secureEcom->paymentDataType = '3DSecure';
 
         $card = TestCards::visaManual();
@@ -1993,7 +1999,7 @@ class EcommerceTest extends TestCase
     {
         $secureEcom = new ThreeDSecure();
         $secureEcom->cavv = 'XXXXf98AAajXbDRg3HSUMAACAAA=';
-        $secureEcom->paymentDataSource = Secure3dPaymentDataSource::APPLEPAY;
+        $secureEcom->paymentDataSource = PaymentDataSourceType::APPLEPAY;
         $secureEcom->setVersion(Secure3dVersion::ONE);
 
         $card = TestCards::visaManual();
@@ -2036,8 +2042,8 @@ class EcommerceTest extends TestCase
 
         $card = new CreditCardData();
         $card->mobileType = MobilePaymentMethodType::APPLEPAY;
-        $card->paymentSource = Secure3dPaymentDataSource::APPLEPAYWEB;
-        $card->token = "{\"signature\":\"MEYCIQDn1WUTJSbe0HTenhQBanye9MNlEEbJ9nvk2YDE11JO1wIhAOkA99r3sMpuHsQqdR1C8u9R7C7dm9w7wNniXtYr01gv\",\"protocolVersion\":\"ECv1\",\"signedMessage\":\"{\\\"encryptedMessage\\\":\\\"BxaNW7Rxei+P0lBvb2jvE8+HQ04/uAFrHIXynZqsM7p6rxFDmgt7JxE8XnTnGacTyOXAITFlHnqD5eZJ6dQGMn/DHdhjmi/El25J2rpOzZiJPQk394YQLY2xjUm1xIDR3GB1ATfBIRKoqtf2iXiYQ/u50XINut0ivK/u+qc3lbDAC3IrDUq5DED7uPcPhijF2snKL5sROatKiecfTQRzWMJioTZXDaYfQseoWhhFVvO/UpEcK5CZh5b3CQT89yzDPPdwa1XSH+8DYK6UxvBoelaLYIxpLUNBFcUurLukBM24VlzG5Rs8os8hOXXLixcIcDuiFH4MS7wMIAW4DtKvZF7E78xvh2IvlxckoJ6uZsVuyGBgXgjIgbn95lqeMZsR398YcY/lDl5N/HCpxDJbvSQfd7YNf/hEK/NAa15AAScQ6sorFYcFF1W1iU3+gBR+fuIODT/1VQ\\\\u003d\\\\u003d\\\",\\\"ephemeralPublicKey\\\":\\\"BLTKhwsuoS/Izu5fYd08D+HAd2TAc+FTmEpa7L4wo45p3hQbZ3agZ9J60v8agMsXiDIXpbN1VlBpibKezSFxfoU\\\\u003d\\\",\\\"tag\\\":\\\"hbkBnamtgcDYeDrJvY3IKAzOU4E4aFS2cJUK4f5VVxM\\\\u003d\\\"}\"}";
+        $card->paymentSource = PaymentDataSourceType::APPLEPAYWEB;
+        $card->token = '{"signature":"MEQCIAnQU74ngIkP/lp59R+EUia1BrknWyHyjbk+hlZCvATVAiB2yPkMOgbf+KAyILuBfmHBo+VAHW04zJvCklAYrV7TkQ\u003d\u003d","protocolVersion":"ECv1","signedMessage":"{\"encryptedMessage\":\"Uu7PDIFbVbBwf3fKhB/u7zsE4CXX6xGpwmj9UaVePCtrOSFQfjDnt5RSvCfXTMS8Ckj1rp4fCk9sNU8h1ClIm9H0HgI2SvM3exVmbdhacaztsgOGaT6hDhaHB+P7Y+LNq9V9wfIw3bvP4NOqayI31jhaDaw3kuCXXdA1ViP9c2pYy9UbOaDLYvVYjNoHdFfgcSGMg07QcjxtdiaYC7FpWOuC62sF1sxgKYRx4RBsA293QPP3NHRJIpE6eOaERoveItRG5X6V3WvW89j2MYJocvPLx0zXdoHCubVEUxp8qvGIbEgeaEp1w+aE8RH1GT/lz3S1xvR/KXZFj1+UGyUuwJu3vTL8LOStcl+N/tzUJrifDdzcCFOMxq3MijcsAIbAI2Q8mYo6w44mCJOG15p2EdrEViHxFNDztUC66KCNFJ+1KfQcVzMyJps+WDI8SoUjoPtc8VedmA\\u003d\\u003d\",\"ephemeralPublicKey\":\"BFFRh4uK6K6ZrKCV1wtn1ZudmgQFrjXQnuL6FtQpycBVK2bbnr2/oGIGcHw51yyv/kyIlaxtDl6oubyhET500tM\\u003d\",\"tag\":\"aQYHxgHKiLJAzTtvb6PZ3n4xmwPBMoEeh+1oQCvRfxU\\u003d\"}"}';
 
         $response = $card->charge(10)
             ->withCurrency('USD')

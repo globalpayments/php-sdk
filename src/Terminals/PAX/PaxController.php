@@ -94,7 +94,18 @@ class PaxController extends DeviceController
         $trace = new TraceRequest();
         $trace->referenceNumber = $requestId;
         
-        $amount->transactionAmount = TerminalUtils::formatAmount($builder->amount);
+        //Tip Adjust
+        if($builder->transactionType === TransactionType::EDIT && !empty($builder->gratuity)){
+            /*
+             * Transaction Type 06 : ADJUST: Used for additional charges or gratuity. 
+             * Typically used for tip adjustment.
+             * Set the amount to Transaction Amount, not the Tip Amount
+             */
+            $amount->transactionAmount = TerminalUtils::formatAmount($builder->gratuity);
+            $extData->details[PaxExtData::TIP_REQUEST] = 1;
+        } else {
+            $amount->transactionAmount = TerminalUtils::formatAmount($builder->amount);
+        }
 
         if ($builder->paymentMethod != null) {
             if ($builder->paymentMethod instanceof TransactionReference) {
@@ -107,7 +118,8 @@ class PaxController extends DeviceController
                 $card = $builder->paymentMethod;
                 $account->accountNumber = $card->number;
             }
-        }
+        }        
+        
         $transactionType = $this->mapTransactionType($builder->transactionType);
         switch ($builder->paymentMethodType) {
             case PaymentMethodType::CREDIT:
@@ -271,6 +283,8 @@ class PaxController extends DeviceController
                 return PaxTxnType::WITHDRAWAL;
             case TransactionType::REVERSAL:
                 return PaxTxnType::REVERSAL;
+            case TransactionType::EDIT:
+                return PaxTxnType::ADJUST;
             default:
                 throw new UnsupportedTransactionException(
                     'The selected gateway does not support this transaction type.'

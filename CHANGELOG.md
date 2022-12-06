@@ -6,6 +6,11 @@
 
 ## Latest version
 #### Enhancements:
+- PAX: Adding tip after the Sale
+- Portico: APPLE PAY / GOOGLE PAY fix for token format
+
+## v6.0.2 (11/17/2022)
+#### Enhancements:
 - GP-API: Onboard merchants feature
 - GP-API: Decoupled Authentication
 

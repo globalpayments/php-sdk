@@ -96,7 +96,7 @@ abstract class Gateway
 
             $headers = [];
             foreach ($this->headers as $key => $value) {
-                $headers[] = $key . ': '. $value;
+                $headers[] = $key . ': ' . $value;
             }
 
             if (isset($this->requestLogger)) {
@@ -118,7 +118,7 @@ abstract class Gateway
             if (!empty($this->webProxy)) {
                 curl_setopt($request, CURLOPT_PROXY, $this->webProxy->uri);
                 if (!empty($this->webProxy->username) && !empty($this->webProxy->password)) {
-                    curl_setopt($request, CURLOPT_PROXYUSERPWD, $this->webProxy->username . ':' , $this->webProxy->password);
+                    curl_setopt($request, CURLOPT_PROXYUSERPWD, $this->webProxy->username . ':', $this->webProxy->password);
                 }
             }
 

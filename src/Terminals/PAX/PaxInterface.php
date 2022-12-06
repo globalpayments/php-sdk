@@ -318,7 +318,8 @@ class PaxInterface implements IDeviceInterface
     
     public function creditTipAdjust($tipAmount = null)
     {
-        throw new UnsupportedTransactionException('');
+        return (new TerminalManageBuilder(TransactionType::EDIT, PaymentMethodType::CREDIT))
+                        ->withGratuity($tipAmount);
     }
 
     #endregion

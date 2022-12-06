@@ -4,48 +4,52 @@ namespace GlobalPayments\Api\Gateways;
 
 use DOMDocument;
 use DOMElement;
-use GlobalPayments\Api\Builders\AuthorizationBuilder;
-use GlobalPayments\Api\Builders\BaseBuilder;
-use GlobalPayments\Api\Builders\ManagementBuilder;
-use GlobalPayments\Api\Builders\ReportBuilder;
-use GlobalPayments\Api\Builders\TransactionReportBuilder;
-use GlobalPayments\Api\Entities\BatchSummary;
-use GlobalPayments\Api\Entities\Transaction;
-use GlobalPayments\Api\Entities\Enums\AccountType;
-use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\Enums\AliasAction;
-use GlobalPayments\Api\Entities\Enums\CheckType;
-use GlobalPayments\Api\Entities\Enums\EntryMethod;
-use GlobalPayments\Api\Entities\Enums\MobilePaymentMethodType;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Entities\Enums\Secure3dPaymentDataSource;
-use GlobalPayments\Api\Entities\Enums\TaxType;
-use GlobalPayments\Api\Entities\Enums\TransactionModifier;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\Exceptions\GatewayException;
-use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
-use GlobalPayments\Api\Entities\Reporting\CheckData;
-use GlobalPayments\Api\PaymentMethods\ECheck;
-use GlobalPayments\Api\PaymentMethods\GiftCard;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IBalanceable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ICardData;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IEncryptable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IPinProtected;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ITrackData;
-use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
-use GlobalPayments\Api\PaymentMethods\TransactionReference;
-use GlobalPayments\Api\Entities\Enums\ReportType;
-use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
-use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
-use GlobalPayments\Api\Entities\Exceptions\BuilderException;
+use GlobalPayments\Api\Builders\{
+    AuthorizationBuilder,
+    BaseBuilder,
+    ManagementBuilder,
+    ReportBuilder,
+    TransactionReportBuilder
+};
+use GlobalPayments\Api\Entities\{BatchSummary, Transaction, Address, LodgingData};
+use GlobalPayments\Api\Entities\Enums\{
+    AccountType,
+    AliasAction,
+    CheckType,
+    EntryMethod,
+    MobilePaymentMethodType,
+    PaymentMethodType,
+    PaymentDataSourceType,
+    ReportType,
+    StoredCredentialInitiator,
+    TaxType,
+    TransactionModifier,
+    TransactionType
+};
+use GlobalPayments\Api\Entities\Exceptions\{
+    BuilderException,
+    GatewayException,
+    NotImplementedException,
+    UnsupportedTransactionException
+};
+use GlobalPayments\Api\Entities\Reporting\{
+    AltPaymentData,
+    AltPaymentProcessorInfo,
+    CheckData,
+    TransactionSummary
+};
+use GlobalPayments\Api\PaymentMethods\{CreditCardData, ECheck, GiftCard};
+use GlobalPayments\Api\PaymentMethods\Interfaces\{
+    IBalanceable,
+    ICardData,
+    IEncryptable,
+    IPaymentMethod,
+    IPinProtected,
+    ITokenizable,
+    ITrackData
+};
+use GlobalPayments\Api\PaymentMethods\{RecurringPaymentMethod, TransactionReference};
 use GlobalPayments\Api\Entities\PayFac\PayFacResponseData;
-use GlobalPayments\Api\Entities\LodgingData;
-use GlobalPayments\Api\Entities\Reporting\AltPaymentData;
-use GlobalPayments\Api\Entities\Reporting\AltPaymentProcessorInfo;
-use GlobalPayments\Api\Entities\Exceptions\NotImplementedException;
-use GlobalPayments\Api\PaymentMethods\CreditCardData;
 
 class PorticoConnector extends XmlGateway implements IPaymentGateway
 {
@@ -2323,8 +2327,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         if (
             $builder->paymentMethod->mobileType == MobilePaymentMethodType::APPLEPAY
             || $builder->paymentMethod->mobileType == MobilePaymentMethodType::GOOGLEPAY
-            && !empty($builder->paymentMethod->threeDSecure->paymentDataSource)
-            && $this->isAppleOrGooglePay($builder->paymentMethod->threeDSecure->paymentDataSource)
+            && $this->isAppleOrGooglePay($builder->paymentMethod->paymentSource)
         ) {
             $walletData  = $xml->createElement('WalletData');
 
@@ -2339,13 +2342,32 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             }
 
             if ($builder->paymentMethod->mobileType) {
-                $digitalToken = $walletData->appendChild($xml->createElement('DigitalPaymentToken'));
-                $digitalToken->appendChild($xml->createCDATASection($builder->paymentMethod->token));
+                $token = $this->toFormatToken($builder->paymentMethod->token);
+                $walletData->appendChild($xml->createElement('DigitalPaymentToken', $token));
                 $block1->removeChild($cardData);
             }
 
             $block1->appendChild($walletData);
         }
+    }
+
+    /**
+     * To format token
+     *
+     * @param string $token
+     *
+     * @return string
+     */
+    private function toFormatToken(string $token)
+    {
+        $decodedToken = json_decode(preg_replace('/(\\\)(\w)/', '${1}${1}${2}', $token));
+        foreach ($decodedToken as $key => $value) {
+            if ($key == 'signedMessage')
+                $decodedToken->$key = str_replace('u003d', '\u003d', $value);
+        }
+
+        $result = json_encode($decodedToken, JSON_UNESCAPED_SLASHES);
+        return str_replace('\\\\', '\\', $result);
     }
 
     /**
@@ -2357,11 +2379,11 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
     private function isAppleOrGooglePay($paymentDataSource)
     {
         if (
-            $paymentDataSource == Secure3dPaymentDataSource::APPLEPAY
-            || $paymentDataSource == Secure3dPaymentDataSource::APPLEPAYAPP
-            || $paymentDataSource == Secure3dPaymentDataSource::APPLEPAYWEB
-            || $paymentDataSource == Secure3dPaymentDataSource::GOOGLEPAYAPP
-            || $paymentDataSource == Secure3dPaymentDataSource::GOOGLEPAYWEB
+            $paymentDataSource == PaymentDataSourceType::APPLEPAY
+            || $paymentDataSource == PaymentDataSourceType::APPLEPAYAPP
+            || $paymentDataSource == PaymentDataSourceType::APPLEPAYWEB
+            || $paymentDataSource == PaymentDataSourceType::GOOGLEPAYAPP
+            || $paymentDataSource == PaymentDataSourceType::GOOGLEPAYWEB
         ) {
             return true;
         }

@@ -10,10 +10,6 @@ use GlobalPayments\Api\Terminals\UPA\UpaController;
 
 class ConnectionContainer
 {
-
-    /** @var IPaymentGateway */
-    private $deviceController;
-
     /** @var ConnectionContainer */
     private static $instance;
 
@@ -45,19 +41,19 @@ class ConnectionContainer
     /**
      * Configures the `ConnectionContainer` singleton
      *
-     * @param ServicesConfig $config
+     * @param ConnectionConfig $config
      *
      * @return void
      */
-    public static function configure(ConnectionConfig $config)
+    public static function configure(ConnectionConfig $config) : void
     {
         $config->validate();
 
-        $deviceController = null;
         switch ($config->deviceType) {
             case DeviceType::HPA_ISC250:
                 static::$instance = new HpaController($config);
                 break;
+            case DeviceType::PAX_DEVICE:
             case DeviceType::PAX_S300:
             case DeviceType::PAX_D200:
             case DeviceType::PAX_D210:
@@ -65,6 +61,7 @@ class ConnectionContainer
             case DeviceType::PAX_PX7:
                 static::$instance = new PaxController($config);
                 break;
+            case DeviceType::UPA_DEVICE:
             case DeviceType::UPA_SATURN_1000:
             case DeviceType::UPA_VERIFONE_T650P:
                 static::$instance = new UpaController($config);

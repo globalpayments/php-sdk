@@ -1,9 +1,10 @@
 <?php
+
 namespace GlobalPayments\Api\Entities\Enums;
 
 use GlobalPayments\Api\Entities\Enum;
 
-class Secure3dPaymentDataSource extends Enum
+class PaymentDataSourceType extends Enum
 {
     const AMEX_3DSECURE = 'AMEX 3DSecure';
     const APPLEPAY = 'ApplePay';
