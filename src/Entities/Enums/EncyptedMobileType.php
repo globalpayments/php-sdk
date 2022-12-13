@@ -8,4 +8,5 @@ class EncyptedMobileType extends Enum
 {
     const APPLE_PAY = 'apple-pay';
     const GOOGLE_PAY = 'pay-with-google';
+    const CLICK_TO_PAY = 'click-to-pay';
 }

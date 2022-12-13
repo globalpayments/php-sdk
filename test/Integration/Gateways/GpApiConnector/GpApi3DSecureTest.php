@@ -686,12 +686,13 @@ class GpApi3DSecureTest extends TestCase
         $recurringPayment = $tokenizedCard->charge($this->amount)
             ->withCurrency($this->currency)
             ->withStoredCredential($storeCredentials)
-            ->withCardBrandStorage($response->cardBrandTransactionId)
+            ->withCardBrandStorage(StoredCredentialInitiator::MERCHANT, $response->cardBrandTransactionId)
             ->execute();
 
         $this->assertNotNull($recurringPayment);
         $this->assertEquals('SUCCESS', $recurringPayment->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $recurringPayment->responseMessage);
+        $this->assertNotNull($response->cardBrandTransactionId);
     }
 
     /**
@@ -841,7 +842,7 @@ class GpApi3DSecureTest extends TestCase
         $secureEcom = Secure3dService::checkEnrollment($tokenizedCard)
             ->withCurrency($this->currency)
             ->withAmount($this->amount)
-            ->withDecoupledFlowRequest('https://www.example.com/decoupledNotification')
+            ->withDecoupledNotificationUrl('https://www.example.com/decoupledNotification')
             ->execute();
 
         $this->assertNotNull($secureEcom);
@@ -859,7 +860,7 @@ class GpApi3DSecureTest extends TestCase
             ->withBrowserData($this->browserData)
             ->withDecoupledFlowRequest(true)
             ->withDecoupledFlowTimeout('9001')
-            ->withDecoupledFlowRequest('https://www.example.com/decoupledNotification')
+            ->withDecoupledNotificationUrl('https://www.example.com/decoupledNotification')
             ->execute();
 
         $this->assertNotNull($initAuth);

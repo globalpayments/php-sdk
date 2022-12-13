@@ -6,7 +6,6 @@ use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Enums\Channel;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\Enums\SortDirection;

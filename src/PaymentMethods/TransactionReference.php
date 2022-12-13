@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
+use GlobalPayments\Api\Entities\BNPLResponse;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 
@@ -42,4 +43,7 @@ class TransactionReference implements IPaymentMethod
 
     /** @var AlternativePaymentResponse $alternativePaymentResponse */
     public $alternativePaymentResponse;
+
+    /** @var BNPLResponse $bnplResponse */
+    public $bnplResponse;
 }

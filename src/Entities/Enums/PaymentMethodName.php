@@ -16,4 +16,7 @@ class PaymentMethodName extends Enum
 
     /** Open Banking transaction */
     const BANK_PAYMENT = 'BANK PAYMENT';
+
+    /** @var Buy Now Pay Later (BNPL) transaction */
+    const BNPL = 'BNPL';
 }

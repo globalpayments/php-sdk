@@ -131,6 +131,12 @@ class Customer extends RecurringEntity
      */
     public $status;
 
+    /** @var PhoneNumber */
+    public $phone;
+
+    /** @var array<CustomerDocument> */
+    public $documents = [];
+
     /**
      * Adds a payment method to the customer
      *

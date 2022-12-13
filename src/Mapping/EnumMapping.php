@@ -12,6 +12,7 @@ use GlobalPayments\Api\Entities\Enums\ReasonCode;
 use GlobalPayments\Api\Entities\Enums\ScheduleFrequency;
 use GlobalPayments\Api\Entities\Enums\MessageCategory;
 use GlobalPayments\Api\Entities\Enums\SdkUiType;
+use GlobalPayments\Api\Entities\Enums\ShippingMethod;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 
 class EnumMapping
@@ -52,6 +53,8 @@ class EnumMapping
                     return 'APPLEPAY';
                 case EncyptedMobileType::GOOGLE_PAY:
                     return 'PAY_BY_GOOGLE';
+                case EncyptedMobileType::CLICK_TO_PAY:
+                    return 'CLICK_TO_PAY';
                 default:
                     return null;
             }

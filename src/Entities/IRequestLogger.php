@@ -11,5 +11,5 @@ interface IRequestLogger
 
     public function responseReceived(GatewayResponse $response);
 
-    public function responseError(\Exception $e);
+    public function responseError(\Exception $e, $headers = '');
 }

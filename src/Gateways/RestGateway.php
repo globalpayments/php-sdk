@@ -64,7 +64,7 @@ abstract class RestGateway extends Gateway
                     (!empty($error->detailed_error_code) ? $error->detailed_error_code : null)
                 );
                 if ($this->requestLogger) {
-                    $this->requestLogger->responseError($gatewayException);
+                    $this->requestLogger->responseError($gatewayException, $response->header);
                 }
                 throw $gatewayException;
             } else {

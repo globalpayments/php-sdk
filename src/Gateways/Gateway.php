@@ -4,7 +4,6 @@ namespace GlobalPayments\Api\Gateways;
 
 use GlobalPayments\Api\Entities\IRequestLogger;
 use GlobalPayments\Api\Entities\IWebProxy;
-use GlobalPayments\Api\Utils\Logging\Logger;
 
 abstract class Gateway
 {

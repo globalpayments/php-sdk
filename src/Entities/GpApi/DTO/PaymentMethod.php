@@ -21,6 +21,7 @@ class PaymentMethod
     public $apm;
     public $fingerprint_mode;
     public $narrative;
+    public $bnpl;
 
     const PAYMENT_METHOD_TOKEN_PREFIX = 'PMT_';
 }

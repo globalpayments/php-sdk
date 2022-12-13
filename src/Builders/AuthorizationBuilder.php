@@ -5,12 +5,14 @@ namespace GlobalPayments\Api\Builders;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\AutoSubstantiation;
 use GlobalPayments\Api\Entities\EcommerceInfo;
+use GlobalPayments\Api\Entities\Enums\BNPLShippingMethod;
 use GlobalPayments\Api\Entities\Enums\EmvFallbackCondition;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 use GlobalPayments\Api\Entities\Enums\RemittanceReferenceType;
+use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use GlobalPayments\Api\Entities\FraudRuleCollection;
 use GlobalPayments\Api\Entities\HostedPaymentData;
 use GlobalPayments\Api\Entities\Enums\AddressType;
@@ -23,6 +25,7 @@ use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\PaymentMethods\BNPL;
 use GlobalPayments\Api\PaymentMethods\EBTCardData;
 use GlobalPayments\Api\PaymentMethods\GiftCard;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
@@ -504,6 +507,9 @@ class AuthorizationBuilder extends TransactionBuilder
 
     /** @var string */
     public $remittanceReferenceValue;
+
+    /** @var BNPLShippingMethod */
+    public $bnplShippingMethod;
 
     /**
      * {@inheritdoc}
@@ -1413,6 +1419,21 @@ class AuthorizationBuilder extends TransactionBuilder
         $this->remittanceReferenceType = $remittanceReferenceType;
         $this->remittanceReferenceValue = $remittanceReferenceValue;
 
+        return $this;
+    }
+
+    /**
+     * @param BNPLShippingMethod $bnpShippingMethod
+     *
+     * @return $this
+     * @throws ArgumentException
+     */
+    public function withBNPLShippingMethod($bnpShippingMethod)
+    {
+        if (!$this->paymentMethod instanceof BNPL) {
+            throw new ArgumentException("The selected payment method doesn't support this property!");
+        }
+        $this->bnplShippingMethod = $bnpShippingMethod;
         return $this;
     }
 }

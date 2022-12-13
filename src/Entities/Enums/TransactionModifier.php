@@ -24,4 +24,5 @@ class TransactionModifier extends Enum
     const DECRYPTED_MOBILE = 14;
     const BANK_PAYMENT = 15;
     const MERCHANT = 16;
+    const BAY_NOW_PAY_LATER = 17;
 }

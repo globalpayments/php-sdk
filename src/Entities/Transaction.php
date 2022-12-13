@@ -20,6 +20,7 @@ use GlobalPayments\Api\PaymentMethods\TransactionReference;
  * @property PaymentMethodType $paymentMethodType The type of payment made in the request.
  * @property string $transactionId The transaction ID.
  * @property AlternativePaymentResponse $alternativePaymentResponse The APM response
+ * @property BNPLResponse $bnplResponse The BNP response
  */
 class Transaction
 {
@@ -538,6 +539,11 @@ class Transaction
                     return $this->transactionReference->alternativePaymentResponse;
                 }
                 return null;
+            case 'bnplResponse':
+                if ($this->transactionReference !== null) {
+                    return $this->transactionReference->bnplResponse;
+                }
+                return null;
             default:
                 break;
         }
@@ -557,7 +563,8 @@ class Transaction
             'authorizationId',
             'paymentMethodType',
             'clientTransactionId',
-            'alternativePaymentResponse'
+            'alternativePaymentResponse',
+            'bnplResponse'
         ]) || isset($this->{$name});
     }
 
@@ -599,6 +606,12 @@ class Transaction
                     $this->transactionReference = new TransactionReference();
                 }
                 $this->transactionReference->alternativePaymentResponse = $value;
+                return;
+            case 'bnplResponse':
+                if (!$this->transactionReference instanceof TransactionReference) {
+                    $this->transactionReference = new TransactionReference();
+                }
+                $this->transactionReference->bnplResponse = $value;
                 return;
             default:
                 break;

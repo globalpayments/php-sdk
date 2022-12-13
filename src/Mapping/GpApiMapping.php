@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Mapping;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\BatchSummary;
+use GlobalPayments\Api\Entities\BNPLResponse;
 use GlobalPayments\Api\Entities\CardIssuerResponse;
 use GlobalPayments\Api\Entities\DisputeDocument;
 use GlobalPayments\Api\Entities\DccRateData;
@@ -50,11 +51,13 @@ class GpApiMapping
     const DCC_RESPONSE = 'RATE_LOOKUP';
     const LINK_CREATE = "LINK_CREATE";
     const LINK_EDIT = "LINK_EDIT";
+    const TRN_INITIATE = "INITIATE";
     const MERCHANT_CREATE = 'MERCHANT_CREATE';
     const MERCHANT_LIST = 'MERCHANT_LIST';
     const MERCHANT_SINGLE = 'MERCHANT_SINGLE';
     const MERCHANT_EDIT = 'MERCHANT_EDIT';
     const MERCHANT_EDIT_INITIATED = 'MERCHANT_EDIT_INITIATED';
+
     /**
      * Map a response to a Transaction object for further chaining
      *
@@ -85,9 +88,7 @@ class GpApiMapping
         }
 
         $transaction->transactionId = $response->id;
-        $transaction->balanceAmount = !empty($response->amount) ? StringUtils::toAmount($response->amount) : null;
-        $transaction->authorizedAmount = ($response->status == TransactionStatus::PREAUTHORIZED && !empty($response->amount)) ?
-            StringUtils::toAmount($response->amount) : null;
+        $transaction->clientTransactionId = !empty($response->reference) ? $response->reference : null;
         $transaction->timestamp = !empty($response->time_created) ? $response->time_created : '';
         $transaction->referenceNumber = !empty($response->reference) ? $response->reference : null;
         $batchSummary = new BatchSummary();
@@ -95,14 +96,20 @@ class GpApiMapping
         $batchSummary->totalAmount = !empty($response->amount) ? $response->amount : null;
         $batchSummary->transactionCount = !empty($response->transaction_count) ? $response->transaction_count : null;
         $transaction->batchSummary = $batchSummary;
+        $transaction->balanceAmount = !empty($response->amount) ? StringUtils::toAmount($response->amount) : null;
+        $transaction->authorizedAmount = ($response->status == TransactionStatus::PREAUTHORIZED && !empty($response->amount)) ?
+            StringUtils::toAmount($response->amount) : null;
+        $transaction->multiCapture = (!empty($response->capture_mode) && $response->capture_mode == CaptureMode::MULTIPLE);
+        $transaction->fingerprint = !empty($response->fingerprint) ? $response->fingerprint : null;
+        $transaction->fingerprintIndicator = !empty($response->fingerprint_presence_indicator) ?
+            $response->fingerprint_presence_indicator : null;
+        if (isset($response->payment_method->bnpl)) {
+            return self::mapBNPLResponse($response, $transaction);
+        }
 
         $transaction->token = substr($response->id, 0, 4) === PaymentMethod::PAYMENT_METHOD_TOKEN_PREFIX ?
             $response->id : null;
         $transaction->tokenUsageMode = !empty($response->usage_mode) ? $response->usage_mode : null;
-        $transaction->clientTransactionId = !empty($response->reference) ? $response->reference : null;
-        $transaction->fingerprint = !empty($response->fingerprint) ? $response->fingerprint : null;
-        $transaction->fingerprintIndicator = !empty($response->fingerprint_presence_indicator) ?
-            $response->fingerprint_presence_indicator : null;
         if (!empty($response->payment_method)) {
             $transaction->authorizationCode = $response->payment_method->result;
             if (!empty($response->payment_method->id)) {
@@ -155,6 +162,7 @@ class GpApiMapping
         $transaction->multiCapture = (!empty($response->capture_mode) && $response->capture_mode == CaptureMode::MULTIPLE);
         $transaction->fraudFilterResponse = !empty($response->risk_assessment) ?
             self::mapFraudManagement(reset($response->risk_assessment)) : null;
+
         return $transaction;
     }
 
@@ -333,6 +341,7 @@ class GpApiMapping
         $summary->depositTimeCreated = !empty($response->deposit_time_created) ?
             new \DateTime($response->deposit_time_created) : '';
         $summary->batchCloseDate = !empty($response->batch_time_created) ? new \DateTime($response->batch_time_created) : '';
+        $summary->orderId = $response->order_reference ?? null;
         if (isset($response->system)) {
             $system = $response->system;
             $summary->merchantId = $system->mid;
@@ -371,6 +380,12 @@ class GpApiMapping
                 $alternativePaymentResponse->providerReference = !empty($apm->provider_reference) ? $apm->provider_reference : null;
                 $summary->alternativePaymentResponse = $alternativePaymentResponse;
                 $summary->paymentType = PaymentMethodName::APM;
+            } elseif (isset($response->payment_method->bnpl)) {
+                $bnpl = $response->payment_method->bnpl;
+                $bnplResponse = new BNPLResponse();
+                $bnplResponse->providerName = $bnpl->provider ?? null;
+                $summary->bnplResponse = $bnplResponse;
+                $summary->paymentType = PaymentMethodName::BNPL;
             }
 
             if (!empty($card)) {
@@ -827,6 +842,28 @@ class GpApiMapping
         $transaction->amount = StringUtils::toAmount($response->amount);
         $transaction->currency = $response->currency;
         $transaction->referenceNumber = $transaction->clientTransactionId = $response->reference;
+        $transaction->description = $response->description ?? null;
+        $transaction->fingerprint = $response->payment_method->fingerprint ?? null;
+        $transaction->fingerprintIndicator = $response->payment_method->fingerprint_presence_indicator ?? null;
+
+        return $transaction;
+    }
+
+    /**
+     * @param $response
+     * @param Transaction $transaction
+     *
+     * @return Transaction
+     */
+    private static function mapBNPLResponse($response,Transaction $transaction)
+    {
+        $transaction->paymentMethodType = PaymentMethodType::BNPL;
+        $bnplResponse = new BNPLResponse();
+        $bnplResponse->redirectUrl = !empty($response->payment_method->redirect_url) ?
+            $response->payment_method->redirect_url : null;
+        $bnplResponse->providerName = !empty($response->payment_method->bnpl->provider) ?
+            $response->payment_method->bnpl->provider : null;
+        $transaction->bnplResponse = $bnplResponse;
 
         return $transaction;
     }

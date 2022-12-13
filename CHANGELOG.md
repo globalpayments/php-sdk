@@ -6,6 +6,11 @@
 
 ## Latest version
 #### Enhancements:
+- GP-API: Add BNPL feature
+- GP-API: Click-to-Pay
+
+## v6.0.3 (12/06/2022)
+#### Enhancements:
 - PAX: Adding tip after the Sale
 - Portico: APPLE PAY / GOOGLE PAY fix for token format
 
@@ -19,7 +24,7 @@
 - GP-API/GP-ECOM: Fix end-to-end examples
 - Portico: APPLE PAY / GOOGLE PAY fix
 
-## v6.0.0 (11/03/2022)
+## v6.0.1 (11/03/2022)
 #### Enhancements:
 - Security vulnerabilities fixes
 

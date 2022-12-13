@@ -41,15 +41,14 @@ class SampleRequestLogger implements IRequestLogger
         $this->logger->info("=============================================");
     }
 
-    public function responseError(\Exception $e)
+    public function responseError(\Exception $e, $headers = '')
     {
         $this->logger->info("Exception START");
+        $this->logger->info("Response headers: ", [$headers]);
         $this->logger->info("Error occurred while communicating with the gateway");
         $this->logger->info("Exception type: " . get_class($e));
         $this->logger->info("Exception message: " . $e->getMessage());
         $this->logger->info("Exception END");
         $this->logger->info("=============================================");
     }
-
-
 }

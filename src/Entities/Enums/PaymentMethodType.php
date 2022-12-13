@@ -16,4 +16,5 @@ class PaymentMethodType extends Enum
     const RECURRING = 7;
     const APM = 8;
     const BANK_PAYMENT = 9;
+    const BNPL = 10;
 }
