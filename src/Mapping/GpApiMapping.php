@@ -343,11 +343,7 @@ class GpApiMapping
         $summary->batchCloseDate = !empty($response->batch_time_created) ? new \DateTime($response->batch_time_created) : '';
         $summary->orderId = $response->order_reference ?? null;
         if (isset($response->system)) {
-            $system = $response->system;
-            $summary->merchantId = $system->mid;
-            $summary->merchantHierarchy = $system->hierarchy;
-            $summary->merchantName = $system->name;
-            $summary->merchantDbaName = $system->dba;
+            self::mapSystemResponse($summary, $response->system);
         }
         if (isset($response->payment_method)) {
             $paymentMethod = $response->payment_method;
@@ -417,15 +413,9 @@ class GpApiMapping
         $summary->type = $response->funding_type;
         $summary->amount = StringUtils::toAmount($response->amount);
         $summary->currency = $response->currency;
-
         if (isset($response->system)) {
-            $system = $response->system;
-            $summary->merchantNumber = $system->mid;
-            $summary->merchantHierarchy = $system->hierarchy;
-            $summary->merchantName = $system->name;
-            $summary->merchantDbaName = $system->dba;
+            self::mapSystemResponse($summary, $response->system);
         }
-
         if (isset($response->sales)) {
             $sales = $response->sales;
             $summary->salesTotalCount = isset($sales->count) ? $sales->count : 0;
@@ -473,10 +463,11 @@ class GpApiMapping
         $summary->caseCurrency = $response->currency;
         if (isset($response->system)) {
             $system = $response->system;
-            $summary->caseMerchantId = $system->mid;
-            $summary->merchantHierarchy = $system->hierarchy;
+            $summary->caseMerchantId = $system->mid ?? null;
+            $summary->merchantHierarchy = $system->hierarchy ?? null;
             $summary->merchantName = !empty($system->name) ? $system->name : null;
         }
+
         if (
             isset($response->payment_method) &&
             isset($response->payment_method->card)
@@ -1041,5 +1032,21 @@ class GpApiMapping
         $transaction->cardIssuerResponse->cvvResult = $cardIssuerResponse->cvv_result ?? null;
         $transaction->cardIssuerResponse->avsAddressResult = $cardIssuerResponse->avs_address_result ?? null;
         $transaction->cardIssuerResponse->avsPostalCodeResult = $cardIssuerResponse->avs_postal_code_result ?? null;
+    }
+
+    /**
+     * @param TransactionSummary|DepositSummary $summary
+     * @param $system
+     */
+    private static function mapSystemResponse(&$summary, $system)
+    {
+        if (!isset($system)) {
+            return;
+        }
+
+        $summary->merchantId = $system->mid ?? null;
+        $summary->merchantHierarchy = $system->hierarchy ?? null;
+        $summary->merchantName = $system->name ?? null;
+        $summary->merchantDbaName = $system->dba ?? null;
     }
 }

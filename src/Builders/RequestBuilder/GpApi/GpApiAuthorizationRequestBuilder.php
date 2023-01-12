@@ -380,7 +380,13 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                         $builder->customerData->deviceFingerPrint : null);
                 $secureEcom = $paymentMethodContainer->threeDSecure;
                 if (!empty($secureEcom)) {
-					$paymentMethod->authentication = ['id' => $secureEcom->serverTransactionId];
+					$paymentMethod->authentication =
+                        [
+                            'id' => $secureEcom->serverTransactionId,
+                            'three_ds' => [
+                                'exempt_status' => $secureEcom->exemptStatus
+                            ]
+                        ];
                 }
                 break;
             case ECheck::class:

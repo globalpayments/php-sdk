@@ -3,6 +3,7 @@ namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector\Hpp;
 
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
+use GlobalPayments\Api\Entities\Enums\HostedPaymentMethods;
 use GlobalPayments\Api\Entities\Enums\ShaHashType;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\FraudRuleCollection;
@@ -77,7 +78,7 @@ class GpEcomHppClient
         // create the card/APM/LPM/OB object
         if (!empty($this->getValue('PM_METHODS'))) {
             $apmTypes = explode("|", $this->getValue('PM_METHODS'));
-            if (in_array('ob', $apmTypes)) {
+            if (in_array(HostedPaymentMethods::OB, $apmTypes)) {
                 $card = new BankPayment();
                 $card->sortCode = $this->getValue('HPP_OB_DST_ACCOUNT_SORT_CODE');
                 $card->accountNumber = $this->getValue('HPP_OB_DST_ACCOUNT_NUMBER');

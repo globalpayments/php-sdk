@@ -3,6 +3,7 @@
 namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\IntervalToExpire;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
@@ -80,7 +81,7 @@ class AccessTokenTest extends TestCase
 
     public function testCreateAccessTokenWithSpecific_IntervalToExpire()
     {
-        $this->config->intervalToExpire = '1_HOUR';
+        $this->config->intervalToExpire = IntervalToExpire::ONE_HOUR;
 
         $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
         $this->assertAccessTokenResponse($accessTokenInfo);
@@ -89,7 +90,7 @@ class AccessTokenTest extends TestCase
     public function testCreateAccessTokenWithSpecificExpiredDate()
     {
         $this->config->secondsToExpire = 200;
-        $this->config->intervalToExpire = 'WEEK';
+        $this->config->intervalToExpire = IntervalToExpire::WEEK;
 
         $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
         $this->assertAccessTokenResponse($accessTokenInfo);

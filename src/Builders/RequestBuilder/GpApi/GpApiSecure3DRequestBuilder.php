@@ -22,6 +22,9 @@ use GlobalPayments\Api\Utils\StringUtils;
 
 class GpApiSecure3DRequestBuilder implements IRequestBuilder
 {
+    /** @var Secure3dBuilder */
+    private $builder;
+
     public static function canProcess($builder)
     {
         if ($builder instanceof Secure3dBuilder) {
@@ -33,7 +36,9 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
 
     public function buildRequest(BaseBuilder $builder, $config)
     {
+        $this->builder = $builder;
         $requestData = null;
+
         switch ($builder->transactionType)
         {
             case TransactionType::VERIFY_ENROLLED:
@@ -104,39 +109,7 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
         }
         $threeDS['method_url_completion_status'] = (string) $builder->methodUrlCompletion;
         $threeDS['merchant_contact_url'] = $config->merchantContactUrl;
-        $order = [
-            'time_created_reference' => !empty($builder->orderCreateDate) ?
-                (new \DateTime($builder->orderCreateDate))->format('Y-m-d\TH:i:s.u\Z') : null,
-            'amount' => StringUtils::toNumeric($builder->amount),
-            'currency' => $builder->currency,
-            'reference' => $builder->referenceNumber,
-            'address_match_indicator' => $builder->isAddressMatchIndicator() ? true : false,
-            'gift_card_count' => $builder->giftCardCount,
-            'gift_card_currency'=> $builder->giftCardCurrency,
-            'gift_card_amount' => $builder->giftCardAmount,
-            'delivery_email' => $builder->deliveryEmail,
-            'delivery_timeframe' => $builder->deliveryTimeframe,
-            'shipping_method' => (string) $builder->shippingMethod,
-            'shipping_name_matches_cardholder_name' => $builder->getShippingNameMatchesCardHolderName(),
-            'preorder_indicator' => (string) $builder->preOrderIndicator,
-            'preorder_availability_date' => !empty($builder->preOrderAvailabilityDate) ?
-                (new \DateTime($builder->preOrderAvailabilityDate))->format('Y-m-d') : null,
-            'reorder_indicator' => (string) $builder->reorderIndicator,
-            'transaction_type' => $builder->orderTransactionType
-        ];
-
-        if (!empty($builder->shippingAddress)) {
-            $order['shipping_address'] = [
-                'line1' => $builder->shippingAddress->streetAddress1,
-                'line2' => $builder->shippingAddress->streetAddress2,
-                'line3' => $builder->shippingAddress->streetAddress3,
-                'city' => $builder->shippingAddress->city,
-                'postal_code' => $builder->shippingAddress->postalCode,
-                'state' => $builder->shippingAddress->state,
-                'country' => CountryUtils::getNumericCodeByCountry($builder->shippingAddress->countryCode)
-            ];
-        }
-        $threeDS['order'] = $order;
+        $threeDS['order'] = $this->setOrderParam();
         $threeDS['payment_method'] = $this->setPaymentMethodParam($builder->paymentMethod);
         $threeDS['payer'] = [
             'reference' => $builder->customerAccountId,
@@ -263,6 +236,49 @@ class GpApiSecure3DRequestBuilder implements IRequestBuilder
         $paymentMethod->name = !empty($cardData->cardHolderName) ? $cardData->cardHolderName : null;
 
         return $paymentMethod;
+    }
+
+    /**
+     * Set the order parameter in the request
+     *
+     * @return array
+     */
+    private function setOrderParam()
+    {
+        $order = [
+            'time_created_reference' => !empty($this->builder->orderCreateDate) ?
+                (new \DateTime($this->builder->orderCreateDate))->format('Y-m-d\TH:i:s.u\Z') : null,
+            'amount' => StringUtils::toNumeric($this->builder->amount),
+            'currency' => $this->builder->currency,
+            'reference' => $this->builder->referenceNumber,
+            'address_match_indicator' => $this->builder->isAddressMatchIndicator(),
+            'gift_card_count' => $this->builder->giftCardCount,
+            'gift_card_currency'=> $this->builder->giftCardCurrency,
+            'gift_card_amount' => $this->builder->giftCardAmount,
+            'delivery_email' => $this->builder->deliveryEmail,
+            'delivery_timeframe' => $this->builder->deliveryTimeframe,
+            'shipping_method' => (string) $this->builder->shippingMethod,
+            'shipping_name_matches_cardholder_name' => $this->builder->getShippingNameMatchesCardHolderName(),
+            'preorder_indicator' => (string) $this->builder->preOrderIndicator,
+            'preorder_availability_date' => !empty($this->builder->preOrderAvailabilityDate) ?
+                (new \DateTime($this->builder->preOrderAvailabilityDate))->format('Y-m-d') : null,
+            'reorder_indicator' => (string) $this->builder->reorderIndicator,
+            'transaction_type' => $this->builder->orderTransactionType
+        ];
+
+        if (!empty($this->builder->shippingAddress)) {
+            $order['shipping_address'] = [
+                'line1' => $this->builder->shippingAddress->streetAddress1,
+                'line2' => $this->builder->shippingAddress->streetAddress2,
+                'line3' => $this->builder->shippingAddress->streetAddress3,
+                'city' => $this->builder->shippingAddress->city,
+                'postal_code' => $this->builder->shippingAddress->postalCode,
+                'state' => $this->builder->shippingAddress->state,
+                'country' => CountryUtils::getNumericCodeByCountry($this->builder->shippingAddress->countryCode)
+            ];
+        }
+
+        return $order;
     }
 
 

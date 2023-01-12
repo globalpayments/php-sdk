@@ -8,14 +8,8 @@ use GlobalPayments\Api\Entities\Enums\PayLinkType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 
-class PayLinkSummary
+class PayLinkSummary extends BaseSummary
 {
-    /** @var string */
-    public $merchantId;
-
-    /** @var string */
-    public $merchantName;
-
     /** @var string */
     public $accountId;
 
@@ -119,14 +113,6 @@ class PayLinkSummary
      * @var array<string>
      */
     public $images;
-
-    /**
-     * @var string
-     */
-    public $amount;
-
-    /** @var string */
-    public $currency;
 
     /**
      * List of transactions attached to this payment link

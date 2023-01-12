@@ -9,7 +9,7 @@ use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
 use GlobalPayments\Api\Entities\FraudManagementResponse;
 use GlobalPayments\Api\Entities\LodgingData;
 
-class TransactionSummary
+class TransactionSummary extends BaseSummary
 {
     /**
      * @var string
@@ -19,13 +19,6 @@ class TransactionSummary
     /*** @var AltPaymentData
      */
     public $altPaymentData;
-
-    /**
-     * The originally requested authorization amount.
-     *
-     * @var decimal
-     */
-    public $amount;
 
     /**
      * @var string
@@ -455,12 +448,6 @@ class TransactionSummary
      * @var string
      */
     public $country;
-
-    /**
-     * @var string
-     */
-    public $currency;
-
     /**
      * @var PaymentEntryMode
      */
@@ -480,26 +467,6 @@ class TransactionSummary
      * @var DateTime
      */
     public $depositTimeCreated;
-
-    /**
-     * @var string
-     */
-    public $merchantId;
-
-    /**
-     * @var string
-     */
-    public $merchantHierarchy;
-
-    /**
-     * @var string
-     */
-    public $merchantName;
-
-    /**
-     * @var string
-     */
-    public $merchantDbaName;
 
     /**
      * @var string

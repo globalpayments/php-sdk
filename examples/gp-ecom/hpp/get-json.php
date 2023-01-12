@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 require_once('../../../autoload_standalone.php');
 
@@ -13,6 +16,7 @@ use GlobalPayments\Api\Entities\Enums\HppVersion;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Services\HostedService;
 use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
+use GlobalPayments\Api\Entities\Enums\HostedPaymentMethods;
 
 // configure client, request and HPP settings
 $config = new GpEcomConfig();
@@ -43,7 +47,7 @@ $hostedPaymentData->customerFirstName = 'James';
 $hostedPaymentData->customerLastName = 'Mason';
 $hostedPaymentData->transactionStatusUrl = $_SERVER['HTTP_REFERER'] . '/examples/hpp/response-endpoint.php';
 $hostedPaymentData->merchantResponseUrl = $_SERVER['HTTP_REFERER'] . '/examples/hpp/response-endpoint.php';
-$hostedPaymentData->presetPaymentMethods = ['cards', 'ob'];
+$hostedPaymentData->presetPaymentMethods = [HostedPaymentMethods::CARDS, HostedPaymentMethods::OB];
 
 $billingAddress = new Address();
 $billingAddress->streetAddress1 = "Flat 123";

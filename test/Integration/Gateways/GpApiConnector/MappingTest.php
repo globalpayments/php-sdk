@@ -154,7 +154,7 @@ class MappingTest extends TestCase
 
         if (isset($doc->system)) {
             $system = $doc->system;
-            $this->assertEquals($system->mid, $depositSummary->merchantNumber);
+            $this->assertEquals($system->mid, $depositSummary->merchantId);
             $this->assertEquals($system->hierarchy, $depositSummary->merchantHierarchy);
             $this->assertEquals($system->name, $depositSummary->merchantName);
             $this->assertEquals($system->dba, $depositSummary->merchantDbaName);

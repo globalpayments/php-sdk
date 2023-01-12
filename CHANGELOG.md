@@ -6,6 +6,15 @@
 
 ## Latest version
 #### Enhancements:
+- GP-API: add exemption status on "/transaction" endpoint
+- Add enum classes: HostedPaymentMethods, IntervalToExpire
+- Portico: added support for SDKNameVersion field
+
+#### Bug Fixes:
+- GP-API: Fix issue on mapping o transaction report
+
+## v6.0.4 (12/13/2022)
+#### Enhancements:
 - GP-API: Add BNPL feature
 - GP-API: Click-to-Pay
 

@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 use GlobalPayments\Api\Entities\Enums\BankPaymentStatus;
+use GlobalPayments\Api\Entities\Enums\HostedPaymentMethods;
 use GlobalPayments\Api\Entities\Enums\ShaHashType;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
@@ -954,7 +955,7 @@ class HppTest extends TestCase
         $hostedPaymentData->customerLastName = 'Mason';
         $hostedPaymentData->transactionStatusUrl = 'https://www.example.com/statusUrl';
         $hostedPaymentData->merchantResponseUrl = 'https://www.example.com/statusUrl';
-        $hostedPaymentData->presetPaymentMethods = ['ob'];
+        $hostedPaymentData->presetPaymentMethods = [HostedPaymentMethods::OB];
 
         $bankPayment = new BankPayment();
         $bankPayment->accountNumber = '12345678';

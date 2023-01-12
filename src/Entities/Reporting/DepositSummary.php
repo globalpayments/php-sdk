@@ -4,32 +4,12 @@
 namespace GlobalPayments\Api\Entities\Reporting;
 
 
-class DepositSummary
+class DepositSummary extends BaseSummary
 {
     /**
      * @var string
      */
     public $depositId;
-    /**
-     * @var string
-     */
-    public $merchantHierarchy;
-    /**
-     * @var string
-     */
-    public $merchantName;
-    /**
-     * @var string
-     */
-    public $merchantDbaName;
-    /**
-     * @var string
-     */
-    public $merchantNumber;
-    /**
-     * @var string
-     */
-    public $merchantCategory;
     /**
      * @var \DateTime
      */
@@ -38,14 +18,6 @@ class DepositSummary
      * @var string
      */
     public $reference;
-    /**
-     * @var float
-     */
-    public $amount;
-    /**
-     * @var string
-     */
-    public $currency;
     /**
      * @var string
      */

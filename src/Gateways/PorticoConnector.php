@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Gateways;
 
 use DOMDocument;
 use DOMElement;
+use Exception;
 use GlobalPayments\Api\Builders\{
     AuthorizationBuilder,
     BaseBuilder,
@@ -132,6 +133,13 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
      * @var string
      */
     public $clientTransactionId;
+
+    /**
+     * Indicates the version of this SDK used to send a gateway request.
+     * 
+     * @var string
+     */
+    public $sdkNameVersion;
 
     /**
      * {@inheritdoc}
@@ -1202,6 +1210,15 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $header->appendChild(
                 $xml->createElement('VersionNbr', $this->versionNumber)
             );
+        }
+        if (!empty($this->sdkNameVersion)) {
+            $header->appendChild(
+                $xml->createElement('SDKNameVersion', $this->sdkNameVersion)
+            );
+        } else {
+            $header->appendChild(
+                $xml->createElement('SDKNameVersion', 'php;version=' . $this->getReleaseVersion())
+            );         
         }
 
         $version->appendChild($header);
@@ -2388,6 +2405,30 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             return true;
         }
         return false;
+    }
+
+    /**
+     * Parses and returns the release number (version number) from 'metadata.xml'
+     * 
+     * @return string 
+     */
+    private function getReleaseVersion() : string
+    {
+        try {
+            $fileContents = file_get_contents(
+                dirname(__DIR__, 2) . '/metadata.xml'
+            );
+            
+            $posOne = strpos($fileContents, "<releaseNumber>");
+            $posTwo = strpos($fileContents, "</releaseNumber>");
+            
+            return substr($fileContents, $posOne + 15, $posTwo - $posOne - 15);
+        } catch(Exception $e) {
+            trigger_error(
+                "Unable to append SDK version to request header. Inner Exception:"
+                . PHP_EOL . $e->getMessage()
+            );
+        }        
     }
 
     /**
