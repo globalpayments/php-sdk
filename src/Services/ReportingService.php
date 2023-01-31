@@ -35,6 +35,12 @@ class ReportingService
 
     public static function transactionDetail($transactionId)
     {
+        if (isset($transactionId->paymentMethodType)) {
+            return (new TransactionReportBuilder(ReportType::TRANSACTION_DETAIL))
+                ->withTransactionId($transactionId)
+                ->withPaymentType($transactionId->paymentMethodType);
+        }
+
         return (new TransactionReportBuilder(ReportType::TRANSACTION_DETAIL))
             ->withTransactionId($transactionId);
     }

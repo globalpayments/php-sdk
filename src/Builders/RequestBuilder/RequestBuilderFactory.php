@@ -3,15 +3,23 @@
 namespace GlobalPayments\Api\Builders\RequestBuilder;
 
 use GlobalPayments\Api\Builders\BaseBuilder;
-use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiAuthorizationRequestBuilder;
-use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiManagementRequestBuilder;
-use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiPayFacRequestBuilder;
-use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiReportRequestBuilder;
-use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiSecure3DRequestBuilder;
-use GlobalPayments\Api\Builders\RequestBuilder\GpEcom\GpEcomAuthorizationRequestBuilder;
-use GlobalPayments\Api\Builders\RequestBuilder\GpEcom\GpEcomManagementRequestBuilder;
-use GlobalPayments\Api\Builders\RequestBuilder\GpEcom\GpEcomRecurringRequestBuilder;
-use GlobalPayments\Api\Builders\RequestBuilder\GpEcom\GpEcomReportRequestBuilder;
+use GlobalPayments\Api\Builders\RequestBuilder\GpApi\{
+    GpApiAuthorizationRequestBuilder,
+    GpApiManagementRequestBuilder,
+    GpApiPayFacRequestBuilder,
+    GpApiReportRequestBuilder,
+    GpApiSecure3DRequestBuilder};
+use GlobalPayments\Api\Builders\RequestBuilder\GpEcom\{
+    GpEcomAuthorizationRequestBuilder,
+    GpEcomManagementRequestBuilder,
+    GpEcomRecurringRequestBuilder,
+    GpEcomReportRequestBuilder
+};
+use GlobalPayments\Api\Builders\RequestBuilder\TransactionApi\{
+    TransactionApiReportRequestBuilder,
+    TransactionApiManagementRequestBuilder,
+    TransactionApiAuthorizationRequestBuilder
+};
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 
 class RequestBuilderFactory
@@ -29,6 +37,11 @@ class RequestBuilderFactory
             GpApiReportRequestBuilder::class,
             GpApiSecure3DRequestBuilder::class,
             GpApiPayFacRequestBuilder::class
+        ],
+        GatewayProvider::TRANSACTION_API => [
+            TransactionApiReportRequestBuilder::class,
+            TransactionApiManagementRequestBuilder::class,
+            TransactionApiAuthorizationRequestBuilder::class
         ]
     ];
 

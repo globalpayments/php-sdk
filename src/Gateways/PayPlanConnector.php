@@ -644,7 +644,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
         $schedule->description = isset($response->Description) ? $response->Description : null;
         // statusSetDate
         $schedule->nextProcessingDate = isset($response->nextProcessingDate)
-            ? \DateTime::createFromFormat('dmY', $response->nextProcessingDate)
+            ? \DateTime::createFromFormat('mdY', $response->nextProcessingDate)
             : null;
         // previousProcessingDate
         // approvedTransactionCount

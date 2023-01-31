@@ -86,6 +86,21 @@ abstract class TransactionBuilder extends BaseBuilder
     public $paymentLinkId;
 
     /**
+     * @var string $transactionData
+     */
+    public $transactionData;
+
+    /**
+     * @var string $entryClass
+     */
+    public $entryClass;
+
+    /**
+     * @var string $paymentPurposeCode
+     */
+    public $paymentPurposeCode;
+
+    /**
      * Instantiates a new builder
      *
      * @param TransactionType $type Request transaction type
@@ -176,6 +191,47 @@ abstract class TransactionBuilder extends BaseBuilder
     public function withPaymentLinkId($paymentLinkId)
     {
         $this->paymentLinkId = $paymentLinkId;
+        return $this;
+    }
+
+    /**
+     * Set the request transactionData
+     *
+     * @param array $data Request transactionData
+     *
+     * @return $this
+     */
+    public function withTransactionData($data)
+    {
+        $this->transactionData = $data;
+        return $this;
+    }
+
+    /**
+     * Three digit code used by a payment originator to identify a Canada check payment.
+     *
+     * @param string $paymentPurposeCode
+     *
+     * @return $this
+     */
+    public function withPaymentPurposeCode(string $paymentPurposeCode)
+    {
+        $this->paymentPurposeCode = $paymentPurposeCode;
+
+        return $this;
+    }
+
+    /**
+     * Standard entry class to designate how the transaction was authorized by the originator for check refunds.
+     *
+     * @param string $entryClass
+     *
+     * @return $this
+     */
+    public function withEntryClass(string $entryClass)
+    {
+        $this->entryClass = $entryClass;
+
         return $this;
     }
 }

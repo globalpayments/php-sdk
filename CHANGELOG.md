@@ -6,6 +6,12 @@
 
 ## Latest version
 #### Enhancements:
+- GPI Transactions : added support for credit, ach & reporting transactions 
+- GP-API: add to generateXGPSignature to GenerationUtils
+- Portico Gateway: Fix incorrect date handling in schedule response
+
+## v6.0.5 (01/12/2023)
+#### Enhancements:
 - GP-API: add exemption status on "/transaction" endpoint
 - Add enum classes: HostedPaymentMethods, IntervalToExpire
 - Portico: added support for SDKNameVersion field

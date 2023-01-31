@@ -41,6 +41,13 @@ class Customer extends RecurringEntity
     public $company;
 
     /**
+     * Business Name
+     *
+     * @var string
+     */
+    public $businessName;
+
+    /**
      * Customer's password
      *
      * @var string

@@ -168,7 +168,7 @@ class TerminalAuthBuilder extends TerminalBuilder
 
     public function withToken($value)
     {
-        if ($this->paymentMethod == null || ! ($this->paymentMethod instanceof CreditCardData)) {
+        if ($this->paymentMethod == null || !($this->paymentMethod instanceof CreditCardData)) {
             $this->paymentMethod = new CreditCardData();
             $this->paymentMethod->token = $value;
         }
@@ -185,7 +185,7 @@ class TerminalAuthBuilder extends TerminalBuilder
      */
     public function withTransactionId($transactionId)
     {
-        if ($this->paymentMethod == null || ! $this->paymentMethod instanceof TransactionReference) {
+        if ($this->paymentMethod == null || !$this->paymentMethod instanceof TransactionReference) {
             $this->paymentMethod = new TransactionReference();
             $this->paymentMethod->transactionId = $transactionId;
         }

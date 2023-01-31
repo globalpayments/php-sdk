@@ -3,8 +3,7 @@
 namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
-use GlobalPayments\Api\Builders\ManagementBuilder;
-use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\{Address, Customer};
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IChargable;
@@ -18,6 +17,7 @@ class ECheck implements
     public $accountType;
     public $achVerify;
     public $birthYear;
+    public $branchTransitNumber;
     public $checkHolderName;
     public $checkNumber;
     public $checkType;
@@ -25,6 +25,7 @@ class ECheck implements
     public $driversLicenseNumber;
     public $driversLicenseState;
     public $entryMode;
+    public $financialInstitutionNumber;
     public $micrNumber;
     public $paymentMethodType = PaymentMethodType::ACH;
     public $phoneNumber;
@@ -39,6 +40,11 @@ class ECheck implements
      * @var Address
      */
     public $bankAddress;
+
+    /**
+     * @var Customer
+     */
+    public $customer;
 
     /**
      * Authorizes the payment method and captures the entire authorized amount

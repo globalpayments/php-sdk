@@ -2,23 +2,30 @@
 
 namespace GlobalPayments\Api\Builders;
 
-use GlobalPayments\Api\Entities\DccRateData;
-use GlobalPayments\Api\Entities\Enums\CommercialIndicator;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
-use GlobalPayments\Api\Entities\Enums\TaxType;
-use GlobalPayments\Api\Entities\Enums\TransactionModifier;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\LodgingData;
-use GlobalPayments\Api\Entities\Transaction;
-use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\PaymentMethods\ECheck;
-use GlobalPayments\Api\PaymentMethods\TransactionReference;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
+use GlobalPayments\Api\Entities\{
+    DccRateData,
+    LodgingData,
+    Transaction
+};
+use GlobalPayments\Api\Entities\Enums\{
+    CommercialIndicator,
+    PaymentMethodUsageMode,
+    TaxType,
+    TransactionModifier,
+    TransactionType
+};
+use GlobalPayments\Api\Entities\TransactionApi\TransactionApiData;
+use GlobalPayments\Api\PaymentMethods\{
+    CreditCardData,
+    ECheck,
+    TransactionReference
+};
+use GlobalPayments\Api\PaymentMethods\Interfaces\{IPaymentMethod, ITokenizable};
 use GlobalPayments\Api\ServicesContainer;
 
 /**
  * @property string $transactionId
+ * @property string $clientTransactionId
  */
 class ManagementBuilder extends TransactionBuilder
 {
@@ -47,13 +54,7 @@ class ManagementBuilder extends TransactionBuilder
     public $cardType;
 
     /**
-     * @internal
-     * @var string
-     */
-    public $clientTransactionId;
-    
-    /**
-     * 
+     *
      * @var CommercialData
      */
     public $commercialData;
@@ -97,6 +98,14 @@ class ManagementBuilder extends TransactionBuilder
     public $invoiceNumber;
 
     /**
+     * Original Transaction Type
+     *
+     * @internal
+     * @var TransactionType
+     */
+    public $originalTransactionType;
+
+    /**
      * Request purchase order number
      *
      * @internal
@@ -133,7 +142,7 @@ class ManagementBuilder extends TransactionBuilder
      * @var IPaymentMethod
      */
     public $paymentMethod;
-    
+
     /**
      * Previous request's transaction reference
      *
@@ -193,6 +202,9 @@ class ManagementBuilder extends TransactionBuilder
     /** @var string */
     public $tagData;
 
+    /** @var TransactionApiData */
+    public $transactionData;
+
     /** @var PaymentMethodUsageMode */
     public $paymentMethodUsageMode;
 
@@ -235,6 +247,11 @@ class ManagementBuilder extends TransactionBuilder
                     return $this->paymentMethod->authCode;
                 }
                 return null;
+            case 'clientTransactionId':
+                if ($this->paymentMethod instanceof TransactionReference) {
+                    return $this->paymentMethod->clientTransactionId;
+                }
+                return null;
         }
     }
 
@@ -244,6 +261,7 @@ class ManagementBuilder extends TransactionBuilder
             'transactionId',
             'orderId',
             'authorizationId',
+            'clientTransactionId',
         ]) || isset($this->{$name});
     }
 
@@ -269,12 +287,16 @@ class ManagementBuilder extends TransactionBuilder
     {
         $this->validations->of(
             TransactionType::CAPTURE |
-            TransactionType::EDIT |
-            TransactionType::HOLD |
-            TransactionType::RELEASE |
-            TransactionType::REAUTH
+                TransactionType::EDIT |
+                TransactionType::HOLD |
+                TransactionType::RELEASE |
+                TransactionType::REAUTH
         )
             ->check('transactionId')->isNotNull();
+
+        $this->validations->of(TransactionType::EDIT)
+            ->with(TransactionModifier::ADDITIONAL)
+            ->check('clientTransactionId')->isNotNull();
 
         $this->validations->of(TransactionType::EDIT)
             ->with(TransactionModifier::LEVEL_II)
@@ -344,7 +366,7 @@ class ManagementBuilder extends TransactionBuilder
         if ($commercialData->commercialIndicator === CommercialIndicator::LEVEL_III) {
             $this->transactionModifier = TransactionModifier::LEVEL_III;
         }
-        
+
         return $this;
     }
 
@@ -435,6 +457,16 @@ class ManagementBuilder extends TransactionBuilder
     }
 
     /**
+     * @param TransactionType|int
+     * @return ManagementBuilder
+     */
+    public function withOriginalTransactionType($value): ManagementBuilder
+    {
+        $this->originalTransactionType = $value;
+        return $this;
+    }
+
+    /**
      * Previous request's transaction reference
      *
      * @internal
@@ -442,7 +474,7 @@ class ManagementBuilder extends TransactionBuilder
      *
      * @return ManagementBuilder
      */
-    public function withPaymentMethod(IPaymentMethod $paymentMethod)
+    public function withPaymentMethod(IPaymentMethod $paymentMethod): ManagementBuilder
     {
         $this->paymentMethod = $paymentMethod;
         return $this;
@@ -455,7 +487,7 @@ class ManagementBuilder extends TransactionBuilder
      *
      * @return ManagementBuilder
      */
-    public function withPoNumber($poNumber)
+    public function withPoNumber($poNumber): ManagementBuilder
     {
         $this->poNumber = $poNumber;
         return $this;
@@ -468,7 +500,7 @@ class ManagementBuilder extends TransactionBuilder
      *
      * @return ManagementBuilder
      */
-    public function withReasonCode($value)
+    public function withReasonCode($value): ManagementBuilder
     {
         $this->reasonCode = $value;
         return $this;
@@ -483,7 +515,7 @@ class ManagementBuilder extends TransactionBuilder
      *
      * @return ManagementBuilder
      */
-    public function withTaxAmount($taxAmount)
+    public function withTaxAmount($taxAmount): ManagementBuilder
     {
         $this->taxAmount = $taxAmount;
         return $this;
@@ -498,7 +530,7 @@ class ManagementBuilder extends TransactionBuilder
      *
      * @return ManagementBuilder
      */
-    public function withMultiCapture($sequence = 1, $paymentCount = 1)
+    public function withMultiCapture($sequence = 1, $paymentCount = 1): ManagementBuilder
     {
         $this->multiCapture              = true;
         $this->multiCaptureSequence      = $sequence;
@@ -516,36 +548,71 @@ class ManagementBuilder extends TransactionBuilder
      *
      * @return ManagementBuilder
      */
-    public function withTaxType($taxType)
+    public function withTaxType($taxType): ManagementBuilder
     {
         $this->taxType = $taxType;
         return $this;
     }
-    
+
+    /**
+     * Sets the Alternative Payment Type.
+     *
+     * @param string $alternativePaymentType
+     *
+     * @return $this
+     */
     public function withAlternativePaymentType($alternativePaymentType)
     {
         $this->alternativePaymentType = $alternativePaymentType;
         return $this;
     }
 
+    /**
+     * Sets the Payer Authentication Response.
+     *
+     * @param string $payerAuthenticationResponse
+     *
+     * @return $this
+     */
     public function withPayerAuthenticationResponse($payerAuthenticationResponse)
     {
         $this->payerAuthenticationResponse = $payerAuthenticationResponse;
         return $this;
     }
 
+    /**
+     * Sets the Dispute Id.
+     *
+     * @param string $value
+     *
+     * @return $this
+     */
     public function withDisputeId($value)
     {
         $this->disputeId = $value;
         return $this;
     }
 
+    /**
+     * Sets the Dispute Documents.
+     *
+     * @param string $value
+     *
+     * @return $this
+     */
     public function withDisputeDocuments($value)
     {
         $this->disputeDocuments = $value;
         return $this;
     }
 
+    /**
+     * Sets the Idempotency Key.
+     *
+     * @param string $value
+     *
+     * @return $this
+     */
     public function withIdempotencyKey($value)
     {
         $this->idempotencyKey = $value;
@@ -553,6 +620,13 @@ class ManagementBuilder extends TransactionBuilder
         return $this;
     }
 
+    /**
+     * Sets the Batch Reference.
+     *
+     * @param string $value
+     *
+     * @return $this
+     */
     public function withBatchReference($value)
     {
         $this->batchReference = $value;
@@ -587,12 +661,19 @@ class ManagementBuilder extends TransactionBuilder
         return $this;
     }
 
+    /**
+     * Set the Tag Data
+     *
+     * @param string $value
+     *
+     * @return $this
+     */
     public function withTagData($value)
     {
         $this->tagData = $value;
         return $this;
     }
-	
+
     /**
      * Set the request dccRateData
      *

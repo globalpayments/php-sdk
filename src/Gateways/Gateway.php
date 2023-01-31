@@ -88,15 +88,7 @@ abstract class Gateway
             $queryString = $this->buildQueryString($queryStringParams);
             $request = curl_init($this->serviceUrl . $endpoint . $queryString);
 
-            $this->headers = array_merge($this->dynamicHeaders, $this->headers, [
-                'Content-Type' => sprintf('%s; charset=UTF-8', $this->contentType),
-                'Content-Length' => empty($data) ? 0 : strlen($data),
-            ]);
-
-            $headers = [];
-            foreach ($this->headers as $key => $value) {
-                $headers[] = $key . ': ' . $value;
-            }
+            $headers = $this->prepareHeaders($data);
 
             if (isset($this->requestLogger)) {
                 $this->requestLogger->requestSent($verb, $this->serviceUrl . $endpoint . $queryString,  $headers, null,  $data);
@@ -158,6 +150,25 @@ abstract class Gateway
                 $e
             );
         }
+    }
+
+    private function prepareHeaders($data)
+    {
+        $mandatoryHeaders = [
+            'Content-Type' => sprintf('%s', $this->contentType),
+            'Content-Length' => empty($data) ? 0 : strlen($data),
+        ];
+
+        $this->headers = array_merge($this->dynamicHeaders, $this->headers, $mandatoryHeaders);
+
+        foreach ($this->headers as $key => $value) {
+            if (is_array($value)) {
+                $value = implode('; ', $value);
+            }
+            $headers[] = $key . ': ' . $value;
+        }
+
+        return $headers ?? [];
     }
 
     /**

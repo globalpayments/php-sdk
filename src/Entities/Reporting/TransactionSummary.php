@@ -1,4 +1,5 @@
 <?php
+
 namespace GlobalPayments\Api\Entities\Reporting;
 
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
@@ -283,6 +284,13 @@ class TransactionSummary extends BaseSummary
     public $maskedCardNumber;
 
     /**
+     * The authorized account number, masked.
+     *
+     * @var string
+     */
+    public $maskedAccountNumber;
+
+    /**
      * @var bool
      */
     public $oneTimePayment;
@@ -298,6 +306,11 @@ class TransactionSummary extends BaseSummary
      * @var string
      */
     public $paymentMethodKey;
+
+    /**
+     * @var string
+     */
+    public $paymentPurposeCode;
 
     /**
      * @var string

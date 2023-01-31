@@ -2,24 +2,18 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\PorticoConnector\Certifications;
 
-use GlobalPayments\Api\Tests\Data\TestCards;
-use PHPUnit\Framework\TestCase;
-use DateTime;
 use DateInterval;
-use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\Customer;
-use GlobalPayments\Api\Entities\Schedule;
-use GlobalPayments\Api\Entities\Enums\AccountType;
-use GlobalPayments\Api\Entities\Enums\CheckType;
-use GlobalPayments\Api\Entities\Enums\SecCode;
-use GlobalPayments\Api\Entities\Enums\ScheduleFrequency;
-use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\PaymentMethods\ECheck;
-use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
-use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
+use DateTime;
+use GlobalPayments\Api\Entities\{Address, Customer, Schedule};
+use GlobalPayments\Api\Entities\Enums\{
+    AccountType, CheckType, SecCode, ScheduleFrequency, StoredCredentialInitiator
+};
+use GlobalPayments\Api\PaymentMethods\{CreditCardData, ECheck, RecurringPaymentMethod};
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
+use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\TestCards;
+use GlobalPayments\Api\Utils\GenerationUtils;
+use PHPUnit\Framework\TestCase;
 
 final class RecurringTest extends TestCase
 {
@@ -81,12 +75,12 @@ final class RecurringTest extends TestCase
         $config = new PorticoConfig();
         $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
-                              'https://cert.api2-c.heartlandportico.com/':
-                              'https://cert.api2.heartlandportico.com';
+            'https://cert.api2-c.heartlandportico.com/' :
+            'https://cert.api2.heartlandportico.com';
         return $config;
     }
 
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->config());
 
@@ -98,7 +92,11 @@ final class RecurringTest extends TestCase
         );
     }
 
-    public function test000CleanUp()
+    /**
+     * @doesNotPerformAssertions
+     * @return void 
+     */
+    public function test000CleanUp() : void
     {
         try {
             $results = Schedule::findAll();
@@ -326,13 +324,15 @@ final class RecurringTest extends TestCase
 
         static::$scheduleVisaID = $this->getIdentifier('CreditV');
 
+        $startDate = \DateTime::createFromFormat('Y-m-d', '2027-02-01');
+
         $schedule = static::$paymentMethodVisa->addSchedule(
             static::$scheduleVisaID
         )
             ->withStatus('Active')
             ->withAmount(30.02)
             ->withCurrency('USD')
-            ->withStartDate(\DateTime::createFromFormat('Y-m-d', '2027-02-01'))
+            ->withStartDate($startDate)
             ->withFrequency(ScheduleFrequency::WEEKLY)
             ->withEndDate(\DateTime::createFromFormat('Y-m-d', '2027-04-01'))
             ->withReprocessingCount(2)
@@ -340,6 +340,9 @@ final class RecurringTest extends TestCase
 
         $this->assertNotNull($schedule);
         $this->assertNotNull($schedule->key);
+        $this->assertTrue(
+            $startDate->format('Y-m-d') == $schedule->nextProcessingDate->format('Y-m-d')
+        );
         static::$scheduleVisa = $schedule;
     }
 
@@ -594,7 +597,7 @@ final class RecurringTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('1', $response->responseCode);
     }
-    
+
     public function test024RecurringBillingVisaWithCOF()
     {
         if (static::$paymentMethodVisa == null || static::$scheduleVisa == null) {
@@ -608,7 +611,7 @@ final class RecurringTest extends TestCase
             ->withAllowDuplicates(true)
             ->withCardBrandStorage(StoredCredentialInitiator::CARDHOLDER)
             ->execute();
-        
+
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->responseCode);
         $this->assertNotNull($response->cardBrandTransactionId);
@@ -655,14 +658,14 @@ final class RecurringTest extends TestCase
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS =>'{
+            CURLOPT_POSTFIELDS => '{
                 "object": "token",
                 "token_type": "supt",
                 "card": {
-                    "number": '.$cardNo.',
-                    "cvc": '.$cvv.',
-                    "exp_month": '.$expMonth.',
-                    "exp_year": '.$expYear.'
+                    "number": ' . $cardNo . ',
+                    "cvc": ' . $cvv . ',
+                    "exp_month": ' . $expMonth . ',
+                    "exp_year": ' . $expYear . '
                 }
             }',
             CURLOPT_HTTPHEADER => array(

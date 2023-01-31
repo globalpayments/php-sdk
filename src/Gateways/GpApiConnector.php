@@ -48,6 +48,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         $this->headers['Accept'] = 'application/json';
         $this->headers['Accept-Encoding'] = 'gzip';
         $this->headers['x-gp-sdk'] = 'php;version=' . $this->getReleaseVersion();
+        $this->headers['Content-Type'] = 'charset=UTF-8';
     }
 
     /**
@@ -147,7 +148,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
      * @throws ApiException
      * @throws \GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException
      */
-    public function processBoardingUser(PayFacBuilder $builder) : User
+    public function processBoardingUser(PayFacBuilder $builder): User
     {
         if (empty($this->accessToken)) {
             $this->signIn();

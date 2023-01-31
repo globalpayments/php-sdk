@@ -1,8 +1,6 @@
 <?php
 
-
 namespace GlobalPayments\Api\Entities\Enums;
-
 
 class TransactionStatus
 {
@@ -11,7 +9,7 @@ class TransactionStatus
     const PENDING = 'PENDING';
     const DECLINED = 'DECLINED';
     const PREAUTHORIZED = 'PREAUTHORIZED';
-    const CAPTURED ='CAPTURED';
+    const CAPTURED = 'CAPTURED';
     const BATCHED = 'BATCHED';
     const REVERSED = 'REVERSED';
     const FUNDED = 'FUNDED';

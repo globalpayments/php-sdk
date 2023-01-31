@@ -26,9 +26,9 @@ class GpApiDigitalWalletTest extends TestCase
         $this->card->expYear = date('Y', strtotime('+1 year'));
         $this->card->cardHolderName = "James Mason";
         $this->googlePayToken = '{
-          "signature": "MEYCIQCmqtWzjV/HvFoTCbydIeFcuKvkLe2JqUOkqqLFxw98agIhAN1fo4hBVyPOfMz+hivwbtCUfsBJX3n5w2Z4V9c0/7gY",
+          "signature": "MEYCIQChBRI9LwVnpkueFTULQBJbAHodFE6HnWX1iPFVdvfQ5wIhAMxZR232GGIa/yIROdEcIbh3x9qqILLUJ8K/KvqzncET",
           "protocolVersion": "ECv1",
-          "signedMessage": "{\"encryptedMessage\":\"QeiCtyFoWkjtYZl9aXOwh1KofQp0T8NurwZKJnpsPObWXWTkOTceXbTSqv1MvorX9I1qtDO6rrEbEfwzD3VJAl0LP2NePp5O4jTw4rh7qjXIQdskwx1+dEwOJSVFGtq4KU9DGRtnhtENezet08mlNGvOdT9Ufy+rX+pKHA5msMmlsdAREr+Fp2NppQE+IhiQDHVi7oiNMnPQLB9z+hr4f8pEg0gUD9qOUdtCalDBb7jwACXW4MvxtNz0Qin7nLQm/4AcRS8xM07uUeys6Z86v3It3WmOqgPNUERx37DIcUaZ2CcF7Oy7uvxpHCshjvpR/Gc0puRPPi1cDGSnqfMuXfyv15hMP3huYe8IHXPFJ855qhnIIeqKnVf+IcsLSYaX+bUc2niDC+VFmOb8RgGYwXrSNCFF8UXvAdNMxCQ1BulIRDxIseh89iwZKKBX3eNj2yxr\",\"ephemeralPublicKey\":\"BOwa6fGQkkFxxF3VnkZoMGmIebvsJ7KGSYtSE6V3nFcTv7UfQF1Txx/vfuSWPUoSQmVPshJ0S8EHIp4Kyf49ozU\\u003d\",\"tag\":\"zB2Bb1L6rOMKV3AiTrMzS4ZgBoKqDZSpf1jYV/8BDm4\\u003d\"}"
+          "signedMessage": "{\"encryptedMessage\":\"lUzJWAt/5VVerPaDLHctV0x7CHbAijOonczp2JtgVe9GS1fCiTwUuq6wCN6CWKe5mC+lRjpsgfTXuPFTgOGCCoTSYxAmb4hbtvjD7vlK+lHy/3UDtLGt0BxgPruT2IzyAzR5cNwf4fvmWwucTdf1nbywkAs5hIrVeQvxC1UkvBcsSz/pIMiBYkWRXk0NGH+g0AvyyYYUFZLZyZ/cfVXbUSRD012Ky8dvbt9Cu1VncBLhSuQ/0p8ifB/sWznp1ZZ3OTv5eMwHIW4oj18k22JJXhbbI5D8KEnkwg6zO5CBo+Ka29lTLbRd5Ok0MWSApeGfvQGqfSuPJJck/+HbJVshBYwuf6VEE0JLqXTIauEsYMY1rwb5St/57y8fDoHcNb5XYiE8/qN4G8YB0a8gGyEaMSLM5B9esgy8UQDWBc7nEOd7C13EDSe6O4joIdH0EFlICDYN\",\"ephemeralPublicKey\":\"BPp6cBv4ogIfYGfqtGPr2gwhNE3gLxco7Ka7laO1U7Jdijz2AHnodW1HgztnuBfuSXUKCVYOhblYYXt+pJE/zLI\\u003d\",\"tag\":\"dTBKFQag7foGF/MYBUJBsI8bFVQ766kEUb04jLk5hcA\\u003d\"}"
         }';
     }
 
@@ -44,13 +44,14 @@ class GpApiDigitalWalletTest extends TestCase
 
     public function testClickToPayEncrypted()
     {
-        $this->markTestSkipped('You need a valid ApplePay token that it is valid only for 60 sec');
-        $this->card->token = '{"data":"9113329269393758302"}' ;
+        $this->markTestSkipped('Special setup configuration needed from GP-API team on the appId/appKey');
+        $this->card->token = "9113329269393758302" ;
         $this->card->mobileType = EncyptedMobileType::CLICK_TO_PAY;
 
         $response = $this->card->charge($this->amount)
             ->withCurrency($this->currency)
             ->withModifier(TransactionModifier::ENCRYPTED_MOBILE)
+            ->withMaskedDataResponse(true)
             ->execute();
 
         $this->assertTransactionResponse($response, TransactionStatus::CAPTURED);

@@ -38,7 +38,19 @@ class TransactionReportBuilder extends ReportBuilder
      * @internal
      * @var string
      */
+    public $clientTransactionId;
+
+    /**
+     * @internal
+     * @var string
+     */
     public $transactionId;
+
+    /**
+     * @internal
+     * @var string
+     */
+    public $paymentType;
 
     /**
      * @var TransactionSortProperty
@@ -108,6 +120,19 @@ class TransactionReportBuilder extends ReportBuilder
     }
 
     /**
+     * Sets the client transaction ID as criteria for the report.
+     *
+     * @param string $value The client transaction ID
+     *
+     * @return TransactionReportBuilder
+     */
+    public function withClientTransactionId($value)
+    {
+        $this->clientTransactionId = $value;
+        return $this;
+    }
+
+    /**
      * Sets the gateway deposit id as criteria for the report.
      * @param $depositId
      * @return $this
@@ -157,15 +182,15 @@ class TransactionReportBuilder extends ReportBuilder
     }
 
     /**
-     * Sets the start date as criteria for the report.
+     * Sets the payment type.
      *
-     * @param \DateTime $value The start date
+     * @param string $value The payemtn type
      *
      * @return TransactionReportBuilder
      */
-    public function withStartDate($value)
+    public function withPaymentType($value)
     {
-        $this->searchBuilder->startDate = $value;
+        $this->paymentType = $value;
         return $this;
     }
 
@@ -264,7 +289,7 @@ class TransactionReportBuilder extends ReportBuilder
             case ReportType::FIND_DEPOSITS_PAGED:
                 $this->depositOrderBy = $sortProperty;
                 $this->order = $sortDirection;
-            break;
+                break;
             case ReportType::FIND_DISPUTES:
             case ReportType::FIND_DISPUTES_PAGED:
             case ReportType::FIND_SETTLEMENT_DISPUTES:

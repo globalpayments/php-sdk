@@ -196,4 +196,20 @@ class GenerationUtils
             20
         ));
     }
+
+    /**
+     * Generate HASH to validate the X-GP-Signature
+     *
+     * @param string $toHash
+     * @param string $appKey
+     *
+     * @return string
+     */
+    public static function generateXGPSignature(string $toHash, string $appKey) : string
+    {
+        $stringToHash = $toHash . $appKey;
+
+        return hash(ShaHashType::SHA512, $stringToHash);
+    }
+
 }

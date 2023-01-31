@@ -28,4 +28,6 @@ class ServiceEndpoints extends Enum
     const GP_API_PRODUCTION = "https://apis.globalpay.com/ucp";
     const OPEN_BANKING_TEST = 'https://api.sandbox.globalpay-ecommerce.com/openbanking';
     const OPEN_BANKING_PRODUCTION = 'https://api.globalpay-ecommerce.com/openbanking';
+    const TRANSACTION_API_TEST = "https://api.pit.paygateway.com/transactions/";
+    const TRANSACTION_API_PROD = "https://api.paygateway.com/transactions";
 }

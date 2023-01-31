@@ -2,39 +2,45 @@
 
 namespace GlobalPayments\Api\Builders;
 
-use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\AutoSubstantiation;
-use GlobalPayments\Api\Entities\EcommerceInfo;
-use GlobalPayments\Api\Entities\Enums\BNPLShippingMethod;
-use GlobalPayments\Api\Entities\Enums\EmvFallbackCondition;
-use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
-use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
-use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
-use GlobalPayments\Api\Entities\Enums\RemittanceReferenceType;
-use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
-use GlobalPayments\Api\Entities\FraudRuleCollection;
-use GlobalPayments\Api\Entities\HostedPaymentData;
-use GlobalPayments\Api\Entities\Enums\AddressType;
-use GlobalPayments\Api\Entities\Enums\AliasAction;
-use GlobalPayments\Api\Entities\Enums\InquiryType;
-use GlobalPayments\Api\Entities\Enums\RecurringSequence;
-use GlobalPayments\Api\Entities\Enums\RecurringType;
-use GlobalPayments\Api\Entities\Enums\TransactionModifier;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\PhoneNumber;
-use GlobalPayments\Api\Entities\StoredCredential;
-use GlobalPayments\Api\Entities\Transaction;
-use GlobalPayments\Api\PaymentMethods\BNPL;
-use GlobalPayments\Api\PaymentMethods\EBTCardData;
-use GlobalPayments\Api\PaymentMethods\GiftCard;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
-use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\Entities\DccRateData;
-use GlobalPayments\Api\Entities\Customer;
-use GlobalPayments\Api\Entities\DecisionManager;
-use GlobalPayments\Api\Entities\OrderDetails;
+use GlobalPayments\Api\Entities\{
+    Address,
+    Customer,
+    AutoSubstantiation,
+    EcommerceInfo,
+    FraudRuleCollection,
+    HostedPaymentData,
+    PhoneNumber,
+    StoredCredential,
+    Transaction
+};
+use GlobalPayments\Api\Entities\Enums\{
+    AddressType,
+    AliasAction,
+    BNPLShippingMethod,
+    DccRateData,
+    DecisionManager,
+    EmvFallbackCondition,
+    EmvLastChipRead,
+    InquiryType,
+    FraudFilterMode,
+    OrderDetails,
+    PaymentMethodUsageMode,
+    PhoneNumberType,
+    RemittanceReferenceType,
+    RecurringSequence,
+    RecurringType,
+    TransactionModifier,
+    TransactionType
+};
+use GlobalPayments\Api\PaymentMethods\{
+    BNPL,
+    EBTCardData,
+    GiftCard,
+    TransactionReference
+};
+use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
+use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 
 class AuthorizationBuilder extends TransactionBuilder
 {
@@ -511,6 +517,9 @@ class AuthorizationBuilder extends TransactionBuilder
     /** @var BNPLShippingMethod */
     public $bnplShippingMethod;
 
+    /** @var boolean */
+    public $maskedDataResponse;
+
     /**
      * {@inheritdoc}
      *
@@ -534,7 +543,7 @@ class AuthorizationBuilder extends TransactionBuilder
     public function execute($configName = 'default')
     {
         parent::execute($configName);
-        
+
         $client = ServicesContainer::instance()->getClient($configName);
         return $client->processAuthorization($this);
     }
@@ -567,9 +576,9 @@ class AuthorizationBuilder extends TransactionBuilder
     {
         $this->validations->of(
             TransactionType::AUTH |
-            TransactionType::SALE |
-            TransactionType::REFUND |
-            TransactionType::ADD_VALUE
+                TransactionType::SALE |
+                TransactionType::REFUND |
+                TransactionType::ADD_VALUE
         )
             ->with(TransactionModifier::NONE)
             ->check('amount')->isNotNull()
@@ -578,7 +587,7 @@ class AuthorizationBuilder extends TransactionBuilder
 
         $this->validations->of(
             TransactionType::AUTH |
-            TransactionType::SALE
+                TransactionType::SALE
         )
             ->with(TransactionModifier::HOSTEDREQUEST)
             ->check('amount')->isNotNull()
@@ -586,7 +595,7 @@ class AuthorizationBuilder extends TransactionBuilder
 
         $this->validations->of(
             TransactionType::AUTH |
-            TransactionType::SALE
+                TransactionType::SALE
         )
             ->with(TransactionModifier::OFFLINE)
             ->check('amount')->isNotNull()
@@ -605,7 +614,7 @@ class AuthorizationBuilder extends TransactionBuilder
 
         $this->validations->of(
             TransactionType::AUTH |
-            TransactionType::SALE
+                TransactionType::SALE
         )
             ->with(TransactionModifier::ENCRYPTED_MOBILE)
             ->check('paymentMethod')->isNotNull()
@@ -620,7 +629,7 @@ class AuthorizationBuilder extends TransactionBuilder
 
         $this->validations->of(
             TransactionType::AUTH |
-            TransactionType::SALE
+                TransactionType::SALE
         )
             ->with(TransactionModifier::ALTERNATIVE_PAYMENT_METHOD)
             ->check('amount')->isNotNull()
@@ -795,6 +804,13 @@ class AuthorizationBuilder extends TransactionBuilder
         return $this;
     }
 
+    /**
+     * Set the Client Transaction Id
+     *
+     * @param string $clientTransactionId
+     *
+     * @return AuthorizationBuilder
+     */
     public function withClientTransactionId($clientTransactionId)
     {
         if ($this->transactionType !== TransactionType::REVERSAL) {
@@ -1134,7 +1150,7 @@ class AuthorizationBuilder extends TransactionBuilder
     /**
      * Set the request Convenience amount
      *
-     * @param string|float $convenienceAmt Request Convenience amount
+     * @param string|float $convenienceAmount Request Convenience amount
      *
      * @return AuthorizationBuilder
      */
@@ -1258,9 +1274,9 @@ class AuthorizationBuilder extends TransactionBuilder
     }
 
     /**
-     * Set the associated schedule ID
+     * Set the Discount Details
      *
-     * @param string $scheduleId
+     * @param string $discountDetails
      *
      * @return AuthorizationBuilder
      */
@@ -1302,7 +1318,7 @@ class AuthorizationBuilder extends TransactionBuilder
      * Set lastRegisteredDate - DD/MM/YYYY
      * Used w/TransIT gateway
      *
-     * @param bool $isRegistered
+     * @param string $date
      *
      * @return AuthorizationBuilder
      */
@@ -1312,6 +1328,13 @@ class AuthorizationBuilder extends TransactionBuilder
         return $this;
     }
 
+    /**
+     * Set the Multi Capture.
+     *
+     * @param boolean $multiCapture
+     *
+     * @return $this
+     */
     public function withMultiCapture($multiCapture = false)
     {
         $this->multiCapture = $multiCapture;
@@ -1319,7 +1342,25 @@ class AuthorizationBuilder extends TransactionBuilder
     }
 
     /**
-     * @param $value
+     * Set shippingDate - YYYY/MM/DD
+     * Used w/TransactionApi gateway
+     *
+     * @param string $date
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withShippingDate($date)
+    {
+        $this->shippingDate = $date;
+        return $this;
+    }
+
+    /**
+     * Set the Tag Data
+     *
+     * @param string $value
+     *
+     * @return $this
      */
     public function withTagData($value)
     {
@@ -1328,6 +1369,13 @@ class AuthorizationBuilder extends TransactionBuilder
         return $this;
     }
 
+    /**
+     * Sets the Idempotency Key.
+     *
+     * @param string $value
+     *
+     * @return $this
+     */
     public function withIdempotencyKey($value)
     {
         $this->idempotencyKey = $value;
@@ -1363,6 +1411,19 @@ class AuthorizationBuilder extends TransactionBuilder
     }
 
     /**
+     * Set the request clerkId
+     *
+     * @param string|integer $clerkId Request clerkId
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withClerkId($clerkId)
+    {
+        $this->clerkId = $clerkId;
+        return $this;
+    }
+
+    /**
      * @param float $value
      *
      * @return AuthorizationBuilder
@@ -1393,7 +1454,7 @@ class AuthorizationBuilder extends TransactionBuilder
      * @param string $number
      * @param string $type
      *
-     * @return $this
+     * @return AuthorizationBuilder
      */
     public function withPhoneNumber($phoneCountryCode, $number, $type)
     {
@@ -1414,6 +1475,14 @@ class AuthorizationBuilder extends TransactionBuilder
         return $this;
     }
 
+    /**
+     * Set Remittance Reference
+     *
+     * @param string $remittanceReferenceType
+     * @param string $remittanceReferenceValue
+     *
+     * @return AuthorizationBuilder
+     */
     public function withRemittanceReference($remittanceReferenceType, $remittanceReferenceValue)
     {
         $this->remittanceReferenceType = $remittanceReferenceType;
@@ -1434,6 +1503,20 @@ class AuthorizationBuilder extends TransactionBuilder
             throw new ArgumentException("The selected payment method doesn't support this property!");
         }
         $this->bnplShippingMethod = $bnpShippingMethod;
+        return $this;
+    }
+
+    /**
+     * Indicates whether some date will be masked in the response.
+     * Ex: Personally Identifiable Information (PII) etc.
+     *
+     * @param boolean $value
+     * @return $this
+     */
+    public function withMaskedDataResponse($value)
+    {
+        $this->maskedDataResponse = $value;
+
         return $this;
     }
 }

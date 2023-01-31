@@ -12,7 +12,7 @@ class AmountUtils
      *
      * @return float
      */
-    public static function transitFormat($amount)
+    public static function transitFormat(float $amount)
     {
         return number_format($amount, 2, '.', '');
     }

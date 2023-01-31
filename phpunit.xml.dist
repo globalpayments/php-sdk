@@ -38,6 +38,9 @@
     <testsuite name="gpapi">
       <directory>./test/Integration/Gateways/GpApiConnector/</directory>
     </testsuite>
+    <testsuite name="transactionapi">
+        <directory>./test/Integration/Gateways/TransactionApiConnector/</directory>
+    </testsuite>
   </testsuites>
 </phpunit>
 <!-- vim: set ft=xml -->
