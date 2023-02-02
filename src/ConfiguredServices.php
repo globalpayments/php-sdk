@@ -7,6 +7,7 @@ use GlobalPayments\Api\Gateways\IRecurringService;
 use GlobalPayments\Api\Gateways\ISecure3dProvider;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Gateways\OpenBankingProvider;
+use GlobalPayments\Api\Services\FraudService;
 
 class ConfiguredServices
 {
@@ -41,6 +42,9 @@ class ConfiguredServices
 
     /** @var PayrollConnector */
     public $payrollConnector;
+
+    /** @var FraudService */
+    public $fraudService;
 
     public function __construct()
     {

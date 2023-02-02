@@ -2,61 +2,43 @@
 
 namespace GlobalPayments\Api\Gateways;
 
-use GlobalPayments\Api\Builders\AuthorizationBuilder;
-use GlobalPayments\Api\Builders\ManagementBuilder;
-use GlobalPayments\Api\Builders\RecurringBuilder;
-use GlobalPayments\Api\Builders\ReportBuilder;
+use GlobalPayments\Api\Builders\{
+    AuthorizationBuilder,
+    ManagementBuilder,
+    RecurringBuilder,
+    ReportBuilder,
+    Secure3dBuilder
+};
 use GlobalPayments\Api\Builders\RequestBuilder\RequestBuilderFactory;
-use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\Customer;
-use GlobalPayments\Api\Entities\Enums\GatewayProvider;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\Exceptions\BuilderException;
-use GlobalPayments\Api\Entities\Exceptions\GatewayException;
-use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
-use GlobalPayments\Api\Entities\IRequestBuilder;
-use GlobalPayments\Api\Entities\Request;
-use GlobalPayments\Api\Entities\Schedule;
-use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\Entities\{Address, Customer, IRequestBuilder, Request, Schedule, Transaction};
+use GlobalPayments\Api\Entities\Enums\{GatewayProvider, TransactionType, FraudFilterMode, Secure3dVersion};
+use GlobalPayments\Api\Entities\Exceptions\{
+    BuilderException,
+    GatewayException,
+    UnsupportedTransactionException,
+    ApiException
+};
 use GlobalPayments\Api\HostedPaymentConfig;
 use GlobalPayments\Api\Mapping\GpEcomMapping;
-use GlobalPayments\Api\PaymentMethods\BankPayment;
-use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
-use GlobalPayments\Api\Utils\CountryUtils;
-use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
-use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
-use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
-use GlobalPayments\Api\Builders\Secure3dBuilder;
-use GlobalPayments\Api\Entities\Exceptions\ApiException;
-use GlobalPayments\Api\Utils\StringUtils;
+use GlobalPayments\Api\PaymentMethods\{RecurringPaymentMethod, BankPayment};
+use GlobalPayments\Api\Utils\{StringUtils, CountryUtils, GenerationUtils};
 
 class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringService, ISecure3dProvider
 {
-    /**
-     * @var boolean
-     */
+    /** @var bool  */
     public $supportsHostedPayments = true;
 
-    /**
-     * @var boolean
-     */
+    /** @var bool  */
     public $supportsRetrieval = true;
 
-    /**
-     * @var boolean
-     */
+    /** @var bool  */
     public $supportsUpdatePaymentDetails = true;
 
-    /**
-     * @var HostedPaymentConfig
-     */
+    /** @var HostedPaymentConfig */
     public $hostedPaymentConfig;
-    
-    /**
-     * @var array
-     */
+
+    /** @var array  */
     private $serializeData = [];
 
     /** @var GpEcomConfig */

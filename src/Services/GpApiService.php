@@ -30,6 +30,7 @@ class GpApiService
         $accessTokenInfo->disputeManagementAccountName = $data->getDisputeManagementAccountName();
         $accessTokenInfo->transactionProcessingAccountName = $data->getTransactionProcessingAccountName();
         $accessTokenInfo->tokenizationAccountName = $data->getTokenizationAccountName();
+        $accessTokenInfo->riskAssessmentAccountName = $data->getRiskAssessmentAccountName();
 
         return $accessTokenInfo;
     }

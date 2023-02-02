@@ -30,6 +30,7 @@ use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Entities\Product;
 use GlobalPayments\Api\Mapping\EnumMapping;
 use GlobalPayments\Api\PaymentMethods\BNPL;
+use GlobalPayments\Api\PaymentMethods\Credit;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
@@ -192,7 +193,10 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $requestBody['currency'] = $builder->currency;
         $requestBody['reference'] = !empty($builder->clientTransactionId) ?
             $builder->clientTransactionId : GenerationUtils::getGuid();
-        if ($builder->paymentMethod->mobileType == EncyptedMobileType::CLICK_TO_PAY) {
+        if (
+            $builder->paymentMethod instanceof Credit &&
+            $builder->paymentMethod->mobileType == EncyptedMobileType::CLICK_TO_PAY
+        ) {
             $requestBody['masked'] = $builder->maskedDataResponse === true ? 'YES' : 'NO';
         }
         $requestBody['description'] = $builder->description;

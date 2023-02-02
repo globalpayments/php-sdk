@@ -105,6 +105,9 @@ class CreditCardData extends Credit implements ICardData
      */
     public function getCardType()
     {
+        if (empty($this->number)) {
+            return;
+        }
         return CardUtils::getCardType($this->number);
     }
 

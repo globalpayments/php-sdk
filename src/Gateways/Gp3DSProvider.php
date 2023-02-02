@@ -82,13 +82,16 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
     }
 
     /**
+     * @param Secure3dBuilder $builder
+     * @return Transaction
      * @throws ApiException
-     * @return Transaction */
+     * @throws GatewayException
+     */
     public function processSecure3d(Secure3dBuilder $builder)
     {
         $transType = $builder->getTransactionType();
         $timestamp = date("Y-m-d\TH:i:s.u");
-        $paymentMethod = $builder->getPaymentMethod();
+        $paymentMethod = $builder->paymentMethod;
         $secure3d = $paymentMethod;
         $request = [];
 

@@ -23,6 +23,7 @@ class GpApiTokenResponse
     const DISPUTE_MANAGEMENT_ACCOUNT_NAME_PREFIX = 'DIA_';
     const TOKENIZATION_ACCOUNT_NAME_PREFIX = 'TKA_';
     const TRANSACTION_PROCESSING_ACCOUNT_NAME_PREFIX = 'TRA_';
+    const RIKS_ASSESSMENT_ACCOUNT_NAME_PREFIX = 'RAA_';
 
     public function __construct($response)
     {
@@ -67,6 +68,11 @@ class GpApiTokenResponse
     public function getTransactionProcessingAccountName()
     {
         return $this->getAccountName(self::TRANSACTION_PROCESSING_ACCOUNT_NAME_PREFIX);
+    }
+
+    public function getRiskAssessmentAccountName()
+    {
+        return $this->getAccountName(self::RIKS_ASSESSMENT_ACCOUNT_NAME_PREFIX);
     }
 
     public function getToken()

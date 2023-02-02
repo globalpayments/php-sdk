@@ -2,12 +2,10 @@
 
 namespace GlobalPayments\Api\Builders;
 
-use GlobalPayments\Api\Builders\BaseBuilder\Validations;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
-use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
+use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\PayLinkData;
-use GlobalPayments\Api\Entities\PayLinkResponse;
-use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 
 abstract class TransactionBuilder extends BaseBuilder
 {
@@ -121,7 +119,7 @@ abstract class TransactionBuilder extends BaseBuilder
      * @internal
      * @param TransactionType $transactionType Request transaction type
      *
-     * @return AuthorizationBuilder
+     * @return TransactionBuilder
      */
     public function withTransactionType($transactionType)
     {
@@ -135,7 +133,7 @@ abstract class TransactionBuilder extends BaseBuilder
      * @internal
      * @param TransactionModifier $modifier Request transaction modifier
      *
-     * @return AuthorizationBuilder
+     * @return TransactionBuilder
      */
     public function withModifier($modifier)
     {
@@ -148,7 +146,7 @@ abstract class TransactionBuilder extends BaseBuilder
      *
      * @param bool $allowDuplicates Request to allow duplicates
      *
-     * @return AuthorizationBuilder
+     * @return TransactionBuilder
      */
     public function withAllowDuplicates($allowDuplicates)
     {

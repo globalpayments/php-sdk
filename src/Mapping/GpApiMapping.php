@@ -6,6 +6,7 @@ use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\BatchSummary;
 use GlobalPayments\Api\Entities\BNPLResponse;
+use GlobalPayments\Api\Entities\Card;
 use GlobalPayments\Api\Entities\CardIssuerResponse;
 use GlobalPayments\Api\Entities\DisputeDocument;
 use GlobalPayments\Api\Entities\DccRateData;
@@ -36,6 +37,8 @@ use GlobalPayments\Api\Entities\Reporting\MerchantSummary;
 use GlobalPayments\Api\Entities\Reporting\PayLinkSummary;
 use GlobalPayments\Api\Entities\Reporting\StoredPaymentMethodSummary;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
+use GlobalPayments\Api\Entities\RiskAssessment;
+use GlobalPayments\Api\Entities\ThirdPartyResponse;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\User;
@@ -562,6 +565,46 @@ class GpApiMapping
         $summary->accountId = !empty($response->account_id) ? $response->account_id : null;
 
         return $summary;
+    }
+
+    public static function mapRiskAssessmentResponse($response)
+    {
+        $riskAssessment = new RiskAssessment();
+        $riskAssessment->id = $response->id;
+        $riskAssessment->timeCreated = $response->time_created;
+        $riskAssessment->status = $response->status ?? null;
+        $riskAssessment->amount = isset($response->amount) ? StringUtils::toAmount($response->amount) : null;
+        $riskAssessment->currency = $response->currency ?? null;
+        $riskAssessment->merchantId = $response->merchant_id ?? null;
+        $riskAssessment->merchantName = $response->merchant_name ?? null;
+        $riskAssessment->accountId = $response->account_id ?? null;
+        $riskAssessment->accountName = $response->account_name ?? null;
+        $riskAssessment->reference = $response->reference ?? null;
+        $riskAssessment->responseCode = $response->action->result_code ?? null;
+        $riskAssessment->responseMessage = $response->result ?? null;
+        if (isset($response->payment_method->card)) {
+            $paymentMethod = $response->payment_method->card;
+            $card = new Card();
+            $card->maskedNumberLast4 = $paymentMethod->masked_number_last4 ?? null;
+            $card->brand = $paymentMethod->brand ?? null;
+            $card->brandReference = $paymentMethod->brand_reference ?? null;
+            $card->bin = $paymentMethod->bin ?? null;
+            $card->binCountry = $paymentMethod->bin_country ?? null;
+            $card->accountType = $paymentMethod->account_type ?? null;
+            $card->issuer = $paymentMethod->issuer ?? null;
+
+            $riskAssessment->cardDetails = $card;
+        }
+        if (isset($response->raw_response)) {
+            $rawResponse = $response->raw_response;
+            $thirdPartyResponse = new ThirdPartyResponse();
+            $thirdPartyResponse->platform = $rawResponse->platform;
+            $thirdPartyResponse->data = $rawResponse->data;
+            $riskAssessment->thirdPartyResponse = $thirdPartyResponse;
+        }
+        $riskAssessment->actionId = $response->action->id ?? null;
+
+        return $riskAssessment;
     }
 
     /**

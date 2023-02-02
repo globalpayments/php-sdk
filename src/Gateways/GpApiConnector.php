@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Gateways;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
+use GlobalPayments\Api\Builders\FraudBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Builders\PayFacBuilder;
 use GlobalPayments\Api\Builders\ReportBuilder;
@@ -22,6 +23,8 @@ use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Entities\Reporting\DepositSummary;
 use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
+use GlobalPayments\Api\Entities\RiskAssessment;
+use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\User;
@@ -30,7 +33,7 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Mapping\GpApiMapping;
 use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
 
-class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dProvider, IPayFacProvider
+class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dProvider, IPayFacProvider, IFraudCheckService
 {
     const GP_API_VERSION = '2021-03-22';
     const IDEMPOTENCY_HEADER = 'x-gp-idempotency';
@@ -163,6 +166,15 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         throw new UnsupportedTransactionException(sprintf('Method %s not supported by %s', __METHOD__, $this->gpApiConfig->gatewayProvider));
     }
 
+    public function processFraud(FraudBuilder $builder) : RiskAssessment
+    {
+        if (empty($this->accessToken)) {
+            $this->signIn();
+        }
+        $response = $this->executeProcess($builder);
+
+        return GpApiMapping::mapRiskAssessmentResponse($response);
+    }
 
     private function executeProcess($builder)
     {
@@ -294,6 +306,9 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         }
         if (empty($accessTokenInfo->disputeManagementAccountName)) {
             $accessTokenInfo->disputeManagementAccountName = $response->getDisputeManagementAccountName();
+        }
+        if (empty($accessTokenInfo->riskAssessmentAccountName)) {
+            $accessTokenInfo->riskAssessmentAccountName = $response->getRiskAssessmentAccountName();
         }
         $this->gpApiConfig->accessTokenInfo = $accessTokenInfo;
     }

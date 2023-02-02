@@ -33,6 +33,7 @@ class TransactionType extends Enum
     const VERIFY_ENROLLED = 16777216; //1 << 24
     const VERIFY_SIGNATURE = 33554432; // 1 << 25
     const TOKEN_DELETE = 67108864; // 1 << 26
+    const RISK_ASSESS = 134217728;
     const INITIATE_AUTHENTICATION = 268435456; // 1 << 28
     const DATA_COLLECT = 536870912; // 1 << 29
     const PRE_AUTH_COMPLETION = 1073741824; // 1 << 30

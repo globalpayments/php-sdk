@@ -8,7 +8,8 @@ use GlobalPayments\Api\Builders\RequestBuilder\GpApi\{
     GpApiManagementRequestBuilder,
     GpApiPayFacRequestBuilder,
     GpApiReportRequestBuilder,
-    GpApiSecure3DRequestBuilder};
+    GpApiSecureRequestBuilder
+};
 use GlobalPayments\Api\Builders\RequestBuilder\GpEcom\{
     GpEcomAuthorizationRequestBuilder,
     GpEcomManagementRequestBuilder,
@@ -20,6 +21,7 @@ use GlobalPayments\Api\Builders\RequestBuilder\TransactionApi\{
     TransactionApiManagementRequestBuilder,
     TransactionApiAuthorizationRequestBuilder
 };
+
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 
 class RequestBuilderFactory
@@ -35,7 +37,7 @@ class RequestBuilderFactory
             GpApiAuthorizationRequestBuilder::class,
             GpApiManagementRequestBuilder::class,
             GpApiReportRequestBuilder::class,
-            GpApiSecure3DRequestBuilder::class,
+            GpApiSecureRequestBuilder::class,
             GpApiPayFacRequestBuilder::class
         ],
         GatewayProvider::TRANSACTION_API => [

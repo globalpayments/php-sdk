@@ -24,4 +24,7 @@ class AccessTokenInfo
      * @var string
      */
     public $transactionProcessingAccountName;
+
+    /** @var string */
+    public $riskAssessmentAccountName;
 }

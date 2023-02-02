@@ -3,8 +3,9 @@
 namespace GlobalPayments\Api\Entities;
 
 use GlobalPayments\Api\Entities\Enums\ExemptionReason;
+use GlobalPayments\Api\PaymentMethods\Interfaces\ISecureCheck;
 
-class ThreeDSecure
+class ThreeDSecure implements ISecureCheck
 {
     /**
      * @var string
@@ -426,7 +427,7 @@ class ThreeDSecure
             $this->sessionDataFieldName = $this->mergeValue($this->sessionDataFieldName, $secureEcom->sessionDataFieldName);
             $this->challengeReturnUrl = $this->mergeValue($this->challengeReturnUrl, $secureEcom->challengeReturnUrl);
             $this->exemptStatus = $this->mergeValue($this->exemptStatus, $secureEcom->exemptStatus);
-            $this->exemptReason = $this->mergeValue($this->exemptStatus, $secureEcom->exemptReason);
+            $this->exemptReason = $this->mergeValue($this->exemptReason, $secureEcom->exemptReason);
             $this->liabilityShift = $this->mergeValue($this->liabilityShift, $secureEcom->liabilityShift);
             $this->acsReferenceNumber = $this->mergeValue($this->acsReferenceNumber, $secureEcom->acsReferenceNumber);
             $this->providerServerTransRef = $this->mergeValue($this->providerServerTransRef, $secureEcom->providerServerTransRef);

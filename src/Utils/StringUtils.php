@@ -100,4 +100,13 @@ class StringUtils
         json_decode($string);
         return (json_last_error() == JSON_ERROR_NONE);
     }
+
+    public static function boolToString($value)
+    {
+        if (!is_bool($value)) {
+            return;
+        }
+
+        return json_encode($value);
+    }
 }
