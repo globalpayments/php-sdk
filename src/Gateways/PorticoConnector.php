@@ -2341,11 +2341,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
     private function hydrateWalletData(DOMDocument $xml, BaseBuilder $builder, $block1, $cardData)
     {
         //wallet data
-        if (
-            $builder->paymentMethod->mobileType == MobilePaymentMethodType::APPLEPAY
-            || $builder->paymentMethod->mobileType == MobilePaymentMethodType::GOOGLEPAY
-            && $this->isAppleOrGooglePay($builder->paymentMethod->paymentSource)
-        ) {
+        if ($this->isAppleOrGooglePay($builder->paymentMethod->paymentSource)) {
             $walletData  = $xml->createElement('WalletData');
 
             if (!empty($builder->paymentMethod->threeDSecure->cavv)) {
@@ -2357,8 +2353,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             if (!empty($builder->paymentMethod->paymentSource)) {
                 $walletData->appendChild($xml->createElement('PaymentSource', $builder->paymentMethod->paymentSource));
             }
-
-            if ($builder->paymentMethod->mobileType) {
+            if (!empty($builder->paymentMethod->token)) {
                 $token = $this->toFormatToken($builder->paymentMethod->token);
                 $walletData->appendChild($xml->createElement('DigitalPaymentToken', $token));
                 $block1->removeChild($cardData);

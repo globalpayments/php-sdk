@@ -4,12 +4,16 @@
 
 # Changelog
 
-## Latest version
+## Latest Version
+#### Bug Fixes:
+- Portico Gateway: fix DigitalPaymentToken handling
+
+## v6.0.6 (02/02/2023)
 #### Enhancements:
 - GP-API: add risk assessment feature
 - Refacto the Secure3DBuilder
 
-## v6.0.6 (02/26/2023)
+## v6.0.6 (01/26/2023)
 #### Enhancements:
 - GPI Transactions : added support for credit, ach & reporting transactions 
 - GP-API: add to generateXGPSignature to GenerationUtils

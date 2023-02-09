@@ -2054,4 +2054,80 @@ class EcommerceTest extends TestCase
         $this->assertEquals(true, $response != null);
         $this->assertEquals('00', $response->responseCode);
     }
+
+    // can use this to generate a token: https://gpay-test.azurewebsites.net/
+    // use MID 777703754644
+    public function testGooglePay() : void
+    {
+        $walletConfig = new PorticoConfig();
+        $walletConfig->secretApiKey = 'skapi_cert_MVq4BQC5n3AAgd4M1Cvph2ud3CGaIclCgC7H_KxZaQ';        
+        ServicesContainer::configureService($walletConfig, 'GooglePay');
+
+        $card = new CreditCardData();
+        $card->paymentSource = PaymentDataSourceType::GOOGLEPAYAPP;
+        $card->token = '{"signature":"MEUCIDiJ2XhsweojddWc6VNuK+aq9JvT3M1kfQGOCiQEiYdVAiEA+o6f5VcMxbTABBCAmq9gMEA8KAzhfhJf4qAMh9sxRK0\u003d","protocolVersion":"ECv1","signedMessage":"{\"encryptedMessage\":\"nOdfmUk8qjQKUmJJzve9V7fTD3uu1tzsFWD9iM2rNoneCHLEhsgbK1CGpMuB4kpNIFlbcCTFbmwPqriE0W0Wr8iisPnUgDrBG7O7PnRImAzx83P0LnNgHHNs7V0Z4yqOZ9r22nI4wE6OEfNZutacluR4rHJQRd4WqcDeiqfbftmr97aOlZ5m/G/7/Fpqu4Caeicol8LuqIEtcwRFX3Qya2alJ4lrgb7eRSapZiOFjwt/4EyXaxsh8MmIOeDDyFybKliySIbAXdC+0LsrBgn9Jujgy7GRlWc94C8RZ8hy0U7IlCAD3NznEEQ9gkmq2h0/NH5Zz660cpp42GzCEwLe0Q3m8p6IvMct2xKm3IkuC1iJQthuakURalp16TdaealTU2NIaMh3ZD6X8KO0zaEBVkK4cmC1Aj0MDDheKMcjQvYoO47XPobYUE3qDhoZ6iPwCWSNVrA1EQ\\u003d\\u003d\",\"ephemeralPublicKey\":\"BLdiwg4jfHZehuzoeR3/sxKYWqU6nmsnheenjUPaw3v3M2In0HVVONotaNb566oZtHT5afvwtBZvd6VL6PSowqE\\u003d\",\"tag\":\"q/+hOdT+8mEkSMIRXeE6TlKG5t5o29jmCj7wsjO+lCg\\u003d\"}"}';
+
+        $response = $card->charge(10)
+            ->withCurrency('USD')
+            ->withInvoiceNumber('12345')
+            ->withAllowDuplicates(true)
+            ->execute('GooglePay');
+
+        $this->assertEquals(true, $response != null);
+        $this->assertEquals('00', $response->responseCode);
+    }
+
+    public function testMasterCardSuptSale() : void
+    {
+        $walletConfig = new PorticoConfig();
+        $walletConfig->secretApiKey = 'skapi_cert_MVq4BQC5n3AAgd4M1Cvph2ud3CGaIclCgC7H_KxZaQ';        
+        ServicesContainer::configureService($walletConfig, 'GooglePay');
+
+        $card = new CreditCardData();
+        $card->token = $this->getMastercardToken('pkapi_cert_BxO8wdeBZaZfEBuP0b');
+
+        $response = $card->charge(10)
+            ->withCurrency('USD')
+            ->withInvoiceNumber('12345')
+            ->withAllowDuplicates(true)
+            ->execute('GooglePay');
+
+        $this->assertEquals(true, $response != null);
+        $this->assertEquals('00', $response->responseCode);
+    }
+
+    /**
+     * 
+     * @param string $pubKey 
+     * @return string 
+     * @throws AssertionFailedError 
+     */
+    protected function getMastercardToken(string $pubKey) : string
+    {
+        $payload = array(
+            'object' => 'token',
+            'token_type' => 'supt',
+            'card' => array(
+                'number' => '5454545454545454',
+                'cvc' => '123',
+                'exp_month' => '12',
+                'exp_year' => '2023'
+            )
+        );
+        $url = 'https://cert.api2-c.heartlandportico.com/Hps.Exchange.PosGateway.Hpf.v1/api/token?api_key='
+            . $pubKey;
+        $options = array(
+            'http' => array(
+                'header' => "Content-Type: application/json\r\n",
+                'method' => 'POST',
+                'content' => json_encode($payload),
+            ),
+        );
+        $context = stream_context_create($options);
+        $response = json_decode(file_get_contents($url, false, $context));
+        if (!$response || isset($response->error)) {
+            $this->fail('no single-use token obtained');
+        }
+        return $response->token_value;
+    }
 }

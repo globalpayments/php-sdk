@@ -2,28 +2,29 @@
 
 namespace GlobalPayments\Api\PaymentMethods;
 
-use GlobalPayments\Api\Builders\AuthorizationBuilder;
-use GlobalPayments\Api\Builders\ManagementBuilder;
-use GlobalPayments\Api\Entities\DccRateData;
-use GlobalPayments\Api\Entities\Enums\EntryMethod;
-use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
-use GlobalPayments\Api\Entities\ThreeDSecure;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Builders\{AuthorizationBuilder, ManagementBuilder};
+use GlobalPayments\Api\Entities\{DccRateData, ThreeDSecure};
+use GlobalPayments\Api\Entities\Enums\{
+    EntryMethod,
+    ManualEntryMethod,
+    PaymentMethodType,
+    PaymentMethodUsageMode,
+    TransactionType
+};
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IAuthable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IBalanceable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IChargable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IEncryptable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IPrePayable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IRefundable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IReversable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ISecure3d;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IVerifyable;
+use GlobalPayments\Api\PaymentMethods\Interfaces\{
+    IAuthable,
+    IPaymentMethod,
+    IEncryptable,
+    ITokenizable,
+    IChargable,
+    IRefundable,
+    IReversable,
+    IVerifyable,
+    IPrePayable,
+    IBalanceable,
+    ISecure3d
+};
 
 abstract class Credit implements
     IPaymentMethod,
@@ -38,22 +39,10 @@ abstract class Credit implements
     IBalanceable,
     ISecure3d
 {
-    public $encryptionData;
-    public $paymentMethodType = PaymentMethodType::CREDIT;
-    
     /**
-     * The token value representing the card.
-     *
-     * For `TransactionModifier.Encrypted_Mobile` transactions, this value is the
-     * encrypted payload from the mobile payment scheme.
+     * The card type of the manual entry data.
      */
-    public $token;
-
-    /**
-     * The type of mobile device used in `TransactionModifier.Encrypted_Mobile`
-     * transactions.
-     */
-    public $mobileType;
+    public $cardType;
 
     /**
      * The authentication value use to verify the validity of the digit wallet transaction.
@@ -69,6 +58,29 @@ abstract class Credit implements
      */
     public $eci;
 
+    public $encryptionData;
+
+    /** @var EntryMethod|ManualEntryMethod */
+    public $entryMethod;
+
+    /** @var bool */
+    public $isFleet;
+
+    /**
+     * The type of mobile device used in `TransactionModifier.Encrypted_Mobile`
+     * transactions.
+     */
+    public $mobileType;
+
+    public $paymentMethodType = PaymentMethodType::CREDIT;
+
+
+    // maybe change the name of the below var
+
+
+    /** @var PaymentDataSourceType */
+    public $paymentSource;
+
     /**
      * Secure 3d Data attached to the card
      * @var ThreeDSecure
@@ -76,17 +88,12 @@ abstract class Credit implements
     public $threeDSecure;
 
     /**
-     * The card type of the manual entry data.
+     * The token value representing the card.
+     *
+     * For `TransactionModifier.Encrypted_Mobile` transactions, this value is the
+     * encrypted payload from the mobile payment scheme.
      */
-    public $cardType;
-
-    /** @var bool */
-    public $isFleet;
-
-    /** @var EntryMethod|ManualEntryMethod */
-    public $entryMethod;
-
-    /** @return boolean */
+    public $token;
 
     /**
      * Authorizes the payment method
