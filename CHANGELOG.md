@@ -5,10 +5,14 @@
 # Changelog
 
 ## Latest Version
+#### Enhancements:
+- GP-API: BNPL unit tests update
+
+## v6.1.1 (02/09/2023)
 #### Bug Fixes:
 - Portico Gateway: fix DigitalPaymentToken handling
 
-## v6.0.6 (02/02/2023)
+## v6.1.0 (02/02/2023)
 #### Enhancements:
 - GP-API: add risk assessment feature
 - Refacto the Secure3DBuilder

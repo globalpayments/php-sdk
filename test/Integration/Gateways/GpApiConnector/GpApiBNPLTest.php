@@ -314,6 +314,46 @@ class GpApiBNPLTest extends TestCase
         $this->assertEquals(TransactionStatus::CAPTURED, $captureTrn->responseMessage);
     }
 
+    public function testBNPL_KlarnaProvider_Refund()
+    {
+        $this->paymentMethod->bnplType = BNPLType::KLARNA;
+        $customer = $this->setCustomerData();
+        $products = $this->setProductList();
+
+        $transaction = $this->paymentMethod->authorize(550)
+            ->withCurrency($this->currency)
+            ->withProductData($products)
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->withAddress($this->billingAddress, AddressType::BILLING)
+            ->withCustomerData($customer)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
+        $this->assertNotNull($transaction->bnplResponse->redirectUrl);
+
+        fwrite(STDERR, print_r($transaction->bnplResponse->redirectUrl, TRUE));
+
+        sleep(45);
+
+        $captureTrn = $transaction->capture()->execute();
+
+        $this->assertNotNull($captureTrn);
+        $this->assertEquals('SUCCESS', $captureTrn->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $captureTrn->responseMessage);
+
+        sleep(15);
+
+        $trnRefund = $captureTrn->refund(100)
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertNotNull($trnRefund);
+        $this->assertEquals('SUCCESS', $trnRefund->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $trnRefund->responseMessage);
+    }
+
     public function testBNPL_ClearPayProvider()
     {
         $this->paymentMethod->bnplType = BNPLType::CLEARPAY;
@@ -401,6 +441,46 @@ class GpApiBNPLTest extends TestCase
         $this->assertNotNull($captureTrn);
         $this->assertEquals('SUCCESS', $captureTrn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $captureTrn->responseMessage);
+    }
+
+    public function testBNPL_ClearPayProvider_Refund()
+    {
+        $this->paymentMethod->bnplType = BNPLType::CLEARPAY;
+        $customer = $this->setCustomerData();
+        $products = $this->setProductList();
+
+        $transaction = $this->paymentMethod->authorize(550)
+            ->withCurrency($this->currency)
+            ->withProductData($products)
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->withAddress($this->billingAddress, AddressType::BILLING)
+            ->withCustomerData($customer)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
+        $this->assertNotNull($transaction->bnplResponse->redirectUrl);
+
+        fwrite(STDERR, print_r($transaction->bnplResponse->redirectUrl, TRUE));
+
+        sleep(45);
+
+        $captureTrn = $transaction->capture()->execute();
+
+        $this->assertNotNull($captureTrn);
+        $this->assertEquals('SUCCESS', $captureTrn->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $captureTrn->responseMessage);
+
+        sleep(15);
+
+        $trnRefund = $captureTrn->refund(550)
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertNotNull($trnRefund);
+        $this->assertEquals('SUCCESS', $trnRefund->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $trnRefund->responseMessage);
     }
 
     public function testBNPL_InvalidStatusForCapture_NoRedirect()
