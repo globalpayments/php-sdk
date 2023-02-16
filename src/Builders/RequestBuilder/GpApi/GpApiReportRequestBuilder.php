@@ -7,8 +7,6 @@ use GlobalPayments\Api\Builders\ReportBuilder;
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\ReportType;
-use GlobalPayments\Api\Entities\Enums\TransactionModifier;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Mapping\EnumMapping;
@@ -88,7 +86,8 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                     'risk_assessment_result' => EnumMapping::mapFraudFilterResult(
                         GatewayProvider::GP_API,
                         $builder->searchBuilder->riskAssessmentResult),
-                    'risk_assessment_reason_code' => $builder->searchBuilder->riskAssessmentReasonCode
+                    'risk_assessment_reason_code' => $builder->searchBuilder->riskAssessmentReasonCode,
+                    'provider' => $builder->searchBuilder->paymentProvider,
                 ];
 
                 $this->addBasicParams($queryParams, $builder);

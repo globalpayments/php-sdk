@@ -6,7 +6,8 @@ use GlobalPayments\Api\Entities\Enums\{
     EcommerceIndicator,
     PaymentMethodType,
     PhoneNumberType,
-    TransactionLanguage
+    TransactionLanguage,
+    PaymentType
 };
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\TransactionApi\TransactionApiData;
@@ -28,7 +29,7 @@ class TransactionApiReportingTest extends TestCase
 
     private $currency = '840';
 
-    public function setup()
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
 
@@ -144,9 +145,8 @@ class TransactionApiReportingTest extends TestCase
 
         $creditReturnId = $response->transactionId;
 
-        $transaction = Transaction::fromId($creditReturnId, null, PaymentMethodType::CREDIT);
-
-        $response = ReportingService::transactionDetail($transaction)
+        $response = ReportingService::findTransactions($creditReturnId)
+            ->where(SearchCriteria::PAYMENT_METHOD_TYPE, PaymentMethodType::CREDIT)
             ->execute();
 
         $this->assertNotNull($response);
@@ -169,9 +169,9 @@ class TransactionApiReportingTest extends TestCase
         $this->assertNotNull($response->referenceNumber);
         $creditReferenceId = $response->referenceNumber;
 
-        $transaction = Transaction::fromClientTransactionId($creditReferenceId);
-
-        $response = ReportingService::transactionDetail($transaction)
+        $response = ReportingService::findTransactions()
+            ->where(SearchCriteria::CLIENT_TRANSACTION_ID, $creditReferenceId)
+            ->andWith(SearchCriteria::PAYMENT_METHOD_TYPE, PaymentMethodType::CREDIT)
             ->execute();
 
         $this->assertNotNull($response);
@@ -208,9 +208,8 @@ class TransactionApiReportingTest extends TestCase
 
         $checkSaleId = $response->transactionReference->checkSaleId;
 
-        $transaction = Transaction::fromId($checkSaleId, null, PaymentMethodType::ACH);
-
-        $response = ReportingService::transactionDetail($transaction)
+        $response = ReportingService::findTransactions($checkSaleId)
+            ->where(SearchCriteria::PAYMENT_METHOD_TYPE, PaymentMethodType::ACH)
             ->execute();
 
         $this->assertNotNull($response);
@@ -246,13 +245,9 @@ class TransactionApiReportingTest extends TestCase
         $this->assertNotNull($response->referenceNumber);
         $checkRefId = $response->referenceNumber;
 
-        $transaction = Transaction::fromClientTransactionId(
-            $checkRefId,
-            null,
-            PaymentMethodType::ACH
-        );
-
-        $response = ReportingService::transactionDetail($transaction)
+        $response = ReportingService::findTransactions()
+            ->where(SearchCriteria::CLIENT_TRANSACTION_ID, $checkRefId)
+            ->andWith(SearchCriteria::PAYMENT_METHOD_TYPE, PaymentMethodType::ACH)
             ->execute();
 
         $this->assertNotNull($response);
@@ -286,11 +281,10 @@ class TransactionApiReportingTest extends TestCase
             ->execute();
 
         $checkRefundId = $response->checkRefundId;
-
-        $transaction = Transaction::fromId($checkRefundId, null, PaymentMethodType::ACH);
-        $transaction->originalTransactionType = "REFUND";
-
-        $response = ReportingService::transactionDetail($transaction)
+        
+        $response = ReportingService::findTransactions($checkRefundId)
+            ->where(SearchCriteria::PAYMENT_TYPE, PaymentType::REFUND)
+            ->andWith(SearchCriteria::PAYMENT_METHOD_TYPE, PaymentMethodType::ACH)
             ->execute();
 
         $this->assertNotNull($response);
@@ -325,14 +319,10 @@ class TransactionApiReportingTest extends TestCase
 
         $checkRefId = $response->referenceNumber;
 
-        $transaction = Transaction::fromClientTransactionId(
-            $checkRefId,
-            null,
-            PaymentMethodType::ACH
-        );
-        $transaction->originalTransactionType = "REFUND";
-
-        $response = ReportingService::transactionDetail($transaction)
+        $response = ReportingService::findTransactions()
+            ->where(SearchCriteria::CLIENT_TRANSACTION_ID, $checkRefId)
+            ->andWith(SearchCriteria::PAYMENT_TYPE, PaymentType::REFUND)
+            ->andWith(SearchCriteria::PAYMENT_METHOD_TYPE, PaymentMethodType::ACH)
             ->execute();
 
         $this->assertNotNull($response);

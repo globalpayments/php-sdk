@@ -33,6 +33,11 @@ class TransactionApiConnector extends RestGateway implements IPaymentGateway
         $this->transactionApiConfig = $transactionApiConfig;
     }
 
+    public function supportsOpenBanking() : bool
+    {
+        return false;
+    }
+
     /**
      * Serializes and executes authorization transactions
      *

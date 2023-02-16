@@ -97,10 +97,10 @@ class GpApiConfig extends GatewayConfig
         $services->reportingService = $gateway;
         $services->fraudService = $gateway;
 
+        $services->setOpenBankingProvider($gateway);
         $services->setPayFacProvider($gateway);
         $services->setSecure3dProvider(Secure3dVersion::ONE, $gateway);
         $services->setSecure3dProvider(Secure3dVersion::TWO, $gateway);
-
     }
 
     public function validate()

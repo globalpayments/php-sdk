@@ -6,6 +6,11 @@
 
 ## Latest Version
 #### Enhancements:
+- GP-API: Create open banking transactions
+- GPI Transactions: Reporting tests refacto
+
+## v6.1.2 (02/13/2023)
+#### Enhancements:
 - GP-API: BNPL unit tests update
 
 ## v6.1.1 (02/09/2023)
@@ -16,6 +21,7 @@
 #### Enhancements:
 - GP-API: add risk assessment feature
 - Refacto the Secure3DBuilder
+- GP-API: update CTP transaction request
 
 ## v6.0.6 (01/26/2023)
 #### Enhancements:

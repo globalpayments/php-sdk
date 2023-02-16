@@ -6,8 +6,10 @@ use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\GpApi\DTO\Card;
 use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\IRequestBuilder;
@@ -22,6 +24,10 @@ use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 
 class GpApiManagementRequestBuilder implements IRequestBuilder
 {
+    private static $allowedActions =[
+        PaymentMethodType::BANK_PAYMENT => []
+    ];
+
     /**
      * @param $builder
      * @return bool
@@ -44,6 +50,26 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
     public function buildRequest(BaseBuilder $builder, $config)
     {
         $payload = null;
+
+        if (!empty($builder->paymentMethod->paymentMethodType)) {
+            switch ($builder->paymentMethod->paymentMethodType) {
+                case PaymentMethodType::BANK_PAYMENT:
+                    if (
+                        !isset(self::$allowedActions[PaymentMethodType::BANK_PAYMENT]) ||
+                        !in_array($builder->transactionType, self::$allowedActions[PaymentMethodType::BANK_PAYMENT])
+                    ) {
+                        throw new BuilderException(
+                            sprintf(
+                                "The %s is not supported for %s",
+                                $this->getTransactionTypeName($builder->transactionType), PaymentMethodName::BANK_PAYMENT
+                            )
+                        );
+                    }
+                default:
+                    break;
+            }
+        }
+
         /**
          * @var ManagementBuilder $builder
          */
@@ -243,5 +269,12 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
          return [
              'id' => $dccRateData->dccId
          ];
+    }
+
+    private function getTransactionTypeName($transactionType)
+    {
+        $reflector = new \ReflectionClass(TransactionType::class);
+
+        return array_search($transactionType,$reflector->getConstants());
     }
 }

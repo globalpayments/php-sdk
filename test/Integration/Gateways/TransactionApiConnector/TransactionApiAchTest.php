@@ -20,7 +20,7 @@ class TransactionApiAchTest extends TestCase
 
     private $customer;
 
-    public function setup()
+    public function setup(): void
     {
         $this->eCheck = new ECheck();
         $this->eCheck->accountNumber = '12121';

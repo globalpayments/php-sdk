@@ -26,7 +26,7 @@ use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 
 class RequestBuilderFactory
 {
-    public static $processes = [
+    private static $processes = [
         GatewayProvider::GP_ECOM => [
             GpEcomRecurringRequestBuilder::class,
             GpEcomAuthorizationRequestBuilder::class,

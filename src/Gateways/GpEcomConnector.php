@@ -50,6 +50,11 @@ class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         $this->config = $config;
     }
 
+    public function supportsOpenBanking() : bool
+    {
+        return true;
+    }
+
     /** @return Secure3dVersion */
     public function getVersion()
     {

@@ -43,6 +43,11 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
     private $gpApiConfig;
     private $accessToken;
 
+    public function supportsOpenBanking() : bool
+    {
+        return true;
+    }
+
     public function __construct(GpApiConfig $gpApiConfig)
     {
         parent::__construct();

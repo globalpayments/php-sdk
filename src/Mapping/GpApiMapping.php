@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Mapping;
 
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
+use GlobalPayments\Api\Entities\BankPaymentResponse;
 use GlobalPayments\Api\Entities\BatchSummary;
 use GlobalPayments\Api\Entities\BNPLResponse;
 use GlobalPayments\Api\Entities\Card;
@@ -15,6 +16,7 @@ use GlobalPayments\Api\Entities\Enums\CaptureMode;
 use GlobalPayments\Api\Entities\Enums\FraudFilterResult;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Enums\PaymentProvider;
 use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
@@ -106,6 +108,7 @@ class GpApiMapping
         $transaction->fingerprint = !empty($response->fingerprint) ? $response->fingerprint : null;
         $transaction->fingerprintIndicator = !empty($response->fingerprint_presence_indicator) ?
             $response->fingerprint_presence_indicator : null;
+
         if (isset($response->payment_method->bnpl)) {
             return self::mapBNPLResponse($response, $transaction);
         }
@@ -114,7 +117,7 @@ class GpApiMapping
             $response->id : null;
         $transaction->tokenUsageMode = !empty($response->usage_mode) ? $response->usage_mode : null;
         if (!empty($response->payment_method)) {
-            $transaction->authorizationCode = $response->payment_method->result;
+            $transaction->authorizationCode = $response->payment_method->result ?? null;
             if (!empty($response->payment_method->id)) {
                 $transaction->token = $response->payment_method->id;
             }
@@ -139,14 +142,25 @@ class GpApiMapping
                     self::mapCardIssuerResponse($transaction, $card->provider);
                 }
             }
-            if (!empty($response->payment_method->bank_transfer)) {
+            if (!empty($response->payment_method->apm) &&
+                $response->payment_method->apm->provider == strtolower(PaymentProvider::OPEN_BANKING)
+            ) {
+                $transaction->paymentMethodType = PaymentMethodType::BANK_PAYMENT;
+                $obResponse = new BankPaymentResponse();
+                $obResponse->redirectUrl = $response->payment_method->redirect_url ?? null;
+                $obResponse->paymentStatus = $response->payment_method->message ?? null;
+                $obResponse->accountNumber = $response->payment_method->bank_transfer->account_number ?? null;
+                $obResponse->sortCode = $response->payment_method->bank_transfer->bank->code ?? null;
+                $obResponse->accountName = $response->payment_method->bank_transfer->bank->name ?? null;
+                $obResponse->iban = $response->payment_method->bank_transfer->iban ?? null;
+                $transaction->bankPaymentResponse = $obResponse;
+            } elseif (!empty($response->payment_method->bank_transfer)) {
                 $bankTransfer = $response->payment_method->bank_transfer;
                 $transaction->accountNumberLast4 = !empty($bankTransfer->masked_account_number_last4) ?
                     $bankTransfer->masked_account_number_last4 : null;
                 $transaction->accountType = !empty($bankTransfer->account_type) ? $bankTransfer->account_type : null;
                 $transaction->paymentMethodType = PaymentMethodType::ACH;
-            }
-            if (!empty($response->payment_method->apm)) {
+            } elseif (!empty($response->payment_method->apm)) {
                 $transaction->paymentMethodType = PaymentMethodType::APM;
             }
         }
@@ -353,33 +367,60 @@ class GpApiMapping
             $summary->gatewayResponseMessage = isset($paymentMethod->message) ? $paymentMethod->message : null;
             $summary->entryMode = isset($paymentMethod->entry_mode) ? $paymentMethod->entry_mode : null;
             $summary->cardHolderName = isset($paymentMethod->name) ? $paymentMethod->name : '';
-            if (isset($response->payment_method->card)) {
-                $card = $response->payment_method->card;
+
+            /** map card details */
+            if (isset($paymentMethod->card)) {
+                $card = $paymentMethod->card;
                 $summary->aquirerReferenceNumber = isset($card->arn) ? $card->arn : null;
                 $summary->maskedCardNumber = isset($card->masked_number_first6last4) ?
                     $card->masked_number_first6last4 : null;
                 $summary->paymentType = PaymentMethodName::CARD;
-            } elseif (isset($response->payment_method->digital_wallet)) {
+            }
+            /** map digital wallet info */
+            if (isset($paymentMethod->digital_wallet)) {
                 $card = $response->payment_method->digital_wallet;
                 $summary->maskedCardNumber = isset($card->masked_token_first6last4) ?
                     $card->masked_token_first6last4 : null;
                 $summary->paymentType = PaymentMethodName::DIGITAL_WALLET;
-            } elseif (isset($response->payment_method->bank_transfer)) {
+            }
+            /** map ACH response info */
+            if (
+                isset($response->payment_method->bank_transfer) &&
+                !isset($response->payment_method->apm)
+            ) {
+                $summary->paymentType = PaymentMethodName::BANK_TRANSFER;
                 $bankTransfer = $response->payment_method->bank_transfer;
                 $summary->accountNumberLast4 = !empty($bankTransfer->masked_account_number_last4) ?
                     $bankTransfer->masked_account_number_last4 : null;
                 $summary->accountType = !empty($bankTransfer->account_type) ? $bankTransfer->account_type : null;
-                $summary->paymentType = PaymentMethodName::BANK_TRANSFER;
-            } elseif (isset($response->payment_method->apm)) {
-                $apm = $response->payment_method->apm;
-                $alternativePaymentResponse = new AlternativePaymentResponse();
-                $alternativePaymentResponse->redirectUrl = !empty($response->payment_method->redirect_url) ?
-                    $response->payment_method->redirect_url : null;
-                $alternativePaymentResponse->providerName = !empty($apm->provider) ? $apm->provider : null;
-                $alternativePaymentResponse->providerReference = !empty($apm->provider_reference) ? $apm->provider_reference : null;
-                $summary->alternativePaymentResponse = $alternativePaymentResponse;
-                $summary->paymentType = PaymentMethodName::APM;
-            } elseif (isset($response->payment_method->bnpl)) {
+            }
+            if (isset($response->payment_method->apm)) {
+                /** map Open Banking response info */
+                if ($response->payment_method->apm->provider == strtolower(PaymentProvider::OPEN_BANKING)) {
+                    $summary->paymentType = PaymentMethodName::BANK_PAYMENT;
+                    $bankPaymentResponse = new BankPaymentResponse();
+                    $bankPaymentResponse->iban = $response->payment_method->bank_transfer->iban ?? null;
+                    $bankPaymentResponse->accountNumber = $response->payment_method->bank_transfer->account_number ?? null;
+                    $bankPaymentResponse->accountName = $response->payment_method->bank_transfer->bank->name ?? null;
+                    $bankPaymentResponse->sortCode = $response->payment_method->bank_transfer->bank->code ?? null;
+                    $bankPaymentResponse->remittanceReferenceValue =
+                        $response->payment_method->bank_transfer->remittance_reference->value ?? null;
+                    $bankPaymentResponse->remittanceReferenceType =
+                        $response->payment_method->bank_transfer->remittance_reference->type ?? null;
+                    $summary->bankPaymentResponse = $bankPaymentResponse;
+                } else { /** map APMs (Paypal) response info */
+                    $apm = $response->payment_method->apm;
+                    $alternativePaymentResponse = new AlternativePaymentResponse();
+                    $alternativePaymentResponse->redirectUrl = !empty($response->payment_method->redirect_url) ?
+                        $response->payment_method->redirect_url : null;
+                    $alternativePaymentResponse->providerName = !empty($apm->provider) ? $apm->provider : null;
+                    $alternativePaymentResponse->providerReference = !empty($apm->provider_reference) ? $apm->provider_reference : null;
+                    $summary->alternativePaymentResponse = $alternativePaymentResponse;
+                    $summary->paymentType = PaymentMethodName::APM;
+                }
+            }
+            /** map BNPL response info */
+            if (isset($response->payment_method->bnpl)) {
                 $bnpl = $response->payment_method->bnpl;
                 $bnplResponse = new BNPLResponse();
                 $bnplResponse->providerName = $bnpl->provider ?? null;

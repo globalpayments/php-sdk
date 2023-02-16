@@ -700,7 +700,7 @@ class CreditCardNotPresentTest extends TestCase
         }
     }
 
-    public function testCreditVerifyx()
+    public function testCreditVerify()
     {
         $response = $this->card->verify()
             ->withCurrency($this->currency)

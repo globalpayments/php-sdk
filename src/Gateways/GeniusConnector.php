@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Gateways;
 
 use DOMDocument;
 use DOMElement;
+use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\TransactionBuilder;
 use GlobalPayments\Api\Entities\{BatchSummary, Transaction};
 use GlobalPayments\Api\Entities\Enums\{PaymentMethodType, TransactionModifier, TransactionType};
@@ -30,7 +31,12 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
     const CREDIT_SERVICE_END_POINT = 'RetailTransaction/v45/Credit.asmx';
     const GIFT_SERVICE_END_POINT = 'ExtensionServices/v46/Giftcard.asmx';
 
-    public function processAuthorization($builder)
+    public function supportsOpenBanking() : bool
+    {
+        return false;
+    }
+
+    public function processAuthorization(AuthorizationBuilder $builder)
     {
         $xml = new DOMDocument();
         $paymentMethod = $builder->paymentMethod;

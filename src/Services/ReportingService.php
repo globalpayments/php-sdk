@@ -2,13 +2,10 @@
 
 namespace GlobalPayments\Api\Services;
 
-use GlobalPayments\Api\Builders\BankPaymentBuilder;
-use GlobalPayments\Api\Builders\PayFacBuilder;
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use GlobalPayments\Api\Builders\UserReportBuilder;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
 
 class ReportingService
 {
@@ -33,14 +30,8 @@ class ReportingService
         return (new TransactionReportBuilder(ReportType::ACTIVITY));
     }
 
-    public static function transactionDetail($transactionId)
+    public static function transactionDetail(?string $transactionId)
     {
-        if (isset($transactionId->paymentMethodType)) {
-            return (new TransactionReportBuilder(ReportType::TRANSACTION_DETAIL))
-                ->withTransactionId($transactionId)
-                ->withPaymentType($transactionId->paymentMethodType);
-        }
-
         return (new TransactionReportBuilder(ReportType::TRANSACTION_DETAIL))
             ->withTransactionId($transactionId);
     }

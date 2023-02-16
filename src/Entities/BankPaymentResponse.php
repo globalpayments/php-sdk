@@ -43,4 +43,10 @@ class BankPaymentResponse
 
     /** @var string */
     public $iban;
+
+    /** @var string */
+    public $remittanceReferenceValue;
+
+    /** @var string */
+    public $remittanceReferenceType;
 }

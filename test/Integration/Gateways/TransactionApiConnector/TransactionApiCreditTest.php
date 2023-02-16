@@ -29,7 +29,7 @@ class TransactionApiCreditTest extends TestCase
     private $card;
     private $address;
     private $addressCa;
-    public function setup()
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->card = new CreditCardData();

@@ -34,7 +34,6 @@ class OpenBankingTest extends TestCase
         $config->sharedSecret = 'sharedsecret';
         $config->accountId = 'internet';
         $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
-        $config->enableBankPayment = true;
         $config->shaHashType = ShaHashType::SHA512;
 
         return $config;

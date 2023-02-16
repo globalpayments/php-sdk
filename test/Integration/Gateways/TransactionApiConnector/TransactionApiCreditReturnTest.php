@@ -27,7 +27,7 @@ class TransactionApiCreditReturnTest extends TestCase
 
     private $currency = "840";
 
-    public function setup()
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->card = new CreditCardData();

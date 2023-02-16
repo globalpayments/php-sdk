@@ -35,6 +35,9 @@ class GpEcomConfig extends GatewayConfig
     public $merchantNotificationUrl;
     public $secure3dVersion;
 
+    /**
+     * @deprecated  Property not used and it will be removed
+     */
     //Open banking service
     public $enableBankPayment = false;
 
@@ -85,7 +88,7 @@ class GpEcomConfig extends GatewayConfig
 
             $services->setSecure3dProvider(Secure3dVersion::TWO, $secure3d2);
         }
-        if ($this->enableBankPayment === true) {
+        if ($gateway->supportsOpenBanking()) {
             $openBanking = new OpenBankingProvider();
             $openBanking->merchantId = $this->merchantId;
             $openBanking->accountId = $this->accountId;

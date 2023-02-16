@@ -42,7 +42,12 @@ class SearchCriteria extends Enum
     const ONE_TIME = 'oneTime';
     const PAYMENT_ENTRY_MODE = 'paymentEntryMode';
     const PAYMENT_METHOD_KEY = 'paymentMethodKey';
+    const PAYMENT_METHOD_TYPE = 'paymentMethodType';
     const PAYMENT_TYPE = 'paymentType';
+    const PAYMENT_METHOD = 'paymentMethod';
+    const PAYMENT_METHOD_NAME = 'paymentMethodName';
+    const PAYMENT_METHOD_USAGE_MODE = 'paymentMethodUsageMode';
+    const PAYMENT_PROVIDER = 'paymentProvider';
     const REFERENCE_NUMBER = 'referenceNumber';
     const SETTLEMENT_AMOUNT = 'settlementAmount';
     const SCHEDULE_ID = 'scheduleId';
@@ -72,14 +77,11 @@ class SearchCriteria extends Enum
     const VERSION = 'version';
     const RESPONSE_CODE = 'responseCode';
     const HTTP_RESPONSE_CODE = 'httpResponseCode';
-    const PAYMENT_METHOD = 'paymentMethod';
-    const PAYMENT_METHOD_NAME = 'paymentMethodName';
     const RETURN_PII = 'returnPii';
     const RISK_ASSESSMENT_MODE = 'riskAssessmentMode';
     const RISK_ASSESSMENT_RESULT = 'riskAssessmentResult';
     const RISK_ASSESSMENT_REASON_CODE = 'riskAssessmentReasonCode';
     const PAYLINK_STATUS = 'payLinkStatus';
-    const PAYMENT_METHOD_USAGE_MODE = 'paymentMethodUsageMode';
     const DESCRIPTION = 'description';
     const EXPIRATION_DATE = 'expirationDate';
 }

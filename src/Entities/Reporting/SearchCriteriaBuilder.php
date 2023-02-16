@@ -12,6 +12,7 @@ use GlobalPayments\Api\Entities\Enums\FraudFilterResult;
 use GlobalPayments\Api\Entities\Enums\PayLinkStatus;
 use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
+use GlobalPayments\Api\Entities\Enums\PaymentProvider;
 use GlobalPayments\Api\Entities\Enums\PaymentType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\ReasonCode;
@@ -310,21 +311,37 @@ class SearchCriteriaBuilder
      * @var PaymentEntryMode
      */
     public $paymentEntryMode;
-    
-    /**
-     * @var string
-     */
-    public $paymentMethodKey;
 
     /**
      * @var PaymentType
      */
     public $paymentType;
-    
+
     /**
-     * @var array<PaymentMethodType>
+     * @var PaymentMethodName
      */
-    public $paymentTypes;
+    public $paymentMethodName;
+
+    /**
+     * @var PaymentProvider
+     */
+    public $paymentProvider;
+
+    /**
+     * @var IPaymentMethod
+     */
+    public $paymentMethod;
+
+    /** @var PaymentMethodUsageMode */
+    public $paymentMethodUsageMode;
+
+    /** @var string */
+    public $paymentMethodKey;
+
+    /**
+     * @var PaymentMethodType
+     */
+    public $paymentMethodType;
     
     /**
      * @var string
@@ -472,24 +489,11 @@ class SearchCriteriaBuilder
     public $httpResponseCode;
 
     /**
-     * @var PaymentMethodName
-     */
-    public $paymentMethodName;
-
-    /**
-     * @var IPaymentMethod
-     */
-    public $paymentMethod;
-
-    /**
      * This is the PayLink id
      *
      * @var string
      */
     public $payLinkId;
-
-    /** @var PaymentMethodUsageMode */
-    public $paymentMethodUsageMode;
 
     /** @var string */
     public $description;

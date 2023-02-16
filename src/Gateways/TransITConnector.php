@@ -41,6 +41,11 @@ class TransITConnector extends XmlGateway implements IPaymentGateway
     
     public $supportsHostedPayments = false;
 
+    public function supportsOpenBanking() : bool
+    {
+        return false;
+    }
+
     public function processAuthorization(AuthorizationBuilder $builder)
     {
         if (empty($this->transactionKey) && empty($this->manifest)) {

@@ -6,6 +6,7 @@ use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Entities\CustomerDocument;
 use GlobalPayments\Api\Entities\EncryptionData;
+use GlobalPayments\Api\Entities\Enums\BankPaymentType;
 use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\DigitalWalletTokenFormat;
@@ -16,6 +17,7 @@ use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
 use GlobalPayments\Api\Entities\Enums\CaptureMode;
 use GlobalPayments\Api\Entities\Enums\PayLinkStatus;
 use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
+use GlobalPayments\Api\Entities\Enums\PaymentProvider;
 use GlobalPayments\Api\Entities\Enums\PaymentType;
 use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
@@ -28,7 +30,9 @@ use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Entities\PayLinkData;
 use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Entities\Product;
+use GlobalPayments\Api\Gateways\OpenBankingProvider;
 use GlobalPayments\Api\Mapping\EnumMapping;
+use GlobalPayments\Api\PaymentMethods\BankPayment;
 use GlobalPayments\Api\PaymentMethods\BNPL;
 use GlobalPayments\Api\PaymentMethods\Credit;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
@@ -223,12 +227,12 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         }
         if ($builder->paymentMethod instanceof AlternativePaymentMethod || $builder->paymentMethod instanceof BNPL) {
             $this->setOrderInformation($builder, $requestBody);
-
-            $requestBody['notifications'] = [
-                'return_url' => $builder->paymentMethod->returnUrl,
-                'status_url' => $builder->paymentMethod->statusUpdateUrl,
-                'cancel_url' => $builder->paymentMethod->cancelUrl
-            ];
+        }
+        if ($builder->paymentMethod instanceof AlternativePaymentMethod ||
+            $builder->paymentMethod instanceof BNPL ||
+            $builder->paymentMethod instanceof BankPayment
+        ) {
+            $this->setNotificationUrls($requestBody);
         }
         if (!empty($builder->storedCredential)) {
             $initiator = EnumMapping::mapStoredCredentialInitiator(GatewayProvider::GP_API, $builder->storedCredential->initiator);
@@ -373,7 +377,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
      */
     private function createPaymentMethodParam($builder, $config)
     {
-        /** @var CreditCardData|CreditTrackData|DebitTrackData|ECheck|AlternativePaymentMethod|BNPL $paymentMethodContainer */
+        /** @var CreditCardData|CreditTrackData|DebitTrackData|ECheck|AlternativePaymentMethod|BNPL|BankPayment $paymentMethodContainer */
         $paymentMethodContainer = $builder->paymentMethod;
         $paymentMethod = new PaymentMethod();
         $paymentMethod->entry_mode = $this->getEntryMode($builder, $config->channel);
@@ -452,7 +456,27 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     'address_override_mode' => !empty($paymentMethodContainer->addressOverrideMode) ?
                         $paymentMethodContainer->addressOverrideMode : null
                 ];
-
+                return $paymentMethod;
+            case BankPayment::class:
+                $paymentMethod->apm = [
+                    'provider' => PaymentProvider::OPEN_BANKING,
+                    'countries' => $paymentMethodContainer->countries ?? [],
+                ];
+                $bankPaymentType = !empty($paymentMethodContainer->bankPaymentType) ?
+                    $paymentMethodContainer->bankPaymentType : OpenBankingProvider::getBankPaymentType($builder->currency);
+                $paymentMethod->bank_transfer = [
+                    'account_number' => $bankPaymentType == BankPaymentType::FASTERPAYMENTS ?
+                        $paymentMethodContainer->accountNumber : '',
+                    'iban' => $bankPaymentType == BankPaymentType::SEPA ? $paymentMethodContainer->iban : '',
+                    'bank' => [
+                        'code' => $paymentMethodContainer->sortCode,
+                        'name' => $paymentMethodContainer->accountName
+                    ],
+                    'remittance_reference' => [
+                        'type' => $builder->remittanceReferenceType,
+                        'value' => $builder->remittanceReferenceValue
+                    ]
+                ];
                 return $paymentMethod;
             case BNPL::class:
                 if (!empty($builder->customerData->firstName) && !empty($builder->customerData->lastName)) {
@@ -626,6 +650,15 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         }
 
         return CaptureMode::AUTO;
+    }
+
+    private function setNotificationUrls(&$requestBody)
+    {
+        $requestBody['notifications'] = [
+            'return_url' => $this->builder->paymentMethod->returnUrl ?? null,
+            'status_url' => $this->builder->paymentMethod->statusUpdateUrl ?? null,
+            'cancel_url' => $this->builder->paymentMethod->cancelUrl ?? null
+        ];
     }
 
     private function setOrderInformation($builder, &$requestBody)

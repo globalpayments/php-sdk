@@ -2,9 +2,9 @@
 
 namespace GlobalPayments\Api\Gateways;
 
-use GlobalPayments\Api\Builders\BankPaymentBuilder;
+use GlobalPayments\Api\Builders\AuthorizationBuilder;
 
 interface IOpenBankingProvider
 {
-    public function processOpenBanking(BankPaymentBuilder $builder);
+    public function processOpenBanking(AuthorizationBuilder $builder);
 }

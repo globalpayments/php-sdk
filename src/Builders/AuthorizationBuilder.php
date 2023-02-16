@@ -12,19 +12,18 @@ use GlobalPayments\Api\Entities\{
     HostedPaymentData,
     PhoneNumber,
     StoredCredential,
-    Transaction
-};
+    OrderDetails,
+    DccRateData,
+    DecisionManager,
+    Transaction};
 use GlobalPayments\Api\Entities\Enums\{
     AddressType,
     AliasAction,
     BNPLShippingMethod,
-    DccRateData,
-    DecisionManager,
     EmvFallbackCondition,
     EmvLastChipRead,
     InquiryType,
     FraudFilterMode,
-    OrderDetails,
     PaymentMethodUsageMode,
     PhoneNumberType,
     RemittanceReferenceType,
@@ -33,12 +32,7 @@ use GlobalPayments\Api\Entities\Enums\{
     TransactionModifier,
     TransactionType
 };
-use GlobalPayments\Api\PaymentMethods\{
-    BNPL,
-    EBTCardData,
-    GiftCard,
-    TransactionReference
-};
+use GlobalPayments\Api\PaymentMethods\{BankPayment, BNPL, EBTCardData, GiftCard, TransactionReference};
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 
@@ -545,6 +539,13 @@ class AuthorizationBuilder extends TransactionBuilder
         parent::execute($configName);
 
         $client = ServicesContainer::instance()->getClient($configName);
+        if ($client->supportsOpenBanking() && $this->paymentMethod instanceof BankPayment) {
+            $obClient = ServicesContainer::instance()->getOpenBanking($configName);
+            if (get_class($obClient) != get_class($client)) {
+                return $obClient->processOpenBanking($this);
+            }
+        }
+
         return $client->processAuthorization($this);
     }
 

@@ -141,6 +141,11 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
      */
     public $sdkNameVersion;
 
+    public function supportsOpenBanking() : bool
+    {
+        return false;
+    }
+
     /**
      * {@inheritdoc}
      *

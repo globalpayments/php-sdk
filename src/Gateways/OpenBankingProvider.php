@@ -2,7 +2,7 @@
 
 namespace GlobalPayments\Api\Gateways;
 
-use GlobalPayments\Api\Builders\BankPaymentBuilder;
+use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use GlobalPayments\Api\Entities\Enums\BankPaymentType;
 use GlobalPayments\Api\Entities\Enums\ReportType;
@@ -44,7 +44,7 @@ class OpenBankingProvider extends RestGateway implements IOpenBankingProvider
         $this->headers['Accept'] = 'application/json';
     }
 
-    public function processOpenBanking(BankPaymentBuilder $builder)
+    public function processOpenBanking(AuthorizationBuilder $builder)
     {
         $httpVerb = $endpoint = $payload = null;
         $timestamp = (new \DateTime())->format("YmdHis");

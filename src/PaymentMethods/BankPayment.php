@@ -3,14 +3,14 @@
 namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
-use GlobalPayments\Api\Builders\BankPaymentBuilder;
 use GlobalPayments\Api\Entities\Enums\BankPaymentType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\PaymentMethods\Interfaces\IChargable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 
-class BankPayment implements IPaymentMethod
+class BankPayment implements IPaymentMethod, IChargable
 {
     /**
      * Merchant/Individual Name.
@@ -52,16 +52,19 @@ class BankPayment implements IPaymentMethod
     /** @var BankPaymentType */
     public $bankPaymentType;
 
+    /** @var array */
+    public $countries;
+
     /**
      * This is a mandatory request used to initiate an Open Banking transaction,
      *
-     * @param string|float $amount Amount to authorize
+     * @param string|float|null $amount Amount to charge
      *
-     * @return BankPaymentBuilder
+     * @return AuthorizationBuilder
      */
-    public function charge($amount)
+    public function charge($amount = null)
     {
-        return (new BankPaymentBuilder(TransactionType::SALE, $this))
+        return (new AuthorizationBuilder(TransactionType::SALE, $this))
             ->withModifier(TransactionModifier::BANK_PAYMENT)
             ->withAmount($amount);
     }
