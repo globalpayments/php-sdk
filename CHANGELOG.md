@@ -6,6 +6,13 @@
 
 ## Latest Version
 #### Enhancements:
+- GP-API: Add account_id on all requests
+
+#### Bug Fixes:
+- PAX A35: Fixed device-response handling
+
+## v6.1.3 (02/16/2023)
+#### Enhancements:
 - GP-API: Create open banking transactions
 - GPI Transactions: Reporting tests refacto
 

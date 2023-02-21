@@ -2,13 +2,10 @@
 
 namespace GlobalPayments\Api\Terminals\PAX\Interfaces;
 
-use GlobalPayments\Api\Terminals\Interfaces\IDeviceCommInterface;
-use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
-use GlobalPayments\Api\Terminals\Enums\ControlCodes;
-use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxMessageId;
-use GlobalPayments\Api\Terminals\TerminalUtils;
-use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
+use GlobalPayments\Api\Terminals\{ConnectionConfig, TerminalUtils};
+use GlobalPayments\Api\Terminals\Enums\{ControlCodes, ConnectionModes};
+use GlobalPayments\Api\Terminals\Interfaces\IDeviceCommInterface;
 
 /*
  * TCP interface for the device connection and parse response
@@ -204,6 +201,9 @@ class PaxTcpInterface implements IDeviceCommInterface
         do {
             $part = ($readString === true) ? fgets($this->tcpConnection) : fgetc($this->tcpConnection);
             if (!empty($part)) {
+                if ($readString) {
+                    return substr($part, 0, strpos($part, chr(0x03)) + 2);
+                }
                 return $part;
             }
             $timeDiff = time() - $startTime;

@@ -52,6 +52,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $verb = 'GET';
                 $this->addBasicParams($queryParams, $builder);
                 $queryParams['account_name'] = $config->accessTokenInfo->dataAccountName;
+                $queryParams['account_id'] = $config->accessTokenInfo->dataAccountID;
                 $queryParams['order_by'] = $builder->depositOrderBy;
                 $queryParams['order'] = $builder->order;
                 $queryParams['amount'] = StringUtils::toNumeric($builder->searchBuilder->amount);
@@ -98,6 +99,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $verb = 'GET';
                 $this->addBasicParams($queryParams, $builder);
                 $queryParams['account_name'] = $config->accessTokenInfo->dataAccountName;
+                $queryParams['account_id'] = $config->accessTokenInfo->dataAccountID;
                 $queryParams['deposit_status'] = $builder->searchBuilder->depositStatus;
                 $queryParams['arn'] = $builder->searchBuilder->aquirerReferenceNumber;
                 $queryParams['deposit_id'] = $builder->searchBuilder->depositId;
@@ -137,6 +139,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $verb = 'GET';
                 $this->addBasicParams($queryParams, $builder);
                 $queryParams['account_name'] = $config->accessTokenInfo->dataAccountName;
+                $queryParams['account_id'] = $config->accessTokenInfo->dataAccountID;
                 $queryParams = array_merge($queryParams, $this->getDisputesParams($builder));
                 break;
             case ReportType::FIND_STORED_PAYMENT_METHODS_PAGED:
@@ -151,6 +154,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                     ];
                     $payload = [
                         'account_name' => $config->accessTokenInfo->tokenizationAccountName,
+                        'account_id' => $config->accessTokenInfo->tokenizationAccountID,
                         'reference' => $builder->searchBuilder->referenceNumber,
                         'card' => !empty($card) ? $card : null
                     ];

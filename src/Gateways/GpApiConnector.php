@@ -300,21 +300,36 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         if (empty($accessTokenInfo->accessToken)) {
             $accessTokenInfo->accessToken = $response->getToken();
         }
-        if (empty($accessTokenInfo->dataAccountName)) {
-            $accessTokenInfo->dataAccountName = $response->getDataAccountName();
+
+        if (empty($accessTokenInfo->dataAccountID)) {
+            $accessTokenInfo->dataAccountID = $response->getDataAccountID();
         }
-        if (empty($accessTokenInfo->tokenizationAccountName)) {
-            $accessTokenInfo->tokenizationAccountName = $response->getTokenizationAccountName();
+        if (
+            empty($accessTokenInfo->tokenizationAccountID) &&
+            empty($accessTokenInfo->tokenizationAccountName)
+        ) {
+            $accessTokenInfo->tokenizationAccountID = $response->getTokenizationAccountID();
         }
-        if (empty($accessTokenInfo->transactionProcessingAccountName)) {
-            $accessTokenInfo->transactionProcessingAccountName = $response->getTransactionProcessingAccountName();
+
+        if (
+            empty($accessTokenInfo->transactionProcessingAccountID) &&
+            empty($accessTokenInfo->transactionProcessingAccountName)
+        ) {
+            $accessTokenInfo->transactionProcessingAccountID = $response->getTransactionProcessingAccountID();
         }
-        if (empty($accessTokenInfo->disputeManagementAccountName)) {
-            $accessTokenInfo->disputeManagementAccountName = $response->getDisputeManagementAccountName();
+        if (
+            empty($accessTokenInfo->disputeManagementAccountID) &&
+            empty($accessTokenInfo->disputeManagementAccountName)
+        ) {
+            $accessTokenInfo->disputeManagementAccountID = $response->getDisputeManagementAccountID();
         }
-        if (empty($accessTokenInfo->riskAssessmentAccountName)) {
-            $accessTokenInfo->riskAssessmentAccountName = $response->getRiskAssessmentAccountName();
+        if (
+            empty($accessTokenInfo->riskAssessmentAccountID) &&
+            empty($accessTokenInfo->riskAssessmentAccountName)
+        ) {
+            $accessTokenInfo->riskAssessmentAccountID = $response->getRiskAssessmentAccountID();
         }
+
         $this->gpApiConfig->accessTokenInfo = $accessTokenInfo;
     }
 

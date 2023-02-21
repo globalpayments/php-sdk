@@ -69,6 +69,7 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
                 $verb = 'POST';
                 $endpoint = GpApiRequest::RISK_ASSESSMENTS;
                 $requestData['account_name'] =  $config->accessTokenInfo->riskAssessmentAccountName;
+                $requestData['account_id'] =  $config->accessTokenInfo->riskAssessmentAccountID;
                 $requestData['reference'] = !empty($builder->getReferenceNumber()) ?
                     $builder->getReferenceNumber() : GenerationUtils::getGuid();
                 $requestData['source'] = $builder->getAuthenticationSource();
@@ -102,6 +103,7 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
     {
         $threeDS = [];
         $threeDS['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
+        $threeDS['account_id'] =  $config->accessTokenInfo->transactionProcessingAccountID;
         $threeDS['channel'] = $config->channel;
         $threeDS['country'] = $config->country;
         $threeDS['reference'] = !empty($builder->getReferenceNumber()) ?

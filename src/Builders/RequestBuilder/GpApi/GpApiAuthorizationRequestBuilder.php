@@ -93,6 +93,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $verb = 'POST';
                     $requestData = [];
                     $requestData['account_name'] = $config->accessTokenInfo->tokenizationAccountName;
+                    $requestData['account_id'] = $config->accessTokenInfo->tokenizationAccountID;
                     $requestData['name'] = $builder->description ? $builder->description : "";
                     $requestData['reference'] = $builder->clientTransactionId ?
                         $builder->clientTransactionId : GenerationUtils::generateOrderId();
@@ -117,6 +118,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                 $endpoint = GpApiRequest::DCC_ENDPOINT;
                 $verb = 'POST';
                 $requestData['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
+                $requestData['account_id'] = $config->accessTokenInfo->transactionProcessingAccountID;
                 $requestData['channel'] = $config->channel;
                 $requestData['amount'] = StringUtils::toNumeric($builder->amount);
                 $requestData['currency'] = $builder->currency;
@@ -132,6 +134,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $endpoint = GpApiRequest::PAYLINK_ENDPOINT;
                     $verb = 'POST';
                     $requestData['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
+                    $requestData['account_id'] = $config->accessTokenInfo->transactionProcessingAccountID;
                     $requestData['type'] = $payLink->type;
                     $requestData['usage_mode'] = $payLink->usageMode;
                     $requestData['usage_limit'] = (string) $payLink->usageLimit;
@@ -170,6 +173,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
     {
         $requestBody = [];
         $requestBody['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
+        $requestBody['account_id'] = $config->accessTokenInfo->transactionProcessingAccountID;
         $requestBody['channel'] = $config->channel;
         $requestBody['reference'] = !empty($builder->clientTransactionId) ?
             $builder->clientTransactionId : GenerationUtils::getGuid();
@@ -187,6 +191,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
 
         $requestBody = [];
         $requestBody['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
+        $requestBody['account_id'] = $config->accessTokenInfo->transactionProcessingAccountID;
         $requestBody['channel'] = $config->channel;
         $requestBody['country'] = $config->country;
         $requestBody['type'] = ($builder->transactionType == TransactionType::REFUND ?

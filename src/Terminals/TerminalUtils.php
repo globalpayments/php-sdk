@@ -76,10 +76,10 @@ class TerminalUtils
     
     public static function calculateLRC($buffer)
     {
-        if (! empty($buffer)) {
+        if (!empty($buffer)) {
             $length = strlen($buffer);
             if ($buffer[$length - 1] != ControlCodes::ETX) {
-                $length --;
+                $length--;
             }
 
             $lrc = 0;
