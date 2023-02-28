@@ -5,6 +5,10 @@
 # Changelog
 
 ## Latest Version
+#### Bug Fixes:
+- TSYS/Merchantware: correction to service endpoints
+
+## v6.1.4 (02/21/2023)
 #### Enhancements:
 - GP-API: Add account_id on all requests
 
@@ -14,7 +18,7 @@
 ## v6.1.3 (02/16/2023)
 #### Enhancements:
 - GP-API: Create open banking transactions
-- GPI Transactions: Reporting tests refacto
+- GPI Transactions: Reporting tests refactor
 
 ## v6.1.2 (02/13/2023)
 #### Enhancements:
