@@ -2359,8 +2359,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 $walletData->appendChild($xml->createElement('PaymentSource', $builder->paymentMethod->paymentSource));
             }
             if (!empty($builder->paymentMethod->token)) {
-                $token = $this->toFormatToken($builder->paymentMethod->token);
-                $walletData->appendChild($xml->createElement('DigitalPaymentToken', $token));
+                $token = $builder->paymentMethod->token;
+                $dpt = $walletData->appendChild($xml->createElement('DigitalPaymentToken'));
+                $dpt->appendChild($xml->createCDATASection($token));
                 $block1->removeChild($cardData);
             }
 

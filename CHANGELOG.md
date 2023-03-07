@@ -6,6 +6,14 @@
 
 ## Latest Version
 #### Bug Fixes:
+- Portico/Heartland: fix 'withStartDate()' reporting method
+
+#### Enhancements:
+- Portico/Heartland: improvements to GooglePay and ApplePay token handling
+- Portico/Heartland: simple GooglePay example added
+
+## v6.1.5 (02/28/2023)
+#### Bug Fixes:
 - TSYS/Merchantware: correction to service endpoints
 
 ## v6.1.4 (02/21/2023)

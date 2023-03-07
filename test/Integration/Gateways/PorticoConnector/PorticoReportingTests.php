@@ -53,7 +53,7 @@ class PorticoReportingTests extends TestCase
         return $config;
     }
 
-    public function testReportActivity()
+    public function testFindTransactions()
     {
         date_default_timezone_set("UTC");
         $dateFormat = 'Y-m-d\TH:i:s.00\Z';
@@ -62,7 +62,7 @@ class PorticoReportingTests extends TestCase
         $dateMinus10Utc = gmdate($dateFormat, $dateMinus15days->Format('U'));
         $nowUtc = gmdate($dateFormat);
              
-        $response = $this->reportingService->activity()
+        $response = $this->reportingService->findTransactions()
             ->withStartDate($dateMinus10Utc)
             ->withEndDate($nowUtc)
             ->execute();
@@ -79,7 +79,7 @@ class PorticoReportingTests extends TestCase
         $dateMinus10Utc = gmdate($dateFormat, $dateMinus5days->Format('U'));
         $nowUtc = gmdate($dateFormat);
              
-        $response = $this->reportingService->activity()
+        $response = $this->reportingService->findTransactions()
             ->withStartDate($dateMinus10Utc)
             ->withEndDate($nowUtc)
             ->execute();

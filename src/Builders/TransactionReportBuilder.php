@@ -182,6 +182,17 @@ class TransactionReportBuilder extends ReportBuilder
     }
 
     /**
+     * 
+     * @param mixed $value 
+     * @return $this 
+     */
+    public function withStartDate($value)
+    {
+        $this->searchBuilder->startDate = $value;
+        return $this;
+    }
+
+    /**
      * Sets the payment type.
      *
      * @param string $value The payemtn type
