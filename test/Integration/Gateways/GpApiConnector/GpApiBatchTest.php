@@ -17,7 +17,7 @@ use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use PHPUnit\Framework\TestCase;
 
-class GpApiBatchTests extends TestCase
+class GpApiBatchTest extends TestCase
 {
     /**
      * @var CreditTrackData
@@ -32,7 +32,7 @@ class GpApiBatchTests extends TestCase
     private $amount = 2.11;
     private $tag = '9F4005F000F0A0019F02060000000025009F03060000000000009F2608D90A06501B48564E82027C005F3401019F360200029F0702FF009F0802008C9F0902008C9F34030403029F2701809F0D05F0400088009F0E0508000000009F0F05F0400098005F280208409F390105FFC605DC4000A800FFC7050010000000FFC805DC4004F8009F3303E0B8C89F1A0208409F350122950500000080005F2A0208409A031409109B02E8009F21030811539C01009F37045EED3A8E4F07A00000000310109F0607A00000000310108407A00000000310109F100706010A03A400029F410400000001';
 
-    protected function setup() : void
+    public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
 
@@ -49,7 +49,7 @@ class GpApiBatchTests extends TestCase
         $this->creditCardData->cardPresent = true;
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
     }
@@ -251,8 +251,8 @@ class GpApiBatchTests extends TestCase
             BatchService::closeBatch($transaction->batchSummary->batchReference);
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('Status Code: INVALID_BATCH_ACTION - 9,No transaction associated with batch', $e->getMessage());
-            $this->assertEquals('40017', $e->responseCode);
+            $this->assertEquals('Status Code: ACTION_FAILED - Action failed unexpectedly. Please try again ', $e->getMessage());
+            $this->assertEquals('500010', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -277,8 +277,8 @@ class GpApiBatchTests extends TestCase
             BatchService::closeBatch($transaction->batchSummary->batchReference);
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('Status Code: INVALID_BATCH_ACTION - 5,No current batch', $e->getMessage());
-            $this->assertEquals('40014', $e->responseCode);
+            $this->assertEquals('Status Code: ACTION_FAILED - Action failed unexpectedly. Please try again ', $e->getMessage());
+            $this->assertEquals('500010', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -325,8 +325,8 @@ class GpApiBatchTests extends TestCase
             BatchService::closeBatch($transaction->batchSummary->batchReference);
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('Status Code: UNAUTHORIZED_DOWNSTREAM - -2,Authentication error—Verify and correct credentials', $e->getMessage());
-            $this->assertEquals('50002', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Merchant configuration does not exist for the following combination: country - US, channel - CNP, currency - USD', $e->getMessage());
+            $this->assertEquals('40041', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
         }

@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector;
+namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Customer;
@@ -39,7 +39,7 @@ class GpApiBNPLTest extends TestCase
     private $shippingAddress;
     private $billingAddress;
 
-    public function setup()
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
 
@@ -602,9 +602,9 @@ class GpApiBNPLTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('50002', $e->responseCode);
             $this->assertEquals("Status Code: SYSTEM_ERROR - Bad Gateway",
                 $e->getMessage());
+            $this->assertEquals('50002', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -827,9 +827,9 @@ class GpApiBNPLTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('50002', $e->responseCode);
             $this->assertEquals("Status Code: SYSTEM_ERROR - Bad Gateway",
                 $e->getMessage());
+            $this->assertEquals('50002', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
         }

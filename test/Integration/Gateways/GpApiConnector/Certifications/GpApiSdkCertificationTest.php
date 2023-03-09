@@ -1,6 +1,6 @@
 <?php
 
-namespace Certifications;
+namespace Gateways\GpApiConnector\Certifications;
 
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\CvnPresenceIndicator;
@@ -34,7 +34,7 @@ class GpApiSdkCertificationTest extends TestCase
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         ServicesContainer::removeConfiguration();
     }

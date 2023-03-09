@@ -1,5 +1,7 @@
 <?php
 
+namespace Gateways\GpApiConnector;
+
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;

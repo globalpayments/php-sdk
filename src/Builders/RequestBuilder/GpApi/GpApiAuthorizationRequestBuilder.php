@@ -105,7 +105,12 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $builderCard = $builder->paymentMethod;
                     $card->number = $builderCard->number;
                     $card->expiry_month = (string) $builderCard->expMonth;
-                    $card->expiry_year = substr(str_pad((string) $builderCard->expYear, 4, '0', STR_PAD_LEFT), 2, 2);
+                    $card->expiry_year = !empty($builderCard->expYear) ?
+                        substr(
+                            str_pad((string) $builderCard->expYear, 4, '0', STR_PAD_LEFT),
+                            2,
+                            2
+                        ) : null;
                     $card->cvv = $builderCard->cvn;
                     $requestData['card'] = $card;
                 } else {
@@ -527,7 +532,12 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                         $paymentMethodContainer->token : null;
                     $digitalWallet['token_format'] = DigitalWalletTokenFormat::CARD_NUMBER;
                     $digitalWallet['expiry_month'] = (string) $paymentMethodContainer->expMonth;
-                    $digitalWallet['expiry_year'] = substr(str_pad($paymentMethodContainer->expYear, 4, '0', STR_PAD_LEFT), 2, 2);
+                    $digitalWallet['expiry_year'] = !empty($paymentMethodContainer->expYear) ?
+                        substr(
+                            str_pad($paymentMethodContainer->expYear, 4, '0', STR_PAD_LEFT),
+                            2,
+                            2
+                        ) : null;
                     $digitalWallet['cryptogram'] = $paymentMethodContainer->cryptogram;
                     $digitalWallet['eci'] = !empty($paymentMethodContainer->eci) ?
                         $paymentMethodContainer->eci : $this->getEciCode($paymentMethodContainer);

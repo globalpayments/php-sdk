@@ -22,7 +22,7 @@ class ReportingActionsTest extends TestCase
     /** @var ActionSummary */
     private $actionSummary;
 
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->startDate = (new DateTime())->modify('-30 days')->setTime(0, 0, 0);
@@ -40,7 +40,7 @@ class ReportingActionsTest extends TestCase
         }
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector;
+namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\DepositSortProperty;
@@ -37,7 +37,7 @@ class ReportingDepositsTest extends TestCase
         }
     }
 
-    static function tearDownAfterClass()
+    static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
     }

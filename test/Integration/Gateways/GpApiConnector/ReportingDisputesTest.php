@@ -27,7 +27,7 @@ class ReportingDisputesTest extends TestCase
     private $startDate;
     private $endDate;
 
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
@@ -39,7 +39,7 @@ class ReportingDisputesTest extends TestCase
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
     }
@@ -74,7 +74,7 @@ class ReportingDisputesTest extends TestCase
     public function testReportFindDisputes_By_ARN()
     {
         $this->testReportDisputeDetail();
-        $disputes = ReportingService::findDisputesPaged(1,10)
+        $disputes = ReportingService::findDisputesPaged(1, 10)
             ->where(SearchCriteria::AQUIRER_REFERENCE_NUMBER, $this->arn)
             ->execute();
 
@@ -854,7 +854,7 @@ class ReportingDisputesTest extends TestCase
         $depositReference = 'DEP_2342423443';
         $disputes = ReportingService::findSettlementDisputesPaged(1, 10)
             ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
-            ->andWith(DataServiceCriteria::DEPOSIT_REFERENCE,  $depositReference)
+            ->andWith(DataServiceCriteria::DEPOSIT_REFERENCE, $depositReference)
             ->execute();
 
         $this->assertNotNull($disputes);

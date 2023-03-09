@@ -6,6 +6,11 @@
 
 ## Latest Version
 #### Bug Fixes:
+- GP-API: fix issue on PHP8.1 with strtoupper and str_pad
+- GP-API: fix unit tests on PHP8.1
+
+## v6.1.6 (03/07/2023)
+#### Bug Fixes:
 - Portico/Heartland: fix 'withStartDate()' reporting method
 
 #### Enhancements:

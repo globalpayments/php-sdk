@@ -33,7 +33,7 @@ class GpApiOpenBankingTest extends TestCase
         $this->endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
     }

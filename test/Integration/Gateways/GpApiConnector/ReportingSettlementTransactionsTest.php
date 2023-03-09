@@ -22,12 +22,12 @@ use ReflectionClass;
 
 class ReportingSettlementTransactionsTest extends TestCase
 {
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
     }
@@ -58,7 +58,9 @@ class ReportingSettlementTransactionsTest extends TestCase
             ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::ASC)
             ->execute();
         $transactionList = $response->result;
-        uasort($transactionList, function($a, $b) {return $a->transactionDate->format('U') - $b->transactionDate->format('U');});
+        uasort($transactionList, function ($a, $b) {
+            return $a->transactionDate->format('U') - $b->transactionDate->format('U');
+        });
         foreach ($response->result as $index => $tr) {
             $this->assertSame($transactionList[$index], $tr);
         }
@@ -73,7 +75,9 @@ class ReportingSettlementTransactionsTest extends TestCase
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
         $transactionList = $response->result;
-        uasort($transactionList, function($a, $b) {return strcmp($a->transactionStatus, $b->transactionStatus);});
+        uasort($transactionList, function ($a, $b) {
+            return strcmp($a->transactionStatus, $b->transactionStatus);
+        });
         /** @var TransactionSummary $tr */
         foreach ($response->result as $index => $tr) {
             $this->assertSame($transactionList[$index], $tr);
@@ -93,7 +97,9 @@ class ReportingSettlementTransactionsTest extends TestCase
         $this->assertNotEmpty($response->result);
 
         $transactionList = $response->result;
-        uasort($transactionList, function($a, $b) {return strcmp($a->transactionType, $b->transactionType);});
+        uasort($transactionList, function ($a, $b) {
+            return strcmp($a->transactionType, $b->transactionType);
+        });
         /** @var TransactionSummary $tr */
         foreach ($response->result as $index => $tr) {
             $this->assertSame($transactionList[$index], $tr);
@@ -113,7 +119,9 @@ class ReportingSettlementTransactionsTest extends TestCase
         $this->assertNotEmpty($response->result);
 
         $transactionList = $response->result;
-        uasort($transactionList, function($a, $b) {return strcmp($a->depositReference, $b->depositReference);});
+        uasort($transactionList, function ($a, $b) {
+            return strcmp($a->depositReference, $b->depositReference);
+        });
         /** @var TransactionSummary $tr */
         foreach ($response->result as $index => $tr) {
             $this->assertSame($transactionList[$index], $tr);

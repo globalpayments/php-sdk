@@ -45,7 +45,7 @@ class DccCardPresentTest extends TestCase
         $this->card->cardPresent = true;
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
     }

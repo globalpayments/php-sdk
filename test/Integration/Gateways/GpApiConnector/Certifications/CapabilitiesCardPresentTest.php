@@ -1,6 +1,6 @@
 <?php
 
-namespace Certifications;
+namespace Gateways\GpApiConnector\Certifications;
 
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
@@ -33,7 +33,7 @@ class CapabilitiesCardPresentTest extends TestCase
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         ServicesContainer::removeConfiguration();
     }

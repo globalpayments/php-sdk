@@ -1,8 +1,11 @@
 <?php
 
+namespace Gateways\GpApiConnector;
+
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Mapping\GpApiMapping;
 use \GlobalPayments\Api\Utils\StringUtils;
+use stdClass;
 
 class MappingTest extends TestCase
 {

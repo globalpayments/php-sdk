@@ -19,7 +19,7 @@ class DebitCardTest extends TestCase
         ServicesContainer::configureService($this->setUpConfig());
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
     }

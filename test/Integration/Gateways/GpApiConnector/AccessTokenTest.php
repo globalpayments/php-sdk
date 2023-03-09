@@ -26,7 +26,7 @@ class AccessTokenTest extends TestCase
         $this->setUpConfig();
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
     }
@@ -39,7 +39,7 @@ class AccessTokenTest extends TestCase
 
     public function testGenerateAccessToken_WithPermissions()
     {
-        $this->config->permissions = ["PMT_POST_Create", "TRN_POST_Authorize", "DIS_POST_Accept", "TRN_GET_List_Funded"];
+        $this->config->permissions = ["PMT_POST_Create", "TRN_POST_Authorize", "DIS_POST_Accept", "TRN_GET_List_Funded", "RAS_POST_Create"];
 
         $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
         $this->assertAccessTokenResponse($accessTokenInfo);
@@ -196,6 +196,31 @@ class AccessTokenTest extends TestCase
         }
     }
 
+    public function testUseOnlyAccessToken()
+    {
+        $config = $this->setUpConfig();
+        $accessTokenInfo = GpApiService::generateTransactionKey($config);
+
+        $newConfig = $this->setUpConfig();
+        $newConfig->accessTokenInfo = $accessTokenInfo;
+
+        ServicesContainer::configureService($newConfig, "configName");
+
+        $card = new CreditCardData();
+        $card->number = "4263970000005262";
+        $card->expMonth = "05";
+        $card->expYear = "2025";
+        $card->cvn = "852";
+
+        $response = $card->verify()
+            ->withCurrency('EUR')
+            ->execute("configName");
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('VERIFIED', $response->responseMessage);
+    }
+
     private function assertAccessTokenResponse(AccessTokenInfo $accessTokenInfo)
     {
         $this->assertNotNull($accessTokenInfo);
@@ -205,6 +230,11 @@ class AccessTokenTest extends TestCase
         $this->assertEquals("dispute_management", $accessTokenInfo->disputeManagementAccountName);
         $this->assertEquals("tokenization", $accessTokenInfo->tokenizationAccountName);
         $this->assertEquals("transaction_processing", $accessTokenInfo->transactionProcessingAccountName);
+        $this->assertNotNull($accessTokenInfo->transactionProcessingAccountID);
+        $this->assertNotNull($accessTokenInfo->tokenizationAccountID);
+        $this->assertNotNull($accessTokenInfo->riskAssessmentAccountID);
+        $this->assertNotNull($accessTokenInfo->disputeManagementAccountID);
+        $this->assertNotNull($accessTokenInfo->dataAccountID);
     }
 
     public function setUpConfig()

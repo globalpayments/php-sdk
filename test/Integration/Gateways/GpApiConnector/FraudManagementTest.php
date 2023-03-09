@@ -55,7 +55,7 @@ class FraudManagementTest extends TestCase
         $this->address->postalCode = "12345";
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
     }

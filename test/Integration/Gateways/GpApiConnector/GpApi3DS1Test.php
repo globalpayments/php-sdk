@@ -58,7 +58,7 @@ class GpApi3DS1Test extends TestCase
         $this->card->cardHolderName = "James Mason";
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
     }

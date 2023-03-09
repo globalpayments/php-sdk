@@ -55,7 +55,7 @@ class CreditCardNotPresentTest extends TestCase
         $this->idempotencyKey = GenerationUtils::getGuid();
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
     }

@@ -192,14 +192,14 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
             $paymentMethod->id = $cardData->token;
 
         }
-        if ($cardData instanceof ICardData) {
+        if ($cardData instanceof ICardData && empty($cardData->token)) {
             $paymentMethod->card = (object) [
-                'brand' => strtoupper($cardData->getCardType()),
-                'number' => $cardData->number,
+                'brand' => !empty($cardData->getCardType()) ? strtoupper($cardData->getCardType()) : '',
+                'number' => $cardData->number ?? '',
                 'expiry_month' => !empty($cardData->expMonth) ? $cardData->expMonth : '',
                 'expiry_year' => !empty($cardData->expYear) ?
                     substr(str_pad($cardData->expYear, 4, '0', STR_PAD_LEFT), 2, 2) : ''
-            ];;
+            ];
             $paymentMethod->name = !empty($cardData->cardHolderName) ? $cardData->cardHolderName : null;
         }
 
@@ -300,10 +300,34 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
                 (new \DateTime($this->builder->getPaymentAccountCreateDate()))->format('Y-m-d') : null,
             'payment_account_age_indicator' => (string) $this->builder->getPaymentAgeIndicator(),
             'suspicious_account_activity' => StringUtils::boolToString($this->builder->getPreviousSuspiciousActivity()),
-            'purchases_last_6months_count' => str_pad($this->builder->getNumberOfPurchasesInLastSixMonths(), 2, '0', STR_PAD_LEFT),
-            'transactions_last_24hours_count' => str_pad($this->builder->getNumberOfTransactionsInLast24Hours(), 2, '0', STR_PAD_LEFT),
-            'transaction_last_year_count' => str_pad($this->builder->getNumberOfTransactionsInLastYear(), 2, '0', STR_PAD_LEFT),
-            'provision_attempt_last_24hours_count' => str_pad($this->builder->getNumberOfAddCardAttemptsInLast24Hours(), 2, '0', STR_PAD_LEFT),
+            'purchases_last_6months_count' => !empty($this->builder->getNumberOfPurchasesInLastSixMonths()) ?
+                str_pad(
+                    $this->builder->getNumberOfPurchasesInLastSixMonths(),
+                    2,
+                    '0',
+                    STR_PAD_LEFT
+                ) : null,
+            'transactions_last_24hours_count' => !empty($this->builder->getNumberOfTransactionsInLast24Hours()) ?
+                str_pad(
+                    $this->builder->getNumberOfTransactionsInLast24Hours(),
+                    2,
+                    '0',
+                    STR_PAD_LEFT
+                ) : null,
+            'transaction_last_year_count' => !empty($this->builder->getNumberOfTransactionsInLastYear()) ?
+                str_pad(
+                    $this->builder->getNumberOfTransactionsInLastYear(),
+                    2,
+                    '0',
+                    STR_PAD_LEFT
+                ) : null,
+            'provision_attempt_last_24hours_count' => !empty($this->builder->getNumberOfAddCardAttemptsInLast24Hours()) ?
+                str_pad(
+                    $this->builder->getNumberOfAddCardAttemptsInLast24Hours(),
+                    2,
+                    '0',
+                    STR_PAD_LEFT
+                ) : null,
             'shipping_address_time_created_reference' => !empty($this->builder->getShippingAddressCreateDate()) ?
                 (new \DateTime($this->builder->getShippingAddressCreateDate()))->format('Y-m-d\TH:i:s') : null,
             'shipping_address_creation_indicator' => (string) $this->builder->getShippingAddressUsageIndicator()
@@ -345,7 +369,13 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
     private function setRecurringAuthorizationDataParam()
     {
         return [
-            'max_number_of_instalments' => str_pad($this->builder->getMaxNumberOfInstallments(), 2, '0', STR_PAD_LEFT),
+            'max_number_of_instalments' => !empty($this->builder->getMaxNumberOfInstallments()) ?
+                str_pad(
+                    $this->builder->getMaxNumberOfInstallments(),
+                    2,
+                    '0',
+                    STR_PAD_LEFT
+                ) : null,
             'frequency' => $this->builder->getRecurringAuthorizationFrequency(),
             'expiry_date' => $this->builder->getRecurringAuthorizationExpiryDate()
         ];

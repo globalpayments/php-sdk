@@ -18,12 +18,12 @@ use PHPUnit\Framework\TestCase;
 
 class ReportingStoredPaymentMethodsTest extends TestCase
 {
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
     }

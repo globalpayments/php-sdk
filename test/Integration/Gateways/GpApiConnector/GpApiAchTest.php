@@ -74,7 +74,7 @@ class GpApiAchTest extends TestCase
         $this->customer->homePhone = new PhoneNumber('+1', '12345899', PhoneNumberType::HOME);
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
     }
