@@ -11,6 +11,7 @@ use GlobalPayments\Api\Entities\Enums\RecurringType;
 use GlobalPayments\Api\Entities\Enums\ScheduleFrequency;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Schedule;
@@ -25,6 +26,7 @@ use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 class RecurringTest extends TestCase
 {
@@ -75,7 +77,7 @@ class RecurringTest extends TestCase
         ServicesContainer::configureService($config);
     }
 
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->config());
 
@@ -115,14 +117,14 @@ class RecurringTest extends TestCase
     {
         try {
             $response = $this->newCustomer->Create();
-            $this->assertNotNull($response);
-            $this->assertNotNull($response->transactionReference->transactionId);
-            $this->assertEquals("00", $response->responseCode);
-            $this->assertEquals("Successful", $response->responseMessage);
+            $this->assertNewCustomer($response);
         } catch (GatewayException $exc) {
             if ($exc->responseCode != '501' && $exc->responseCode != '520') {
                 throw $exc;
             }
+            $this->assertEquals(
+                sprintf('This Payer Ref [%s] has already been used - please use another one', $this->newCustomer->key),
+                $exc->responseMessage);
         }
     }
 
@@ -139,16 +141,16 @@ class RecurringTest extends TestCase
         $card->cardHolderName = 'James Mason';
 
         try {
-            $paymentMethod = $this->newCustomer
-                ->addPaymentMethod($this->getPaymentId("Credit"), $card)
-                ->create();
-
-            $this->assertNotNull($paymentMethod);
-            $this->assertEquals("Successful", $paymentMethod->responseMessage);
+            $paymentMethod = $this->newCustomer->addPaymentMethod($this->getPaymentId("Credit"), $card)->create();
+            $this->assertNewRecurringPaymentMethod($this->getPaymentId("Credit"), $paymentMethod);
         } catch (GatewayException $exc) {
             if ($exc->responseCode != '501' && $exc->responseCode != '520') {
                 throw $exc;
             }
+            $this->assertStringContainsString(
+                sprintf('This Card Ref [%s] has already been used', $this->getPaymentId("Credit")),
+                $exc->responseMessage
+            );
         }
     }
 
@@ -172,12 +174,15 @@ class RecurringTest extends TestCase
                 ->addPaymentMethod($paymentId, $card, $storedCredential)
                 ->create();
 
-            $this->assertNotNull($paymentMethod);
-            $this->assertEquals("Successful", $paymentMethod->responseMessage);
+            $this->assertNewRecurringPaymentMethod($paymentId, $paymentMethod);
         } catch (GatewayException $exc) {
             if ($exc->responseCode != '501' && $exc->responseCode != '520') {
                 throw $exc;
             }
+            $this->assertStringContainsString(
+                sprintf('This Card Ref [%s] has already been used', $paymentId),
+                $exc->responseMessage
+            );
         }
     }
 
@@ -253,10 +258,11 @@ class RecurringTest extends TestCase
         $customer->key = $this->getCustomerId();
         $customer->firstName = "Perry";
 
-        $response = $customer->saveChanges();
+        $customerUpdated = $customer->saveChanges();
 
-        $this->assertNotNull($response);
-        $this->assertEquals("00", $response->responseCode);
+        $this->assertNotNull($customerUpdated);
+        $this->assertNotNull($customerUpdated->id);
+        $this->assertEquals($customer->key, $customerUpdated->key);
     }
 
     /* 15. CardStorage Continuous Authority First */
@@ -367,8 +373,9 @@ class RecurringTest extends TestCase
 
         $response = $paymentMethod->SaveChanges();
 
-        $this->assertNotNull($response);
-        $this->assertEquals("00", $response->responseCode);
+        $this->assertTrue($response instanceof RecurringPaymentMethod);
+        $this->assertNotNull($response->id);
+        $this->assertEquals($this->getPaymentId("Credit"), $response->key);
     }
 
     /* 17.01 Card Storage UpdateCard with StoredCredential */
@@ -389,8 +396,9 @@ class RecurringTest extends TestCase
 
         $response = $paymentMethod->SaveChanges();
 
-        $this->assertNotNull($response);
-        $this->assertEquals("00", $response->responseCode);
+        $this->assertTrue($response instanceof RecurringPaymentMethod);
+        $this->assertNotNull($response->id);
+        $this->assertEquals($this->getPaymentId("Credit"), $response->key);
     }
 
     /* 18. Card Storage Verify Card */
@@ -422,10 +430,11 @@ class RecurringTest extends TestCase
 
         // delete the stored card/payment method
         // WARNING! This can't be undone
-        $response = $paymentMethod->Delete();
+        $response = $paymentMethod->delete();
 
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->responseCode);
+        $this->assertNotNull($response->id);
+        $this->assertEquals($this->getPaymentId("Credit"), $response->key);
     }
 
     /* Request Type: receipt-in  */
@@ -470,13 +479,35 @@ class RecurringTest extends TestCase
     /***************************************************
      *             Payment Scheduler tests             *
      ***************************************************/
+    /**
+     * @param Customer $customer
+     */
+    private function assertNewCustomer(Customer $customer)
+    {
+        $this->assertNotNull($customer);
+        $this->assertNotNull($customer->key);
+        $this->assertEquals($this->newCustomer->id, $customer->id);
+    }
 
-    public function testCardStorageAddSchedule()
+    private function assertNewRecurringPaymentMethod($paymentMethodId, RecurringPaymentMethod $recurringPaymentMethod)
+    {
+        $this->assertNotNull($recurringPaymentMethod);
+        $this->assertNotNull($recurringPaymentMethod->id);
+        $this->assertEquals($paymentMethodId, $recurringPaymentMethod->key);
+    }
+
+    private function assertNewPaymentSchedule($scheduleKey, $schedule)
+    {
+        $this->assertNotNull($schedule);
+        $this->assertEquals($scheduleKey, $schedule->key);
+        $this->assertNotNull($schedule->id);
+    }
+
+    public function testCardStorageAddScheduleX()
     {
         try {
-            $response = $this->newCustomer->create();
-            $this->assertNotNull($response);
-            $this->assertEquals("00", $response->responseCode);
+            $customer = $this->newCustomer->create();
+            $this->assertNewCustomer($customer);
         } catch (GatewayException $exc) {
             if ($exc->responseCode != '501' && $exc->responseCode != '520') {
                 throw $exc;
@@ -484,18 +515,18 @@ class RecurringTest extends TestCase
         }
 
         $paymentMethod = $this->newCustomer->addPaymentMethod($this->getPaymentId('Credit'), $this->card);
+
         try {
-            $response = $paymentMethod->create();
-            $this->assertNotNull($response);
-            $this->assertEquals("00", $response->responseCode);
+            $paymentMethod = $paymentMethod->create();
+            $this->assertNewRecurringPaymentMethod($this->getPaymentId('Credit'), $paymentMethod);
         } catch (GatewayException $exc) {
             if ($exc->responseCode != '501' && $exc->responseCode != '520') {
                 throw $exc;
             }
         }
 
-        $scheduleId = GenerationUtils::generateScheduleId();
-        $response = $paymentMethod->addSchedule($scheduleId)
+        $scheduleKey = GenerationUtils::generateScheduleId();
+        $schedule = $paymentMethod->addSchedule($scheduleKey)
             ->withStartDate(new \DateTime())
             ->withAmount(30.01)
             ->withCurrency('USD')
@@ -508,26 +539,74 @@ class RecurringTest extends TestCase
             ->withDescription('Social Sign-Up')
             ->create();
 
-        $this->assertEquals('00', $response->responseCode);
-        $this->assertEquals('Schedule created successfully', $response->responseMessage);
+        $this->assertNewPaymentSchedule($scheduleKey, $schedule);
 
-        // the schedule id/key is not received in the response from the create request
-        $schedule = new Schedule();
-        $schedule->key = $scheduleId;
         /** @var Schedule $schedule */
         $schedule = RecurringService::get($schedule);
 
-        $this->assertEquals($scheduleId, $schedule->id);
+        $this->assertEquals($scheduleKey, $schedule->key);
         $this->assertEquals(12, $schedule->numberOfPaymentsRemaining);
         $this->assertEquals(ScheduleFrequency::SEMI_ANNUALLY, $schedule->frequency);
+    }
+
+    public function testCardStorageAddSchedule_AllFrequency()
+    {
+        try {
+            $customer = $this->newCustomer->create();
+            $this->assertNewCustomer($customer);
+        } catch (GatewayException $exc) {
+            if ($exc->responseCode != '501' && $exc->responseCode != '520') {
+                throw $exc;
+            }
+        }
+
+        $paymentMethod = $this->newCustomer->addPaymentMethod($this->getPaymentId('Credit'), $this->card);
+
+        try {
+            $paymentMethod = $paymentMethod->create();
+            $this->assertNewRecurringPaymentMethod($this->getPaymentId('Credit'), $paymentMethod);
+        } catch (GatewayException $exc) {
+            if ($exc->responseCode != '501' && $exc->responseCode != '520') {
+                throw $exc;
+            }
+        }
+
+        $transactionStatus = new ScheduleFrequency();
+        $reflectionClass = new ReflectionClass($transactionStatus);
+        foreach ($reflectionClass->getConstants() as $frequency) {
+            if ($frequency == ScheduleFrequency::BI_WEEKLY || $frequency == ScheduleFrequency::SEMI_MONTHLY) {
+                continue;
+            }
+            $scheduleKey = GenerationUtils::generateScheduleId();
+            $schedule = $paymentMethod->addSchedule($scheduleKey)
+                ->withStartDate(new \DateTime())
+                ->withAmount(30.01)
+                ->withCurrency('USD')
+                ->withFrequency($frequency)
+                ->withReprocessingCount(1)
+                ->withnumberOfPaymentsRemaining(12)
+                ->withCustomerNumber('E8953893489')
+                ->withOrderPrefix('gym')
+                ->withName('Gym Membership')
+                ->withDescription('Social Sign-Up')
+                ->create();
+
+            $this->assertNewPaymentSchedule($scheduleKey, $schedule);
+
+            /** @var Schedule $schedule */
+            $schedule = RecurringService::get($schedule);
+
+            $this->assertEquals($scheduleKey, $schedule->key);
+            $this->assertEquals(12, $schedule->numberOfPaymentsRemaining);
+            $this->assertEquals($frequency, $schedule->frequency);
+        }
     }
 
     public function testCardStorageAddSchedule_WithIndefinitelyRun()
     {
         try {
-            $response = $this->newCustomer->create();
-            $this->assertNotNull($response);
-            $this->assertEquals("00", $response->responseCode);
+            $customer = $this->newCustomer->create();
+            $this->assertNewCustomer($customer);
         } catch (GatewayException $exc) {
             if ($exc->responseCode != '501' && $exc->responseCode != '520') {
                 throw $exc;
@@ -536,17 +615,16 @@ class RecurringTest extends TestCase
 
         $paymentMethod = $this->newCustomer->addPaymentMethod($this->getPaymentId('Credit'), $this->card);
         try {
-            $response = $paymentMethod->create();
-            $this->assertNotNull($response);
-            $this->assertEquals("00", $response->responseCode);
+            $recurringPaymentMethod = $paymentMethod->create();
+            $this->assertNewRecurringPaymentMethod($paymentMethod->id, $recurringPaymentMethod);
         } catch (GatewayException $exc) {
             if ($exc->responseCode != '501' && $exc->responseCode != '520') {
                 throw $exc;
             }
         }
 
-        $scheduleId = GenerationUtils::generateScheduleId();
-        $response = $paymentMethod->addSchedule($scheduleId)
+        $scheduleKey = GenerationUtils::generateScheduleId();
+        $schedule = $paymentMethod->addSchedule($scheduleKey)
             ->withStartDate(new \DateTime())
             ->withAmount(30.01)
             ->withCurrency('USD')
@@ -559,16 +637,12 @@ class RecurringTest extends TestCase
             ->withDescription('Social Sign-Up')
             ->create();
 
-        $this->assertEquals('00', $response->responseCode);
-        $this->assertEquals('Schedule created successfully', $response->responseMessage);
+        $this->assertNewPaymentSchedule($scheduleKey, $schedule);
 
-        // the schedule id/key is not received in the response from the create request
-        $schedule = new Schedule();
-        $schedule->key = $scheduleId;
         /** @var Schedule $schedule */
         $schedule = RecurringService::get($schedule);
 
-        $this->assertEquals($scheduleId, $schedule->id);
+        $this->assertEquals($scheduleKey, $schedule->key);
         $this->assertEquals(-1, $schedule->numberOfPaymentsRemaining);
         $this->assertEquals(ScheduleFrequency::QUARTERLY, $schedule->frequency);
     }
@@ -576,9 +650,8 @@ class RecurringTest extends TestCase
     public function testCardStorageAddSchedule_With999Runs()
     {
         try {
-            $response = $this->newCustomer->create();
-            $this->assertNotNull($response);
-            $this->assertEquals("00", $response->responseCode);
+            $customer = $this->newCustomer->create();
+            $this->assertNewCustomer($customer);
         } catch (GatewayException $exc) {
             if ($exc->responseCode != '501' && $exc->responseCode != '520') {
                 throw $exc;
@@ -587,17 +660,16 @@ class RecurringTest extends TestCase
 
         $paymentMethod = $this->newCustomer->addPaymentMethod($this->getPaymentId('Credit'), $this->card);
         try {
-            $response = $paymentMethod->create();
-            $this->assertNotNull($response);
-            $this->assertEquals("00", $response->responseCode);
+            $recurringPaymentMethod = $paymentMethod->create();
+            $this->assertNewRecurringPaymentMethod($paymentMethod->id, $recurringPaymentMethod);
         } catch (GatewayException $exc) {
             if ($exc->responseCode != '501' && $exc->responseCode != '520') {
                 throw $exc;
             }
         }
 
-        $scheduleId = GenerationUtils::generateScheduleId();
-        $response = $paymentMethod->addSchedule($scheduleId)
+        $scheduleKey = GenerationUtils::generateScheduleId();
+        $schedule = $paymentMethod->addSchedule($scheduleKey)
             ->withStartDate(new \DateTime())
             ->withAmount(30.01)
             ->withCurrency('USD')
@@ -610,18 +682,39 @@ class RecurringTest extends TestCase
             ->withDescription('Social Sign-Up')
             ->create();
 
-        $this->assertEquals('00', $response->responseCode);
-        $this->assertEquals('Schedule created successfully', $response->responseMessage);
+        $this->assertNewPaymentSchedule($scheduleKey, $schedule);
 
-        // the schedule id/key is not received in the response from the create request
-        $schedule = new Schedule();
-        $schedule->key = $scheduleId;
-        /** @var Schedule $schedule */
         $schedule = RecurringService::get($schedule);
 
-        $this->assertEquals($scheduleId, $schedule->id);
+        $this->assertEquals($scheduleKey, $schedule->id);
         $this->assertEquals(999, $schedule->numberOfPaymentsRemaining);
         $this->assertEquals(ScheduleFrequency::QUARTERLY, $schedule->frequency);
+    }
+
+    public function testCardStorageAddSchedule_WithoutScheduleRef()
+    {
+        $paymentMethod = $this->newCustomer->addPaymentMethod($this->getPaymentId('Credit'), $this->card);
+        $exceptionCaught = false;
+
+        try {
+            $paymentMethod->addSchedule(null)
+                ->withAmount(30.01)
+                ->withCurrency('USD')
+                ->withFrequency(ScheduleFrequency::QUARTERLY)
+                ->withReprocessingCount(1)
+                ->withnumberOfPaymentsRemaining(12)
+                ->withCustomerNumber('E8953893489')
+                ->withOrderPrefix('gym')
+                ->withName('Gym Membership')
+                ->withDescription('Social Sign-Up')
+                ->create();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('502', $e->responseCode);
+            $this->assertEquals('Unexpected Gateway Response: 502 - Mandatory Fields missing: [/request/scheduleref]. See Developers Guide', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
     }
 
     public function testCardStorageAddSchedule_WithoutFrequency()
@@ -645,6 +738,62 @@ class RecurringTest extends TestCase
             $exceptionCaught = true;
             $this->assertEquals('502', $e->responseCode);
             $this->assertEquals('Unexpected Gateway Response: 502 - Mandatory Fields missing: [/request/schedule]. See Developers Guide', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testCardStorageAddSchedule_WithoutCustomerRef()
+    {
+        $paymentMethod = $this->newCustomer->addPaymentMethod($this->getPaymentId('Credit'), $this->card);
+        $scheduleId = GenerationUtils::generateScheduleId();
+        $exceptionCaught = false;
+
+        $paymentMethod->customerKey = null;
+
+        try {
+            $paymentMethod->addSchedule($scheduleId)
+                ->withAmount(30.01)
+                ->withCurrency('USD')
+                ->withFrequency(ScheduleFrequency::QUARTERLY)
+                ->withReprocessingCount(1)
+                ->withnumberOfPaymentsRemaining(12)
+                ->withCustomerNumber('E8953893489')
+                ->withOrderPrefix('gym')
+                ->withName('Gym Membership')
+                ->withDescription('Social Sign-Up')
+                ->create();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('502', $e->responseCode);
+            $this->assertEquals('Unexpected Gateway Response: 502 - Mandatory Fields missing: [/request/payerref]. See Developers Guide', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testCardStorageAddSchedule_WithoutPaymentMethod()
+    {
+        $paymentMethod = $this->newCustomer->addPaymentMethod(null, $this->card);
+        $scheduleId = GenerationUtils::generateScheduleId();
+        $exceptionCaught = false;
+
+        try {
+            $paymentMethod->addSchedule($scheduleId)
+                ->withAmount(30.01)
+                ->withCurrency('USD')
+                ->withFrequency(ScheduleFrequency::QUARTERLY)
+                ->withReprocessingCount(1)
+                ->withnumberOfPaymentsRemaining(12)
+                ->withCustomerNumber('E8953893489')
+                ->withOrderPrefix('gym')
+                ->withName('Gym Membership')
+                ->withDescription('Social Sign-Up')
+                ->create();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('502', $e->responseCode);
+            $this->assertEquals('Unexpected Gateway Response: 502 - Mandatory Fields missing: [/request/paymentmethod]. See Developers Guide', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -783,30 +932,53 @@ class RecurringTest extends TestCase
 
     public function testGetListOfPaymentSchedules_RandomDetails()
     {
-        $schedules = RecurringService::search(Schedule::class)
-            ->addSearchCriteria(SearchCriteria::PAYMENT_METHOD_KEY, substr(GenerationUtils::getGuid(), 20))
-            ->addSearchCriteria(SearchCriteria::CUSTOMER_ID, substr(GenerationUtils::getGuid(), 20))
-            ->execute();
-
-        $this->assertEmpty($schedules);
+        $exceptionCaught = false;
+        $customerId = substr(GenerationUtils::getGuid(), 20);
+        try {
+            RecurringService::search(Schedule::class)
+                ->addSearchCriteria(SearchCriteria::PAYMENT_METHOD_KEY, substr(GenerationUtils::getGuid(), 20))
+                ->addSearchCriteria(SearchCriteria::CUSTOMER_ID, $customerId)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('520', $e->responseCode);
+            $this->assertEquals(sprintf('This Payer Ref [%s] does not exist', $customerId), $e->responseMessage);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
     }
 
     public function testGetListOfPaymentSchedules_WithoutPayer()
     {
-        $response = RecurringService::search(Schedule::class)
-            ->addSearchCriteria(SearchCriteria::PAYMENT_METHOD_KEY, substr(GenerationUtils::getGuid(), 20))
-            ->execute();
-
-        $this->assertEmpty($response);
+        $exceptionCaught = false;
+        try {
+            RecurringService::search(Schedule::class)
+                ->addSearchCriteria(SearchCriteria::PAYMENT_METHOD_KEY, substr(GenerationUtils::getGuid(), 20))
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('502', $e->responseCode);
+            $this->assertStringContainsString('Mandatory Fields missing', $e->responseMessage);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
     }
 
     public function testGetListOfPaymentSchedules_WithoutPaymentMethod()
     {
-        $response = RecurringService::search(Schedule::class)
-            ->addSearchCriteria(SearchCriteria::CUSTOMER_ID, substr(GenerationUtils::getGuid(), 20))
-            ->execute();
+        $exceptionCaught = false;
 
-        $this->assertEmpty($response);
+        try {
+            RecurringService::search(Schedule::class)
+                ->addSearchCriteria(SearchCriteria::CUSTOMER_ID, substr(GenerationUtils::getGuid(), 20))
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('502', $e->responseCode);
+            $this->assertStringContainsString('Mandatory Fields missing', $e->responseMessage);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
     }
 
     public function testDeleteSchedule()
@@ -817,11 +989,17 @@ class RecurringTest extends TestCase
             ->execute();
 
         $this->assertNotEmpty($schedules);
-        $schedule = $schedules[0];
+        $schedule = reset($schedules);
 
         $response = $schedule->delete();
-        $this->assertEquals('00', $response->responseCode);
-        $this->assertEquals('OK', $response->responseMessage);
+        $this->assertTrue($response instanceof Schedule);
+
+        try {
+            RecurringService::get($schedule);
+        } catch (GatewayException $e) {
+            $this->assertEquals('508', $e->responseCode);
+            $this->assertEquals('The Scheduled Payment does not exist.', $e->responseMessage);
+        }
     }
 
     public function testDelete_RandomSchedule()
@@ -854,10 +1032,30 @@ class RecurringTest extends TestCase
     {
         $schedule = new Schedule();
         $schedule->key = substr(GenerationUtils::getGuid(), 20);
+        $exceptionCaught = false;
 
-        $response = RecurringService::get($schedule);
+        try {
+            RecurringService::get($schedule);
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('508', $e->responseCode);
+            $this->assertEquals('The Scheduled Payment does not exist.', $e->responseMessage);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
 
-        $this->assertNotNull($response);
-        $this->assertNull($response->key);
+    public function testGetPaymentScheduleById_NullId()
+    {
+        $exceptionCaught = false;
+
+        try {
+            RecurringService::get(null);
+        } catch (BuilderException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('key cannot be null for this transaction type.', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
     }
 }

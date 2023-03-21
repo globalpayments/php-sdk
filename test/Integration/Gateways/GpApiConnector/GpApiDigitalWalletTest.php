@@ -55,6 +55,7 @@ class GpApiDigitalWalletTest extends TestCase
             ->execute();
 
         $this->assertTransactionResponse($response, TransactionStatus::CAPTURED);
+        $this->assertClickToPayPayerDetails($response);
     }
 
     public function testClickToPayEncryptedChargeThenRefund()
@@ -69,6 +70,7 @@ class GpApiDigitalWalletTest extends TestCase
             ->execute();
 
         $this->assertTransactionResponse($response, TransactionStatus::CAPTURED);
+        $this->assertClickToPayPayerDetails($response);
 
         $refund = $response->refund()
             ->withCurrency($this->currency)
@@ -76,6 +78,7 @@ class GpApiDigitalWalletTest extends TestCase
             ->execute();
 
         $this->assertTransactionResponse($refund, TransactionStatus::CAPTURED);
+        $this->assertClickToPayPayerDetails($response);
     }
 
     public function testClickToPayEncryptedChargeThenReverse()
@@ -90,6 +93,7 @@ class GpApiDigitalWalletTest extends TestCase
             ->execute();
 
         $this->assertTransactionResponse($response, TransactionStatus::CAPTURED);
+        $this->assertClickToPayPayerDetails($response);
 
         $reverse = $response->reverse()
             ->withCurrency($this->currency)
@@ -97,6 +101,7 @@ class GpApiDigitalWalletTest extends TestCase
             ->execute();
 
         $this->assertTransactionResponse($reverse, TransactionStatus::REVERSED);
+        $this->assertClickToPayPayerDetails($response);
     }
 
     public function testClickToPayEncryptedAuthorize()
@@ -252,6 +257,15 @@ class GpApiDigitalWalletTest extends TestCase
         $this->assertEquals("SUCCESS", $transaction->responseCode);
         $this->assertEquals($transactionStatus, $transaction->responseMessage);
         $this->assertNotEmpty($transaction->transactionId);
+    }
+
+    private function assertClickToPayPayerDetails($response){
+        $this->assertNotNull($response->payerDetails);
+        $this->assertNotNull($response->payerDetails->email);
+        $this->assertNotNull($response->payerDetails->billingAddress);
+        $this->assertNotNull($response->payerDetails->shippingAddress);
+        $this->assertNotNull($response->payerDetails->firstName);
+        $this->assertNotNull($response->payerDetails->lastName);
     }
 
 }

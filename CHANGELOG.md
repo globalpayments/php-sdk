@@ -5,6 +5,12 @@
 # Changelog
 
 ## Latest Version
+#### Enhancements:
+- Add payer information on Transaction object
+- GP-API: Update request for boarding merchants
+- GP-ECOM: Change recurring entity return type
+
+## v6.1.7 (03/09/2023)
 #### Bug Fixes:
 - GP-API: fix issue on PHP8.1 with strtoupper and str_pad
 - GP-API: fix unit tests on PHP8.1

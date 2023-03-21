@@ -105,7 +105,7 @@ class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             return GpEcomMapping::mapScheduleReport($response, $builder->transactionType);
         }
 
-        return GpEcomMapping::mapResponse($response);
+        return GpEcomMapping::mapRecurringEntityResponse($response, $builder->entity);
     }
 
     /**

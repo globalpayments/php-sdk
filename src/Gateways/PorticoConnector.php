@@ -339,10 +339,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
             if (empty($builder->paymentMethod->token)) {
                 $accountInfo = $xml->createElement('AccountInfo');
-                $accountInfo->appendChild($xml->createElement('RoutingNumber', $builder->paymentMethod->routingNumber));
-                $accountInfo->appendChild($xml->createElement('AccountNumber', $builder->paymentMethod->accountNumber));
-                $accountInfo->appendChild($xml->createElement('CheckNumber', $builder->paymentMethod->checkNumber));
-                $accountInfo->appendChild($xml->createElement('MICRData', $builder->paymentMethod->micrNumber));
+                $accountInfo->appendChild($xml->createElement('RoutingNumber', $builder->paymentMethod->routingNumber ?? ''));
+                $accountInfo->appendChild($xml->createElement('AccountNumber', $builder->paymentMethod->accountNumber ?? ''));
+                $accountInfo->appendChild($xml->createElement('CheckNumber', $builder->paymentMethod->checkNumber ?? ''));
+                $accountInfo->appendChild($xml->createElement('MICRData', $builder->paymentMethod->micrNumber ?? ''));
                 $accountInfo->appendChild(
                     $xml->createElement(
                         'AccountType',
@@ -2037,10 +2037,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         if ($builder->billingAddress !== null) {
             $holder->appendChild(
-                $xml->createElement($isCheck ? 'Address1' : 'CardHolderAddr', htmlentities($builder->billingAddress->streetAddress1))
+                $xml->createElement($isCheck ? 'Address1' : 'CardHolderAddr', htmlentities($builder->billingAddress->streetAddress1 ?? ''))
             );
             $holder->appendChild(
-                $xml->createElement($isCheck ? 'City' : 'CardHolderCity', htmlentities($builder->billingAddress->city))
+                $xml->createElement($isCheck ? 'City' : 'CardHolderCity', htmlentities($builder->billingAddress->city ?? ''))
             );
             $holder->appendChild(
                 $xml->createElement($isCheck ? 'State' : 'CardHolderState', $builder->billingAddress->getProvince())

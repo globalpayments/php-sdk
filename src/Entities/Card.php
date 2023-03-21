@@ -4,6 +4,25 @@ namespace GlobalPayments\Api\Entities;
 
 class Card
 {
+    /** @var string */
+    public $cardholderName;
+
+    /** @var string */
+    public $cardNumber;
+
+
+    /** @var string */
+    public $maskedCardNumber;
+
+    /** @var string */
+    public $cardExpMonth;
+
+    /** @var string */
+    public $cardExpYear;
+
+    /** @var string */
+    public $token;
+
     /**
      * Masked card number with last 4 digits showing.
      * @var string

@@ -207,10 +207,10 @@ class RecurringPaymentMethod extends RecurringEntity implements
      *
      * @return Schedule
      */
-    public function addSchedule($scheduleId)
+    public function addSchedule($scheduleId) : Schedule
     {
-        $key = !empty($this->key) ? $this->key : $this->id;
-        $schedule = new Schedule($this->customerKey, $key);
+        $paymentKey = $this->key ?? $this->id;
+        $schedule = new Schedule($this->customerKey, $paymentKey);
         $schedule->id = $scheduleId;
         return $schedule;
     }
@@ -221,7 +221,6 @@ class RecurringPaymentMethod extends RecurringEntity implements
             case 'paymentMethod':
                 return $this->paymentMethod;
             case 'cardHolderName':
-                return $this->nameOnAccount;
             case 'checkHolderName':
                 return $this->nameOnAccount;
             default:

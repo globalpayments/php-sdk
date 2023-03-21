@@ -151,8 +151,14 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
             if (!$product instanceof Product) {
                 continue;
             }
+            $deviceInfo = null;
+            if (strpos($product->productId, '_CP-') !== false) {
+                $deviceInfo = [
+                    'quantity' => 1,
+                ];
+            }
             $products[] = [
-                'quantity' => $product->quantity,
+                'device' => $deviceInfo ?? null,
                 'id' => $product->productId
             ];
         }
@@ -197,13 +203,11 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
         return array_merge(
             $this->setMerchantInfo(),
             [
+                'pricing_profile' => $this->builder->userPersonalData->tier,
                 'description' => $this->builder->description,
                 'type' => $this->builder->userPersonalData->type,
                 'addresses' => $this->setAddressList(),
                 'payment_processing_statistics' => $this->setPaymentStatistics(),
-                'tier' => [
-                    'reference' => $this->builder->userPersonalData->tier
-                ],
                 'payment_methods' => $this->setPaymentMethod(),
                 'persons' => $this->setPersonList(),
                 'products' => !empty($this->builder->productData) ? $this->setProductList($this->builder->productData) : null,

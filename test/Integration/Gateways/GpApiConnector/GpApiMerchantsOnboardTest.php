@@ -220,7 +220,7 @@ class GpApiMerchantsOnboardTest extends TestCase
             ->execute();
 
         $this->assertTrue($response instanceof User);
-        $this->assertEquals("SUCCESS", $response->responseCode);
+        $this->assertEquals("PENDING", $response->responseCode);
     }
 
     public function testEditMerchantPaymentProcessing()
@@ -241,7 +241,7 @@ class GpApiMerchantsOnboardTest extends TestCase
             ->execute();
 
         $this->assertTrue($response instanceof User);
-        $this->assertEquals("SUCCESS", $response->responseCode);
+        $this->assertEquals("PENDING", $response->responseCode);
     }
 
     public function testEditMerchantBusinessInformation()
@@ -277,8 +277,8 @@ class GpApiMerchantsOnboardTest extends TestCase
             ->execute();
 
         $this->assertTrue($response instanceof User);
-        $this->assertEquals("SUCCESS", $response->responseCode);
-        $this->assertEquals(UserStatus::ACTIVE, $response->userStatus);
+        $this->assertEquals("PENDING", $response->responseCode);
+        $this->assertEquals(UserStatus::UNDER_REVIEW, $response->userStatus);
         $this->assertEquals($merchantData->userName, $response->name);
     }
 
@@ -739,12 +739,14 @@ class GpApiMerchantsOnboardTest extends TestCase
     private function getProductList()
     {
         $products = [
-            [1, 'PRO_TRA_CP-US-CARD-A920_SP'],
-            [1, 'PRO_FMA_PUSH-FUNDS_PP']
+            'PRO_TRA_CP-US-CARD-A920_SP',
+            'PRO_FMA_PUSH-FUNDS_PP',
+            'PRO_TRA_CNP_US_BANK-TRANSFER_PP',
+            'PRO_TRA_CNP-US-CARD_PP'
         ];
-        foreach ($products as $prod) {
+        foreach ($products as $prodId) {
             $product = new Product();
-            list($product->quantity, $product->productId) = $prod;
+            $product->productId = $prodId;
             $productData[] = $product;
         }
 

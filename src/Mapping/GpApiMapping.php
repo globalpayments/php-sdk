@@ -11,6 +11,7 @@ use GlobalPayments\Api\Entities\Card;
 use GlobalPayments\Api\Entities\CardIssuerResponse;
 use GlobalPayments\Api\Entities\DisputeDocument;
 use GlobalPayments\Api\Entities\DccRateData;
+use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
 use GlobalPayments\Api\Entities\Enums\CaptureMode;
 use GlobalPayments\Api\Entities\Enums\FraudFilterResult;
@@ -27,6 +28,7 @@ use GlobalPayments\Api\Entities\FraudManagementResponse;
 use GlobalPayments\Api\Entities\FraudRule;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
+use GlobalPayments\Api\Entities\PayerDetails;
 use GlobalPayments\Api\Entities\PayLinkResponse;
 use GlobalPayments\Api\Entities\PaymentMethodList;
 use GlobalPayments\Api\Entities\Person;
@@ -127,6 +129,11 @@ class GpApiMapping
                 $response->payment_method->fingerprint_presence_indicator : null;
             if (!empty($response->payment_method->card)) {
                 $card = $response->payment_method->card;
+                $cardDetails = new Card();
+                $cardDetails->maskedNumberLast4 = $card->masked_number_last4 ?? null;
+                $cardDetails->brand = $card->brand ?? null;
+                $transaction->cardDetails = $cardDetails;
+
                 $transaction->cardLast4 = !empty($card->masked_number_last4) ?
                     $card->masked_number_last4 : null;
                 $transaction->cardType = !empty($card->brand) ? $card->brand : null;
@@ -163,13 +170,42 @@ class GpApiMapping
             } elseif (!empty($response->payment_method->apm)) {
                 $transaction->paymentMethodType = PaymentMethodType::APM;
             }
+
+            if (
+                !empty($response->payment_method->shipping_address) ||
+                !empty($response->payment_method->payer)
+            ) {
+                $payerDetails = new PayerDetails();
+                $payerDetails->email = $response->payment_method->payer->email ?? null;
+                if (!empty($response->payment_method->payer->billing_address)) {
+                    $billingAddress = $response->payment_method->payer->billing_address;
+                    $payerDetails->firstName = $billingAddress->first_name  ?? null;
+                    $payerDetails->lastName = $billingAddress->last_name  ?? null;
+                    $payerDetails->billingAddress = self::mapAddressObject(
+                        $billingAddress,
+                        AddressType::BILLING
+                    );
+                }
+                $payerDetails->shippingAddress = self::mapAddressObject(
+                    $response->payment_method->shipping_address,
+                    AddressType::SHIPPING
+                );
+                $transaction->payerDetails = $payerDetails;
+            }
         }
 
         if (!empty($response->card)) {
+            $cardDetails = new Card();
+            $cardDetails->cardNumber = $response->card->number ?? null;
+            $cardDetails->brand = $response->card->brand ?? null;
+            $cardDetails->cardExpMonth =$response->card->expiry_month ?? null;
+            $cardDetails->cardExpYear = $response->card->expiry_year ?? null;
+            $transaction->cardDetails = $cardDetails;
+
             $transaction->cardNumber = !empty($response->card->number) ? $response->card->number : null;
             $transaction->cardType = !empty($response->card->brand) ? $response->card->brand : '';
-            $transaction->cardExpMonth = $response->card->expiry_month;
-            $transaction->cardExpYear = $response->card->expiry_year;
+            $transaction->cardExpMonth = $response->card->expiry_month ?? null;
+            $transaction->cardExpYear = $response->card->expiry_year ?? null;
             $transaction->cvnResponseCode = !empty($response->card->cvv) ? $response->card->cvv : null;
             $transaction->cardBrandTransactionId = !empty($response->card->brand_reference) ?
                 $response->card->brand_reference : null;
@@ -1043,9 +1079,13 @@ class GpApiMapping
         $user->paymentMethodList = $pmList;
     }
 
-    private static function mapAddressObject()
+    private static function mapAddressObject($address, $type = null)
     {
+        if (empty($address)) {
+            return null;
+        }
         $userAddress = new Address();
+        $userAddress->type = $type;
         $userAddress->streetAddress1 = $address->line_1 ?? null;
         $userAddress->streetAddress2 = $address->line_2 ?? null;
         $userAddress->streetAddress3 = $address->line_3 ?? null;
@@ -1053,7 +1093,7 @@ class GpApiMapping
         $userAddress->state = $address->state ?? null;
         $userAddress->postalCode = $address->postal_code ?? null;
         $userAddress->countryCode = $address->country ?? null;
-        $userAddress->type = !empty($address->functions) ? $address->functions[0] : null;
+        $userAddress->type = !empty($address->functions) ? $address->functions[0] : $type;
 
         return $userAddress;
     }

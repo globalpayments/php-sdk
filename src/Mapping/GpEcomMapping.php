@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Mapping;
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
+use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\RecurringSequence;
@@ -16,6 +17,7 @@ use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\FraudManagementResponse;
+use GlobalPayments\Api\Entities\RecurringEntity;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\Schedule;
 use GlobalPayments\Api\Entities\ThreeDSecure;
@@ -170,6 +172,7 @@ class GpEcomMapping
 
     public static function mapScheduleReport($response, $reportType)
     {
+        self::checkResponse($response);
         switch ($reportType)
         {
             case TransactionType::FETCH:
@@ -185,6 +188,35 @@ class GpEcomMapping
         }
 
         return [];
+    }
+
+    public static function mapRecurringEntityResponse($response,RecurringEntity $recurringEntity)
+    {
+        self::checkResponse($response);
+        switch (get_class($recurringEntity))
+        {
+            case Schedule::class:
+                $schedule = $recurringEntity;
+                $schedule->scheduletext = $response->scheduletext;
+                $schedule->key = $recurringEntity->id;
+                $schedule->id = (string) $response->pasref ?? null;
+                return $schedule;
+            case RecurringPaymentMethod::class:
+                /** @var RecurringPaymentMethod $recurringPaymentMethod */
+                $recurringPaymentMethod = $recurringEntity;
+                $recurringPaymentMethod->key = $recurringEntity->id ?? $recurringEntity->key;
+                $recurringPaymentMethod->id = (string) $response->pasref;
+                return $recurringPaymentMethod;
+            case Customer::class:
+                /** @var Customer $customer */
+                $customer = $recurringEntity;
+                $customer->id = (string) $response->pasref;
+                return $customer;
+            default:
+                throw new UnsupportedTransactionException(
+                    sprintf("Unsupported recurring entity mapping %s!", get_class($recurringEntity))
+                );
+        }
     }
 
     private static function hydrateSchedule($response)

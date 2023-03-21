@@ -76,6 +76,7 @@ class Transaction
     public $cardSecurityResponse;
 
     /**
+     * @deprecated  Will soon be replaced with $cardDetails->brand
      * The type of card used in the transaction.
      *
      * @var string
@@ -83,6 +84,7 @@ class Transaction
     public $cardType;
 
     /**
+     * @deprecated  Will soon be replaced with $cardDetails->maskedNumberLast4
      * The last four digits of the card number used in
      * the transaction.
      *
@@ -285,14 +287,29 @@ class Transaction
      */
     public $payFacData;
 
+    /**
+     * @deprecated  Will soon be replaced with $cardDetails->cardholderName
+     */
     public $cardholderName;
 
+    /**
+     * @deprecated  Will soon be replaced with $cardDetails->cardNumber
+     */
     public $cardNumber;
 
+    /**
+     * @deprecated  Will soon be replaced with $cardDetails->maskedCardNumber
+     */
     public $maskedCardNumber;
 
+    /**
+     * @deprecated  Will soon be replaced with $cardDetails->cardExpMonth
+     */
     public $cardExpMonth;
 
+    /**
+     * @deprecated  Will soon be replaced with $cardDetails->cardExpYear
+     */
     public $cardExpYear;
 
     /**
@@ -327,6 +344,12 @@ class Transaction
 
     /** @var CardIssuerResponse $cardIssuerResponse */
     public $cardIssuerResponse;
+
+    /** @var PayerDetails */
+    public $payerDetails;
+
+    /** @var Card */
+    public $cardDetails;
 
     /**
      * Creates a `Transaction` object from a stored transaction ID.

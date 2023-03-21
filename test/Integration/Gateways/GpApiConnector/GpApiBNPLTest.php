@@ -10,7 +10,6 @@ use GlobalPayments\Api\Entities\Enums\BNPLShippingMethod;
 use GlobalPayments\Api\Entities\Enums\BNPLType;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\CustomerDocumentType;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\PaymentType;
 use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
@@ -27,9 +26,8 @@ use GlobalPayments\Api\PaymentMethods\BNPL;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 
 class GpApiBNPLTest extends TestCase
@@ -71,16 +69,9 @@ class GpApiBNPLTest extends TestCase
         $this->shippingAddress->countryCode = 'US';
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
-        $config = new GpApiConfig();
-        $config->appId = 'uAGII1ChGyRk1CqzJBsOOGBTrDMMYjAp';
-        $config->appKey = 'hgLnF6Fh7BIt3TDw';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardNotPresent;
-        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
     public function testBNPL_FullCycle()
