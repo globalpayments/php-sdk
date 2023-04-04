@@ -883,13 +883,21 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             }
 
             // Additional Transaction Fields
-            if (!empty($builder->customerId) || !empty($builder->description) || !empty($builder->invoiceNumber)) {
-                $addons = $xml->createElement('AdditionalTxnFields');
-                $addons->appendChild($xml->createElement('CustomerID', $builder->customerId));
-                $addons->appendChild($xml->createElement('Description', htmlentities($builder->description)));
-                $addons->appendChild($xml->createElement('InvoiceNbr', $builder->invoiceNumber));
+            if ($builder->transactionType !== TransactionType::VOID) {
+                if (!empty($builder->customerId) || !empty($builder->description) || !empty($builder->invoiceNumber)) {
+                    $addons = $xml->createElement('AdditionalTxnFields');
 
-                $root->appendChild($addons);
+                    if (!empty($builder->customerId))
+                    $addons->appendChild($xml->createElement('CustomerID', $builder->customerId));
+
+                    if (!empty($builder->description))
+                    $addons->appendChild($xml->createElement('Description', htmlentities($builder->description)));
+
+                    if (!empty($builder->invoiceNumber))
+                    $addons->appendChild($xml->createElement('InvoiceNbr', $builder->invoiceNumber));
+
+                    $root->appendChild($addons);
+                }
             }
 
             if (

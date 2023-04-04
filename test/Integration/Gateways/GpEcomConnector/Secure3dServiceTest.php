@@ -3,7 +3,9 @@
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
 use GlobalPayments\Api\Entities\CustomWebProxy;
+use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
 use GlobalPayments\Api\Entities\Enums\MerchantInitiatedRequestType;
+use GlobalPayments\Api\Entities\Enums\MessageCategory;
 use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\ServicesContainer;
@@ -801,50 +803,57 @@ class Secure3dServiceTest extends TestCase
         $secureEcom = Secure3dService::checkEnrollment($this->card)
             ->execute('default', Secure3dVersion::TWO);
         $this->assertNotNull($secureEcom);
-
-        if ($secureEcom->enrolled) {
+        $this->assertTrue($secureEcom->enrolled);
             $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
+            $phemeralPublicKey = [
+                "kty" => "EC",
+                "crv" => "P-256",
+                "x" => "WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI",
+                "y" => "Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw"
+            ];
+        // initiate authentication
+        $initAuth = Secure3dService::initiateAuthentication($this->card, $secureEcom)
+            ->withAmount(250.00)
+            ->withCurrency('USD')
+            ->withAuthenticationSource(AuthenticationSource::MOBILE_SDK)
+            ->withOrderCreateDate(date('Y-m-d H:i:s'))
+            ->withOrderId($secureEcom->getOrderId())
+            ->withAddress($this->billingAddress, AddressType::BILLING)
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->withAddressMatchIndicator(false)
+            ->withMethodUrlCompletion(MethodUrlCompletion::NO)
+            ->withMessageCategory(MessageCategory::PAYMENT_AUTHENTICATION)
+            ->withCustomerEmail('custumer@domain.com')
+            // optionals
+            ->withApplicationId('f283b3ec-27da-42a1-acea-f3f70e75bbdc')
+            ->withSdkInterface(SdkInterface::BOTH)
+            ->withSdkUiTypes([SdkUiType::TEXT, SdkUiType::SINGLE_SELECT, SdkUiType::MULTI_SELECT, SdkUiType::OOB, SdkUiType::HTML_OTHER])
+            ->withReferenceNumber('3DS_LOA_SDK_PPFU_020100_00007')
+            ->withSdkTransactionId('b2385523-a66c-4907-ac3c-91848e8c0067')
+            ->withEncodedData('ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K')
+            ->withMaximumTimeout(5)
+            ->withEphemeralPublicKey($phemeralPublicKey)
+            ->execute();
 
-            // initiate authentication
-            $initAuth = Secure3dService::initiateAuthentication($this->card, $secureEcom)
-                ->withAmount(250.00)
-                ->withCurrency('USD')
-                ->withOrderCreateDate(date('Y-m-d H:i:s'))
-                ->withAddress($this->billingAddress, AddressType::BILLING)
-                ->withAddress($this->shippingAddress, AddressType::SHIPPING)
-                ->withBrowserData($this->browserData)
-                ->withMethodUrlCompletion(MethodUrlCompletion::NO)
+        $this->assertNotNull($initAuth);
+        $this->assertEquals('AUTHENTICATION_SUCCESSFUL', $initAuth->status);
+        $this->assertNotNull($initAuth->payerAuthenticationRequest);
+        $this->assertNotNull($initAuth->acsTransactionId);
 
-                // optionals
-                ->withApplicationId('f283b3ec-27da-42a1-acea-f3f70e75bbdc')
-                ->withSdkInterface(SdkInterface::BOTH)
-                ->withSdkUiTypes([SdkUiType::TEXT, SdkUiType::SINGLE_SELECT, SdkUiType::MULTI_SELECT, SdkUiType::OOB, SdkUiType::HTML_OTHER])
-                ->withReferenceNumber('3DS_LOA_SDK_PPFU_020100_00007')
-                ->withSdkTransactionId('b2385523-a66c-4907-ac3c-91848e8c0067')
-                ->withEncodedData('ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K')
-                ->withMaximumTimeout(5)
-                ->execute();
-            $this->assertNotNull($initAuth);
+        // get authentication data
+        $secureEcom = Secure3dService::getAuthenticationData()
+            ->withServerTransactionId($initAuth->serverTransactionId)
+            ->execute();
 
-            // get authentication data
-            $secureEcom = Secure3dService::getAuthenticationData()
-                ->withServerTransactionId($initAuth->serverTransactionId)
-                ->execute();
-            $this->card->threeDSecure = $secureEcom;
+        $this->assertEquals('AUTHENTICATION_SUCCESSFUL', $initAuth->status);
+        $this->card->threeDSecure = $secureEcom;
 
-            if ($secureEcom->status == 'AUTHENTICATION_SUCCESSFUL') {
-                $response = $this->card->charge(10.01)
-                    ->withCurrency('USD')
-                    ->execute();
+        $response = $this->card->charge(10.01)
+            ->withCurrency('USD')
+            ->execute();
 
-                $this->assertNotNull($response);
-                $this->assertEquals('00', $response->responseCode);
-            } else {
-                $this->fail('Signature verification failed.');
-            }
-        } else {
-            $this->fail('Card not enrolled');
-        }
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     public function testCheckVersion_Not_Enrolled()

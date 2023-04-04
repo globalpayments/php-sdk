@@ -821,8 +821,10 @@ class GpApiMapping
         $apm = new AlternativePaymentResponse();
         $transaction = self::mapResponse($response);
         $paymentMethodApm = $response->payment_method->apm;
-        $apm->redirectUrl = !empty($response->payment_method->redirect_url) ? $response->payment_method->redirect_url : null;
+        $apm->redirectUrl = !empty($response->payment_method->redirect_url) ?
+            $response->payment_method->redirect_url : ($paymentMethodApm->redirect_url ?? null);
         $apm->providerName = $paymentMethodApm->provider;
+        $apm->accountHolderName = $paymentMethodApm->provider_payer_name ?? null;
         $apm->ack = $paymentMethodApm->ack ?? null;
         $apm->sessionToken = !empty($paymentMethodApm->session_token) ? $paymentMethodApm->session_token : null;
         $apm->correlationReference = $paymentMethodApm->correlation_reference ?? null;

@@ -349,5 +349,27 @@ class GpApiApmTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $response->responseMessage);
+        $this->assertNotNull($response->alternativePaymentResponse->redirectUrl);
+    }
+
+    public function testAPMPendingTransaction()
+    {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::TEST_PAY);
+        $paymentMethod->returnUrl = 'https://example.com/returnUrl';
+        $paymentMethod->statusUpdateUrl = 'https://example.com/statusUrl';
+        $paymentMethod->cancelUrl = 'https://example.com/cancelUrl';
+        $paymentMethod->country = 'GB';
+        $paymentMethod->accountHolderName = 'Jane Doe';
+
+        $response = $paymentMethod->charge(19.99)
+            ->withCurrency('EUR')
+            ->withClientTransactionId('APM-20200417')
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::INITIATED, $response->responseMessage);
+        $this->assertNotNull($response->alternativePaymentResponse->redirectUrl);
+        $this->assertEquals(AlternativePaymentType::TEST_PAY, $response->alternativePaymentResponse->providerName);
     }
 }

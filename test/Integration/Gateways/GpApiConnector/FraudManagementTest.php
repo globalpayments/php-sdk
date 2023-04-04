@@ -62,17 +62,7 @@ class FraudManagementTest extends TestCase
 
     private function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = 'Q18DcsJvh8TtRo9zxICvg9S78S3RN8u2';
-        $config->appKey = 'CFaMNPgpPN4KXibu';
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardNotPresent;
-        $accessTokenInfo = new AccessTokenInfo();
-        $accessTokenInfo->transactionProcessingAccountName = 'transaction_processing';
-        $config->accessTokenInfo = $accessTokenInfo;
-        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
-
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
     public function testFraudManagementDataSubmissions()
@@ -100,8 +90,8 @@ class FraudManagementTest extends TestCase
 
     public function testFraudManagementDataSubmissionWithRules()
     {
-        $rule1 = '2c49c2e6-5843-4275-9b92-8c9b6dc8e566';
-        $rule2 = '2cfa3a28-f8f3-42f8-abbf-79b54e35de16';
+        $rule1 = '0c93a6c9-7649-4822-b5ea-1efa356337fd';
+        $rule2 = 'a539d51a-abc1-4fff-a38e-b34e00ad0cc3';
 
         $rules = new FraudRuleCollection();
         $rules->addRule($rule1, FraudFilterMode::ACTIVE);
@@ -133,11 +123,9 @@ class FraudManagementTest extends TestCase
     public function testFraudManagementDataSubmissionWith_AllRulesActive()
     {
         $ruleList = [
-            '2c49c2e6-5843-4275-9b92-8c9b6dc8e566',
-            '2cfa3a28-f8f3-42f8-abbf-79b54e35de16',
-            '21db158b-4541-4217-aa81-927596465547',
-            '6acbcb2e-79c7-40c3-8c17-b65c5fba2a54',
-            'a7da55fb-69c4-4c41-abb6-c4dded40354e'
+            '0c93a6c9-7649-4822-b5ea-1efa356337fd',
+            'a539d51a-abc1-4fff-a38e-b34e00ad0cc3',
+            'd023a19e-6985-4fda-bb9b-5d4e0dedbb1e'
         ];
 
         $rules = new FraudRuleCollection();
@@ -166,11 +154,9 @@ class FraudManagementTest extends TestCase
     public function testFraudManagementDataSubmissionWith_AllRulesOff()
     {
         $ruleList = [
-            '2c49c2e6-5843-4275-9b92-8c9b6dc8e566',
-            '2cfa3a28-f8f3-42f8-abbf-79b54e35de16',
-            '21db158b-4541-4217-aa81-927596465547',
-            '6acbcb2e-79c7-40c3-8c17-b65c5fba2a54',
-            'a7da55fb-69c4-4c41-abb6-c4dded40354e'
+            '0c93a6c9-7649-4822-b5ea-1efa356337fd',
+            'a539d51a-abc1-4fff-a38e-b34e00ad0cc3',
+            'd023a19e-6985-4fda-bb9b-5d4e0dedbb1e'
         ];
 
         $rules = new FraudRuleCollection();
@@ -196,7 +182,7 @@ class FraudManagementTest extends TestCase
         }
     }
 
-    public function testFraudManagementDataSubmissionFullCycle()
+    public function testFraudManagementDataSubmissionFullCycleX()
     {
         $trn = $this->card->authorize(15.10)
             ->withCurrency($this->currency)
@@ -280,11 +266,11 @@ class FraudManagementTest extends TestCase
 
     public function testCaptureTransactionAfterFraudResultHold()
     {
+        $this->card->cardHolderName = 'Lenny Bruce';
         $trn = $this->card->authorize(10.10)
             ->withCurrency($this->currency)
             ->withAddress($this->address)
             ->withFraudFilter(FraudFilterMode::ACTIVE)
-            ->withCustomerIpAddress('123.123.123.123')
             ->execute();
 
         $this->assertNotNull($trn);
@@ -308,11 +294,11 @@ class FraudManagementTest extends TestCase
 
     public function testRefundTransactionAfterFraudResultHold()
     {
+        $this->card->cardHolderName = 'Lenny Bruce';
         $trn = $this->card->charge(10.10)
             ->withCurrency($this->currency)
             ->withAddress($this->address)
             ->withFraudFilter(FraudFilterMode::ACTIVE)
-            ->withCustomerIpAddress('123.123.123.123')
             ->execute();
 
         $this->assertNotNull($trn);
@@ -328,8 +314,8 @@ class FraudManagementTest extends TestCase
                 ->withCurrency($this->currency)
                 ->execute();
         } catch (GatewayException $e) {
-            $this->assertEquals('50017', $e->responseCode);
-            $this->assertEquals('Status Code: SYSTEM_ERROR_DOWNSTREAM - The refund password you entered was incorrect ', $e->getMessage());
+            $this->assertEquals("Status Code: INVALID_REQUEST_DATA - You can't refund a delayed transaction that has not been sent for settlement You are refunding money to a customer that has not been and never will be charged! ", $e->getMessage());
+            $this->assertEquals('40087', $e->responseCode);
             $errorFound = true;
         } finally {
             $this->assertTrue($errorFound);
@@ -407,18 +393,14 @@ class FraudManagementTest extends TestCase
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterResult::RELEASE_SUCCESSFUL, $trn->fraudFilterResponse->fraudResponseResult);
 
-        $errorFound = false;
-        try {
-            $trn->refund()
-                ->withCurrency($this->currency)
-                ->execute();
-        } catch (GatewayException $e) {
-            $this->assertEquals('50017', $e->responseCode);
-            $this->assertEquals('Status Code: SYSTEM_ERROR_DOWNSTREAM - The refund password you entered was incorrect ', $e->getMessage());
-            $errorFound = true;
-        } finally {
-            $this->assertTrue($errorFound);
-        }
+        $refund = $trn->refund()
+            ->withCurrency($this->currency)
+            ->execute();
+
+        $this->assertNotNull($refund);
+        $this->assertEquals('SUCCESS', $refund->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $refund->responseMessage);
+
     }
 
     public function testFraudManagementDataSubmissionFullCycle_ChargePassive()
@@ -517,11 +499,11 @@ class FraudManagementTest extends TestCase
 
     public function testReleaseTransactionAfterFraudResultHold()
     {
+        $this->card->cardHolderName = 'Lenny Bruce';
         $trn = $this->card->charge(98.10)
             ->withCurrency($this->currency)
             ->withAddress($this->address)
             ->withFraudFilter(FraudFilterMode::ACTIVE)
-            ->withCustomerIpAddress('123.123.123.123')
             ->execute();
 
         $this->assertNotNull($trn);
@@ -631,11 +613,11 @@ class FraudManagementTest extends TestCase
 
     public function testHoldTransactionAfterFraudResultHold()
     {
+        $this->card->cardHolderName = 'Lenny Bruce';
         $trn = $this->card->charge(98.10)
             ->withCurrency($this->currency)
             ->withAddress($this->address)
             ->withFraudFilter(FraudFilterMode::ACTIVE)
-            ->withCustomerIpAddress('123.123.123.123')
             ->execute();
 
         $this->assertNotNull($trn);
@@ -699,8 +681,8 @@ class FraudManagementTest extends TestCase
                 ->withReasonCode(ReasonCode::FALSE_POSITIVE)
                 ->execute();
         } catch (GatewayException $e) {
-            $this->assertEquals('40008', $e->responseCode);
             $this->assertEquals(sprintf('Status Code: RESOURCE_NOT_FOUND - Transaction %s not found at this location.', $trn->transactionId), $e->getMessage());
+            $this->assertEquals('40008', $e->responseCode);
             $errorFound = true;
         } finally {
             $this->assertTrue($errorFound);
@@ -746,13 +728,13 @@ class FraudManagementTest extends TestCase
             ->orderBy(TransactionSortProperty::TIME_CREATED)
             ->where(SearchCriteria::START_DATE, $startDate)
             ->andWith(SearchCriteria::END_DATE, $endDate)
-            ->andWith(SearchCriteria::RISK_ASSESSMENT_RESULT, FraudFilterResult::HOLD)
+            ->andWith(SearchCriteria::RISK_ASSESSMENT_RESULT, FraudFilterResult::PASS)
             ->execute();
 
         $this->assertGreaterThan(0, count($response->result));
         /** @var TransactionSummary $trnSummary */
         $trnSummary = $response->result[rand(0, count($response->result) - 1)];
         $this->assertNotNull($trnSummary->fraudManagementResponse);
-        $this->assertEquals(FraudFilterResult::HOLD, $trnSummary->fraudManagementResponse->fraudResponseResult);
+        $this->assertEquals(FraudFilterResult::PASS, $trnSummary->fraudManagementResponse->fraudResponseResult);
     }
 }

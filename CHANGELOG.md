@@ -6,6 +6,13 @@
 
 ## Latest Version
 #### Enhancements:
+- Portico/Heartland: improvements to transaction request building logic
+- GP-API: Unit tests update on fraud management and APMs
+- GP-ECOM: Unit test update on 3DS
+
+
+## v7.0.0 (03/21/2023)
+#### Enhancements:
 - Add payer information on Transaction object
 - GP-API: Update request for boarding merchants
 - GP-ECOM: Change recurring entity return type
