@@ -144,4 +144,16 @@ class ReportingService
             ->withModifier(TransactionModifier::MERCHANT)
             ->withPaging($page, $pageSize);
     }
+
+    public static function findAccounts($page, $pageSize)
+    {
+        return (new UserReportBuilder(ReportType::FIND_ACCOUNTS_PAGED))
+            ->withPaging($page, $pageSize);
+    }
+
+    public static function accountDetail(string $accountId)
+    {
+        return (new UserReportBuilder(ReportType::FIND_ACCOUNT_DETAIL))
+            ->withAccountId($accountId);
+    }
 }

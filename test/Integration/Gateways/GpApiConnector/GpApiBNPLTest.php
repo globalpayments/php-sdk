@@ -511,7 +511,7 @@ class GpApiBNPLTest extends TestCase
 
     public function testGetBNPLTransactionById()
     {
-        $id = 'TRN_EryDeQRtqagH27G87DkSfZGL1kiE21';
+        $id = 'TRN_o7PsaRAgOviqLCPHBaxDcqYO70oUhu';
 
         $trnInfo = ReportingService::transactionDetail($id)->execute();
 

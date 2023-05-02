@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Gateways;
 
 use GlobalPayments\Api\Builders\Secure3dBuilder;
+use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
 use GlobalPayments\Api\Entities\Enums\ExemptionReason;
 use GlobalPayments\Api\Entities\Enums\ExemptStatus;
 use GlobalPayments\Api\Entities\MessageExtension;
@@ -372,7 +373,6 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
     {
         $doc = json_decode($rawResponse, true);
         $secureEcom = new ThreeDSecure();
-
         // check enrolled
         $secureEcom->serverTransactionId = isset($doc['server_trans_id']) ? $doc['server_trans_id'] : null;
         if (array_key_exists('enrolled', $doc)) {
@@ -451,6 +451,14 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
         } elseif (array_key_exists('encoded_creq', $doc)) {
             $secureEcom->payerAuthenticationRequest = isset($doc['encoded_creq']) ? $doc['encoded_creq'] : null;
         }
+
+        if ($secureEcom->authenticationSource == AuthenticationSource::MOBILE_SDK)
+        {
+            $secureEcom->payerAuthenticationRequest = $doc['acs_signed_content'] ?? null;
+            $secureEcom->acsInterface = $doc['acs_rendering_type']['acs_interface'] ?? null;
+            $secureEcom->acsUiTemplate = $doc['acs_rendering_type']['acs_ui_template'] ?? null;
+        }
+        $secureEcom->acsReferenceNumber = $doc['acs_reference_number'] ?? null;
 
         $response = new Transaction();
         $response->threeDSecure = $secureEcom;

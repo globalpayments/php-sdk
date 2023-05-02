@@ -11,7 +11,6 @@ use GlobalPayments\Api\Builders\RequestBuilder\RequestBuilderFactory;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
@@ -23,8 +22,8 @@ use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Entities\Reporting\DepositSummary;
 use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
+use GlobalPayments\Api\Entities\Reporting\MerchantAccountSummary;
 use GlobalPayments\Api\Entities\RiskAssessment;
-use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\User;
@@ -42,10 +41,16 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
      */
     private $gpApiConfig;
     private $accessToken;
+    private $builtInMerchantManagementService = true;
 
     public function supportsOpenBanking() : bool
     {
         return true;
+    }
+
+    public function hasBuiltInMerchantManagementService()
+    {
+        return $this->builtInMerchantManagementService;
     }
 
     public function __construct(GpApiConfig $gpApiConfig)
@@ -136,7 +141,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
      *
      * @param ReportBuilder $builder
      *
-     * @return PagedResult|DepositSummary|DisputeSummary|TransactionSummary
+     * @return PagedResult|DepositSummary|DisputeSummary|TransactionSummary|MerchantAccountSummary
      * @throws ApiException
      * @throws GatewayException
      */
@@ -195,8 +200,11 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
          * @var GpApiRequest $request
          */
         $request =  $requestBuilder->buildRequest($builder, $this->gpApiConfig);
-        $merchantUrl = !empty($this->gpApiConfig->merchantId) ?
+        $merchantUrl = (
+            !empty($this->gpApiConfig->merchantId) &&
+            strpos($request->endpoint, GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT) === false) ?
             GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $this->gpApiConfig->merchantId : '';
+
         $request->endpoint = $merchantUrl . $request->endpoint;
 
         if (empty($request)) {
@@ -330,6 +338,12 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
             $accessTokenInfo->riskAssessmentAccountID = $response->getRiskAssessmentAccountID();
         }
 
+        if (
+            empty($accessTokenInfo->merchantManagementAccountID) &&
+            empty($accessTokenInfo->merchantManagementAccountName)
+        ) {
+            $accessTokenInfo->merchantManagementAccountID = $response->getMerchantManagementAccountID();
+        }
         $this->gpApiConfig->accessTokenInfo = $accessTokenInfo;
     }
 

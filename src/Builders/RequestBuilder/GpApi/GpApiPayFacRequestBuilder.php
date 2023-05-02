@@ -55,7 +55,7 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
         $requestData = $queryParams = null;
         switch ($builder->transactionType) {
             case TransactionType::CREATE:
-                if (TransactionModifier::MERCHANT) {
+                if ($builder->transactionModifier == TransactionModifier::MERCHANT) {
                     $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT;
                     $verb = 'POST';
                     if (empty($builder->userPersonalData)) {
@@ -64,21 +64,37 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
                     $requestData = $this->buildCreateMerchantRequest();
                 }
                 break;
-            case TransactionType::EDIT:
-                if (TransactionModifier::MERCHANT) {
-                    $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $builder->userReference->userId;
-                    $verb = 'PATCH';
-                    $requestData = $this->buildEditMerchantRequest();
-                }
-                break;
             case TransactionType::FETCH:
-                if (TransactionModifier::MERCHANT) {
+                if ($builder->transactionModifier == TransactionModifier::MERCHANT) {
                     $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $builder->userId;
                     $verb = 'GET';
                 }
                 break;
+            case TransactionType::EDIT:
+                $verb = 'PATCH';
+                if ($builder->transactionModifier == TransactionModifier::MERCHANT) {
+                    $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $builder->userReference->userId;
+                    $requestData = $this->buildEditMerchantRequest();
+                } else {
+                    $endpoint = '';
+                    if (!empty($builder->userReference->userId)) {
+                        $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $builder->userReference->userId;
+                    }
+                    $endpoint .= GpApiRequest::ACCOUNTS_ENDPOINT . '/' . $builder->accountNumber;
+                    $requestData['payer'] = [
+                        'payment_method' =>  [
+                            'name' => $this->builder->creditCardInformation instanceof CreditCardData ?
+                                $this->builder->creditCardInformation->cardHolderName : null,
+                            'card' => $this->builder->creditCardInformation instanceof CreditCardData ?
+                                $this->mapCreditCardInfo($this->builder->creditCardInformation) : null
+                            ],
+                        'billing_address' =>
+                            !empty($this->builder->addresses) && $this->builder->addresses->offsetExists(AddressType::BILLING) ?
+                            $this->mapAddress($this->builder->addresses->get(AddressType::BILLING), 'alpha2') : null
+                    ];
+                }
             default:
-                return '';
+                break;
         }
 
         if (empty($endpoint)) {
@@ -120,16 +136,8 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
                 'name' => $bankAccountData->bankName,
                 'code' => $bankAccountData->routingNumber, //@TODO confirmantion from GP-API team
                 'international_code' => '', //@TODO
-                'address' => [
-                    'line_1' => $bankAccountData->bankAddress->streetAddress1 ?? null,
-                    'line_2' => $bankAccountData->bankAddress->streetAddress2 ?? null,
-                    'line_3' => $bankAccountData->bankAddress->streetAddress3 ?? null,
-                    'city' => $bankAccountData->bankAddress->city ?? null,
-                    'postal_code' => $bankAccountData->bankAddress->postalCode ?? null,
-                    'state' => $bankAccountData->bankAddress->state ?? null,
-                    'country' => !empty($bankAccountData->bankAddress) ?
-                        CountryUtils::getCountryCodeByCountry($bankAccountData->bankAddress->countryCode) : '',
-                ]
+                'address' => !empty($bankAccountData->bankAddress) ?
+                    $this->mapAddress($bankAccountData->bankAddress, 'alpha2') : null,
             ]
         ];
     }
@@ -137,10 +145,12 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
     private function mapCreditCardInfo(CreditCardData $creditCardInformation)
     {
         return [
-            'name' => $creditCardInformation->cardHolderName,
             'number' => $creditCardInformation->number,
-            'expiry_month' => substr($creditCardInformation->expMonth, 2, 2),
-            'expiry_year' => substr($creditCardInformation->expYear, 0, 2)
+            'expiry_month' => !empty($creditCardInformation->expMonth) ?
+                substr($creditCardInformation->expMonth, 0, 2) : null,
+            'expiry_year' => !empty($creditCardInformation->expYear) ?
+                substr($creditCardInformation->expYear, 2, 2) : null,
+            'cvv' => $creditCardInformation->cvn ?? null
         ];
     }
 
@@ -179,18 +189,31 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
         }
         /** @var Address $address */
         foreach ($addressList as $addressType => $address) {
-            $addresses[] = [
-                'line_1' => $address->streetAddress1,
-                'line_2' => $address->streetAddress2,
-                'city' => $address->city,
-                'postal_code' => $address->postalCode,
-                'state' => $address->state,
-                'country' => CountryUtils::getCountryCodeByCountry($address->countryCode),
-                'functions' => [$addressType]
-            ];
+            $addresses[] = $this->mapAddress($address, 'alpha2') + ['functions' => [$addressType]];
         }
 
         return $addresses ?? [];
+    }
+
+    private function mapAddress(Address $address, $countryCodeType = null)
+    {
+        switch ($countryCodeType)
+        {
+            case 'alpha2':
+                $countryCode = CountryUtils::getCountryCodeByCountry($address->countryCode);
+                break;
+            default:
+                $countryCode = $address->countryCode;
+        }
+        return [
+            'line_1' => $address->streetAddress1,
+            'line_2' => $address->streetAddress2,
+            'line_3' => $address->streetAddress3,
+            'city' => $address->city,
+            'state' => $address->state,
+            'postal_code' => $address->postalCode,
+            'country' => $countryCode,
+        ];
     }
 
     /**
@@ -271,15 +294,7 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
                 'job_title' => $person->jobTitle
             ];
             if (!empty($person->address)) {
-                $personInfo['address'] = [
-                    'line_1' => $person->address->streetAddress1,
-                    'line_2' => $person->address->streetAddress2,
-                    'line_3' => $person->address->streetAddress3,
-                    'city' => $person->address->city,
-                    'state' => $person->address->state,
-                    'postal_code' => $person->address->postalCode,
-                    'country' => $person->address->countryCode,
-                ];
+                $personInfo['address'] = self::mapAddress($person->address);
             }
             if (!empty($person->homePhone)) {
                 $personInfo['contact_phone'] = [

@@ -18,12 +18,15 @@ class GpApiTokenResponse
     public $disputeManagementAccountName;
     public $tokenizationAccountName;
     public $transactionProcessingAccountName;
+    public $merchantManagementAccountName;
+    public $merchantManagementAccountId;
 
     const DATA_ACCOUNT_NAME_PREFIX = 'DAA_';
     const DISPUTE_MANAGEMENT_ACCOUNT_NAME_PREFIX = 'DIA_';
     const TOKENIZATION_ACCOUNT_NAME_PREFIX = 'TKA_';
     const TRANSACTION_PROCESSING_ACCOUNT_NAME_PREFIX = 'TRA_';
     const RIKS_ASSESSMENT_ACCOUNT_NAME_PREFIX = 'RAA_';
+    const MERCHANT_MANAGEMENT_ACCOUNT_PREFIX = 'MMA_';
 
     public function __construct($response)
     {
@@ -117,6 +120,15 @@ class GpApiTokenResponse
     public function getRiskAssessmentAccountID()
     {
         return $this->getAccountID(self::RIKS_ASSESSMENT_ACCOUNT_NAME_PREFIX);
+    }
+    public function getMerchantManagementAccountName()
+    {
+        return $this->getAccountName(self::MERCHANT_MANAGEMENT_ACCOUNT_PREFIX);
+    }
+
+    public function getMerchantManagementAccountID()
+    {
+        return $this->getAccountID(self::MERCHANT_MANAGEMENT_ACCOUNT_PREFIX);
     }
 
     public function getToken()

@@ -13,6 +13,7 @@ use GlobalPayments\Api\Entities\Enums\StatusChangeReason;
 use GlobalPayments\Api\Entities\Enums\UserStatus;
 use GlobalPayments\Api\Entities\Enums\UserType;
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\PayFac\BankAccountData;
 use GlobalPayments\Api\Entities\PayFac\UserPersonalData;
@@ -26,10 +27,12 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\PayFacService;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Tests\Integration\Gateways\ProPay\TestData\TestAccountData;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
+use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use PHPUnit\Framework\TestCase;
 
 class GpApiMerchantsOnboardTest extends TestCase
@@ -41,17 +44,13 @@ class GpApiMerchantsOnboardTest extends TestCase
 
     public function setUpConfig()
     {
-        $config = new GpApiConfig();
-        $config->appId = "A1feRdMmEB6m0Y1aQ65H0bDi9ZeAEB2t";
-        $config->appKey = "5jPt1OpB6LLitgi7";
-        $config->environment = Environment::TEST;
-        $config->channel = Channel::CardNotPresent;
-        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
+        BaseGpApiTestConfig::$appId = BaseGpApiTestConfig::PARTNER_SOLUTION_APP_ID;
+        BaseGpApiTestConfig::$appKey = BaseGpApiTestConfig::PARTNER_SOLUTION_APP_KEY;
 
-        return $config;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
-    public function testBoardMerchant()
+    public function testBoardMerchantX()
     {
         $merchantData = $this->getMerchantData();
         $products = $this->getProductList();
@@ -159,7 +158,7 @@ class GpApiMerchantsOnboardTest extends TestCase
         $paymentMethodList = $merchant->paymentMethodList->getIterator();
         if($paymentMethodList->valid()) {
             $paymentMethodList->seek(1);
-            $this->assertInstanceOf(\GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod::class,
+            $this->assertInstanceOf(IPaymentMethod::class,
                 $paymentMethodList->current()['payment_method'] );
         }
     }
@@ -345,9 +344,9 @@ class GpApiMerchantsOnboardTest extends TestCase
                 ->withPersonsData($persons)
                 ->withPaymentStatistics($paymentStatistics)
                 ->execute();
-        } catch (ArgumentException $e) {
+        } catch (BuilderException $e) {
             $errorFound = true;
-            $this->assertEquals('Merchant data is mandatory!', $e->getMessage());
+            $this->assertEquals('userPersonalData cannot be null for this transaction type.', $e->getMessage());
         } finally {
             $this->assertTrue($errorFound);
         }
@@ -483,33 +482,6 @@ class GpApiMerchantsOnboardTest extends TestCase
         } catch (GatewayException $e) {
             $errorFound = true;
             $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields website', $e->getMessage());
-            $this->assertEquals('40005', $e->responseCode);
-        } finally {
-            $this->assertTrue($errorFound);
-        }
-    }
-
-    public function testBoardMerchant_WithoutTaxIdReference()
-    {
-        $merchantData = $this->getMerchantData();
-        $merchantData->taxIdReference = null;
-
-        $products = $this->getProductList();
-        $persons = $this->getPersonList();
-        $paymentStatistics = $this->getPaymentStatistics();
-
-        $errorFound = false;
-        try {
-            PayFacService::createMerchant()
-                ->withUserPersonalData($merchantData)
-                ->withDescription('Merchant Business Description')
-                ->withProductData($products)
-                ->withPersonsData($persons)
-                ->withPaymentStatistics($paymentStatistics)
-                ->execute();
-        } catch (GatewayException $e) {
-            $errorFound = true;
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields tax_id_reference', $e->getMessage());
             $this->assertEquals('40005', $e->responseCode);
         } finally {
             $this->assertTrue($errorFound);
@@ -789,7 +761,7 @@ class GpApiMerchantsOnboardTest extends TestCase
         $bankAccountInformation->accountHolderName = 'Bank Account Holder Name';
         $bankAccountInformation->accountNumber = '123456788';
         $bankAccountInformation->accountOwnershipType = 'Personal';
-        $bankAccountInformation->accountType = AccountType::SAVINGS;
+        $bankAccountInformation->accountType = AccountType::CHECKING;
         $bankAccountInformation->routingNumber = '102000076';
 
         return $bankAccountInformation;

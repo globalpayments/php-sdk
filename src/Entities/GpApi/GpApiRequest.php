@@ -21,4 +21,5 @@ class GpApiRequest extends Request
     const DCC_ENDPOINT = '/currency-conversions';
     const PAYLINK_ENDPOINT = '/links';
     const RISK_ASSESSMENTS = '/risk-assessments';
+    const ACCOUNTS_ENDPOINT = '/accounts';
 }

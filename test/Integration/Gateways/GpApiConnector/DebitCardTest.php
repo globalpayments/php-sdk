@@ -91,6 +91,8 @@ class DebitCardTest extends TestCase
         $this->assertEquals('SUCCESS', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
+        sleep(1);
+
         $response = $transaction->reverse()
             ->withCurrency("USD")
             ->execute();

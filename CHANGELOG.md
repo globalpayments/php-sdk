@@ -6,6 +6,12 @@
 
 ## Latest Version
 #### Enhancements:
+- GP-API: Manage merchant accounts for partner solution
+    (https://developer.globalpay.com/api/accounts)
+- GP-ECOM: Add to the mapping response fields: acs_reference_number & acs_signed_content for the authentication source MOBILE_SDK
+
+## v7.0.1 (04/04/2023)
+#### Enhancements:
 - Portico/Heartland: improvements to transaction request building logic
 - GP-API: Unit tests update on fraud management and APMs
 - GP-ECOM: Unit test update on 3DS

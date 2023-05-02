@@ -14,6 +14,9 @@ class BaseGpApiTestConfig
     const APP_ID = '4gPqnGBkppGYvoE5UX9EWQlotTxGUDbs';
     const APP_KEY = 'FQyJA5VuEQfcji2M';
 
+    const PARTNER_SOLUTION_APP_ID = 'A1feRdMmEB6m0Y1aQ65H0bDi9ZeAEB2t';
+    const PARTNER_SOLUTION_APP_KEY = '5jPt1OpB6LLitgi7';
+
     public static $appId = self::APP_ID;
     public static $appKey = self::APP_KEY;
 

@@ -800,6 +800,7 @@ class Secure3dServiceTest extends TestCase
 
     public function testOptionalMobileFields()
     {
+        $this->card->number = '4012001038488884';
         $secureEcom = Secure3dService::checkEnrollment($this->card)
             ->execute('default', Secure3dVersion::TWO);
         $this->assertNotNull($secureEcom);
@@ -836,16 +837,20 @@ class Secure3dServiceTest extends TestCase
             ->execute();
 
         $this->assertNotNull($initAuth);
-        $this->assertEquals('AUTHENTICATION_SUCCESSFUL', $initAuth->status);
+        $this->assertEquals('CHALLENGE_REQUIRED', $initAuth->status);
         $this->assertNotNull($initAuth->payerAuthenticationRequest);
         $this->assertNotNull($initAuth->acsTransactionId);
+        $this->assertNotNull($initAuth->payerAuthenticationRequest);
+        $this->assertNotNull($initAuth->acsUiTemplate);
+        $this->assertNotNull($initAuth->acsInterface);
+        $this->assertNotNull($initAuth->acsReferenceNumber);
 
         // get authentication data
         $secureEcom = Secure3dService::getAuthenticationData()
             ->withServerTransactionId($initAuth->serverTransactionId)
             ->execute();
 
-        $this->assertEquals('AUTHENTICATION_SUCCESSFUL', $initAuth->status);
+        $this->assertEquals('CHALLENGE_REQUIRED', $initAuth->status);
         $this->card->threeDSecure = $secureEcom;
 
         $response = $this->card->charge(10.01)

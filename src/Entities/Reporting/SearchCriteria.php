@@ -84,4 +84,6 @@ class SearchCriteria extends Enum
     const PAYLINK_STATUS = 'payLinkStatus';
     const DESCRIPTION = 'description';
     const EXPIRATION_DATE = 'expirationDate';
+    const ACCOUNT_STATUS = 'accountStatus';
+    const ADDRESS = 'address';
 }

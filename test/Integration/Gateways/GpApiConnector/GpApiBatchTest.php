@@ -155,6 +155,8 @@ class GpApiBatchTest extends TestCase
             ->execute();
         $this->assertTransactionResponse($transaction, TransactionStatus::CAPTURED);
 
+        sleep(2);
+
         $batch = BatchService::closeBatch($transaction->batchSummary->batchReference);
         $this->assertBatchCloseResponse($batch, 0);
     }

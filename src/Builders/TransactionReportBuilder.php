@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Builders;
 
+use GlobalPayments\Api\Entities\Enums\MerchantAccountsSortProperty;
 use GlobalPayments\Api\Entities\Enums\ActionSortProperty;
 use GlobalPayments\Api\Entities\Enums\DepositSortProperty;
 use GlobalPayments\Api\Entities\Enums\DisputeSortProperty;
@@ -288,51 +289,38 @@ class TransactionReportBuilder extends ReportBuilder
      */
     public function orderBy($sortProperty, $sortDirection = SortDirection::DESC)
     {
+        $this->order = $sortDirection;
         switch ($this->reportType) {
             case ReportType::FIND_TRANSACTIONS:
             case ReportType::FIND_TRANSACTIONS_PAGED:
             case ReportType::FIND_SETTLEMENT_TRANSACTIONS:
             case ReportType::FIND_SETTLEMENT_TRANSACTIONS_PAGED:
                 $this->transactionOrderBy = $sortProperty;
-                $this->order = $sortDirection;
                 break;
             case ReportType::FIND_DEPOSITS:
             case ReportType::FIND_DEPOSITS_PAGED:
                 $this->depositOrderBy = $sortProperty;
-                $this->order = $sortDirection;
                 break;
             case ReportType::FIND_DISPUTES:
             case ReportType::FIND_DISPUTES_PAGED:
             case ReportType::FIND_SETTLEMENT_DISPUTES:
             case ReportType::FIND_SETTLEMENT_DISPUTES_PAGED:
                 $this->disputeOrderBy = $sortProperty;
-                $this->order = $sortDirection;
                 break;
             case ReportType::FIND_STORED_PAYMENT_METHODS_PAGED:
                 $this->storedPaymentMethodOrderBy = $sortProperty;
-                $this->order = $sortDirection;
                 break;
             case ReportType::FIND_ACTIONS_PAGED:
                 $this->actionOrderBy = $sortProperty;
-                $this->order = $sortDirection;
                 break;
             case ReportType::FIND_PAYLINK_PAGED:
                 $this->payLinkOrderBy = $sortProperty;
-                $this->order = $sortDirection;
                 break;
             default:
                 throw new \InvalidArgumentException("Invalid order found");
         }
 
         return $this;
-    }
-
-    /**
-     * @return SearchCriteriaBuilder
-     */
-    public function where($criteria, $value)
-    {
-        return $this->searchBuilder->andWith($criteria, $value);
     }
 
     protected function setupValidations()

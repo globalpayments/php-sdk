@@ -1,7 +1,10 @@
 <?php
 namespace GlobalPayments\Api\Builders;
 
+use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\AddressCollection;
 use GlobalPayments\Api\Entities\Customer;
+use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodFunction;
 use GlobalPayments\Api\Entities\Enums\StatusChangeReason;
 use GlobalPayments\Api\Entities\PayFac\UserReference;
@@ -99,6 +102,9 @@ class PayFacBuilder extends BaseBuilder
     /** @var string */
     public $idempotencyKey;
 
+    /** @var AddressCollection */
+    public $addresses;
+
     const UPLOAD_FILE_TYPES = [
         'tif', 'tiff', 'bmp', 'jpg', 'jpeg', 'gif', 'png', 'doc', 'docx'
     ];
@@ -128,13 +134,14 @@ class PayFacBuilder extends BaseBuilder
     {
         parent::execute($configName);
         $client = ServicesContainer::instance()->getPayFac($configName);
-        switch ($this->transactionModifier)
-        {
-            case TransactionModifier::MERCHANT:
-                return $client->processBoardingUser($this);
-            default:
-                return $client->processPayFac($this);
+        if (
+            method_exists($client, "hasBuiltInMerchantManagementService") &&
+            $client->hasBuiltInMerchantManagementService()
+        ) {
+            return $client->processBoardingUser($this);
         }
+
+        return $client->processPayFac($this);
     }
 
     public function __get($name)
@@ -254,6 +261,12 @@ class PayFacBuilder extends BaseBuilder
         )
             ->with(TransactionModifier::MERCHANT)
             ->check('userId')->isNotNull();
+
+        $this->validations->of(
+            TransactionType::CREATE
+        )
+            ->with(TransactionModifier::MERCHANT)
+            ->check('userPersonalData')->isNotNull();
     }
 
     /*
@@ -559,6 +572,17 @@ class PayFacBuilder extends BaseBuilder
     public function withIdempotencyKey($value)
     {
         $this->idempotencyKey = $value;
+
+        return $this;
+    }
+
+    public function withAddress(Address $address, $type = AddressType::BILLING)
+    {
+        if (!isset($this->addresses)) {
+            $this->addresses = new AddressCollection();
+        }
+
+        $this->addresses->add($address, $type);
 
         return $this;
     }

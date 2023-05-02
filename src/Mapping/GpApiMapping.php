@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Mapping;
 
 use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\AddressCollection;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\BankPaymentResponse;
 use GlobalPayments\Api\Entities\BatchSummary;
@@ -37,6 +38,7 @@ use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Entities\Reporting\ActionSummary;
 use GlobalPayments\Api\Entities\Reporting\DepositSummary;
 use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
+use GlobalPayments\Api\Entities\Reporting\MerchantAccountSummary;
 use GlobalPayments\Api\Entities\Reporting\MerchantSummary;
 use GlobalPayments\Api\Entities\Reporting\PayLinkSummary;
 use GlobalPayments\Api\Entities\Reporting\StoredPaymentMethodSummary;
@@ -64,6 +66,7 @@ class GpApiMapping
     const MERCHANT_SINGLE = 'MERCHANT_SINGLE';
     const MERCHANT_EDIT = 'MERCHANT_EDIT';
     const MERCHANT_EDIT_INITIATED = 'MERCHANT_EDIT_INITIATED';
+    const ADDRESS_LOOKUP = 'ADDRESS_LIST';
 
     /**
      * Map a response to a Transaction object for further chaining
@@ -368,6 +371,14 @@ class GpApiMapping
                     array_push($report->result, self::mapMerchantSummary($merchant));
                 }
                 return $report;
+            case ReportType::FIND_ACCOUNTS_PAGED:
+                $report = self::setPagingInfo($response);
+                foreach ($response->accounts as $account) {
+                    array_push($report->result, self::mapMerchantAccountSummary($account));
+                }
+                return $report;
+            case ReportType::FIND_ACCOUNT_DETAIL:
+                return self::mapMerchantAccountSummary($response);
             default:
                 throw new ApiException("Report type not supported!");
         }
@@ -979,6 +990,30 @@ class GpApiMapping
         $transaction->bnplResponse = $bnplResponse;
 
         return $transaction;
+    }
+
+    private static function mapMerchantAccountSummary($account)
+    {
+        $merchantAccountSummary  = new MerchantAccountSummary();
+        $merchantAccountSummary->id = $account->id ?? null;
+        $merchantAccountSummary->type = $account->type ?? null;
+        $merchantAccountSummary->name = $account->name ?? null;
+        $merchantAccountSummary->status = $account->status ?? null;
+        $merchantAccountSummary->permissions = $account->permissions ?? null;
+        $merchantAccountSummary->countries = $account->countries ?? null;
+        $merchantAccountSummary->channels = $account->channels ?? null;
+        $merchantAccountSummary->currencies = $account->currencies ?? null;
+        $merchantAccountSummary->paymentMethods = $account->payment_methods ?? null;
+        $merchantAccountSummary->configurations = $account->configurations ?? null;
+        if (!empty($account->addresses)) {
+            $addresses = new AddressCollection();
+            foreach ($account->addresses as $key => $address) {
+                $addresses->add(self::mapAddressObject($address), $key);
+            }
+            $merchantAccountSummary->addresses = $addresses;
+        }
+
+        return $merchantAccountSummary;
     }
 
     private static function mapMerchantSummary($merchant): MerchantSummary

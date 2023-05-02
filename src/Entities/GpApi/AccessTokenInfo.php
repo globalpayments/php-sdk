@@ -48,4 +48,9 @@ class AccessTokenInfo
 
     /** @var string */
     public $riskAssessmentAccountID;
+    /** @var string */
+    public $merchantManagementAccountName;
+
+    /** @var string */
+    public $merchantManagementAccountID;
 }

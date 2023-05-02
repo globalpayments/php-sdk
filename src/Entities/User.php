@@ -172,6 +172,7 @@ class User
     public function edit()
     {
         $builder = (new PayFacBuilder(TransactionType::EDIT))
+            ->withModifier(TransactionModifier::MERCHANT)
             ->withUserReference($this->userReference);
 
         if ($this->userReference->userType !== null) {

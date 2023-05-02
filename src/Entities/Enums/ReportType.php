@@ -30,4 +30,6 @@ class ReportType extends Enum
     const PAYLINK_DETAIL = 16777216; // 1 << 24
     const FIND_PAYLINK_PAGED = 33554432; // 1 << 25
     const FIND_MERCHANTS_PAGED = 67108864; // 1 << 26
+    const FIND_ACCOUNTS_PAGED = 134217728; // 1 << 27
+    const FIND_ACCOUNT_DETAIL = 268435456; // 1 << 28
 }

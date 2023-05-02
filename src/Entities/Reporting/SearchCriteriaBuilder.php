@@ -1,7 +1,10 @@
 <?php
 namespace GlobalPayments\Api\Entities\Reporting;
 
+use GlobalPayments\Api\Builders\ReportBuilder;
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
+use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\Enums\MerchantAccountStatus;
 use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\DepositStatus;
@@ -28,6 +31,9 @@ class SearchCriteriaBuilder
      * @var TransactionReportBuilder
      */
     public $reportBuilder;
+
+    /** @var string */
+    public $accountId;
 
     /**
      * @var string
@@ -503,7 +509,13 @@ class SearchCriteriaBuilder
 
     /** @var PayLinkStatus */
     public $payLinkStatus;
-    
+
+    /** @var MerchantAccountStatus */
+    public $accountStatus;
+
+    /** @var Address */
+    public $address;
+
     /** ******************************
      * Open banking search criteria *
      ********************************/
@@ -539,7 +551,8 @@ class SearchCriteriaBuilder
 
     /** END FRAUD MANAGEMENT search criteria */
 
-    public function __construct(TransactionReportBuilder $reportBuilder = null)
+
+    public function __construct(ReportBuilder $reportBuilder = null)
     {
         $this->reportBuilder = $reportBuilder;
     }

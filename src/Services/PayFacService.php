@@ -14,15 +14,15 @@ class PayFacService
     {
         return new PayFacBuilder(TransactionType::CREATE_ACCOUNT);
     }
-    
-    /*
+
+    /**
      *   This transaction type requires an X.509 certificate as additional authentication
      *   Only one group should be passed per request.
-     *   If a group is passed, the API user must pass all data elements that comprise that group. 
+     *   If a group is passed, the API user must pass all data elements that comprise that group.
      *   If a value from a group is missing, then the data not included in your request is cleared from the ProPay record.
-     *   Allowance to perform an edit of each group is subject to approval. 
+     *   Allowance to perform an edit of each group is subject to approval.
      *   If you try to perform an edit for a disallowed group, your request will fail.
-     * 
+     *
      */
     public static function editAccount()
     {

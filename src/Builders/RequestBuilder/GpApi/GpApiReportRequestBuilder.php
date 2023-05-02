@@ -241,8 +241,42 @@ class GpApiReportRequestBuilder implements IRequestBuilder
             case ReportType::FIND_MERCHANTS_PAGED:
                 $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT;
                 $verb = 'GET';
-                $queryParams['page'] = $builder->page;
-                $queryParams['page_size'] = $builder->pageSize;
+                $this->addBasicParams($queryParams, $builder);
+                $queryParams['status'] = $builder->searchBuilder->accountStatus ?? null;
+                $queryParams['order'] = $builder->order ?? null;
+                $queryParams['order_by'] = $builder->accountOrderBy ?? null;
+                break;
+            case ReportType::FIND_ACCOUNTS_PAGED:
+                $endpoint = GpApiRequest::ACCOUNTS_ENDPOINT;
+                if (!empty($builder->searchBuilder->merchantId)) {
+                    $endpoint =  GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' .
+                        $builder->searchBuilder->merchantId . $endpoint;
+                }
+                $verb = 'GET';
+                $this->addBasicParams($queryParams, $builder);
+                $queryParams['order'] = $builder->order ?? null;
+                $queryParams['order_by'] = $builder->accountOrderBy ?? null;
+                $queryParams['from_time_created'] = !empty($builder->searchBuilder->startDate) ?
+                    $builder->searchBuilder->startDate->format('Y-m-d') : null;
+                $queryParams['to_time_created'] = !empty($builder->searchBuilder->endDate) ?
+                    $builder->searchBuilder->endDate->format('Y-m-d') : null;
+                $queryParams['status'] = $builder->searchBuilder->accountStatus ?? null;
+                $queryParams['name'] = $builder->searchBuilder->accountName ?? null;
+                $queryParams['id'] = $builder->searchBuilder->resourceId ?? null;
+                break;
+            case ReportType::FIND_ACCOUNT_DETAIL:
+                $endpoint = GpApiRequest::ACCOUNTS_ENDPOINT. '/'. $builder->searchBuilder->accountId;
+                if (!empty($builder->searchBuilder->address)) {
+                    $endpoint .= '/addresses';
+                    $queryParams = [
+                        'page' => $builder->page,
+                        'page_size' => $builder->pageSize,
+                        'postal_code' => $builder->searchBuilder->address->postalCode ?? null,
+                        'line_1' => $builder->searchBuilder->address->streetAddress1 ?? null,
+                        'line_2' => $builder->searchBuilder->address->streetAddress2 ?? null
+                    ];
+                }
+                $verb = 'GET';
                 break;
             default:
                 throw new ArgumentException(sprintf("Unknown report type!"));
