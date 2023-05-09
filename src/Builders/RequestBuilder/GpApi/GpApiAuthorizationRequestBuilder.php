@@ -23,6 +23,7 @@ use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\GpApi\DTO\Card;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
@@ -40,6 +41,7 @@ use GlobalPayments\Api\PaymentMethods\CreditTrackData;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
 use GlobalPayments\Api\PaymentMethods\ECheck;
 use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
+use GlobalPayments\Api\PaymentMethods\FundsAccount;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ICardData;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IEncryptable;
 use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
@@ -166,6 +168,23 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                         'cancel_url' => $payLink->cancelUrl
                     ];
                 }
+                break;
+            case TransactionType::TRANSFER_FUNDS:
+                if (!$builder->paymentMethod instanceof FundsAccount) {
+                    throw new UnsupportedTransactionException("Payment method doesn't support funds transfers");
+                }
+                $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $builder->paymentMethod->merchantId .
+                    GpApiRequest::TRANSFER_ENDPOINT;
+                $verb = 'POST';
+                $requestData = [
+                    'account_id' => $builder->paymentMethod->accountId ?? null,
+                    'account_name' => $builder->paymentMethod->accountName ?? null,
+                    'recipient_account_id' => $builder->paymentMethod->recipientAccountId ?? null,
+                    'reference' => $builder->clientTransactionId ?? GenerationUtils::getGuid(),
+                    'amount' => StringUtils::toNumeric($builder->amount),
+                    'description' => $builder->description,
+                    'usable_balance_mode' => $builder->paymentMethod->usableBalanceMode ?? null
+                ];
                 break;
             default:
                 return '';
@@ -413,6 +432,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                 break;
             case ECheck::class:
                 $paymentMethod->name = $paymentMethodContainer->checkHolderName;
+                $paymentMethod->narrative = $paymentMethodContainer->merchantNotes;
                 $paymentMethod->bank_transfer = [
                     'account_number' => $paymentMethodContainer->accountNumber,
                     'account_type' => EnumMapping::mapAccountType(
@@ -421,19 +441,18 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     ),
                     'check_reference' => $paymentMethodContainer->checkReference,
                     'sec_code' => $paymentMethodContainer->secCode,
-                    'narrative' => $paymentMethodContainer->merchantNotes,
                     'bank' => [
                         'code' => $paymentMethodContainer->routingNumber,
                         'name' => $paymentMethodContainer->bankName,
                         'address' =>
                         [
-                            'line_1' => $paymentMethodContainer->bankAddress->streetAddress1,
-                            'line_2' => $paymentMethodContainer->bankAddress->streetAddress2,
-                            'line_3' => $paymentMethodContainer->bankAddress->streetAddress3,
-                            'city' => $paymentMethodContainer->bankAddress->city,
-                            'postal_code' => $paymentMethodContainer->bankAddress->postalCode,
-                            'state' => $paymentMethodContainer->bankAddress->state,
-                            'country' => $paymentMethodContainer->bankAddress->countryCode
+                            'line_1' => $paymentMethodContainer->bankAddress->streetAddress1 ?? null,
+                            'line_2' => $paymentMethodContainer->bankAddress->streetAddress2 ?? null,
+                            'line_3' => $paymentMethodContainer->bankAddress->streetAddress3 ?? null,
+                            'city' => $paymentMethodContainer->bankAddress->city ?? null,
+                            'postal_code' => $paymentMethodContainer->bankAddress->postalCode ?? null,
+                            'state' => $paymentMethodContainer->bankAddress->state ?? null,
+                            'country' => $paymentMethodContainer->bankAddress->countryCode ?? null
                         ]
                     ]
                 ];

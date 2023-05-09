@@ -305,6 +305,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         if (!$accessTokenInfo instanceof AccessTokenInfo) {
             $accessTokenInfo = new AccessTokenInfo();
         }
+        $accessTokenInfo->merchantId = $response->merchantId;
         if (empty($accessTokenInfo->accessToken)) {
             $accessTokenInfo->accessToken = $response->getToken();
         }

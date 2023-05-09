@@ -1,9 +1,11 @@
 <?php
 
-namespace Gateways\GpApiConnector;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\BrowserData;
+use GlobalPayments\Api\Entities\Customer;
+use GlobalPayments\Api\Entities\Enums\AccountType;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
 use GlobalPayments\Api\Entities\Enums\ChallengeWindowSize;
@@ -14,15 +16,23 @@ use GlobalPayments\Api\Entities\Enums\MerchantAccountStatus;
 use GlobalPayments\Api\Entities\Enums\MerchantAccountType;
 use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
+use GlobalPayments\Api\Entities\Enums\SecCode;
 use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\FundsData;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
+use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
+use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\Entities\TransferFundsAccountDetails;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\PaymentMethods\ECheck;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\Services\Secure3dService;
@@ -122,10 +132,28 @@ class PartnershipModeTest extends TestCase
         );
 
         $config->accessTokenInfo->transactionProcessingAccountID =
-            (count($transactionAccounts) > 0 ? reset($transactionAccounts)->id : null);
+            (count($transactionAccounts) > 0 ? end($transactionAccounts)->id : null);
 
         $configName = 'config_' . $this->merchantId;
         ServicesContainer::configureService($config, $configName);
+
+        $configAch = clone $config;
+        $configAch->accessTokenInfo = new AccessTokenInfo();
+        $transactionAccounts = array_filter(
+            $accounts->result,
+            function ($account) {
+                return (
+                    $account->type == MerchantAccountType::TRANSACTION_PROCESSING &&
+                    in_array("BANK_TRANSFER", $account->paymentMethods)
+                );
+            }
+        );
+
+        $configAch->accessTokenInfo->transactionProcessingAccountID =
+            (count($transactionAccounts) > 0 ? end($transactionAccounts)->id : null);
+
+        $configName = 'config_ACH_' . $this->merchantId;
+        ServicesContainer::configureService($configAch, $configName);
     }
 
     public static function tearDownAfterClass(): void
@@ -398,5 +426,79 @@ class PartnershipModeTest extends TestCase
             $this->assertTrue($exceptionCaught);
         }
         unset($config);
+    }
+
+    /**
+     * Split and reversal are available only for Partner mode or on FundsAccount payment method
+     */
+    public function testSplitAndReversalTransfer()
+    {
+        $eCheck = new ECheck();
+        $eCheck->accountNumber = '1234567890';
+        $eCheck->routingNumber = '122000030';
+        $eCheck->accountType = AccountType::SAVINGS;
+        $eCheck->secCode = SecCode::WEB;
+        $eCheck->checkReference = '123';
+        $eCheck->merchantNotes = '123';
+        $eCheck->bankName = 'First Union';
+        $eCheck->checkHolderName = 'Jane Doe';
+
+        $address = new Address();
+        $address->streetAddress1 = "Apartment 852";
+        $address->streetAddress2 = "Complex 741";
+        $address->streetAddress3 = "no";
+        $address->city = "Chicago";
+        $address->postalCode = "5001";
+        $address->state = "IL";
+        $address->countryCode = "US";
+
+        $customer = new Customer();
+        $customer->id = "e193c21a-ce64-4820-b5b6-8f46715de931";
+        $customer->firstName = "James";
+        $customer->lastName = "Mason";
+        $customer->dateOfBirth = "1980-01-01";
+        $customer->mobilePhone = new PhoneNumber('+35', '312345678', PhoneNumberType::MOBILE);
+        $customer->homePhone = new PhoneNumber('+1', '12345899', PhoneNumberType::HOME);
+
+        $transaction = $eCheck->charge(10)
+            ->withCurrency('USD')
+            ->withAddress($address)
+            ->withCustomerData($customer)
+            ->execute('config_ACH_' . $this->merchantId);
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
+
+        $fundsData = new FundsData();
+        $fundsData->recipientAccountId ='FMA_88f20a1a45814a1098873cd19bdc383d';
+        $transferAmount = '1';
+        $transferReference = 'split identifier';
+        $transferDescription = 'Split 1';
+        $split = $transaction->split($transferAmount)
+            ->withDescription($transferDescription)
+            ->withReference($transferReference)
+            ->withFundsData($fundsData)
+            ->execute('config_ACH_' . $this->merchantId);
+
+        $this->assertNotNull($split);
+        $this->assertEquals('SUCCESS', $split->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $split->responseMessage);
+        $this->assertNotNull($split->transfersFundsAccount);
+        /** @var TransferFundsAccountDetails $transfer */
+        $transfer = $split->transfersFundsAccount->getIterator()->current();
+        $this->assertEquals('00', $transfer->status);
+        $this->assertEquals($transferAmount, $transfer->amount);
+        $this->assertEquals($transferReference, $transfer->reference);
+        $this->assertEquals($transferDescription, $transfer->description);
+
+        $trfTransaction = Transaction::fromId($transfer->id, null , PaymentMethodType::ACCOUNT_FUNDS);
+        $reverseTrf = $trfTransaction->reverse()
+            ->execute('config_ACH_' . $this->merchantId);
+
+        $this->assertEquals('SUCCESS', $reverseTrf->responseCode);
+        $this->assertEquals(TransactionStatus::FUNDED, $reverseTrf->responseMessage);
+        $this->assertEquals($transferAmount, $reverseTrf->balanceAmount);
+        $this->assertEquals($transferReference, $reverseTrf->clientTransactionId);
     }
 }

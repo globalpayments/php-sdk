@@ -6,6 +6,7 @@ use GlobalPayments\Api\Entities\{
     Address,
     EncryptionData,
     EcommerceInfo,
+    MobileData,
     Transaction,
     ThreeDSecure
 };
@@ -2070,6 +2071,26 @@ class EcommerceTest extends TestCase
         $response = $card->charge(10)
             ->withCurrency('USD')
             ->withInvoiceNumber('12345')
+            ->withAllowDuplicates(true)
+            ->execute('GooglePay');
+
+        $this->assertEquals(true, $response != null);
+        $this->assertEquals('00', $response->responseCode);
+    }
+
+    public function testGooglePayAuth() : void
+    {
+        $walletConfig = new PorticoConfig();
+        $walletConfig->secretApiKey = 'skapi_cert_MZ64BQBBoHAA5N2pWWCvZ7c1HTKDM2g_4HsnyC6rIQ';        
+        ServicesContainer::configureService($walletConfig, 'GooglePay');
+
+        $card = new CreditCardData();
+        $card->paymentSource = PaymentDataSourceType::GOOGLEPAYAPP;
+        $card->mobileType = MobilePaymentMethodType::GOOGLEPAY;
+        $card->token = '{\"signature\":\"MEQCIBB7Ihsg9yi2VlsvZDoZlmd0cUEM8GL39kZzg8Z0gXhpAiB7vuVJ//mGWsKz7eJ+CROPoWCKe9j+y0ZtIv3dfYepSA\\u003d\\u003d\",\"protocolVersion\":\"ECv1\",\"signedMessage\":\"{\\\"encryptedMessage\\\":\\\"IRkNcLzmYTI1r+ZZjpDKmDOVyoX8LuFxWGXClYkRPuIUX+E6CEzoZoK3jybHkUEfDAuLTECctz08IpMNtSRSBS0kAXrgcpOMgRW5RhCraNfvNHBBHoxrfhBb68pJyIJVUottzHqfgvrXtVG/WyZA0ZP3ijQG04IPDsB9MTxw7vIXaUG4zMl9a4OH20k/UeL4hXLWKvopK3/5zJcMppsow3EupHQ0hgpzhwBUcaYFM5s6HBIhoVR2sQQlCQXPOEwTvo44dj1PTDJnEgVmkfkfSm5aT29O7d9XPpxHuRMhyAdpdG2d1audys1ow3ImSvEiWaWgZn2gAkBeejsDyiVuJIzCa1InWFgcRMzNM6ZZdJmOpoDvhwgpHj/wAnqaD5uguElkvJU7TNLoUtMXLRV47yzpc7DL+uumTEHhaEjykwSXwTvWrQtrb8e/yBnfWztR/B4mBoAzsg\\\\u003d\\\\u003d\\\",\\\"ephemeralPublicKey\\\":\\\"BJNkpayQbewXIFnptkzmYnwWDSFLikKnEOOZ50riUsquApWJeeT5L2WV9R937tnC/7tdfk4ADf9uJ2zPzODuX9U\\\\u003d\\\",\\\"tag\\\":\\\"RiwNnZdkKb6KOZxoGSegfbNrwLIi7g3IOK57/e9oMAY\\\\u003d\\\"}\"}';
+
+        $response = $card->authorize(10)
+            ->withCurrency('USD')
             ->withAllowDuplicates(true)
             ->execute('GooglePay');
 

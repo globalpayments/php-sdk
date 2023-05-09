@@ -5,6 +5,8 @@ namespace GlobalPayments\Api\PaymentMethods;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\BNPLResponse;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\TransferFundsAccountCollection;
+use GlobalPayments\Api\Entities\TransferFundsAccountDetails;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 
 class TransactionReference implements IPaymentMethod
@@ -53,4 +55,7 @@ class TransactionReference implements IPaymentMethod
 
     /** @var BNPLResponse $bnplResponse */
     public $bnplResponse;
+
+    /** @var TransferFundsAccountCollection */
+    public $transfersFundsAccount;
 }

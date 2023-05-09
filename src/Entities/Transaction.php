@@ -2,7 +2,6 @@
 
 namespace GlobalPayments\Api\Entities;
 
-use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
@@ -23,6 +22,7 @@ use GlobalPayments\Api\PaymentMethods\TransactionReference;
  * @property string $transactionId The transaction ID.
  * @property AlternativePaymentResponse $alternativePaymentResponse The APM response
  * @property BNPLResponse $bnplResponse The BNP response
+ * @property TransferFundsAccountDetails $transfersFundsAccount Transfer details after funds movement
  */
 class Transaction
 {
@@ -549,6 +549,13 @@ class Transaction
             ->withAmount($amount);
     }
 
+    public function split($amount = null)
+    {
+        return (new ManagementBuilder(TransactionType::SPLIT_FUNDS))
+            ->withPaymentMethod($this->transactionReference)
+            ->withAmount($amount);
+    }
+
     public function __get($name)
     {
         switch ($name) {
@@ -597,6 +604,11 @@ class Transaction
                     return $this->transactionReference->bnplResponse;
                 }
                 return null;
+            case 'transfersFundsAccount':
+                if ($this->transactionReference !== null) {
+                    return $this->transactionReference->transfersFundsAccount;
+                }
+                return null;
             default:
                 break;
         }
@@ -619,7 +631,8 @@ class Transaction
             'checkRefundId',
             'checkSaleId',
             'alternativePaymentResponse',
-            'bnplResponse'
+            'bnplResponse',
+            'transfersFundsAccount'
         ]) || isset($this->{$name});
     }
 
@@ -679,6 +692,12 @@ class Transaction
                     $this->transactionReference = new TransactionReference();
                 }
                 $this->transactionReference->bnplResponse = $value;
+                return;
+            case 'transfersFundsAccount':
+                if (!$this->transactionReference instanceof TransactionReference) {
+                    $this->transactionReference = new TransactionReference();
+                }
+                $this->transactionReference->transfersFundsAccount = $value;
                 return;
             default:
                 break;

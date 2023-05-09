@@ -2,11 +2,7 @@
 
 namespace GlobalPayments\Api\Builders;
 
-use GlobalPayments\Api\Entities\{
-    DccRateData,
-    LodgingData,
-    Transaction
-};
+use GlobalPayments\Api\Entities\{DccRateData, FundsData, LodgingData, Transaction};
 use GlobalPayments\Api\Entities\Enums\{
     CommercialIndicator,
     PaymentMethodUsageMode,
@@ -207,6 +203,12 @@ class ManagementBuilder extends TransactionBuilder
 
     /** @var PaymentMethodUsageMode */
     public $paymentMethodUsageMode;
+
+    /** @var string */
+    public $reference;
+
+    /** @var FundsData */
+    public $fundsData;
 
     /**
      * {@inheritdoc}
@@ -712,6 +714,33 @@ class ManagementBuilder extends TransactionBuilder
     public function withLodgingData($lodgingData)
     {
         $this->lodgingData = $lodgingData;
+
+        return $this;
+    }
+
+    /**
+     * Set the reference
+     *
+     * @param string $reference
+     *
+     * @return $this
+     */
+    public function withReference($reference)
+    {
+        $this->reference = $reference;
+
+        return $this;
+    }
+
+    /**
+     * Set the details about the funds transfer
+     *
+     * @param FundsData $fundsData
+     * @return $this
+     */
+    public function withFundsData(FundsData $fundsData)
+    {
+        $this->fundsData = $fundsData;
 
         return $this;
     }

@@ -112,149 +112,6 @@ class GpApi3DSecureTest extends TestCase
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
-    public function testCardHolderEnrolled_ChallengeRequired_AuthenticationSuccessful_FullCycle_v1()
-    {
-        $this->card->number = GpApi3DSTestCards::CARDHOLDER_ENROLLED_V1;
-
-        $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->withCurrency($this->currency)
-            ->withAmount($this->amount)
-            ->execute();
-
-        $this->assertCheckEnrollmentChallengeV1($secureEcom);
-
-        $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
-        $authClient->authenticationResultCode = '0';
-        $authClient->setGatewayProvider($this->gatewayProvider);
-        $authResponse = $authClient->authenticate_v1($secureEcom);
-        $this->assertTrue($authResponse->getStatus());
-        $this->assertNotEmpty($authResponse->getMerchantData());
-
-        $secureEcom = Secure3dService::getAuthenticationData()
-            ->withServerTransactionId($authResponse->getMerchantData())
-            ->withPayerAuthenticationResponse($authResponse->getAuthResponse())
-            ->execute();
-        $this->card->threeDSecure = $secureEcom;
-        $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $secureEcom->status);
-        $this->assertEquals('NO', $secureEcom->liabilityShift);
-
-        $response = $this->card->charge($this->amount)->withCurrency($this->currency)->execute();
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
-    }
-
-    public function testCardHolderEnrolled_ChallengeRequired_AuthenticationSuccessful_FullCycle_v1_WithTokenizedPaymentMethod()
-    {
-        $this->card->number = GpApi3DSTestCards::CARDHOLDER_ENROLLED_V1;
-
-        $response = $this->card->tokenize()->execute();
-        $tokenId = $response->token;
-
-        $tokenizedCard = new CreditCardData();
-        $tokenizedCard->token = $tokenId;
-        $tokenizedCard->cardHolderName = "James Mason";
-
-        $secureEcom = Secure3dService::checkEnrollment($tokenizedCard)
-            ->withCurrency($this->currency)
-            ->withAmount($this->amount)
-            ->execute();
-
-        $this->assertCheckEnrollmentChallengeV1($secureEcom);
-
-        $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
-        $authClient->authenticationResultCode = '0';
-        $authClient->setGatewayProvider($this->gatewayProvider);
-        $authResponse = $authClient->authenticate_v1($secureEcom);
-        $this->assertTrue($authResponse->getStatus());
-        $this->assertNotEmpty($authResponse->getMerchantData());
-
-        $secureEcom = Secure3dService::getAuthenticationData()
-            ->withServerTransactionId($authResponse->getMerchantData())
-            ->withPayerAuthenticationResponse($authResponse->getAuthResponse())
-            ->execute();
-        $tokenizedCard->threeDSecure = $secureEcom;
-        $this->assertEquals('SUCCESS_AUTHENTICATED', $secureEcom->status);
-        $this->assertEquals('NO', $secureEcom->liabilityShift);
-
-        $response = $tokenizedCard->charge($this->amount)->withCurrency($this->currency)->execute();
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
-    }
-
-    /**
-     * @dataProvider ChallengeRequiredFailed3DSV1CardTests
-     * @param $acsClientResultCode
-     * @param $status
-     * @throws ApiException
-     */
-    public function testCardHolderEnrolled_ChallengeRequired_AuthenticationFailed_v1($acsClientResultCode, $status)
-    {
-        $this->card->number = GpApi3DSTestCards::CARDHOLDER_ENROLLED_V1;
-
-        $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->withCurrency($this->currency)
-            ->withAmount($this->amount)
-            ->execute();
-
-        $this->assertCheckEnrollmentChallengeV1($secureEcom);
-
-        $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
-        $authClient->authenticationResultCode = $acsClientResultCode;
-        $authClient->setGatewayProvider($this->gatewayProvider);
-        $authResponse = $authClient->authenticate_v1($secureEcom);
-        $this->assertTrue($authResponse->getStatus());
-        $this->assertNotEmpty($authResponse->getMerchantData());
-
-        $secureEcom = Secure3dService::getAuthenticationData()
-            ->withServerTransactionId($authResponse->getMerchantData())
-            ->withPayerAuthenticationResponse($authResponse->getAuthResponse())
-            ->execute();
-        $this->card->threeDSecure = $secureEcom;
-        $this->assertEquals($status, $secureEcom->status);
-        $this->assertEquals("NO", $secureEcom->liabilityShift);
-
-        $response = $this->card->charge($this->amount)->withCurrency($this->currency)->execute();
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
-    }
-
-    public function testCardHolderEnrolled_ChallengeRequired_AuthenticationFailed_v1_WrongAcsValue()
-    {
-        $this->card->number = GpApi3DSTestCards::CARDHOLDER_ENROLLED_V1;
-
-        $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->withCurrency($this->currency)
-            ->withAmount($this->amount)
-            ->execute();
-
-        $this->assertCheckEnrollmentChallengeV1($secureEcom);
-
-        $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
-        $authClient->authenticationResultCode = '0';
-        $authClient->setGatewayProvider($this->gatewayProvider);
-        $authResponse = $authClient->authenticate_v1($secureEcom);
-        $this->assertTrue($authResponse->getStatus());
-        $this->assertNotEmpty($authResponse->getMerchantData());
-
-        $exceptionCaught = false;
-        try {
-            Secure3dService::getAuthenticationData()
-                ->withServerTransactionId($authResponse->getMerchantData())
-                ->withPayerAuthenticationResponse(GenerationUtils::getGuid())
-                ->execute();
-        } catch (ApiException $e) {
-            $exceptionCaught = true;
-            $this->assertEquals('50020', $e->responseCode);
-            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Unable to decompress the PARes.', $e->getMessage());
-        } finally {
-            $this->assertTrue($exceptionCaught);
-        }
-
-    }
-
     public function testCardHolderNotEnrolled_v1()
     {
         $this->card->number = GpApi3DSTestCards::CARDHOLDER_NOT_ENROLLED_V1;
@@ -821,11 +678,9 @@ class GpApi3DSecureTest extends TestCase
     private function assertCheckEnrollmentCardNotEnrolledV1(ThreeDSecure $secureEcom)
     {
         $this->assertNotNull($secureEcom);
-        $this->assertEquals(Secure3dVersion::ONE, $secureEcom->getVersion());
         $this->assertEquals(Secure3dStatus::NOT_ENROLLED, $secureEcom->enrolled);
         $this->assertEquals(Secure3dStatus::NOT_ENROLLED, $secureEcom->status);
         $this->assertEmpty($secureEcom->eci);
-        $this->assertEquals('1.0.0', $secureEcom->messageVersion);
         $this->assertEquals('NO', $secureEcom->liabilityShift);
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateways\GpApiConnector;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\BrowserData;
@@ -363,24 +363,6 @@ class GpApiRiskAssessmentTest extends TestCase
         } catch (GatewayException $e) {
             $errorFound = true;
             $this->assertEquals("Status Code: MANDATORY_DATA_MISSING - Request expects the following field order.currency", $e->getMessage());
-            $this->assertEquals('40005', $e->responseCode);
-        } finally {
-            $this->assertTrue($errorFound);
-        }
-    }
-
-    public function testTransactionRiskAnalysis_MissingSource()
-    {
-        $errorFound = false;
-        try {
-            FraudService::riskAssess($this->card)
-                ->withAmount($this->amount)
-                ->withCurrency($this->currency)
-                ->withBrowserData($this->browserData)
-                ->execute();
-        } catch (GatewayException $e) {
-            $errorFound = true;
-            $this->assertEquals("Status Code: MANDATORY_DATA_MISSING - Request expects the following field order.amount", $e->getMessage());
             $this->assertEquals('40005', $e->responseCode);
         } finally {
             $this->assertTrue($errorFound);

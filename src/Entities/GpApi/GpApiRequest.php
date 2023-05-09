@@ -22,4 +22,5 @@ class GpApiRequest extends Request
     const PAYLINK_ENDPOINT = '/links';
     const RISK_ASSESSMENTS = '/risk-assessments';
     const ACCOUNTS_ENDPOINT = '/accounts';
+    const TRANSFER_ENDPOINT = '/transfers';
 }

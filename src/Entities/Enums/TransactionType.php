@@ -64,4 +64,5 @@ class TransactionType extends Enum
     const REAUTH = 36028797018963968; // 1 << 55
     const CONFIRM = 72057594037927936; // 1 << 56
     const PAYLINK_UPDATE = 144115188075855872; // 1 << 57
+    const TRANSFER_FUNDS = 288230376151711744; // // 1 << 58
 }

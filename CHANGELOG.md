@@ -6,8 +6,16 @@
 
 ## Latest Version
 #### Enhancements:
+- GP-API: Manage fund transfers, splits and reverse splits in your partner network. 
+    - https://developer.globalpay.com/api/transfers
+    - https://developer.globalpay.com/api/transactions#/Split%20a%20Transaction%20Amount/splitTransaction
+- Updates on unit tests for: PayLink, 3DS1 and RiskAssessment
+
+
+## v7.0.2 (05/02/2023)
+#### Enhancements:
 - GP-API: Manage merchant accounts for partner solution
-    (https://developer.globalpay.com/api/accounts)
+    - https://developer.globalpay.com/api/accounts
 - GP-ECOM: Add to the mapping response fields: acs_reference_number & acs_signed_content for the authentication source MOBILE_SDK
 
 ## v7.0.1 (04/04/2023)

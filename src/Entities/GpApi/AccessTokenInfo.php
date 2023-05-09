@@ -9,6 +9,9 @@ class AccessTokenInfo
      */
     public $accessToken;
 
+    /** @var string */
+    public $merchantId;
+
     /**
      * @var string
      */

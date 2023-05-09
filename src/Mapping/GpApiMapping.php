@@ -47,6 +47,8 @@ use GlobalPayments\Api\Entities\RiskAssessment;
 use GlobalPayments\Api\Entities\ThirdPartyResponse;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\Entities\TransferFundsAccountCollection;
+use GlobalPayments\Api\Entities\TransferFundsAccountDetails;
 use GlobalPayments\Api\Entities\User;
 use GlobalPayments\Api\Entities\UserLinks;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
@@ -67,6 +69,7 @@ class GpApiMapping
     const MERCHANT_EDIT = 'MERCHANT_EDIT';
     const MERCHANT_EDIT_INITIATED = 'MERCHANT_EDIT_INITIATED';
     const ADDRESS_LOOKUP = 'ADDRESS_LIST';
+    const TRANSFER = 'TRANSFER';
 
     /**
      * Map a response to a Transaction object for further chaining
@@ -85,6 +88,9 @@ class GpApiMapping
         $transaction->responseMessage = $response->status;
 
         switch ($response->action->type) {
+            case self::TRANSFER:
+                $transaction->paymentMethodType = PaymentMethodType::ACCOUNT_FUNDS;
+                break;
             case self::LINK_CREATE:
             case self::LINK_EDIT:
                 $transaction->payLinkResponse = self::mapPayLinkResponse($response);
@@ -122,79 +128,10 @@ class GpApiMapping
             $response->id : null;
         $transaction->tokenUsageMode = !empty($response->usage_mode) ? $response->usage_mode : null;
         if (!empty($response->payment_method)) {
-            $transaction->authorizationCode = $response->payment_method->result ?? null;
-            if (!empty($response->payment_method->id)) {
-                $transaction->token = $response->payment_method->id;
-            }
-            $transaction->fingerprint = !empty($response->payment_method->fingerprint) ?
-                $response->payment_method->fingerprint : null;
-            $transaction->fingerprintIndicator = !empty($response->payment_method->fingerprint_presence_indicator) ?
-                $response->payment_method->fingerprint_presence_indicator : null;
-            if (!empty($response->payment_method->card)) {
-                $card = $response->payment_method->card;
-                $cardDetails = new Card();
-                $cardDetails->maskedNumberLast4 = $card->masked_number_last4 ?? null;
-                $cardDetails->brand = $card->brand ?? null;
-                $transaction->cardDetails = $cardDetails;
-
-                $transaction->cardLast4 = !empty($card->masked_number_last4) ?
-                    $card->masked_number_last4 : null;
-                $transaction->cardType = !empty($card->brand) ? $card->brand : null;
-                $transaction->cvnResponseCode = !empty($card->cvv) ? $card->cvv : null;
-                $transaction->cvnResponseMessage = !empty($card->cvv_result) ? $card->cvv_result : null;
-                $transaction->cardBrandTransactionId = !empty($card->brand_reference) ?
-                    $card->brand_reference : null;
-                $transaction->avsResponseCode = !empty($card->avs_postal_code_result) ?
-                    $card->avs_postal_code_result : null;
-                $transaction->avsAddressResponse = !empty($card->avs_address_result) ? $card->avs_address_result : null;
-                $transaction->avsResponseMessage = !empty($card->avs_action) ? $card->avs_action : null;
-                if (!empty($card->provider)) {
-                    self::mapCardIssuerResponse($transaction, $card->provider);
-                }
-            }
-            if (!empty($response->payment_method->apm) &&
-                $response->payment_method->apm->provider == strtolower(PaymentProvider::OPEN_BANKING)
-            ) {
-                $transaction->paymentMethodType = PaymentMethodType::BANK_PAYMENT;
-                $obResponse = new BankPaymentResponse();
-                $obResponse->redirectUrl = $response->payment_method->redirect_url ?? null;
-                $obResponse->paymentStatus = $response->payment_method->message ?? null;
-                $obResponse->accountNumber = $response->payment_method->bank_transfer->account_number ?? null;
-                $obResponse->sortCode = $response->payment_method->bank_transfer->bank->code ?? null;
-                $obResponse->accountName = $response->payment_method->bank_transfer->bank->name ?? null;
-                $obResponse->iban = $response->payment_method->bank_transfer->iban ?? null;
-                $transaction->bankPaymentResponse = $obResponse;
-            } elseif (!empty($response->payment_method->bank_transfer)) {
-                $bankTransfer = $response->payment_method->bank_transfer;
-                $transaction->accountNumberLast4 = !empty($bankTransfer->masked_account_number_last4) ?
-                    $bankTransfer->masked_account_number_last4 : null;
-                $transaction->accountType = !empty($bankTransfer->account_type) ? $bankTransfer->account_type : null;
-                $transaction->paymentMethodType = PaymentMethodType::ACH;
-            } elseif (!empty($response->payment_method->apm)) {
-                $transaction->paymentMethodType = PaymentMethodType::APM;
-            }
-
-            if (
-                !empty($response->payment_method->shipping_address) ||
-                !empty($response->payment_method->payer)
-            ) {
-                $payerDetails = new PayerDetails();
-                $payerDetails->email = $response->payment_method->payer->email ?? null;
-                if (!empty($response->payment_method->payer->billing_address)) {
-                    $billingAddress = $response->payment_method->payer->billing_address;
-                    $payerDetails->firstName = $billingAddress->first_name  ?? null;
-                    $payerDetails->lastName = $billingAddress->last_name  ?? null;
-                    $payerDetails->billingAddress = self::mapAddressObject(
-                        $billingAddress,
-                        AddressType::BILLING
-                    );
-                }
-                $payerDetails->shippingAddress = self::mapAddressObject(
-                    $response->payment_method->shipping_address,
-                    AddressType::SHIPPING
-                );
-                $transaction->payerDetails = $payerDetails;
-            }
+            self::mapPaymentMethodTransactionDetails($transaction, $response->payment_method);
+        }
+        if (!empty($response->transfers)) {
+            self::mapTransferFundsAccountDetails($transaction, $response->transfers);
         }
 
         if (!empty($response->card)) {
@@ -220,6 +157,101 @@ class GpApiMapping
             self::mapFraudManagement(reset($response->risk_assessment)) : null;
 
         return $transaction;
+    }
+
+    private static function mapTransferFundsAccountDetails(&$transaction, $transfersResponse)
+    {
+        $transfers = new TransferFundsAccountCollection();
+        foreach ($transfersResponse as $transferResponse) {
+            $transfer = new TransferFundsAccountDetails();
+            $transfer->id = $transferResponse->id;
+            $transfer->status = $transferResponse->status ?? null;
+            $transfer->timeCreated = !empty($transferResponse->timeCreated) ?
+                new \DateTime($transferResponse->timeCreated) : '';
+            $transfer->amount = !empty($transferResponse->amount) ?
+                StringUtils::toAmount($transferResponse->amount) : null;
+            $transfer->reference = $transferResponse->reference ?? null;
+            $transfer->description = $transferResponse->description ?? null;
+            $transfers->add($transfer, $transferResponse->id);
+        }
+        $transaction->transfersFundsAccount = $transfers;
+    }
+
+    private static function mapPaymentMethodTransactionDetails(&$transaction, $paymentMethodResponse)
+    {
+        $transaction->authorizationCode = $paymentMethodResponse->result ?? null;
+        if (!empty($paymentMethodResponse->id)) {
+            $transaction->token = $paymentMethodResponse->id;
+        }
+        $transaction->fingerprint = !empty($paymentMethodResponse->fingerprint) ?
+            $paymentMethodResponse->fingerprint : null;
+        $transaction->fingerprintIndicator = !empty($paymentMethodResponse->fingerprint_presence_indicator) ?
+            $paymentMethodResponse->fingerprint_presence_indicator : null;
+        if (!empty($paymentMethodResponse->card)) {
+            $card = $paymentMethodResponse->card;
+            $cardDetails = new Card();
+            $cardDetails->maskedNumberLast4 = $card->masked_number_last4 ?? null;
+            $cardDetails->brand = $card->brand ?? null;
+            $transaction->cardDetails = $cardDetails;
+
+            $transaction->cardLast4 = !empty($card->masked_number_last4) ?
+                $card->masked_number_last4 : null;
+            $transaction->cardType = !empty($card->brand) ? $card->brand : null;
+            $transaction->cvnResponseCode = !empty($card->cvv) ? $card->cvv : null;
+            $transaction->cvnResponseMessage = !empty($card->cvv_result) ? $card->cvv_result : null;
+            $transaction->cardBrandTransactionId = !empty($card->brand_reference) ?
+                $card->brand_reference : null;
+            $transaction->avsResponseCode = !empty($card->avs_postal_code_result) ?
+                $card->avs_postal_code_result : null;
+            $transaction->avsAddressResponse = !empty($card->avs_address_result) ? $card->avs_address_result : null;
+            $transaction->avsResponseMessage = !empty($card->avs_action) ? $card->avs_action : null;
+            if (!empty($card->provider)) {
+                self::mapCardIssuerResponse($transaction, $card->provider);
+            }
+        }
+        if (!empty($paymentMethodResponse->apm) &&
+            $paymentMethodResponse->apm->provider == strtolower(PaymentProvider::OPEN_BANKING)
+        ) {
+            $transaction->paymentMethodType = PaymentMethodType::BANK_PAYMENT;
+            $obResponse = new BankPaymentResponse();
+            $obResponse->redirectUrl = $paymentMethodResponse->redirect_url ?? null;
+            $obResponse->paymentStatus = $paymentMethodResponse->message ?? null;
+            $obResponse->accountNumber = $paymentMethodResponse->bank_transfer->account_number ?? null;
+            $obResponse->sortCode = $paymentMethodResponse->bank_transfer->bank->code ?? null;
+            $obResponse->accountName = $paymentMethodResponse->bank_transfer->bank->name ?? null;
+            $obResponse->iban = $paymentMethodResponse->bank_transfer->iban ?? null;
+            $transaction->bankPaymentResponse = $obResponse;
+        } elseif (!empty($paymentMethodResponse->bank_transfer)) {
+            $bankTransfer = $paymentMethodResponse->bank_transfer;
+            $transaction->accountNumberLast4 = !empty($bankTransfer->masked_account_number_last4) ?
+                $bankTransfer->masked_account_number_last4 : null;
+            $transaction->accountType = !empty($bankTransfer->account_type) ? $bankTransfer->account_type : null;
+            $transaction->paymentMethodType = PaymentMethodType::ACH;
+        } elseif (!empty($paymentMethodResponse->apm)) {
+            $transaction->paymentMethodType = PaymentMethodType::APM;
+        }
+
+        if (
+            !empty($paymentMethodResponse->shipping_address) ||
+            !empty($paymentMethodResponse->payer)
+        ) {
+            $payerDetails = new PayerDetails();
+            $payerDetails->email = $paymentMethodResponse->payer->email ?? null;
+            if (!empty($paymentMethodResponse->payer->billing_address)) {
+                $billingAddress = $paymentMethodResponse->payer->billing_address;
+                $payerDetails->firstName = $billingAddress->first_name  ?? null;
+                $payerDetails->lastName = $billingAddress->last_name  ?? null;
+                $payerDetails->billingAddress = self::mapAddressObject(
+                    $billingAddress,
+                    AddressType::BILLING
+                );
+            }
+            $payerDetails->shippingAddress = self::mapAddressObject(
+                $paymentMethodResponse->shipping_address,
+                AddressType::SHIPPING
+            );
+            $transaction->payerDetails = $payerDetails;
+        }
     }
 
     private static function mapFraudManagement($fraudResponse)
@@ -1172,7 +1204,7 @@ class GpApiMapping
         } catch (\Exception $e) {
             $errors = \DateTime::getLastErrors();
             if (isset($errors['error_count']) && $errors['error_count'] > 0) {
-                return current(explode('.', $date));
+                return '';
             }
         }
 

@@ -109,7 +109,7 @@ class GpApiBatchTest extends TestCase
     public function testBatchClose_ContactlessTransaction()
     {
         $card = new DebitTrackData();
-        $card->setValue(';4024720012345671=18125025432198712345?');
+        $card->setValue(';4024720012345671=30125025432198712345?');
         $card->entryMethod = EntryMethod::PROXIMITY;
         $card->pinBlock = 'AFEC374574FC90623D010000116001EE';
 

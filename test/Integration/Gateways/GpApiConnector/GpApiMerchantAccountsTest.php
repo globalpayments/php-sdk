@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateways\GpApiConnector;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\Channel;
@@ -8,13 +8,18 @@ use GlobalPayments\Api\Entities\Enums\MerchantAccountsSortProperty;
 use GlobalPayments\Api\Entities\Enums\MerchantAccountStatus;
 use GlobalPayments\Api\Entities\Enums\MerchantAccountType;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
+use GlobalPayments\Api\Entities\Enums\TransactionStatus;
+use GlobalPayments\Api\Entities\Enums\UsableBalanceMode;
 use GlobalPayments\Api\Entities\Enums\UserType;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\FundsData;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\MerchantAccountSummary;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\User;
+use GlobalPayments\Api\Entities\UserAccount;
+use GlobalPayments\Api\PaymentMethods\FundsAccount;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\PayFacService;
 use GlobalPayments\Api\Services\ReportingService;
@@ -471,33 +476,21 @@ class GpApiMerchantAccountsTest extends TestCase
 
         $creditCardInformation = TestAccountData::getCreditCardData();
 
-        $merchants = ReportingService::findMerchants(1, 10)
-            ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::ASC)
-            ->where(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
-            ->execute();
+        $merchants = $this->getMerchants();
 
         $this->assertTrue(count($merchants->result) > 0);
 
-        $response = ReportingService::findAccounts(1, 10)
-            ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::ASC)
-            ->where(SearchCriteria::START_DATE, $this->startDate)
-            ->andWith(SearchCriteria::END_DATE, $this->endDate)
-            ->andWith(DataServiceCriteria::MERCHANT_ID, reset($merchants->result)->id)
-            ->andWith(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
-            ->execute();
-
-        $this->assertTrue(count($response->result) > 0);
-        /** @var MerchantAccountSummary $accountSummary */
-        $index = array_search(
-            MerchantAccountType::FUND_MANAGEMENT, array_column($response->result, 'type')
+        $accountSummary = $this->getAccountByType(
+            reset($merchants->result)->id,
+            MerchantAccountType::FUND_MANAGEMENT
         );
-        if ($index === false) {
+
+        if (empty($accountSummary)) {
             $this->fail(sprintf(
                 "Account type %s not found in order to perform the edit action",
                 MerchantAccountType::FUND_MANAGEMENT
             ));
         }
-        $accountSummary = $response->result[$index];
 
         if ($accountSummary->type == MerchantAccountType::FUND_MANAGEMENT) {
             $errorFound = false;
@@ -515,5 +508,76 @@ class GpApiMerchantAccountsTest extends TestCase
                 $this->assertTrue($errorFound);
             }
         }
+    }
+
+    public function testTransferFundsAccount()
+    {
+        $merchants = $this->getMerchants();
+
+        $this->assertTrue(count($merchants->result) > 0);
+        $merchantSender = reset($merchants->result);
+        $merchantRecipient = $merchants->result[1];
+        /** @var MerchantAccountSummary $accountSenderSummary */
+        $accountSenderSummary = $this->getAccountByType(
+            $merchantSender->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+        if (empty($accountSenderSummary)) {
+            $this->fail(sprintf(
+                "Account sender type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $accountRecipientSummary = $this->getAccountByType(
+            $merchantRecipient->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+
+        if (empty($accountRecipientSummary)) {
+            $this->fail(sprintf(
+                "Account recipient type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $funds = new FundsAccount();
+        $funds->accountId = $accountSenderSummary->id;
+        $funds->accountName = $accountSenderSummary->name;
+        $funds->recipientAccountId = $accountRecipientSummary->id;
+        $funds->merchantId = $merchantSender->id;
+
+        $transfer = $funds->transfer(1)
+            ->withClientTransactionId('')
+            ->withDescription('Transfer 1')
+            ->execute();
+
+        $this->assertNotNull($transfer);
+        $this->assertEquals('SUCCESS', $transfer->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $transfer->responseMessage);
+    }
+
+    private function getAccountByType($merchantId, $type)
+    {
+        $response = ReportingService::findAccounts(1, 10)
+            ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->where(SearchCriteria::START_DATE, $this->startDate)
+            ->andWith(SearchCriteria::END_DATE, $this->endDate)
+            ->andWith(DataServiceCriteria::MERCHANT_ID, $merchantId)
+            ->andWith(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
+            ->execute();
+
+        $this->assertTrue(count($response->result) > 0);
+        $index = array_search($type, array_column($response->result, 'type'));
+
+        return ($index !== false ? $response->result[$index] : null);
+    }
+
+    private function getMerchants()
+    {
+        return ReportingService::findMerchants(1, 10)
+            ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->where(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
+            ->execute();
     }
 }

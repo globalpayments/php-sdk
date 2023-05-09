@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateways\GpApiConnector\Certifications;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector\Certifications;
 
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\CvnPresenceIndicator;

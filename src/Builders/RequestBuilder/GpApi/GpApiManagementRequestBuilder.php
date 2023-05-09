@@ -106,9 +106,19 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                 break;
             case TransactionType::REVERSAL:
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/reversal';
+                if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::ACCOUNT_FUNDS) {
+                    $endpoint = GpApiRequest::TRANSFER_ENDPOINT . '/' . $builder->paymentMethod->transactionId .
+                        '/reversal';
+                    if (!empty($builder->fundsData->merchantId)) {
+                        $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' .
+                            $builder->fundsData->merchantId .
+                            $endpoint;
+                    }
+                }
                 $verb = 'POST';
                 $payload['amount'] = StringUtils::toNumeric($builder->amount);
-                $payload['currency_conversion'] = !empty($builder->dccRateData) ? $this->getDccRate($builder->dccRateData) : null;
+                $payload['currency_conversion'] = !empty($builder->dccRateData) ?
+                    $this->getDccRate($builder->dccRateData) : null;
                 break;
             case TransactionType::CAPTURE:
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/capture';
@@ -251,6 +261,25 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                 $verb = 'POST';
                 $payload = [
                     'reason_code' => EnumMapping::mapReasonCode(GatewayProvider::GP_API, $builder->reasonCode) ?? null
+                ];
+                break;
+            case TransactionType::SPLIT_FUNDS:
+                $endpoint =
+                    GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId .
+                    '/split';
+                if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::ACCOUNT_FUNDS) {
+                    $endpoint =
+                        GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $builder->fundsData->merchantId .
+                        $endpoint;
+                }
+                $verb = 'POST';
+                $payload['transfers'] = [
+                      [
+                        'recipient_account_id' => $builder->fundsData->recipientAccountId ?? null,
+                        'reference' => $builder->reference,
+                        'amount' => StringUtils::toNumeric($builder->amount),
+                        'description' => $builder->description
+                    ]
                 ];
                 break;
             default:

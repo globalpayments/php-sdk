@@ -1831,9 +1831,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                         return 'CreditOfflineAuth';
                     } elseif ($builder->transactionModifier == TransactionModifier::RECURRING) {
                         return 'RecurringBillingAuth';
-                    } elseif ($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE) {
-                        throw new UnsupportedTransactionException('Transaction not supported for this payment method.');
                     }
+                    // elseif ($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE) {
+                    //     throw new UnsupportedTransactionException('Transaction not supported for this payment method.');
+                    // }
 
                     return 'CreditAuth';
                 } elseif ($builder->paymentMethod->paymentMethodType === PaymentMethodType::RECURRING) {

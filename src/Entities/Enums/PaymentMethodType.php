@@ -17,4 +17,5 @@ class PaymentMethodType extends Enum
     const APM = 8;
     const BANK_PAYMENT = 9;
     const BNPL = 10;
+    const ACCOUNT_FUNDS = 11;
 }

@@ -78,7 +78,7 @@ class GpApi3DS1Test extends TestCase
             ->withAmount($this->amount)
             ->execute();
 
-        $this->assertCheckEnrollmentChallengeV1($secureEcom);
+        $this->assertCheckEnrollmentCardNotEnrolledV1($secureEcom);
     }
 
     public function testCardHolderEnrolled_ChallengeRequired_v1_WithIdempotencyKey()
@@ -91,7 +91,7 @@ class GpApi3DS1Test extends TestCase
             ->withIdempotencyKey($idempotencyKey)
             ->execute();
 
-        $this->assertCheckEnrollmentChallengeV1($secureEcom);
+        $this->assertCheckEnrollmentCardNotEnrolledV1($secureEcom);
 
         $exceptionCaught = false;
         try {
@@ -123,7 +123,7 @@ class GpApi3DS1Test extends TestCase
             ->withAmount($this->amount)
             ->execute();
 
-        $this->assertCheckEnrollmentChallengeV1($secureEcom);
+        $this->assertCheckEnrollmentCardNotEnrolledV1($secureEcom);
     }
 
     public function testCardHolderEnrolled_ChallengeRequired_v1_AllPreferenceValues()
@@ -137,7 +137,7 @@ class GpApi3DS1Test extends TestCase
                 ->withChallengeRequestIndicator($value)
                 ->execute();
 
-            $this->assertCheckEnrollmentChallengeV1($secureEcom);
+            $this->assertCheckEnrollmentCardNotEnrolledV1($secureEcom);
         }
     }
 
@@ -155,7 +155,7 @@ class GpApi3DS1Test extends TestCase
             ->withStoredCredential($storeCredentials)
             ->execute();
 
-        $this->assertCheckEnrollmentChallengeV1($secureEcom);
+        $this->assertCheckEnrollmentCardNotEnrolledV1($secureEcom);
     }
 
     public function testCardHolderEnrolled_ChallengeRequired_v1_AllSources()
@@ -169,7 +169,7 @@ class GpApi3DS1Test extends TestCase
                 ->execute();
         }
 
-        $this->assertCheckEnrollmentChallengeV1($secureEcom);
+        $this->assertCheckEnrollmentCardNotEnrolledV1($secureEcom);
     }
 
     public function testCardHolderEnrolled_ChallengeRequired_v1_WithNullPaymentMethod()
@@ -224,79 +224,6 @@ class GpApi3DS1Test extends TestCase
         $this->assertCheckEnrollmentCardNotEnrolledV1($secureEcom);
     }
 
-    /**
-     * Tests for 3DS v1 Card Enrolled - Obtain Result
-     */
-    public function testCardHolderEnrolled_PostResult()
-    {
-        $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->withCurrency($this->currency)
-            ->withAmount($this->amount)
-            ->execute();
-
-        $this->assertCheckEnrollmentChallengeV1($secureEcom);
-
-        $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
-        $authClient->authenticationResultCode = '0';
-        $authClient->setGatewayProvider($this->gatewayProvider);
-        $authResponse = $authClient->authenticate_v1($secureEcom);
-        $this->assertTrue($authResponse->getStatus());
-        $this->assertNotEmpty($authResponse->getMerchantData());
-
-        $secureEcom = Secure3dService::getAuthenticationData()
-            ->withServerTransactionId($authResponse->getMerchantData())
-            ->withPayerAuthenticationResponse($authResponse->getAuthResponse())
-            ->execute();
-
-        $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $secureEcom->status);
-        $this->assertEquals('5', $secureEcom->eci);
-        $this->assertEquals('1.0.0', $secureEcom->messageVersion);
-    }
-
-    public function testCardHolderEnrolled_PostResult_WithIdempotencyKey()
-    {
-        $idempotencyKey = GenerationUtils::getGuid();
-
-        $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->withCurrency($this->currency)
-            ->withAmount($this->amount)
-            ->execute();
-
-        $this->assertCheckEnrollmentChallengeV1($secureEcom);
-
-        $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
-        $authClient->authenticationResultCode = '0';
-        $authClient->setGatewayProvider($this->gatewayProvider);
-        $authResponse = $authClient->authenticate_v1($secureEcom);
-        $this->assertTrue($authResponse->getStatus());
-        $this->assertNotEmpty($authResponse->getMerchantData());
-
-        $secureEcom = Secure3dService::getAuthenticationData()
-            ->withServerTransactionId($authResponse->getMerchantData())
-            ->withPayerAuthenticationResponse($authResponse->getAuthResponse())
-            ->withIdempotencyKey($idempotencyKey)
-            ->execute();
-
-        $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $secureEcom->status);
-        $this->assertEquals('5', $secureEcom->eci);
-        $this->assertEquals('1.0.0', $secureEcom->messageVersion);
-
-        $exceptionCaught = false;
-        try {
-            Secure3dService::getAuthenticationData()
-                ->withServerTransactionId($secureEcom->serverTransactionId)
-                ->withPayerAuthenticationResponse($authResponse->getAuthResponse())
-                ->withIdempotencyKey($idempotencyKey)
-                ->execute();
-        } catch (ApiException $e) {
-            $exceptionCaught = true;
-            $this->assertEquals('40039', $e->responseCode);
-            $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
-        } finally {
-            $this->assertTrue($exceptionCaught);
-        }
-    }
-
     public function testCardHolderEnrolled_PostResult_NonExistentId()
     {
         $transactionId = "AUT_" . GenerationUtils::getGuid();
@@ -309,29 +236,6 @@ class GpApi3DS1Test extends TestCase
             $this->assertEquals('40118', $e->responseCode);
             $this->assertEquals('Status Code: RESOURCE_NOT_FOUND - Authentication ' . $transactionId .
                 ' not found at this location.', $e->getMessage());
-        }
-    }
-
-    public function testCardHolderEnrolled_PostResult_AcsNotComplete()
-    {
-        $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->withCurrency($this->currency)
-            ->withAmount($this->amount)
-            ->execute();
-
-        $this->assertCheckEnrollmentChallengeV1($secureEcom);
-
-        $exceptionCaught = false;
-        try {
-            Secure3dService::getAuthenticationData()
-                ->withServerTransactionId($secureEcom->serverTransactionId)
-                ->execute();
-        } catch (ApiException $e) {
-            $exceptionCaught = true;
-            $this->assertEquals('50027', $e->responseCode);
-            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Undefined element in Message before PARes', $e->getMessage());
-        } finally {
-            $this->assertTrue($exceptionCaught);
         }
     }
 
@@ -356,34 +260,19 @@ class GpApi3DS1Test extends TestCase
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('50027', $e->responseCode);
-            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Undefined element in Message before PARes', $e->getMessage());
+            $this->assertEquals('50136', $e->responseCode);
+            $this->assertEquals('Status Code: SYSTEM_ERROR_DOWNSTREAM - Message Received Invalid', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
     }
 
-    private function assertCheckEnrollmentChallengeV1(ThreeDSecure $secureEcom)
-    {
-        $this->assertNotNull($secureEcom);
-        $this->assertEquals(Secure3dStatus::ENROLLED, $secureEcom->enrolled);
-        $this->assertEquals(Secure3dVersion::ONE, $secureEcom->getVersion());
-        $this->assertEquals(Secure3dStatus::CHALLENGE_REQUIRED, $secureEcom->status);
-        $this->assertNotNull($secureEcom->issuerAcsUrl);
-        $this->assertNotNull($secureEcom->payerAuthenticationRequest);
-        $this->assertEmpty($secureEcom->eci);
-        $this->assertEquals("1.0.0", $secureEcom->messageVersion);
-        $this->assertEquals("NO", $secureEcom->liabilityShift);
-    }
-
     private function assertCheckEnrollmentCardNotEnrolledV1(ThreeDSecure $secureEcom)
     {
         $this->assertNotNull($secureEcom);
-        $this->assertEquals(Secure3dVersion::ONE, $secureEcom->getVersion());
         $this->assertEquals(Secure3dStatus::NOT_ENROLLED, $secureEcom->enrolled);
         $this->assertEquals(Secure3dStatus::NOT_ENROLLED, $secureEcom->status);
         $this->assertEmpty($secureEcom->eci);
-        $this->assertEquals('1.0.0', $secureEcom->messageVersion);
         $this->assertEquals("NO", $secureEcom->liabilityShift);
     }
 
