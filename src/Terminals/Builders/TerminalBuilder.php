@@ -74,4 +74,10 @@ abstract class TerminalBuilder extends TransactionBuilder
         $this->cardBrandTransId = $cardBrandTransId;
         return $this;
     }
+
+    public function withPaymentMethodType($paymentMethodType)
+    {
+        $this->paymentMethodType = $paymentMethodType;
+        return $this;
+    }
 }

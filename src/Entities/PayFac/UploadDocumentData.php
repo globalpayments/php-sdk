@@ -5,7 +5,7 @@ namespace GlobalPayments\Api\Entities\PayFac;
 class UploadDocumentData
 {
     /**
-     * Name the document according to instructions provided to you by ProPay’s Risk team
+     * Name the document according to instructions provided to you by ProPay's Risk team
      *
      * @var string
      */
@@ -26,7 +26,7 @@ class UploadDocumentData
     public $documentLocation;
     
     /**
-     * The type of document you’ve been asked to provide by ProPay’s Risk team. Valid values are:
+     * The type of document you've been asked to provide by ProPay's Risk team. Valid values are:
      * Verification, FraudHolds, Underwriting, RetrievalRequest
      *
      * @var string

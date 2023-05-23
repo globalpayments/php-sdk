@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals\PAX;
 
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
@@ -40,9 +41,10 @@ class PaxDebitTests extends TestCase
 
     public function testDebitSale()
     {
-        $response = $this->device->debitSale(10)
-                ->withAllowDuplicates(1)
-                ->execute();
+        $response = $this->device->sale(10)
+            ->withPaymentMethodType(PaymentMethodType::DEBIT)
+            ->withAllowDuplicates(1)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('OK', $response->deviceResponseText);
@@ -54,23 +56,26 @@ class PaxDebitTests extends TestCase
      */
     public function testSaleNoAmount()
     {
-        $response = $this->device->debitSale()
-                ->execute();
+        $response = $this->device->sale()
+            ->withPaymentMethodType(PaymentMethodType::DEBIT)
+            ->execute();
     }
 
     public function testDebitRefund()
     {
-        $response = $this->device->debitSale(10)
-                ->withAllowDuplicates(1)
-                ->execute();
+        $response = $this->device->sale(10)
+            ->withPaymentMethodType(PaymentMethodType::DEBIT)
+            ->withAllowDuplicates(1)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('OK', $response->deviceResponseText);
         $this->assertNotNull($response->transactionId);
 
-        $refundResponse = $this->device->debitRefund(10)
-                ->withTransactionId($response->transactionId)
-                ->execute();
+        $refundResponse = $this->device->refund(10)
+            ->withPaymentMethodType(PaymentMethodType::DEBIT)
+            ->withTransactionId($response->transactionId)
+            ->execute();
 
         $this->assertNotNull($refundResponse);
         $this->assertEquals('OK', $refundResponse->deviceResponseText);

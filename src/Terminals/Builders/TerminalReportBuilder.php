@@ -2,8 +2,8 @@
 
 namespace GlobalPayments\Api\Terminals\Builders;
 
-use GlobalPayments\Api\Terminals\ConnectionContainer;
-use GlobalPayments\Api\Terminals\Builders\TerminalSearchBuilder;
+use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Terminals\TerminalResponse;
 
 class TerminalReportBuilder
 {
@@ -36,10 +36,10 @@ class TerminalReportBuilder
      *
      * @return Transaction
      */
-    public function execute()
+    public function execute($configName = "default") : TerminalResponse
     {
-        return ConnectionContainer::instance()->
-                        processReport($this);
+        $client = ServicesContainer::instance()->getDeviceController($configName);
+        return $client->processReport($this);
     }
 
     public function where($criteria, $value)

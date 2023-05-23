@@ -1,6 +1,7 @@
 <?php
 namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals\PAX;
 
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
@@ -39,7 +40,8 @@ class PaxEBTTests extends TestCase
 
     public function testEbtFoodstampPurchase()
     {
-        $response = $this->device->ebtPurchase(10)
+        $response = $this->device->sale(10)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
             ->withCurrency(CurrencyType::FOODSTAMPS)
             ->execute();
 
@@ -50,7 +52,8 @@ class PaxEBTTests extends TestCase
 
     public function testEbtCashBenefitPurchase()
     {
-        $response = $this->device->ebtPurchase(10)
+        $response = $this->device->sale(10)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
             ->withCurrency(CurrencyType::CASH_BENEFITS)
             ->execute();
 
@@ -61,7 +64,8 @@ class PaxEBTTests extends TestCase
 
     public function testEbtVoucherPurchase()
     {
-        $response = $this->device->ebtPurchase(10)
+        $response = $this->device->sale(10)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
             ->withCurrency(CurrencyType::VOUCHER)
             ->withAllowDuplicates(true)
             ->execute();
@@ -71,7 +75,8 @@ class PaxEBTTests extends TestCase
 
     public function testEbtFoodstampBalanceInquiry()
     {
-        $response = $this->device->ebtBalance()
+        $response = $this->device->balance()
+            ->withPaymentMethodType(PaymentMethodType::EBT)
             ->withCurrency(CurrencyType::FOODSTAMPS)
             ->execute();
             $this->assertNotNull($response);
@@ -80,7 +85,8 @@ class PaxEBTTests extends TestCase
 
     public function testEbtCashBenefitsBalanceInquiry()
     {
-        $response = $this->device->ebtBalance()
+        $response = $this->device->balance()
+            ->withPaymentMethodType(PaymentMethodType::EBT)
             ->withCurrency(CurrencyType::CASH_BENEFITS)
             ->execute();
             $this->assertNotNull($response);
@@ -93,14 +99,16 @@ class PaxEBTTests extends TestCase
      */
     public function testEbtBalanceInquiryWithVoucher()
     {
-        $this->device->ebtBalance()
+        $this->device->balance()
+            ->withPaymentMethodType(PaymentMethodType::EBT)
             ->withCurrency(CurrencyType::VOUCHER)
             ->execute();
     }
 
     public function testEbtFoodStampRefund()
     {
-        $response = $this->device->ebtRefund(10)
+        $response = $this->device->refund(10)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
             ->withCurrency(CurrencyType::FOODSTAMPS)
             ->execute();
             $this->assertNotNull($response);
@@ -109,11 +117,13 @@ class PaxEBTTests extends TestCase
 
     public function testEbtCashBenefitRefund()
     {
-        $response = $this->device->ebtRefund(10)
-        ->withCurrency(CurrencyType::FOODSTAMPS)
+        $response = $this->device->refund(10)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->withCurrency(CurrencyType::FOODSTAMPS)
             ->execute();
-            $this->assertNotNull($response);
-            $this->assertEquals("00", $response->deviceResponseCode);
+
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->deviceResponseCode);
     }
 
     /**
@@ -122,14 +132,15 @@ class PaxEBTTests extends TestCase
      */
     public function testEbtRefundAllowDup()
     {
-        $this->device->ebtRefund()
+        $this->device->refund()
+            ->withPaymentMethodType(PaymentMethodType::EBT)
             ->withAllowDuplicates(true)
             ->execute();
     }
 
     public function testEbtCashBenefitWithdrawal()
     {
-        $response = $this->device->ebtWithdrawl(10)
+        $response = $this->device->withdrawal(10)
             ->withCurrency(CurrencyType::CASH_BENEFITS)
             ->execute();
             $this->assertNotNull($response);
@@ -142,7 +153,7 @@ class PaxEBTTests extends TestCase
      */
     public function testEbtBenefitWithdrawalAllowDup()
     {
-        $this->device->ebtWithdrawl(10)
+        $this->device->withdrawal(10)
             ->withAllowDuplicates(true)
             ->execute();
     }

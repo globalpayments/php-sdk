@@ -2,15 +2,19 @@
 
 namespace GlobalPayments\Api\Terminals\PAX;
 
+use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
+use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
+use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
 use GlobalPayments\Api\Terminals\DeviceController;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
 use GlobalPayments\Api\Terminals\PAX\Interfaces\PaxTcpInterface;
-use GlobalPayments\Api\Terminals\PAX\PaxInterface;
 use GlobalPayments\Api\Terminals\PAX\SubGroups\AmountRequest;
 use GlobalPayments\Api\Terminals\PAX\SubGroups\AccountRequest;
 use GlobalPayments\Api\Terminals\PAX\SubGroups\TraceRequest;
 use GlobalPayments\Api\Terminals\PAX\SubGroups\AvsRequest;
+use GlobalPayments\Api\Terminals\TerminalResponse;
 use GlobalPayments\Api\Terminals\TerminalUtils;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
@@ -22,18 +26,18 @@ use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxTxnType;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxMessageId;
-use GlobalPayments\Api\Terminals\PAX\Responses\PaxCreditResponse;
-use GlobalPayments\Api\Terminals\PAX\Responses\PaxDebitResponse;
+use GlobalPayments\Api\Terminals\PAX\Responses\CreditResponse;
+use GlobalPayments\Api\Terminals\PAX\Responses\DebitResponse;
 use GlobalPayments\Api\Terminals\PAX\SubGroups\EcomSubGroup;
 use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 use GlobalPayments\Api\Terminals\PAX\SubGroups\CashierSubGroup;
 use GlobalPayments\Api\Terminals\Enums\CurrencyType;
 use GlobalPayments\Api\PaymentMethods\GiftCard;
-use GlobalPayments\Api\Terminals\PAX\Responses\PaxGiftResponse;
+use GlobalPayments\Api\Terminals\PAX\Responses\GiftResponse;
 use GlobalPayments\Api\Terminals\PAX\Interfaces\PaxHttpInterface;
 use GlobalPayments\Api\Terminals\PAX\Entities\Enums\TerminalReportType;
 use GlobalPayments\Api\Terminals\PAX\Responses\PaxLocalReportResponse;
-use GlobalPayments\Api\Terminals\PAX\Responses\PaxEBTResponse;
+use GlobalPayments\Api\Terminals\PAX\Responses\EBTResponse;
 
 /*
  * Main controller class for Heartland payment application
@@ -68,12 +72,21 @@ class PaxController extends DeviceController
         }
     }
 
+    public function configureInterface() : IDeviceInterface
+    {
+        if (empty($this->device)) {
+            $this->device = new PaxInterface($this);
+        }
+
+        return $this->device;
+    }
+
     /*
      * Send control message to device
      *
      * @param string $message control message to device
      *
-     * @return PaxResponse parsed device response
+     * @return DeviceResponse parsed device response
      */
 
     public function send($message, $requestType = null)
@@ -82,7 +95,7 @@ class PaxController extends DeviceController
         return $this->deviceInterface->send(trim($message), $requestType);
     }
 
-    public function manageTransaction($builder)
+    public function manageTransaction(TerminalManageBuilder $builder) : TerminalResponse
     {
         $requestId = (!empty($builder->requestId)) ?
                         $builder->requestId :
@@ -149,9 +162,8 @@ class PaxController extends DeviceController
         }
     }
 
-    public function processTransaction($builder)
+    public function processTransaction(TerminalAuthBuilder $builder) : TerminalResponse
     {
-        
         $requestId = (!empty($builder->requestId)) ?
                         $builder->requestId :
                         $this->requestIdProvider->getRequestId();
@@ -302,7 +314,7 @@ class PaxController extends DeviceController
         $commercial,
         $ecom,
         $extData
-    ) {
+    ) : CreditResponse {
     
         $commands = [
             PaxMessageId::T00_DO_CREDIT,
@@ -318,7 +330,7 @@ class PaxController extends DeviceController
             $extData->getElementString(),
         ];
         $response = $this->doTransaction($commands, PaxMessageId::T00_DO_CREDIT);
-        return new PaxCreditResponse($response);
+        return new CreditResponse($response);
     }
     
     private function doTransaction($commands, $requestType = null)
@@ -328,7 +340,7 @@ class PaxController extends DeviceController
         return $this->send($finalMessage, $requestType);
     }
     
-    private function doDebit($transactionType, $amounts, $accounts, $trace, $cashier, $extData)
+    private function doDebit($transactionType, $amounts, $accounts, $trace, $cashier, $extData) : DebitResponse
     {
         $commands = [
             PaxMessageId::T02_DO_DEBIT,
@@ -341,7 +353,7 @@ class PaxController extends DeviceController
             $extData->getElementString(),
         ];
         $response = $this->doTransaction($commands, PaxMessageId::T02_DO_DEBIT);
-        return new PaxDebitResponse($response);
+        return new DebitResponse($response);
     }
     
     private function doGift($messageId, $transactionType, $amounts, $accounts, $trace, $cashier, $extData)
@@ -357,10 +369,10 @@ class PaxController extends DeviceController
             $extData->getElementString(),
         ];
         $response = $this->doTransaction($commands, $messageId);
-        return new PaxGiftResponse($response);
+        return new GiftResponse($response);
     }
     
-    public function processReport($builder)
+    public function processReport(TerminalReportBuilder $builder) : TerminalResponse
     {
         $response = $this->buildReportTransaction($builder);
         return new PaxLocalReportResponse($response);
@@ -426,6 +438,6 @@ class PaxController extends DeviceController
             $extData->getElementString(),
         ];
         $response = $this->doTransaction($commands);
-        return new PaxEBTResponse($response);
+        return new EBTResponse($response);
     }
 }

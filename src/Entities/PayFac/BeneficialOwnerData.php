@@ -14,7 +14,7 @@ class BeneficialOwnerData
     public $ownersCount;
 
     /**
-     * Seller’s Authorized Signer Last Name. By default Merchant’s Last name is saved
+     * Seller's Authorized Signer Last Name. By default Merchant's Last name is saved
      *
      * @var Array GlobalPayments\Api\Entities\PayFac\OwnersData
      */

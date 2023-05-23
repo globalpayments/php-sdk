@@ -3,7 +3,7 @@
 namespace GlobalPayments\Api\Terminals\HPA\Responses;
 
 use GlobalPayments\Api\Terminals\HPA\Entities\HpaResponse;
-use GlobalPayments\Api\Terminals\Interfaces\IDeviceResponseHandler;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceResponseHandler;
 use GlobalPayments\Api\Terminals\TerminalUtils;
 
 class HpaSendSafResponse implements IDeviceResponseHandler

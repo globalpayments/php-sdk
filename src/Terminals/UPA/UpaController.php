@@ -2,21 +2,24 @@
 
 namespace GlobalPayments\Api\Terminals\UPA;
 
+use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
+use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
+use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
+use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
 use GlobalPayments\Api\Terminals\DeviceController;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
-use GlobalPayments\Api\Terminals\Enums\ControlCodes;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
 use GlobalPayments\Api\Terminals\UPA\Interfaces\UpaTcpInterface;
+use GlobalPayments\Api\Terminals\UPA\Responses\UpaTransactionResponse;
 use GlobalPayments\Api\Terminals\UPA\SubGroups\RequestParamFields;
 use GlobalPayments\Api\Terminals\TerminalUtils;
-use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Terminals\UPA\Entities\Enums\UpaMessageId;
 use GlobalPayments\Api\Terminals\UPA\SubGroups\RequestTransactionFields;
 use GlobalPayments\Api\Terminals\UPA\Responses\UpaDeviceResponse;
+use GlobalPayments\Api\Terminals\TerminalResponse;
 
 /*
  * Main controller class for Unified payment application
@@ -25,8 +28,9 @@ use GlobalPayments\Api\Terminals\UPA\Responses\UpaDeviceResponse;
 
 class UpaController extends DeviceController
 {
-
+    /** @var UpaInterface  */
     public $device;
+
     public $deviceConfig;
 
     /*
@@ -43,7 +47,19 @@ class UpaController extends DeviceController
             case ConnectionModes::SSL_TCP:
                 $this->deviceInterface = new UpaTcpInterface($config);
                 break;
+            default:
+                throw new ConfigurationException('Unsupported connection mode.');
         }
+
+    }
+
+    public function configureInterface() : IDeviceInterface
+    {
+        if (empty($this->device)) {
+            $this->device = new UpaInterface($this);
+        }
+
+        return $this->device;
     }
 
     /*
@@ -59,7 +75,7 @@ class UpaController extends DeviceController
         return $this->deviceInterface->send($message, $requestType);
     }
 
-    public function manageTransaction($builder)
+    public function manageTransaction(TerminalManageBuilder $builder) : TerminalResponse
     {
         $requestId = (!empty($builder->requestId)) ?
             $builder->requestId :
@@ -77,7 +93,7 @@ class UpaController extends DeviceController
         );
     }
 
-    public function processTransaction($builder)
+    public function processTransaction(TerminalAuthBuilder $builder) : TerminalResponse
     {
         $requestId = (!empty($builder->requestId)) ?
             $builder->requestId :
@@ -148,7 +164,7 @@ class UpaController extends DeviceController
         return new UpaDeviceResponse($response, $requestType);
     }
 
-    public function processReport($builder)
+    public function processReport(TerminalReportBuilder $builder) : TerminalResponse
     {
         return false;
     }

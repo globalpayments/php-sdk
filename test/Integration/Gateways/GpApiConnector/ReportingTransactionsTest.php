@@ -85,7 +85,7 @@ class ReportingTransactionsTest extends TestCase
         }
     }
 
-    public function testReportFindTransactionsById()
+    public function testReportFindTransactionsByIdX()
     {
         $transactionId = 'TRN_RyWZELCUbOq12IPDowbOevTC9BZxZi_6827116a3d1b';
         try {

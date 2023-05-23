@@ -3,7 +3,7 @@
 namespace GlobalPayments\Api\Terminals\UPA\SubGroups;
 
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\Terminals\Interfaces\IRequestSubGroup;
+use GlobalPayments\Api\Terminals\Abstractions\IRequestSubGroup;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 
 class RequestParamFields implements IRequestSubGroup

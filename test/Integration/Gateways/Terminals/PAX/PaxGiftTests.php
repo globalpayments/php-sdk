@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals\PAX;
 
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
@@ -46,8 +47,9 @@ class PaxGiftTests extends TestCase
 
     public function testGiftSale()
     {
-        $response = $this->device->giftSale(100)
-                ->execute();
+        $response = $this->device->sale(100)
+            ->withPaymentMethodType(PaymentMethodType::GIFT)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->deviceResponseCode);
@@ -55,9 +57,10 @@ class PaxGiftTests extends TestCase
 
     public function testGiftSaleManual()
     {
-        $response = $this->device->giftSale(10)
-                ->withPaymentMethod($this->card)
-                ->execute();
+        $response = $this->device->sale(10)
+            ->withPaymentMethodType(PaymentMethodType::GIFT)
+            ->withPaymentMethod($this->card)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->deviceResponseCode);
@@ -65,7 +68,7 @@ class PaxGiftTests extends TestCase
 
     public function testGiftSaleWithInvoice()
     {
-        $response = $this->device->giftSale(100)
+        $response = $this->device->sale(100)
                 ->withPaymentMethod($this->card)
                 ->withInvoiceNumber(123)
                 ->execute();
@@ -80,14 +83,14 @@ class PaxGiftTests extends TestCase
      */
     public function testSaleNoAmount()
     {
-        $response = $this->device->giftSale()
+        $response = $this->device->sale()
                 ->withPaymentMethod($this->card)
                 ->execute();
     }
 
     public function testGiftAddValue()
     {
-        $response = $this->device->giftAddValue(100)
+        $response = $this->device->addValue(100)
                 ->execute();
 
         $this->assertNotNull($response);
@@ -96,7 +99,7 @@ class PaxGiftTests extends TestCase
 
     public function testGiftAddValueManual()
     {
-        $response = $this->device->giftAddValue(100)
+        $response = $this->device->addValue(100)
                 ->withPaymentMethod($this->card)
                 ->execute();
 
@@ -106,7 +109,7 @@ class PaxGiftTests extends TestCase
 
     public function testLoyaltySaleManual()
     {
-        $response = $this->device->giftSale(100)
+        $response = $this->device->sale(100)
                 ->withPaymentMethod($this->card)
                 ->withCurrency(CurrencyType::POINTS)
                 ->execute();
@@ -117,16 +120,17 @@ class PaxGiftTests extends TestCase
 
     public function testGiftVoidManual()
     {
-        $response = $this->device->giftSale(100)
+        $response = $this->device->sale(100)
                 ->withPaymentMethod($this->card)
                 ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->deviceResponseCode);
 
-        $voidResponse = $this->device->giftVoid()
-                ->withTransactionId($response->transactionId)
-                ->execute();
+        $voidResponse = $this->device->void()
+            ->withPaymentMethodType(PaymentMethodType::GIFT)
+            ->withTransactionId($response->transactionId)
+            ->execute();
 
         $this->assertNotNull($voidResponse);
         $this->assertEquals("00", $voidResponse->deviceResponseCode);
@@ -134,7 +138,7 @@ class PaxGiftTests extends TestCase
 
     public function testGiftBalance()
     {
-        $response = $this->device->giftBalance()
+        $response = $this->device->balance()
                 ->execute();
 
         $this->assertNotNull($response);
@@ -143,7 +147,7 @@ class PaxGiftTests extends TestCase
 
     public function testGiftBalanceManual()
     {
-        $response = $this->device->giftBalance()
+        $response = $this->device->balance()
                 ->withPaymentMethod($this->card)
                 ->execute();
         
@@ -153,7 +157,7 @@ class PaxGiftTests extends TestCase
 
     public function testLoyaltyBalance()
     {
-        $response = $this->device->giftBalance()
+        $response = $this->device->balance()
                 ->withCurrency(CurrencyType::POINTS)
                 ->execute();
 
@@ -163,7 +167,7 @@ class PaxGiftTests extends TestCase
 
     public function testLoyaltyBalanceManual()
     {
-        $response = $this->device->giftBalance()
+        $response = $this->device->balance()
                 ->withPaymentMethod($this->card)
                 ->withCurrency(CurrencyType::POINTS)
                 ->execute();

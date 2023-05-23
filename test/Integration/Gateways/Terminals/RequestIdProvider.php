@@ -2,7 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals;
 
-use GlobalPayments\Api\Terminals\Interfaces\IRequestIdProvider;
+use GlobalPayments\Api\Terminals\Abstractions\IRequestIdProvider;
 
 class RequestIdProvider implements IRequestIdProvider
 {

@@ -40,7 +40,7 @@ class PaxLevel2Tests extends TestCase
     // PoNumber
     public function testCheckPoNumber()
     {
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
             ->withPoNumber("123456789")
             ->execute();
         $this->assertNotNull($response);
@@ -50,7 +50,7 @@ class PaxLevel2Tests extends TestCase
     // CustomerCode
     public function testCheckCustomerCode()
     {
-        $response = $this->device->creditSale(11)
+        $response = $this->device->sale(11)
             ->withCustomerCode("123456789")
             ->withTaxAmount(1.22)
             ->execute();
@@ -61,7 +61,7 @@ class PaxLevel2Tests extends TestCase
     // TaxExempt
     public function testCheckTaxExcemptTrue()
     {
-        $response = $this->device->creditSale(12)
+        $response = $this->device->sale(12)
             ->withCustomerCode("123456789")
             ->withTaxType(TaxType::TAX_EXEMPT)
             ->execute();
@@ -71,7 +71,7 @@ class PaxLevel2Tests extends TestCase
 
     public function testCheckTaxExcemptFalse()
     {
-        $response = $this->device->creditSale(13)
+        $response = $this->device->sale(13)
             ->withTaxAmount(1.22)
             ->withCustomerCode("987654321")
             ->withTaxType(TaxType::SALES_TAX)
@@ -83,7 +83,7 @@ class PaxLevel2Tests extends TestCase
     // TaxExemptId
     public function testCheckTaxExemptId()
     {
-        $response = $this->device->creditSale(14)
+        $response = $this->device->sale(14)
             ->withCustomerCode("987654321")
             ->withTaxType(TaxType::TAX_EXEMPT, "987654321")
             ->execute();
@@ -94,7 +94,7 @@ class PaxLevel2Tests extends TestCase
     // All fields
     public function testcheckAllFields()
     {
-        $response = $this->device->creditSale(15)
+        $response = $this->device->sale(15)
             ->withPoNumber("123456789")
             ->withCustomerCode("8675309")
             ->withTaxType(TaxType::TAX_EXEMPT, "987654321")

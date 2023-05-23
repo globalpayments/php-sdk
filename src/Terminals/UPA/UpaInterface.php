@@ -2,23 +2,28 @@
 
 namespace GlobalPayments\Api\Terminals\UPA;
 
-use GlobalPayments\Api\Terminals\Interfaces\IDeviceInterface;
-use GlobalPayments\Api\Terminals\UPA\Entities\Enums\UpaMessageId;
-use GlobalPayments\Api\Terminals\TerminalUtils;
-use GlobalPayments\Api\Terminals\UPA\Responses\UpaDeviceResponse;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
+use GlobalPayments\Api\Entities\Enums\{
+    PaymentMethodType, TransactionType
+};
+use GlobalPayments\Api\Entities\Exceptions\{
+    ApiException, UnsupportedTransactionException
+};
+use GlobalPayments\Api\Terminals\{
+    DeviceInterface, TerminalUtils, DeviceResponse
+};
+use GlobalPayments\Api\Terminals\Builders\{
+    TerminalAuthBuilder, TerminalManageBuilder
+};
 use GlobalPayments\Api\Terminals\UPA\Builders\UpaTerminalManageBuilder;
-use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
-use GlobalPayments\Api\Entities\Exceptions\ApiException;
-use GlobalPayments\Api\Terminals\UPA\Responses\UpaBatchReport;
-use GlobalPayments\Api\Terminals\UPA\Responses\UpaReportHandler;
+use GlobalPayments\Api\Terminals\UPA\Entities\Enums\UpaMessageId;
+use GlobalPayments\Api\Terminals\UPA\Responses\{
+    UpaBatchReport, UpaDeviceResponse, UpaReportHandler
+};
 
 /**
  * Heartland payment application implementation of device messages
  */
-class UpaInterface implements IDeviceInterface
+class UpaInterface extends DeviceInterface
 {
     /*
      * UpaController object
@@ -32,11 +37,6 @@ class UpaInterface implements IDeviceInterface
     }
 
     #region Admin Messages
-    
-    public function initialize()
-    {
-        throw new UnsupportedTransactionException('');
-    }
 
     public function batchClose()
     {
@@ -66,182 +66,88 @@ class UpaInterface implements IDeviceInterface
         return new UpaDeviceResponse($rawResponse, UpaMessageId::CANCEL);
     }
 
-    public function closeLane()
-    {
-        throw new UnsupportedTransactionException('');
-    }
-
-    public function creditAuth($amount = null)
+    public function authorize($amount = null) : TerminalAuthBuilder
     {
         return (new TerminalAuthBuilder(TransactionType::AUTH, PaymentMethodType::CREDIT))
-                        ->withAmount($amount);
+            ->withAmount($amount);
     }
 
-    public function creditCapture($amount = null)
-    {
-        return (new UpaTerminalManageBuilder(TransactionType::CAPTURE, PaymentMethodType::CREDIT))
-                        ->withAmount($amount);
-    }
-
-    public function creditRefund($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::REFUND, PaymentMethodType::CREDIT))
-        ->withAmount($amount);
-    }
-    
     public function creditReversal()
     {
         return (new UpaTerminalManageBuilder(TransactionType::REVERSAL, PaymentMethodType::CREDIT));
     }
-
-    public function creditSale($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::SALE, PaymentMethodType::CREDIT))
-                        ->withAmount($amount);
-    }
-
-    public function creditVerify()
-    {
-        return (new TerminalAuthBuilder(TransactionType::VERIFY, PaymentMethodType::CREDIT));
-    }
-
-    public function creditVoid()
-    {
-        return (new UpaTerminalManageBuilder(TransactionType::VOID, PaymentMethodType::CREDIT));
-    }
     
-    public function creditTipAdjust($tipAmount = null)
+    public function tipAdjust($tipAmount = null) : TerminalManageBuilder
     {
-        return (new UpaTerminalManageBuilder(TransactionType::EDIT, PaymentMethodType::CREDIT))
+        return (new TerminalManageBuilder(TransactionType::EDIT, PaymentMethodType::CREDIT))
             ->withGratuity($tipAmount);
     }
-    
-    public function creditToken()
+
+    public function tokenize(): TerminalAuthBuilder
     {
-        return (new TerminalAuthBuilder(TransactionType::TOKENIZE, PaymentMethodType::CREDIT));
-    }
-    
-    public function debitRefund($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::REFUND, PaymentMethodType::DEBIT))
-        ->withAmount($amount);
+        return (new TerminalAuthBuilder(
+            TransactionType::TOKENIZE, PaymentMethodType::CREDIT
+        ));
     }
 
-    public function debitSale($amount = null)
+    public function withdrawal($amount = null) : TerminalAuthBuilder
     {
-        return (new TerminalAuthBuilder(TransactionType::SALE, PaymentMethodType::DEBIT))
-        ->withAmount($amount);
-    }
-
-    public function disableHostResponseBeep()
-    {
-        throw new UnsupportedTransactionException('');
-    }
-
-    public function ebtBalance()
-    {
-        $message = TerminalUtils::buildUPAMessage(
-            UpaMessageId::BALANCE_INQUIRY,
-            $this->upaController->requestIdProvider->getRequestId()
+        throw new UnsupportedTransactionException(
+            'The selected gateway does not support this transaction type.'
         );
-        
-        $rawResponse = $this->upaController->send($message, UpaMessageId::BALANCE_INQUIRY);
-        return new UpaDeviceResponse($rawResponse, UpaMessageId::BALANCE_INQUIRY);
     }
 
-    public function ebtPurchase($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::SALE, PaymentMethodType::EBT))
-        ->withAmount($amount);
-    }
-
-    public function ebtRefund($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::REFUND, PaymentMethodType::EBT))
-        ->withAmount($amount);
-    }
-
-    public function ebtWithdrawl($amount = null)
-    {
-        throw new UnsupportedTransactionException('');
-    }
-
-    public function eod()
+    public function endOfDay()
     {
         return $this->batchClose();
     }
 
     public function getDiagnosticReport($totalFields)
     {
-        throw new UnsupportedTransactionException('');
+        throw new UnsupportedTransactionException();
     }
 
     public function getLastResponse()
     {
-        throw new UnsupportedTransactionException('');
-    }
-    
-    public function promptForSignature($transactionId = null)
-    {
-        throw new UnsupportedTransactionException('');
+        throw new UnsupportedTransactionException();
     }
 
-    public function getSignatureFile()
+    public function addValue($amount = null) : TerminalAuthBuilder
     {
-        throw new UnsupportedTransactionException('');
+        throw new UnsupportedTransactionException();
     }
 
-    public function giftAddValue($amount = null)
+    public function void() : TerminalManageBuilder
     {
-        throw new UnsupportedTransactionException('');
+        return (new UpaTerminalManageBuilder(TransactionType::VOID, PaymentMethodType::CREDIT));
     }
 
-    public function giftBalance()
+    public function lineItem(
+        string $leftText,
+        string $rightText = null,
+        string $runningLeftText = null,
+        string $runningRightText = null
+    ): DeviceResponse
     {
-        throw new UnsupportedTransactionException('');
-    }
-
-    public function giftSale($amount = null)
-    {
-        throw new UnsupportedTransactionException('');
-    }
-
-    public function giftVoid()
-    {
-        throw new UnsupportedTransactionException('');
-    }
-
-    public function lineItem($lineItemDetails)
-    {
-        foreach ($lineItemDetails as $lineItem) {
-            if (empty($lineItem->lineItemLeft)) {
-                throw new ApiException("Line item left text cannot be null");
-            }
-    
-            $data = [];
-            
-            $data['params']['lineItemLeft'] = $lineItem->lineItemLeft;
-            if (!empty($lineItem->lineItemRight)) {
-                $data['params']['lineItemRight'] = $lineItem->lineItemRight;
-            }
-            
-            $message = TerminalUtils::buildUPAMessage(
-                UpaMessageId::LINEITEM,
-                $this->upaController->requestIdProvider->getRequestId(),
-                $data
-            );
-    
-            $rawResponse = $this->upaController->send($message, UpaMessageId::LINEITEM);
+        if (empty($leftText)) {
+            throw new ApiException("Line item left text cannot be null");
         }
+        $requestId = $this->upaController->requestIdProvider->getRequestId();
+        $data['params']['lineItemLeft'] = $leftText;
+        if (!empty($rightText)) {
+            $data['params']['lineItemRight'] = $rightText;
+        }
+        $message = TerminalUtils::buildUPAMessage(
+            UpaMessageId::LINEITEM,
+            $this->upaController->requestIdProvider->getRequestId(),
+            $data
+        );
+        $rawResponse = $this->upaController->send($message, UpaMessageId::LINEITEM);
+
         return new UpaDeviceResponse($rawResponse, UpaMessageId::LINEITEM);
     }
 
-    public function openLane()
-    {
-        throw new UnsupportedTransactionException('');
-    }
-
-    public function reboot()
+    public function reboot() : DeviceResponse
     {
         $message = TerminalUtils::buildUPAMessage(
             UpaMessageId::REBOOT,
@@ -255,47 +161,42 @@ class UpaInterface implements IDeviceInterface
 
     public function sendFile($sendFileData)
     {
-        throw new UnsupportedTransactionException('');
-    }
-
-    public function startCard($paymentMethodType = null)
-    {
-        throw new UnsupportedTransactionException('');
+        throw new UnsupportedTransactionException();
     }
 
     public function startDownload($deviceSettings)
     {
-        throw new UnsupportedTransactionException('');
+        throw new UnsupportedTransactionException();
     }
     
     #region Reporting Messages
 
     public function localDetailReport()
     {
-        throw new UnsupportedTransactionException('');
+        throw new UnsupportedTransactionException();
     }
 
     #endregion
     
     #region Saf
-    public function sendSaf($safIndicator = null)
+    public function sendSaf($safIndicator = null) : DeviceResponse
     {
-        throw new UnsupportedTransactionException('');
+        throw new UnsupportedTransactionException();
     }
     
     public function setSafMode($paramValue)
     {
-        throw new UnsupportedTransactionException('');
+        throw new UnsupportedTransactionException();
     }
     
     public function safSummaryReport($param = null)
     {
-        throw new UnsupportedTransactionException('');
+        throw new UnsupportedTransactionException();
     }
     
     public function safDelete($safIndicator)
     {
-        throw new UnsupportedTransactionException('');
+        throw new UnsupportedTransactionException();
     }
     
     public function batchReport($batchId)
@@ -311,11 +212,6 @@ class UpaInterface implements IDeviceInterface
         
         $rawResponse = $this->upaController->send($message, UpaMessageId::GET_BATCH_REPORT);
         return new UpaBatchReport($rawResponse, UpaMessageId::GET_BATCH_REPORT);
-    }
-        
-    public function reset()
-    {
-        throw new UnsupportedTransactionException('');
     }
     
     public function getOpenTabDetails()

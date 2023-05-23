@@ -2,21 +2,18 @@
 
 namespace GlobalPayments\Api\Terminals\HPA;
 
-use GlobalPayments\Api\Terminals\Interfaces\IDeviceInterface;
+use GlobalPayments\Api\Terminals\DeviceInterface;
 use GlobalPayments\Api\Terminals\HPA\Entities\Enums\HpaMessageId;
-use GlobalPayments\Api\Terminals\HPA\HpaController;
 use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
-use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
-use GlobalPayments\Api\Terminals\Enums\CurrencyType;
-
+use GlobalPayments\Api\Terminals\DeviceResponse;
 /**
  * Heartland payment application implementation of device messages
  */
-class HpaInterface implements IDeviceInterface
+class HpaInterface extends DeviceInterface
 {
     /*
      * HpaController object
@@ -52,7 +49,7 @@ class HpaInterface implements IDeviceInterface
      * LaneOpen - Admin mode message - Go to Lane Open State
      */
 
-    public function openLane()
+    public function openLane() : DeviceResponse
     {
         return $this->hpaController->send(
             "<SIP>"
@@ -68,7 +65,7 @@ class HpaInterface implements IDeviceInterface
      * LaneClose - Admin mode message - Go to Lane Close State
      */
 
-    public function closeLane()
+    public function closeLane() : DeviceResponse
     {
         return $this->hpaController->send(
             "<SIP>"
@@ -93,7 +90,7 @@ class HpaInterface implements IDeviceInterface
      * Reboot - Admin mode message - Reboot the SIP device
      */
 
-    public function reboot()
+    public function reboot() : DeviceResponse
     {
         return $this->hpaController->send(
             "<SIP>"
@@ -109,7 +106,7 @@ class HpaInterface implements IDeviceInterface
      * Reset - Admin mode message - Transition SIP to idle state
      */
 
-    public function reset()
+    public function reset() : DeviceResponse
     {
         return $this->hpaController->send(
             "<SIP>"
@@ -120,10 +117,14 @@ class HpaInterface implements IDeviceInterface
                 . "</SIP>"
         );
     }
-    
-    public function lineItem($lineItemDetails)
+    public function lineItem(
+        string $leftText,
+        string $rightText = null,
+        string $runningLeftText = null,
+        string $runningRightText = null
+    ): DeviceResponse
     {
-        if (empty($lineItemDetails->leftText)) {
+        if (empty($leftText)) {
             throw new BuilderException("Line item left text cannot be null");
         }
         $message = "<SIP>"
@@ -131,21 +132,21 @@ class HpaInterface implements IDeviceInterface
                 . "<ECRId>1004</ECRId>"
                 . "<Request>LineItem</Request>"
                 . "<RequestId>%s</RequestId>"
-                ."<LineItemTextLeft>{$lineItemDetails->leftText}</LineItemTextLeft>";
+                ."<LineItemTextLeft>{$leftText}</LineItemTextLeft>";
         
-        if (!empty($lineItemDetails->rightText)) {
-            $message .= sprintf("<LineItemTextRight>%s</LineItemTextRight>", $lineItemDetails->rightText);
+        if (!empty($rightText)) {
+            $message .= sprintf("<LineItemTextRight>%s</LineItemTextRight>", $rightText);
         }
-        if (!empty($lineItemDetails->runningLeftText)) {
+        if (!empty($runningLeftText)) {
             $message .= sprintf(
                 "<LineItemRunningTextLeft>%s</LineItemRunningTextLeft>",
-                $lineItemDetails->runningLeftText
+                $runningLeftText
             );
         }
-        if (!empty($lineItemDetails->runningRightText)) {
+        if (!empty($runningRightText)) {
             $message .= sprintf(
                 "<LineItemRunningTextRight>%s</LineItemRunningTextRight>",
-                $lineItemDetails->runningRightText
+                $runningRightText
             );
         }
         
@@ -158,7 +159,7 @@ class HpaInterface implements IDeviceInterface
      * The intent is to perform card acquisition while the clerk is ringing up the items
      */
 
-    public function startCard($paymentMethodType = null)
+    public function startCard(PaymentMethodType $paymentMethodType) : DeviceResponse
     {
         $message = "<SIP>"
                 . "<Version>1.0</Version>"
@@ -193,85 +194,20 @@ class HpaInterface implements IDeviceInterface
         );
     }
     
-    public function eod()
+    public function endOfDay()
     {
         return $this->batchClose();
     }
 
-    public function creditAuth($amount = null)
+    public function authorize($amount = null) : TerminalAuthBuilder
     {
         return (new TerminalAuthBuilder(TransactionType::AUTH, PaymentMethodType::CREDIT))
                         ->withAmount($amount);
     }
 
-    public function creditCapture($amount = null)
-    {
-        return (new TerminalManageBuilder(TransactionType::CAPTURE, PaymentMethodType::CREDIT))
-                        ->withAmount($amount);
-    }
-
-    public function creditRefund($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::REFUND, PaymentMethodType::CREDIT))
-                        ->withAmount($amount);
-    }
-
-    public function creditSale($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::SALE, PaymentMethodType::CREDIT))
-                        ->withAmount($amount);
-    }
-
-    public function creditVerify()
-    {
-        return (new TerminalAuthBuilder(TransactionType::VERIFY, PaymentMethodType::CREDIT));
-    }
-
-    public function creditVoid()
-    {
-        return (new TerminalManageBuilder(TransactionType::VOID, PaymentMethodType::CREDIT));
-    }
-
     #end credit
 
-    public function debitSale($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::SALE, PaymentMethodType::DEBIT))
-                        ->withAmount($amount);
-    }
-
-    public function debitRefund($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::REFUND, PaymentMethodType::DEBIT))
-                        ->withAmount($amount);
-    }
-    
-    public function disableHostResponseBeep()
-    {
-    }
-
-    public function getSignatureFile()
-    {
-    }
-
-    public function ebtBalance()
-    {
-        return (new TerminalAuthBuilder(TransactionType::BALANCE, PaymentMethodType::EBT));
-    }
-
-    public function ebtPurchase($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::SALE, PaymentMethodType::EBT))
-                        ->withAmount($amount);
-    }
-
-    public function ebtRefund($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::REFUND, PaymentMethodType::EBT))
-                        ->withAmount($amount);
-    }
-
-    public function ebtWithdrawl($amount = null)
+    public function withdrawal($amount = null): TerminalAuthBuilder
     {
         throw new UnsupportedTransactionException(
             'The selected gateway does not support this transaction type.'
@@ -306,31 +242,7 @@ class HpaInterface implements IDeviceInterface
     }
     
     #Gift Region
-    public function giftAddValue($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::ADD_VALUE, PaymentMethodType::GIFT))
-                        ->withAmount($amount)
-                        ->withCurrency(CurrencyType::CURRENCY);
-    }
 
-    public function giftBalance()
-    {
-        return (new TerminalAuthBuilder(TransactionType::BALANCE, PaymentMethodType::GIFT))
-                        ->withCurrency(CurrencyType::CURRENCY);
-    }
-
-    public function giftSale($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::SALE, PaymentMethodType::GIFT))
-                        ->withAmount($amount)
-                        ->withCurrency(CurrencyType::CURRENCY);
-    }
-
-    public function giftVoid()
-    {
-        return (new TerminalManageBuilder(TransactionType::VOID, PaymentMethodType::GIFT));
-    }
-    
     public function setSafMode($parameterValue)
     {
         return $this->hpaController->send(
@@ -350,7 +262,7 @@ class HpaInterface implements IDeviceInterface
         );
     }
     
-    public function sendSaf($safIndicator = null)
+    public function sendSaf($safIndicator = null) : DeviceResponse
     {
         return $this->hpaController->send(
             "<SIP>"
@@ -393,7 +305,7 @@ class HpaInterface implements IDeviceInterface
         );
     }
 
-    public function promptForSignature($transactionId = null)
+    public function promptForSignature(string $transactionId = null)
     {
         return $this->hpaController->send(
             sprintf(
@@ -425,11 +337,7 @@ class HpaInterface implements IDeviceInterface
             HpaMessageId::GET_LAST_RESPONSE
         );
     }
-    
-    public function creditTipAdjust($tipAmount = null)
-    {
-        throw new UnsupportedTransactionException('');
-    }
+
     public function safSummaryReport($safIndicator = null)
     {
         throw new UnsupportedTransactionException('');

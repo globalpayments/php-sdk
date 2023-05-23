@@ -20,6 +20,7 @@ class UpaAdminTests extends TestCase
     public function setup() : void
     {
         $this->device = DeviceService::create($this->getConfig());
+
     }
     
     public function tearDown() : void
@@ -27,7 +28,7 @@ class UpaAdminTests extends TestCase
         sleep(3);
     }
 
-    protected function getConfig()
+    protected function getConfig() : ConnectionConfig
     {
         $config = new ConnectionConfig();
         $config->ipAddress = '192.168.210.79';
@@ -62,28 +63,18 @@ class UpaAdminTests extends TestCase
 
     public function testLineItem()
     {
-        $lineItemDetails = [];
-        
-        $lineItem1 = new LineItem();
-        $lineItem1->lineItemLeft = "Line Item #1";
-        $lineItem1->lineItemRight = "10.00";
-        $lineItemDetails[] = $lineItem1;
-        
-        $lineItem2 = new LineItem();
-        $lineItem2->lineItemLeft = "Line Item #2";
-        $lineItem2->lineItemRight = "10.00";
-        $lineItemDetails[] = $lineItem2;
-        
-        $lineItem3 = new LineItem();
-        $lineItem3->lineItemLeft = "Line Item #3";
-        $lineItem3->lineItemRight = "10.00";
-        $lineItemDetails[] = $lineItem3;
-        
-        $response = $this->device->lineItem($lineItemDetails);
-
+        $response = $this->device->lineItem("Line Item #1", "10.00");
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
-        
+
+        $response = $this->device->lineItem("Line Item #2", "10.00");
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+
+        $response = $this->device->lineItem("Line Item #3", "10.00");
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+
         $cancelParams = new CancelParameters();
         $cancelParams->displayOption = "1";
         $this->device->cancel($cancelParams);

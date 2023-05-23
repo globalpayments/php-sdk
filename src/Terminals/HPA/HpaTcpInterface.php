@@ -2,7 +2,7 @@
 
 namespace GlobalPayments\Api\Terminals\HPA;
 
-use GlobalPayments\Api\Terminals\Interfaces\IDeviceCommInterface;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceCommInterface;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\HPA\Entities\HpaResponse;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;

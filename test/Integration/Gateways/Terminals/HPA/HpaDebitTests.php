@@ -49,8 +49,9 @@ class HpaDebitTests extends TestCase
 
     public function testDebitSale()
     {
-        $response = $this->device->debitSale(10)
-                ->execute();
+        $response = $this->device->sale(10)
+            ->withPaymentMethodType(PaymentMethodType::DEBIT)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
@@ -59,8 +60,9 @@ class HpaDebitTests extends TestCase
 
     public function testDebitRefund()
     {
-        $saleResponse = $this->device->debitSale(15)
-                ->execute();
+        $saleResponse = $this->device->sale(15)
+            ->withPaymentMethodType(PaymentMethodType::DEBIT)
+            ->execute();
 
         $this->assertNotNull($saleResponse);
         $this->assertEquals('0', $saleResponse->resultCode);
@@ -68,9 +70,10 @@ class HpaDebitTests extends TestCase
 
         $this->waitAndReset();
 
-        $response = $this->device->debitRefund(15)
-                ->withTransactionId($saleResponse->transactionId)
-                ->execute();
+        $response = $this->device->refund(15)
+            ->withPaymentMethodType(PaymentMethodType::DEBIT)
+            ->withTransactionId($saleResponse->transactionId)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
@@ -82,8 +85,9 @@ class HpaDebitTests extends TestCase
      */
     public function testSaleWithoutAmount()
     {
-        $response = $this->device->debitSale()
-                ->execute();
+        $response = $this->device->sale()
+            ->withPaymentMethodType(PaymentMethodType::DEBIT)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
@@ -95,8 +99,9 @@ class HpaDebitTests extends TestCase
      */
     public function testRefundWithoutAmount()
     {
-        $response = $this->device->debitRefund()
-                ->execute();
+        $response = $this->device->refund()
+            ->withPaymentMethodType(PaymentMethodType::DEBIT)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
@@ -109,8 +114,9 @@ class HpaDebitTests extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
         
-        $response = $this->device->debitSale(15)
-                ->execute();
+        $response = $this->device->sale(15)
+            ->withPaymentMethodType(PaymentMethodType::DEBIT)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);

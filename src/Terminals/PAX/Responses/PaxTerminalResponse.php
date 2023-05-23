@@ -2,8 +2,7 @@
 
 namespace GlobalPayments\Api\Terminals\PAX\Responses;
 
-use GlobalPayments\Api\Terminals\PAX\Responses\PaxBaseResponse;
-use GlobalPayments\Api\Terminals\Interfaces\IDeviceResponseHandler;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceResponseHandler;
 use GlobalPayments\Api\Terminals\PAX\SubGroups\AmountResponse;
 use GlobalPayments\Api\Terminals\PAX\SubGroups\HostResponse;
 use GlobalPayments\Api\Terminals\PAX\SubGroups\AccountResponse;
@@ -20,13 +19,8 @@ use GlobalPayments\Api\Terminals\PAX\SubGroups\CheckResponse;
 use GlobalPayments\Api\Utils\EnumUtils;
 use GlobalPayments\Api\Terminals\PAX\Entities\Enums\TerminalTransactionType;
 
-class PaxDeviceResponse extends PaxBaseResponse implements IDeviceResponseHandler
+class PaxTerminalResponse extends PaxBaseResponse implements IDeviceResponseHandler
 {
-
-    // Internal
-    public $status;
-    public $command;
-    public $version;
     // Functional
     public $responseCode;
     public $responseText;
@@ -59,7 +53,7 @@ class PaxDeviceResponse extends PaxBaseResponse implements IDeviceResponseHandle
     public $taxExemptId;
     public $ticketNumber;
     public $paymentType;
-    public $referenceNumber;
+
     // EMV
     /*
      * The preferred name of the EMV application selected on the EMV card
@@ -85,11 +79,6 @@ class PaxDeviceResponse extends PaxBaseResponse implements IDeviceResponseHandle
      * The actual cryptogram value generated for the transaction
      */
     public $applicationCryptogram;
-
-    /*
-     * The CVM used in the transaction (PIN, Signature, etc...)
-     */
-    public $customerVerificationMethod;
 
     /*
      * The results of the terminals attempt to verify the cards authenticity.
@@ -210,7 +199,7 @@ class PaxDeviceResponse extends PaxBaseResponse implements IDeviceResponseHandle
             $this->applicationId = $extDataResponse->getExtValue(PaxExtData::APPLICATION_ID);
             $this->applicationCryptogramType = 'TC';
             $this->applicationCryptogram = $extDataResponse->getExtValue(PaxExtData::TRANSACTION_CERTIFICATE);
-            $this->customerVerificationMethod = $extDataResponse->getExtValue(PaxExtData::CUSTOMER_VERIFICATION_METHOD);
+            $this->cardHolderVerificationMethod = $extDataResponse->getExtValue(PaxExtData::CUSTOMER_VERIFICATION_METHOD);
             $this->terminalVerificationResults = $extDataResponse->getExtValue(
                 PaxExtData::TERMINAL_VERIFICATION_RESULTS
             );

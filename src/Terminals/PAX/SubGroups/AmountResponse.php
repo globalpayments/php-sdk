@@ -1,7 +1,7 @@
 <?php
 namespace GlobalPayments\Api\Terminals\PAX\SubGroups;
 
-use GlobalPayments\Api\Terminals\Interfaces\IResponseSubGroup;
+use GlobalPayments\Api\Terminals\Abstractions\IResponseSubGroup;
 use GlobalPayments\Api\Terminals\TerminalUtils;
 use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 

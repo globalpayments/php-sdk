@@ -5,7 +5,7 @@ use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxMessageId;
 use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 use GlobalPayments\Api\Terminals\PAX\SubGroups\HostResponse;
 
-class SafDeleteResponse extends PaxDeviceResponse
+class SafDeleteResponse extends PaxTerminalResponse
 {
 
     public $safDeletedCount;

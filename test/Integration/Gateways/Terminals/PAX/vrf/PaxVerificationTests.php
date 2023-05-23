@@ -1,6 +1,7 @@
 <?php
 namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals\PAX\VRF;
 
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
@@ -49,7 +50,7 @@ class PaxVerificationTests extends TestCase
     protected function getConfig()
     {
         $this->config = new ConnectionConfig();
-        $this->config->ipAddress = '192.168.42.219';
+        $this->config->ipAddress = '192.168.0.130';
         $this->config->port = '10009';
         $this->config->deviceType = DeviceType::PAX_S300;
         $this->config->connectionMode = ConnectionModes::TCP_IP;
@@ -75,7 +76,7 @@ class PaxVerificationTests extends TestCase
         $receipt .= "&x_approval=" . $response->approvalCode;
         $receipt .= "&x_transaction_amount=" . $response->transactionAmount;
         $receipt .= "&x_amount_due=" . $response->balanceAmount;
-        $receipt .= "&x_customer_verification_method=" . $response->customerVerificationMethod;
+        $receipt .= "&x_customer_verification_method=" . $response->cardHolderVerificationMethod;
         $receipt .= "&x_response_text=" . $response->responseText;
         $receipt .= "&x_signature_status=" . $response->signatureStatus;
         
@@ -111,11 +112,11 @@ class PaxVerificationTests extends TestCase
     
     public function testCase01()
     {
-        $response = $this->device->creditSale(4)
+        $response = $this->device->sale(4)
                 ->execute();
         
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->deviceResponseCode);
+        $this->assertEquals('000000', $response->deviceResponseCode);
         $this->assertEquals('00', $response->responseCode);
         
         $this->printReceipt($response, 'testCase01 creditSale');
@@ -147,23 +148,23 @@ class PaxVerificationTests extends TestCase
     
     public function testCase02()
     {
-        $response = $this->device->creditSale(7)
+        $response = $this->device->sale(7)
                 ->execute();
                 
         $this->printReceipt($response, 'testCase02 creditSale $7');
                 
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->deviceResponseCode);
+        $this->assertEquals('000000', $response->deviceResponseCode);
         $this->assertEquals('00', $response->responseCode);
                 
-        $response = $this->device->creditSale(155)
+        $response = $this->device->sale(155)
                 ->withAddress($this->address)
                 ->execute();
                 
         $this->printReceipt($response, 'testCase02 creditSale $155');
                 
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->deviceResponseCode);
+        $this->assertEquals('000000', $response->deviceResponseCode);
         $this->assertEquals('100', $response->transactionAmount);
         $this->assertEquals('10', $response->responseCode);
     }
@@ -190,25 +191,25 @@ class PaxVerificationTests extends TestCase
     
     public function testCase03()
     {
-        $response = $this->device->creditSale(7)
+        $response = $this->device->sale(7)
                 ->withAddress($this->address)
                 ->execute();
         
         $this->printReceipt($response, 'testCase03 creditSale');
         
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->deviceResponseCode);
+        $this->assertEquals('000000', $response->deviceResponseCode);
         $this->assertNotNull($response->transactionId);
         $this->assertEquals('00', $response->responseCode);
          
-        $voidResponse = $this->device->creditVoid()
+        $voidResponse = $this->device->void()
                 ->withTransactionId($response->transactionId)
                 ->execute();
                 
         $this->printReceipt($voidResponse, 'testCase03 creditVoid');
         
         $this->assertNotNull($voidResponse);
-        $this->assertEquals('0', $voidResponse->deviceResponseCode);
+        $this->assertEquals('000000', $voidResponse->deviceResponseCode);
         $this->assertEquals('00', $voidResponse->responseCode);
     }
     
@@ -236,13 +237,13 @@ class PaxVerificationTests extends TestCase
     
     public function testCase04()
     {
-        $response = $this->device->creditSale(118)
+        $response = $this->device->sale(118)
                 ->execute();
          
         $this->printReceipt($response, 'testCase04 creditSale AVS');
         
         $this->assertNotNull($response);
-        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('000000', $response->deviceResponseCode);
         $this->assertNotNull($response->transactionId);
     }
     
@@ -267,14 +268,14 @@ class PaxVerificationTests extends TestCase
     public function testCase05()
     {
         //generate token for EMV visa card
-        $response = $this->device->creditSale(15.01)
+        $response = $this->device->sale(15.01)
                 ->withRequestMultiUseToken(1)
                 ->execute();
                 
         $this->printReceipt($response, 'testCase05 creditSale $15.01');
         
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->deviceResponseCode);
+        $this->assertEquals('000000', $response->deviceResponseCode);
         $this->assertEquals('00', $response->responseCode);
         $this->assertNotNull($response->token);
         
@@ -283,12 +284,12 @@ class PaxVerificationTests extends TestCase
         
         //generate token for master card
         
-        $response = $this->device->creditSale(15.02)
+        $response = $this->device->sale(15.02)
                 ->withRequestMultiUseToken(1)
                 ->execute();
         
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->deviceResponseCode);
+        $this->assertEquals('000000', $response->deviceResponseCode);
         $this->assertEquals('00', $response->responseCode);
         $this->assertNotNull($response->token);
         
@@ -331,28 +332,28 @@ class PaxVerificationTests extends TestCase
         $emvVisaCard = new CreditCardData();
         $emvVisaCard->token = trim($emvVisaToken);
         
-        $response = $this->device->creditSale(15.02)
+        $response = $this->device->sale(15.02)
         ->withPaymentMethod($emvVisaCard)
         ->execute();
         
         $this->printReceipt($response, 'testCase06 creditSale $15.02');
         
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->deviceResponseCode);
+        $this->assertEquals('000000', $response->deviceResponseCode);
         $this->assertEquals('00', $response->responseCode);
         
         //master card token sale
         $msdMaster = new CreditCardData();
         $msdMaster->token = trim($msdMasterToken);
                 
-        $response = $this->device->creditSale(15.03)
+        $response = $this->device->sale(15.03)
         ->withPaymentMethod($msdMaster)
         ->execute();
         
         $this->printReceipt($response, 'testCase06 creditSale $15.03');
         
         $this->assertNotNull($response);
-        $this->assertEquals('0', $response->deviceResponseCode);
+        $this->assertEquals('000000', $response->deviceResponseCode);
         $this->assertEquals('00', $response->responseCode);
     }
        
@@ -384,17 +385,17 @@ class PaxVerificationTests extends TestCase
     {
         $clientTransactionId = 10000 + random_int(0, 99999);
         
-        $response = $this->device->creditSale(2.00)
+        $response = $this->device->sale(2.00)
         ->withClientTransactionId($clientTransactionId)
         ->execute();
         
         $this->printReceipt($response, 'testCase07 creditSale $2.00');
         
         $this->assertNotNull($response);
-        $this->assertEquals('00', $response->deviceResponseCode);
-        $this->assertEquals('0', $response->responseCode);
+        $this->assertEquals('000000', $response->deviceResponseCode);
+        $this->assertEquals('00', $response->responseCode);
         
-        $response = $this->device->creditSale(2.00)
+        $response = $this->device->sale(2.00)
         ->withClientTransactionId($clientTransactionId)
         ->execute();
     }
@@ -444,24 +445,24 @@ class PaxVerificationTests extends TestCase
     
     public function testCase08()
     {
-        $response = $this->device->creditSale(4)
+        $response = $this->device->sale(4)
         ->withAllowDuplicates(1)
         ->execute();
         
         $this->printReceipt($response, 'testCase08 creditSale $4');
         
         $this->assertNotNull($response);
-        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('000000', $response->deviceResponseCode);
         $this->assertNotNull($response->transactionId);
         
-        $refundResponse = $this->device->creditRefund(4)
+        $refundResponse = $this->device->refund(4)
         ->withTransactionId($response->transactionId)
         ->execute();
         
         $this->printReceipt($refundResponse, 'testCase08 creditRefund $4');
         
         $this->assertNotNull($refundResponse);
-        $this->assertEquals('00', $refundResponse->deviceResponseCode);
+        $this->assertEquals('000000', $refundResponse->deviceResponseCode);
     }
     
     
@@ -490,18 +491,20 @@ class PaxVerificationTests extends TestCase
     
     public function testCase09()
     {
-        $response = $this->device->debitSale(10)
-        ->withAllowDuplicates(1)
-        ->execute();
+        $response = $this->device->sale(10)
+            ->withPaymentMethodType(PaymentMethodType::DEBIT)
+            ->withAllowDuplicates(1)
+            ->execute();
         
         $this->printReceipt($response, 'testCase09 debitSale $10');
         
         $this->assertNotNull($response);
         $this->assertEquals('OK', $response->deviceResponseText);
         
-        $response = $this->device->debitSale(11)
-        ->withAllowDuplicates(1)
-        ->execute();
+        $response = $this->device->sale(11)
+            ->withPaymentMethodType(PaymentMethodType::DEBIT)
+            ->withAllowDuplicates(1)
+            ->execute();
         
         $this->printReceipt($response, 'testCase09 debitSale $11');
         
@@ -533,7 +536,7 @@ class PaxVerificationTests extends TestCase
     
     public function testCase11()
     {
-        $response = $this->device->creditSale(15.12)
+        $response = $this->device->sale(15.12)
         ->withGratuity(3)
         ->withAllowDuplicates(1)
         ->withAddress($this->address)
@@ -542,7 +545,7 @@ class PaxVerificationTests extends TestCase
         $this->printReceipt($response, 'testCase11 Tip');
         
         $this->assertNotNull($response);
-        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('000000', $response->deviceResponseCode);
         $this->assertEquals('18.12', $response->transactionAmount);
     }
     
@@ -575,29 +578,30 @@ class PaxVerificationTests extends TestCase
     
     public function testCase12()
     {
-        $response = $this->device->giftAddValue(8)
+        $response = $this->device->addValue(8)
         ->execute();
         
         $this->printReceipt($response, 'testCase12 giftAddValue');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
         
-        $response = $this->device->giftBalance()
+        $response = $this->device->balance()
         ->execute();
         
         $this->printReceipt($response, 'testCase12 giftBalance');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
                 
-        $response = $this->device->giftSale(1)
-        ->execute();
+        $response = $this->device->sale(1)
+            ->withPaymentMethodType(PaymentMethodType::GIFT)
+            ->execute();
         
         $this->printReceipt($response, 'testCase12 giftSale');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
     }
     
     
@@ -629,31 +633,34 @@ class PaxVerificationTests extends TestCase
     
     public function testCase13()
     {
-        $response = $this->device->ebtPurchase(101.01)
-        ->execute();
+        $response = $this->device->sale(101.01)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->execute();
         
         $this->printReceipt($response, 'testCase13 ebtPurchase');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
         
-        $response = $this->device->ebtRefund(104.01)
-        ->withCurrency(CurrencyType::FOODSTAMPS)
-        ->execute();
+        $response = $this->device->refund(104.01)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->withCurrency(CurrencyType::FOODSTAMPS)
+            ->execute();
         
         $this->printReceipt($response, 'testCase13 ebtRefund');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
         
-        $response = $this->device->ebtBalance()
-        ->withCurrency(CurrencyType::FOODSTAMPS)
-        ->execute();
+        $response = $this->device->balance()
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->withCurrency(CurrencyType::FOODSTAMPS)
+            ->execute();
         
         $this->printReceipt($response, 'testCase13 ebtBalance');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
     }
     
     
@@ -692,31 +699,33 @@ class PaxVerificationTests extends TestCase
     
     public function testCase14()
     {
-        $response = $this->device->ebtPurchase(101.01)
-        ->execute();
+        $response = $this->device->sale(101.01)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->execute();
         
         $this->printReceipt($response, 'testCase14 ebtPurchase');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
         
-        $response = $this->device->ebtBalance()
-        ->withCurrency(CurrencyType::CASH_BENEFITS)
-        ->execute();
+        $response = $this->device->balance()
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->withCurrency(CurrencyType::CASH_BENEFITS)
+            ->execute();
         
         $this->printReceipt($response, 'testCase14 ebtBalance');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
         
-        $response = $this->device->ebtWithdrawl(111.01)
+        $response = $this->device->withdrawal(111.01)
         ->withCurrency(CurrencyType::CASH_BENEFITS)
         ->execute();
         
         $this->printReceipt($response, 'testCase14 ebtWithdrawl');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
     }
     
     
@@ -752,7 +761,7 @@ class PaxVerificationTests extends TestCase
             
     public function testCase15()
     {
-        $response = $this->device->creditSale(112.34)
+        $response = $this->device->sale(112.34)
         ->withTaxType(TaxType::NOT_USED)
         ->withPoNumber("98765432101234567")
         ->execute();
@@ -760,9 +769,9 @@ class PaxVerificationTests extends TestCase
         $this->printReceipt($response, 'testCase15 No Tax');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
         
-        $response = $this->device->creditSale(123.45)
+        $response = $this->device->sale(123.45)
         ->withTaxAmount(1)
         ->withCustomerCode("987654321")
         ->withTaxType(TaxType::SALES_TAX)
@@ -771,9 +780,9 @@ class PaxVerificationTests extends TestCase
         $this->printReceipt($response, 'testCase15 withTax');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
         
-        $response = $this->device->creditSale(134.5)
+        $response = $this->device->sale(134.5)
         ->withTaxType(TaxType::TAX_EXEMPT)
         ->withPoNumber("98765432101234567")
         ->execute();
@@ -781,7 +790,7 @@ class PaxVerificationTests extends TestCase
         $this->printReceipt($response, 'testCase15 TAX_EXEMPT');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
     }
     
        /*
@@ -817,7 +826,7 @@ class PaxVerificationTests extends TestCase
         $this->assertEquals('OK', $response->deviceResponseText);
         
         //credit sale in offline mode
-        $response = $this->device->creditSale(4.00)
+        $response = $this->device->sale(4.00)
         ->withAllowDuplicates(1)
         ->execute();
         
@@ -833,7 +842,7 @@ class PaxVerificationTests extends TestCase
         $this->printReceipt($response, 'testCase17 safUpload');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
         
         //batch Close
         $response = $this->device->batchClose();
@@ -841,7 +850,7 @@ class PaxVerificationTests extends TestCase
         $this->printReceipt($response, 'testCase17 batchClose');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
 
         //reset to online mode
         $response = $this->device->setSafMode(SafMode::STAY_ONLINE);
@@ -884,9 +893,9 @@ class PaxVerificationTests extends TestCase
         $this->assertEquals('OK', $response->deviceResponseText);
         
         //credit auth in offline mode
-        $response = $this->device->creditAuth(10.25)
-        ->withAllowDuplicates(1)
-        ->execute();
+        $response = $this->device->authorize(10.25)
+            ->withAllowDuplicates(1)
+            ->execute();
         
         $this->printReceipt($response, 'testCase18 SAF creditSale');
         
@@ -899,7 +908,7 @@ class PaxVerificationTests extends TestCase
         $this->printReceipt($response, 'testCase18 safUpload');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
         
         //SAF Delete
         $response = $this->device->safDelete(SafDelete::FAILED_TRANSACTION);
@@ -907,7 +916,7 @@ class PaxVerificationTests extends TestCase
         $this->printReceipt($response, 'testCase18 safDelete');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
         
         //reset to online mode
         $response = $this->device->setSafMode(SafMode::STAY_ONLINE);
@@ -942,6 +951,6 @@ class PaxVerificationTests extends TestCase
         $this->printReceipt($response, 'testCase19 batchClose');
         
         $this->assertNotNull($response);
-        $this->assertEquals("00", $response->deviceResponseCode);
+        $this->assertEquals("000000", $response->deviceResponseCode);
     }
 }

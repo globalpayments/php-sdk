@@ -35,7 +35,7 @@ class OwnersData
     public $email;
     
     /**
-     * Date of Birth of the Owner. Must be in ‘mm-dd-yyyy’ format.
+     * Date of Birth of the Owner. Must be in 'mm-dd-yyyy' format.
      *
      * @var string
      */

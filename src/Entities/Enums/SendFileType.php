@@ -1,10 +1,10 @@
 <?php
 
-namespace GlobalPayments\Api\Terminals\HPA\Entities\Enums;
+namespace GlobalPayments\Api\Entities\Enums;
 
 use GlobalPayments\Api\Entities\Enum;
 
-class HpaSendFileType extends Enum
+class SendFileType extends Enum
 {
     /*
      * Displayed when the SIP device is in an idle state. The SIP device boots up into an idle state.

@@ -1,10 +1,12 @@
 <?php
 namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals\UPA\VRF;
 
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
 use GlobalPayments\Api\Services\DeviceService;
+use GlobalPayments\Api\Terminals\TerminalResponse;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
@@ -30,7 +32,7 @@ class UpaVerificationTests extends TestCase
     protected function getConfig()
     {
         $this->config = new ConnectionConfig();
-        $this->config->ipAddress = '192.168.0.198';
+        $this->config->ipAddress = '192.168.0.191';
         $this->config->port = '8081';
         $this->config->deviceType = DeviceType::UPA_VERIFONE_T650P;
         $this->config->connectionMode = ConnectionModes::TCP_IP;
@@ -42,7 +44,7 @@ class UpaVerificationTests extends TestCase
         return $this->config;
     }
 
-    private function printReceipt($response, $message = '')
+    private function printReceipt(TerminalResponse $response, $message = '')
     {
         print("\n\n Gateway Txn ID: " . $response->terminalRefNumber);
 
@@ -57,7 +59,7 @@ class UpaVerificationTests extends TestCase
         $receipt .= "&x_approval=" . $response->approvalCode;
         $receipt .= "&x_transaction_amount=" . $response->transactionAmount;
         $receipt .= "&x_amount_due=" . $response->balanceAmount;
-        $receipt .= "&x_customer_verification_method=" . $response->customerVerificationMethod;
+        $receipt .= "&x_customer_verification_method=" . $response->cardHolderVerificationMethod;
         $receipt .= "&x_response_text=" . $response->responseText;
         $receipt .= "&x_signature_status=" . $response->signatureStatus;
         
@@ -84,7 +86,7 @@ class UpaVerificationTests extends TestCase
     
     public function test001EMVContactSale()
     {
-        $response = $this->device->creditSale(4)
+        $response = $this->device->sale(4)
                 ->execute();
         
         $this->assertNotNull($response);
@@ -96,7 +98,7 @@ class UpaVerificationTests extends TestCase
         $this->assertNotNull($response->applicationId);
         $this->assertNotNull($response->applicationCryptogramType);
         $this->assertNotNull($response->applicationCryptogram);
-        $this->assertNotNull($response->customerVerificationMethod);
+        $this->assertNotNull($response->cardHolderVerificationMethod);
         $this->assertNotNull($response->terminalVerificationResults);
         
         $this->printReceipt($response, 'testCase01 creditSale');
@@ -116,7 +118,7 @@ class UpaVerificationTests extends TestCase
     
     public function test002MSRContactSale()
     {
-        $response = $this->device->creditSale(7)
+        $response = $this->device->sale(7)
                 ->execute();
                 
         $this->assertNotNull($response);
@@ -135,7 +137,7 @@ class UpaVerificationTests extends TestCase
          *
          */
         // test004TransactionVoid
-        $voidResponse = $this->device->creditVoid()
+        $voidResponse = $this->device->void()
         ->withTerminalRefNumber($response->terminalRefNumber)
         ->execute();
         
@@ -160,7 +162,7 @@ class UpaVerificationTests extends TestCase
     
     public function test003ManualSale()
     {
-        $response = $this->device->creditSale(118)
+        $response = $this->device->sale(118)
                 ->execute();
         
         $this->assertNotNull($response);
@@ -184,12 +186,12 @@ class UpaVerificationTests extends TestCase
     
     public function test005PartialApproval()
     {
-        $response = $this->device->creditSale(155)
+        $response = $this->device->sale(155)
         ->execute();
         
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
-        $this->assertEquals('100', $response->transactionAmount);
+        $this->assertEquals('100.00', $response->transactionAmount);
         $this->assertEquals('10', $response->responseCode);
         $this->printReceipt($response, 'test005PartialApproval creditSale $155');
     }
@@ -213,7 +215,7 @@ class UpaVerificationTests extends TestCase
     
     public function test006DuplicateTransaction()
     {
-        $response = $this->device->creditSale(2)
+        $response = $this->device->sale(2)
         ->withRequestId(22)
         ->execute();
         
@@ -221,7 +223,7 @@ class UpaVerificationTests extends TestCase
         $this->assertEquals('00', $response->deviceResponseCode);
         $this->printReceipt($response, 'test006DuplicateTransaction creditSale $2');
         
-        $response = $this->device->creditSale(2)
+        $response = $this->device->sale(2)
         ->withRequestId(22)
         ->execute();
         
@@ -244,7 +246,7 @@ class UpaVerificationTests extends TestCase
     
     public function test007CreditReturn()
     {
-        $response = $this->device->creditSale(4)
+        $response = $this->device->sale(4)
         ->withAllowDuplicates(1)
         ->execute();
         
@@ -253,7 +255,7 @@ class UpaVerificationTests extends TestCase
         $this->assertNotNull($response->terminalRefNumber);
         $this->printReceipt($response, 'test007CreditReturn creditSale $4');
         
-        $refundResponse = $this->device->creditRefund(4)
+        $refundResponse = $this->device->refund(4)
         ->withTransactionId($response->transactionId)
         ->execute();
         
@@ -280,7 +282,7 @@ class UpaVerificationTests extends TestCase
     
     public function test008TokenPayment()
     {
-        $response = $this->device->creditVerify()
+        $response = $this->device->verify()
         ->withRequestMultiUseToken(1)
         ->withCardOnFileIndicator(StoredCredentialInitiator::MERCHANT)
         ->execute();
@@ -291,7 +293,7 @@ class UpaVerificationTests extends TestCase
         $this->assertNotNull($response->cardBrandTransId);
         $this->printReceipt($response, 'test008TokenPayment creditVerify');
         
-        $saleResponse = $this->device->creditSale(15.01)
+        $saleResponse = $this->device->sale(15.01)
         ->withToken($response->token)
         ->withCardOnFileIndicator(StoredCredentialInitiator::MERCHANT)
         ->withCardBrandTransId($response->cardBrandTransId)
@@ -316,9 +318,10 @@ class UpaVerificationTests extends TestCase
     
     public function test009DebitSale()
     {
-        $response = $this->device->debitSale(10)
-        ->withAllowDuplicates(1)
-        ->execute();
+        $response = $this->device->sale(10)
+            ->withPaymentMethodType(PaymentMethodType::DEBIT)
+            ->withAllowDuplicates(1)
+            ->execute();
         
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
@@ -344,14 +347,14 @@ class UpaVerificationTests extends TestCase
     
     public function test010aAdjustment()
     {
-        $response = $this->device->creditSale(15.12)
+        $response = $this->device->sale(15.12)
         ->execute();
         
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
         $this->printReceipt($response, 'test010aAdjustment Tip Sale');
         
-        $response = $this->device->creditTipAdjust(3)
+        $response = $this->device->tipAdjust(3)
         ->withTerminalRefNumber($response->terminalRefNumber)
         ->execute();
         
@@ -381,7 +384,7 @@ class UpaVerificationTests extends TestCase
      */
     public function test010bAuthCapture()
     {
-        $authResponse = $this->device->creditAuth(15.12)
+        $authResponse = $this->device->authorize(15.12)
         ->withAllowDuplicates(1)
         ->execute();
         
@@ -390,7 +393,7 @@ class UpaVerificationTests extends TestCase
         $this->assertNotNull($authResponse->transactionId);
         $this->printReceipt($authResponse, 'test010bAuthCapture Auth');
 
-        $captureResponse = $this->device->creditCapture(18.12)
+        $captureResponse = $this->device->capture(18.12)
         ->withTransactionId($authResponse->transactionId)
         ->execute();
         
@@ -483,7 +486,7 @@ class UpaVerificationTests extends TestCase
         $autoSubAmounts->setDentalSubTotal(12.50);
         $autoSubAmounts->setVisionSubTotal(12.50);
         
-        $response = $this->device->creditSale(100)
+        $response = $this->device->sale(100)
         ->withAllowDuplicates(1)
         ->withAutoSubstantiation($autoSubAmounts)
         ->execute();
@@ -515,7 +518,7 @@ class UpaVerificationTests extends TestCase
      */
     public function test015Level2()
     {
-        $response = $this->device->creditSale(112.34)
+        $response = $this->device->sale(112.34)
         ->withAllowDuplicates(1)
         ->execute();
     }
@@ -573,7 +576,7 @@ class UpaVerificationTests extends TestCase
      */
     public function test018Surcharge()
     {
-        $response = $this->device->creditSale(50)
+        $response = $this->device->sale(50)
         ->execute();
     }
     

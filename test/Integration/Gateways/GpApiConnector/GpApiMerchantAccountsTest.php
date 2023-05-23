@@ -13,7 +13,6 @@ use GlobalPayments\Api\Entities\Enums\UsableBalanceMode;
 use GlobalPayments\Api\Entities\Enums\UserType;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
-use GlobalPayments\Api\Entities\FundsData;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\MerchantAccountSummary;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
@@ -555,6 +554,488 @@ class GpApiMerchantAccountsTest extends TestCase
         $this->assertNotNull($transfer);
         $this->assertEquals('SUCCESS', $transfer->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transfer->responseMessage);
+    }
+
+    public function testTransferFundsAccount_AllFields()
+    {
+        $merchants = $this->getMerchants();
+
+        $this->assertTrue(count($merchants->result) > 0);
+        $merchantSender = reset($merchants->result);
+        $merchantRecipient = $merchants->result[1];
+        /** @var MerchantAccountSummary $accountSenderSummary */
+        $accountSenderSummary = $this->getAccountByType(
+            $merchantSender->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+        if (empty($accountSenderSummary)) {
+            $this->fail(sprintf(
+                "Account sender type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $accountRecipientSummary = $this->getAccountByType(
+            $merchantRecipient->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+
+        if (empty($accountRecipientSummary)) {
+            $this->fail(sprintf(
+                "Account recipient type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $funds = new FundsAccount();
+        $funds->accountId = $accountSenderSummary->id;
+        $funds->accountName = $accountSenderSummary->name;
+        $funds->recipientAccountId = $accountRecipientSummary->id;
+        $funds->merchantId = $merchantSender->id;
+        $funds->usableBalanceMode = UsableBalanceMode::AVAILABLE_AND_PENDING_BALANCE;
+
+        $transfer = $funds->transfer(1)
+            ->withClientTransactionId(GenerationUtils::getGuid())
+            ->withDescription('Transfer 1')
+            ->execute();
+
+        $this->assertNotNull($transfer);
+        $this->assertEquals('SUCCESS', $transfer->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $transfer->responseMessage);
+    }
+
+    public function testTransferFundsAccount_OnlyMandatoryFields()
+    {
+        $merchants = $this->getMerchants();
+
+        $this->assertTrue(count($merchants->result) > 0);
+        $merchantSender = reset($merchants->result);
+        $merchantRecipient = $merchants->result[1];
+        /** @var MerchantAccountSummary $accountSenderSummary */
+        $accountSenderSummary = $this->getAccountByType(
+            $merchantSender->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+        if (empty($accountSenderSummary)) {
+            $this->fail(sprintf(
+                "Account sender type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $accountRecipientSummary = $this->getAccountByType(
+            $merchantRecipient->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+
+        if (empty($accountRecipientSummary)) {
+            $this->fail(sprintf(
+                "Account recipient type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $funds = new FundsAccount();
+        $funds->accountId = $accountSenderSummary->id;
+        $funds->recipientAccountId = $accountRecipientSummary->id;
+        $funds->merchantId = $merchantSender->id;
+
+        $transfer = $funds->transfer(1)
+            ->execute();
+
+        $this->assertNotNull($transfer);
+        $this->assertEquals('SUCCESS', $transfer->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $transfer->responseMessage);
+    }
+
+    public function testTransferFundsAccount_WithIdempotency()
+    {
+        $idempotencyKey = GenerationUtils::getGuid();
+        $merchants = $this->getMerchants();
+
+        $this->assertTrue(count($merchants->result) > 0);
+        $merchantSender = reset($merchants->result);
+        $merchantRecipient = $merchants->result[1];
+        /** @var MerchantAccountSummary $accountSenderSummary */
+        $accountSenderSummary = $this->getAccountByType(
+            $merchantSender->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+        if (empty($accountSenderSummary)) {
+            $this->fail(sprintf(
+                "Account sender type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $accountRecipientSummary = $this->getAccountByType(
+            $merchantRecipient->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+
+        if (empty($accountRecipientSummary)) {
+            $this->fail(sprintf(
+                "Account recipient type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $funds = new FundsAccount();
+        $funds->accountId = $accountSenderSummary->id;
+        $funds->accountName = $accountSenderSummary->name;
+        $funds->recipientAccountId = $accountRecipientSummary->id;
+        $funds->merchantId = $merchantSender->id;
+
+        $transfer = $funds->transfer(1)
+            ->withClientTransactionId(GenerationUtils::getGuid())
+            ->withDescription('Transfer 1')
+            ->withIdempotencyKey($idempotencyKey)
+            ->execute();
+
+        $this->assertNotNull($transfer);
+        $this->assertEquals('SUCCESS', $transfer->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $transfer->responseMessage);
+
+        $exceptionCaught = false;
+        try {
+            $funds->transfer(1)
+                ->withClientTransactionId(GenerationUtils::getGuid())
+                ->withDescription('Transfer 1')
+                ->withIdempotencyKey($idempotencyKey)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40039', $e->responseCode);
+            $this->assertStringContainsString('Status Code: DUPLICATE_ACTION - Idempotency Key seen before: ', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testTransferFundsAccount_WithoutRecipientAccountId()
+    {
+        $merchants = $this->getMerchants();
+
+        $this->assertTrue(count($merchants->result) > 0);
+        $merchantSender = reset($merchants->result);
+        $merchantRecipient = $merchants->result[1];
+        /** @var MerchantAccountSummary $accountSenderSummary */
+        $accountSenderSummary = $this->getAccountByType(
+            $merchantSender->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+        if (empty($accountSenderSummary)) {
+            $this->fail(sprintf(
+                "Account sender type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $accountRecipientSummary = $this->getAccountByType(
+            $merchantRecipient->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+
+        if (empty($accountRecipientSummary)) {
+            $this->fail(sprintf(
+                "Account recipient type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $funds = new FundsAccount();
+        $funds->accountId = $accountSenderSummary->id;
+        $funds->accountName = $accountSenderSummary->name;
+        $funds->merchantId = $merchantSender->id;
+
+        $exceptionCaught = false;
+        try {
+            $funds->transfer(1)
+                ->withClientTransactionId('')
+                ->withDescription('Transfer 1')
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Request expects the following conditionally mandatory fields recipient_account_id, recipient_account_name.', $e->getMessage());
+            $this->assertEquals('40007', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testTransferFundsAccount_WithoutAccountIdAndAccountName()
+    {
+        $merchants = $this->getMerchants();
+
+        $this->assertTrue(count($merchants->result) > 0);
+        $merchantSender = reset($merchants->result);
+        $merchantRecipient = $merchants->result[1];
+        /** @var MerchantAccountSummary $accountSenderSummary */
+        $accountSenderSummary = $this->getAccountByType(
+            $merchantSender->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+        if (empty($accountSenderSummary)) {
+            $this->fail(sprintf(
+                "Account sender type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $accountRecipientSummary = $this->getAccountByType(
+            $merchantRecipient->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+
+        if (empty($accountRecipientSummary)) {
+            $this->fail(sprintf(
+                "Account recipient type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $funds = new FundsAccount();
+        $funds->recipientAccountId = $accountRecipientSummary->id;
+        $funds->merchantId = $merchantSender->id;
+
+        $exceptionCaught = false;
+        try {
+            $funds->transfer(1)
+                ->withClientTransactionId('')
+                ->withDescription('Transfer 1')
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Request expects the following conditionally mandatory fields account_id, account_name.', $e->getMessage());
+            $this->assertEquals('40007', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testTransferFundsAccount_WithoutMerchantId()
+    {
+        $merchants = $this->getMerchants();
+
+        $this->assertTrue(count($merchants->result) > 0);
+        $merchantSender = reset($merchants->result);
+        $merchantRecipient = $merchants->result[1];
+        /** @var MerchantAccountSummary $accountSenderSummary */
+        $accountSenderSummary = $this->getAccountByType(
+            $merchantSender->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+        if (empty($accountSenderSummary)) {
+            $this->fail(sprintf(
+                "Account sender type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $accountRecipientSummary = $this->getAccountByType(
+            $merchantRecipient->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+
+        if (empty($accountRecipientSummary)) {
+            $this->fail(sprintf(
+                "Account recipient type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $funds = new FundsAccount();
+        $funds->accountId = $accountSenderSummary->id;
+        $funds->accountName = $accountSenderSummary->name;
+        $funds->recipientAccountId = $accountRecipientSummary->id;
+
+        $exceptionCaught = false;
+        try {
+            $funds->transfer(1)
+                ->withClientTransactionId('')
+                ->withDescription('Transfer 1')
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Status Code: INVALID_TRANSACTION_ACTION - Retrieve information about this transaction is not supported', $e->getMessage());
+            $this->assertEquals('40042', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testTransferFundsAccount_WithoutAmount()
+    {
+        $merchants = $this->getMerchants();
+
+        $this->assertTrue(count($merchants->result) > 0);
+        $merchantSender = reset($merchants->result);
+        $merchantRecipient = $merchants->result[1];
+        /** @var MerchantAccountSummary $accountSenderSummary */
+        $accountSenderSummary = $this->getAccountByType(
+            $merchantSender->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+        if (empty($accountSenderSummary)) {
+            $this->fail(sprintf(
+                "Account sender type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $accountRecipientSummary = $this->getAccountByType(
+            $merchantRecipient->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+
+        if (empty($accountRecipientSummary)) {
+            $this->fail(sprintf(
+                "Account recipient type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $funds = new FundsAccount();
+        $funds->accountId = $accountSenderSummary->id;
+        $funds->accountName = $accountSenderSummary->name;
+        $funds->recipientAccountId = $accountRecipientSummary->id;
+        $funds->merchantId = $merchantSender->id;
+
+        $exceptionCaught = false;
+        try {
+            $funds->transfer(null)
+                ->withClientTransactionId('')
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields amount', $e->getMessage());
+            $this->assertEquals('40005', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testTransferFundsAccount_RandomAccountId()
+    {
+        $merchants = $this->getMerchants();
+
+        $this->assertTrue(count($merchants->result) > 0);
+        $merchantSender = reset($merchants->result);
+        $merchantRecipient = $merchants->result[1];
+        /** @var MerchantAccountSummary $accountSenderSummary */
+        $accountSenderSummary = $this->getAccountByType(
+            $merchantSender->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+        if (empty($accountSenderSummary)) {
+            $this->fail(sprintf(
+                "Account sender type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $accountRecipientSummary = $this->getAccountByType(
+            $merchantRecipient->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+
+        if (empty($accountRecipientSummary)) {
+            $this->fail(sprintf(
+                "Account recipient type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $funds = new FundsAccount();
+        $funds->accountId = GenerationUtils::getGuid();
+        $funds->recipientAccountId = $accountRecipientSummary->id;
+        $funds->merchantId = $merchantSender->id;
+
+        $exceptionCaught = false;
+        try {
+            $funds->transfer(1)
+                ->withClientTransactionId('')
+                ->withDescription('Transfer 1')
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertStringContainsString('Status Code: INVALID_REQUEST_DATA - Merchant configuration does not exist for the following combination: ', $e->getMessage());
+            $this->assertEquals('40041', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testTransferFundsAccount_RandomRecipientId()
+    {
+        $merchants = $this->getMerchants();
+
+        $this->assertTrue(count($merchants->result) > 0);
+        $merchantSender = reset($merchants->result);
+        $merchantRecipient = $merchants->result[1];
+        /** @var MerchantAccountSummary $accountSenderSummary */
+        $accountSenderSummary = $this->getAccountByType(
+            $merchantSender->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+        if (empty($accountSenderSummary)) {
+            $this->fail(sprintf(
+                "Account sender type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $accountRecipientSummary = $this->getAccountByType(
+            $merchantRecipient->id,
+            MerchantAccountType::FUND_MANAGEMENT
+        );
+
+        if (empty($accountRecipientSummary)) {
+            $this->fail(sprintf(
+                "Account recipient type %s not found in order to perform the transfer action",
+                MerchantAccountType::FUND_MANAGEMENT
+            ));
+        }
+
+        $funds = new FundsAccount();
+        $funds->accountId = $accountSenderSummary->id;
+        $funds->accountName = $accountSenderSummary->name;
+        $funds->recipientAccountId = GenerationUtils::getGuid();
+        $funds->merchantId = $merchantSender->id;
+
+        $exceptionCaught = false;
+        try {
+            $funds->transfer(1)
+                ->withClientTransactionId('')
+                ->withDescription('Transfer 1')
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Transfers may only be initiated between accounts under the same partner program', $e->getMessage());
+            $this->assertEquals('40041', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testTransferFundsAccount_RandomMerchantId()
+    {
+        $funds = new FundsAccount();
+        $funds->accountId = GenerationUtils::getGuid();
+        $funds->recipientAccountId = GenerationUtils::getGuid();
+        $funds->merchantId = GenerationUtils::getGuid();
+
+        $exceptionCaught = false;
+        try {
+            $funds->transfer(1)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Status Code: INVALID_TRANSACTION_ACTION - Retrieve information about this transaction is not supported', $e->getMessage());
+            $this->assertEquals('40042', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
     }
 
     private function getAccountByType($merchantId, $type)

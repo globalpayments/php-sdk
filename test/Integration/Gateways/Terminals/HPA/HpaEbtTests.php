@@ -49,8 +49,9 @@ class HpaEbtTests extends TestCase
 
     public function testEbtBalance()
     {
-        $response = $this->device->ebtBalance()
-                ->execute();
+        $response = $this->device->balance()
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
@@ -58,8 +59,9 @@ class HpaEbtTests extends TestCase
 
     public function testEbtPurchase()
     {
-        $saleResponse = $this->device->ebtPurchase(10)
-                ->execute();
+        $saleResponse = $this->device->sale(10)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->execute();
         
         $this->assertNotNull($saleResponse);
         $this->assertEquals('0', $saleResponse->resultCode);
@@ -68,8 +70,9 @@ class HpaEbtTests extends TestCase
 
     public function testEbtRefund()
     {
-        $saleResponse = $this->device->ebtPurchase(15)
-                ->execute();
+        $saleResponse = $this->device->sale(15)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->execute();
 
         $this->assertNotNull($saleResponse);
         $this->assertEquals('0', $saleResponse->resultCode);
@@ -77,9 +80,10 @@ class HpaEbtTests extends TestCase
 
         $this->waitAndReset();
 
-        $response = $this->device->ebtRefund(15)
-                ->withTransactionId($saleResponse->transactionId)
-                ->execute();
+        $response = $this->device->refund(15)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->withTransactionId($saleResponse->transactionId)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
@@ -92,8 +96,9 @@ class HpaEbtTests extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
         
-        $response = $this->device->ebtPurchase(15)
-                ->execute();
+        $response = $this->device->sale(15)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);

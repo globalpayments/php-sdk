@@ -4,7 +4,7 @@ namespace GlobalPayments\Api\Terminals\UPA\SubGroups;
 
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
-use GlobalPayments\Api\Terminals\Interfaces\IRequestSubGroup;
+use GlobalPayments\Api\Terminals\Abstractions\IRequestSubGroup;
 
 class RequestTransactionFields implements IRequestSubGroup
 {

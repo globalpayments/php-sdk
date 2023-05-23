@@ -4,8 +4,9 @@ namespace GlobalPayments\Api\Terminals\Builders;
 
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Terminals\ConnectionContainer;
+use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
+use GlobalPayments\Api\Terminals\TerminalResponse;
 
 class TerminalManageBuilder extends TerminalBuilder
 {
@@ -31,15 +32,15 @@ class TerminalManageBuilder extends TerminalBuilder
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @return Transaction
+     * @param string $configName
+     * @return TerminalResponse
+     * @throws \GlobalPayments\Api\Entities\Exceptions\ApiException
      */
-    public function execute()
+    public function execute($configName = "default") : TerminalResponse
     {
         parent::execute();
-        return ConnectionContainer::instance()
-                        ->manageTransaction($this);
+        $client = ServicesContainer::instance()->getDeviceController($configName);
+        return $client->manageTransaction($this);
     }
 
     public function withAmount($amount)

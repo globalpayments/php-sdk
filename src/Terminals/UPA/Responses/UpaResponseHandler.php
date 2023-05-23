@@ -2,17 +2,11 @@
 
 namespace GlobalPayments\Api\Terminals\UPA\Responses;
 
-use GlobalPayments\Api\Terminals\Interfaces\IDeviceResponseHandler;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Terminals\TerminalResponse;
 
-class UpaResponseHandler implements IDeviceResponseHandler
+class UpaResponseHandler extends TerminalResponse
 {
-
-    
-    public function mapResponse($messageReader = null)
-    {
-    }
-
     public function checkResponse($commandResult)
     {
         if (!empty($commandResult['result']) && $commandResult['result'] === 'Failed') {

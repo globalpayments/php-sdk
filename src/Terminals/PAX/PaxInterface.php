@@ -2,24 +2,23 @@
 
 namespace GlobalPayments\Api\Terminals\PAX;
 
-use GlobalPayments\Api\Terminals\Interfaces\IDeviceInterface;
+use GlobalPayments\Api\Terminals\DeviceInterface;
+use GlobalPayments\Api\Terminals\DeviceResponse;
 use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxMessageId;
 use GlobalPayments\Api\Terminals\TerminalUtils;
 use GlobalPayments\Api\Terminals\PAX\Responses\InitializeResponse;
-use GlobalPayments\Api\Terminals\PAX\Responses\PaxDeviceResponse;
+use GlobalPayments\Api\Terminals\PAX\Responses\PaxTerminalResponse;
 use GlobalPayments\Api\Terminals\PAX\Responses\SignatureResponse;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
-use GlobalPayments\Api\Terminals\Enums\CurrencyType;
 use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
 use GlobalPayments\Api\Terminals\PAX\Entities\Enums\TerminalReportType;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\PAX\Responses\BatchResponse;
-use GlobalPayments\Api\Terminals\Enums\SafMode;
 use GlobalPayments\Api\Terminals\PAX\Responses\SafUploadResponse;
 use GlobalPayments\Api\Terminals\PAX\Responses\SafDeleteResponse;
 use GlobalPayments\Api\Terminals\PAX\Responses\SafSummaryReport;
@@ -27,7 +26,7 @@ use GlobalPayments\Api\Terminals\PAX\Responses\SafSummaryReport;
 /**
  * Heartland payment application implementation of device messages
  */
-class PaxInterface implements IDeviceInterface
+class PaxInterface extends DeviceInterface
 {
     /*
      * PaxController object
@@ -37,6 +36,7 @@ class PaxInterface implements IDeviceInterface
 
     public function __construct(PaxController $deviceController)
     {
+        parent::__construct($deviceController);
         $this->paxController = $deviceController;
     }
 
@@ -73,38 +73,10 @@ class PaxInterface implements IDeviceInterface
         }
     }
 
-    public function closeLane()
-    {
-        throw new UnsupportedTransactionException('');
-    }
-
-    public function creditAuth($amount = null)
+    public function authorize($amount = null) : TerminalAuthBuilder
     {
         return (new TerminalAuthBuilder(TransactionType::AUTH, PaymentMethodType::CREDIT))
                         ->withAmount($amount);
-    }
-
-    public function creditCapture($amount = null)
-    {
-        return (new TerminalManageBuilder(TransactionType::CAPTURE, PaymentMethodType::CREDIT))
-                        ->withAmount($amount);
-    }
-
-    public function creditRefund($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::REFUND, PaymentMethodType::CREDIT))
-                        ->withAmount($amount);
-    }
-
-    public function creditSale($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::SALE, PaymentMethodType::CREDIT))
-                        ->withAmount($amount);
-    }
-
-    public function creditVerify()
-    {
-        return (new TerminalAuthBuilder(TransactionType::VERIFY, PaymentMethodType::CREDIT));
     }
 
     public function creditVoid()
@@ -112,46 +84,7 @@ class PaxInterface implements IDeviceInterface
         return (new TerminalManageBuilder(TransactionType::VOID, PaymentMethodType::CREDIT));
     }
 
-    public function debitRefund($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::REFUND, PaymentMethodType::DEBIT))
-                        ->withAmount($amount);
-    }
-
-    public function debitSale($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::SALE, PaymentMethodType::DEBIT))
-                        ->withAmount($amount);
-    }
-
-    public function disableHostResponseBeep()
-    {
-    }
-
-    public function ebtBalance()
-    {
-        return (new TerminalAuthBuilder(TransactionType::BALANCE, PaymentMethodType::EBT));
-    }
-
-    public function ebtPurchase($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::SALE, PaymentMethodType::EBT))
-        ->withAmount($amount);
-    }
-
-    public function ebtRefund($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::REFUND, PaymentMethodType::EBT))
-        ->withAmount($amount);
-    }
-
-    public function ebtWithdrawl($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::BENEFIT_WITHDRAWAL, PaymentMethodType::EBT))
-        ->withAmount($amount);
-    }
-
-    public function eod()
+    public function endOfDay()
     {
         return $this->batchClose();
     }
@@ -166,7 +99,7 @@ class PaxInterface implements IDeviceInterface
         throw new UnsupportedTransactionException('');
     }
     
-    public function promptForSignature($transactionId = null)
+    public function promptForSignature(string $transactionId = null)
     {
         $message = TerminalUtils::buildAdminMessage(
             PaxMessageId::A20_DO_SIGNATURE,
@@ -201,64 +134,23 @@ class PaxInterface implements IDeviceInterface
         );
     }
 
-    public function giftAddValue($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::ADD_VALUE, PaymentMethodType::GIFT))
-                        ->withCurrency(CurrencyType::CURRENCY)
-                        ->withAmount($amount);
-    }
-
-    public function giftBalance()
-    {
-        return (new TerminalAuthBuilder(TransactionType::BALANCE, PaymentMethodType::GIFT))
-                        ->withCurrency(CurrencyType::CURRENCY);
-    }
-
-    public function giftSale($amount = null)
-    {
-        return (new TerminalAuthBuilder(TransactionType::SALE, PaymentMethodType::GIFT))
-                        ->withCurrency(CurrencyType::CURRENCY)
-                        ->withAmount($amount);
-    }
-
-    public function giftVoid()
-    {
-        return (new TerminalManageBuilder(TransactionType::VOID, PaymentMethodType::GIFT))
-                        ->withCurrency(CurrencyType::CURRENCY);
-    }
-
-    public function lineItem($lineItemDetails)
-    {
-        throw new UnsupportedTransactionException('');
-    }
-
-    public function openLane()
-    {
-        throw new UnsupportedTransactionException('');
-    }
-
-    public function reboot()
+    public function reboot() : DeviceResponse
     {
         $message = TerminalUtils::buildAdminMessage(PaxMessageId::A26_REBOOT);
         $rawResponse = $this->paxController->send($message);
         
-        return new PaxDeviceResponse($rawResponse, PaxMessageId::A26_REBOOT);
+        return new PaxTerminalResponse($rawResponse, PaxMessageId::A26_REBOOT);
     }
 
-    public function reset()
+    public function reset() : DeviceResponse
     {
         $message = TerminalUtils::buildAdminMessage(PaxMessageId::A16_RESET);
         $rawResponse = $this->paxController->send($message);
         
-        return new PaxDeviceResponse($rawResponse, PaxMessageId::A16_RESET);
+        return new PaxTerminalResponse($rawResponse, PaxMessageId::A16_RESET);
     }
 
     public function sendFile($sendFileData)
-    {
-        throw new UnsupportedTransactionException('');
-    }
-
-    public function startCard($paymentMethodType = null)
     {
         throw new UnsupportedTransactionException('');
     }
@@ -278,7 +170,7 @@ class PaxInterface implements IDeviceInterface
     #endregion
     
     #region Saf
-    public function sendSaf($safIndicator = null)
+    public function sendSaf($safIndicator = null) : DeviceResponse
     {
         return $this->safUpload($safIndicator);
     }
@@ -290,7 +182,7 @@ class PaxInterface implements IDeviceInterface
             '', '', '', '', '', '', '', '', '', ''
         ]);
         $rawResponse = $this->paxController->send($message);
-        return new PaxDeviceResponse($rawResponse, PaxMessageId::A54_SET_SAF_PARAMETERS);
+        return new PaxTerminalResponse($rawResponse, PaxMessageId::A54_SET_SAF_PARAMETERS);
     }
     
     public function safUpload($safIndicator)
@@ -316,7 +208,7 @@ class PaxInterface implements IDeviceInterface
         return new SafSummaryReport($rawResponse);
     }
     
-    public function creditTipAdjust($tipAmount = null)
+    public function tipAdjust($tipAmount = null) : TerminalManageBuilder
     {
         return (new TerminalManageBuilder(TransactionType::EDIT, PaymentMethodType::CREDIT))
                         ->withGratuity($tipAmount);

@@ -4,7 +4,7 @@ namespace GlobalPayments\Api\Terminals\HPA\Responses;
 
 use GlobalPayments\Api\Terminals\HPA\Entities\HpaResponse;
 use GlobalPayments\Api\Terminals\TerminalUtils;
-use GlobalPayments\Api\Terminals\Interfaces\IDeviceResponseHandler;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceResponseHandler;
 
 class HpaEodResponse implements IDeviceResponseHandler
 {

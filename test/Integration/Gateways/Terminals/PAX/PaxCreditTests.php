@@ -53,7 +53,7 @@ class PaxCreditTests extends TestCase
 
     public function testCreditSale()
     {
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
             ->withAllowDuplicates(1)
             ->execute();
 
@@ -63,7 +63,7 @@ class PaxCreditTests extends TestCase
 
     public function testCreditSaleManual()
     {
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
             ->withPaymentMethod($this->card)
             ->withAddress($this->address)
             ->withAllowDuplicates(1)
@@ -76,7 +76,7 @@ class PaxCreditTests extends TestCase
 
     public function testCreditSaleWithSignatureCapture()
     {
-        $response = $this->device->creditSale(20)
+        $response = $this->device->sale(20)
             ->withPaymentMethod($this->card)
             ->withAddress($this->address)
             ->withSignatureCapture(1)
@@ -90,7 +90,7 @@ class PaxCreditTests extends TestCase
 
     public function testCreditAuth()
     {
-        $response = $this->device->creditAuth(10)
+        $response = $this->device->authorize(10)
             ->withAllowDuplicates(1)
             ->execute();
 
@@ -98,7 +98,7 @@ class PaxCreditTests extends TestCase
         $this->assertEquals('00', $response->responseCode);
         $this->assertNotNull($response->transactionId);
 
-        $captureResponse = $this->device->creditCapture(10)
+        $captureResponse = $this->device->capture(10)
             ->withTransactionId($response->transactionId)
             ->execute();
 
@@ -109,7 +109,7 @@ class PaxCreditTests extends TestCase
 
     public function testCreditAuthManual()
     {
-        $response = $this->device->creditAuth(10)
+        $response = $this->device->authorize(10)
             ->withAllowDuplicates(1)
             ->withPaymentMethod($this->card)
             ->execute();
@@ -118,7 +118,7 @@ class PaxCreditTests extends TestCase
         $this->assertEquals('00', $response->responseCode);
         $this->assertNotNull($response->transactionId);
 
-        $captureResponse = $this->device->creditCapture(10)
+        $captureResponse = $this->device->capture(10)
             ->withTransactionId($response->transactionId)
             ->execute();
 
@@ -129,7 +129,7 @@ class PaxCreditTests extends TestCase
 
     public function testCreditRefund()
     {
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
             ->withPaymentMethod($this->card)
             ->withAllowDuplicates(1)
             ->execute();
@@ -138,7 +138,7 @@ class PaxCreditTests extends TestCase
         $this->assertEquals('00', $response->responseCode);
         $this->assertNotNull($response->transactionId);
 
-        $refundResponse = $this->device->creditRefund(10)
+        $refundResponse = $this->device->refund(10)
             ->withTransactionId($response->transactionId)
             ->execute();
 
@@ -148,7 +148,7 @@ class PaxCreditTests extends TestCase
 
     public function testSaleRefund()
     {
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
             ->withAllowDuplicates(1)
             ->execute();
 
@@ -156,7 +156,7 @@ class PaxCreditTests extends TestCase
         $this->assertEquals('00', $response->responseCode);
         $this->assertNotNull($response->transactionId);
 
-        $refundResponse = $this->device->creditRefund(10)
+        $refundResponse = $this->device->refund(10)
             ->withTransactionId($response->transactionId)
             ->execute();
 
@@ -166,7 +166,7 @@ class PaxCreditTests extends TestCase
 
     public function testRefundByCard()
     {
-        $response = $this->device->creditRefund(8)
+        $response = $this->device->refund(8)
             ->withPaymentMethod($this->card)
             ->execute();
 
@@ -176,7 +176,7 @@ class PaxCreditTests extends TestCase
 
     public function testCreditVerify()
     {
-        $response = $this->device->creditVerify()
+        $response = $this->device->verify()
             ->execute();
 
         $this->assertNotNull($response);
@@ -185,7 +185,7 @@ class PaxCreditTests extends TestCase
 
     public function testCreditVerifyManual()
     {
-        $response = $this->device->creditVerify()
+        $response = $this->device->verify()
             ->withPaymentMethod($this->card)
             ->execute();
 
@@ -195,7 +195,7 @@ class PaxCreditTests extends TestCase
 
     public function testTokenize()
     {
-        $response = $this->device->creditVerify()
+        $response = $this->device->verify()
             ->withRequestMultiUseToken(1)
             ->execute();
 
@@ -206,7 +206,7 @@ class PaxCreditTests extends TestCase
 
     public function testCreditVoid()
     {
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
             ->withPaymentMethod($this->card)
             ->withAllowDuplicates(1)
             ->execute();
@@ -215,7 +215,7 @@ class PaxCreditTests extends TestCase
         $this->assertEquals('00', $response->responseCode);
         $this->assertNotNull($response->transactionId);
 
-        $refundResponse = $this->device->creditVoid()
+        $refundResponse = $this->device->void()
             ->withTransactionId($response->transactionId)
             ->execute();
 
@@ -229,7 +229,7 @@ class PaxCreditTests extends TestCase
      */
     public function testAuthNoAmount()
     {
-        $response = $this->device->creditAuth()
+        $response = $this->device->authorize()
             ->withPaymentMethod($this->card)
             ->execute();
     }
@@ -240,7 +240,7 @@ class PaxCreditTests extends TestCase
      */
     public function testCaptureNoTransactionId()
     {
-        $response = $this->device->creditCapture(10)
+        $response = $this->device->capture(10)
             ->execute();
     }
 
@@ -250,7 +250,7 @@ class PaxCreditTests extends TestCase
      */
     public function testRefundNoAmount()
     {
-        $response = $this->device->creditRefund()
+        $response = $this->device->refund()
             ->execute();
     }
 
@@ -259,7 +259,7 @@ class PaxCreditTests extends TestCase
      */
     public function testCreditSaleEMV()
     {
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
             ->withAllowDuplicates(1)
             ->execute();
 
@@ -272,7 +272,7 @@ class PaxCreditTests extends TestCase
         $this->assertNotNull($response->applicationId);
         $this->assertNotNull($response->applicationCryptogramType);
         $this->assertNotNull($response->applicationCryptogram);
-        $this->assertNotNull($response->customerVerificationMethod);
+        $this->assertNotNull($response->cardHolderVerificationMethod);
         $this->assertNotNull($response->terminalVerificationResults);
     }
 
@@ -288,7 +288,7 @@ class PaxCreditTests extends TestCase
 
         $device = DeviceService::create($config);
 
-        $response = $device->creditSale(10)
+        $response = $device->sale(10)
             ->withPaymentMethod($this->card)
             ->withAllowDuplicates(1)
             ->execute();
@@ -310,7 +310,7 @@ class PaxCreditTests extends TestCase
 
         $device = DeviceService::create($config);
 
-        $response = $device->creditSale(10)
+        $response = $device->sale(10)
             ->withPaymentMethod($this->card)
             ->withAllowDuplicates(1)
             ->execute();
@@ -323,7 +323,7 @@ class PaxCreditTests extends TestCase
     public function testCreditSaleWithMerchantFee()
     {
         $this->markTestSkipped('Merchant fee needs to be enabled in the device for this test case');
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
             ->withAllowDuplicates(1)
             ->execute();
 
@@ -334,7 +334,7 @@ class PaxCreditTests extends TestCase
 
     public function testCreditTipAdjust()
     {
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
             ->withPaymentMethod($this->card)
             ->withAddress($this->address)
             ->withAllowDuplicates(1)
@@ -343,7 +343,7 @@ class PaxCreditTests extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->responseCode);
 
-        $tipAdjustResponse = $this->device->creditTipAdjust()
+        $tipAdjustResponse = $this->device->tipAdjust()
             ->withTransactionId($response->transactionId)
             ->withGratuity("2.50")
             ->execute();

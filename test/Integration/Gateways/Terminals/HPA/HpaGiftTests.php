@@ -50,8 +50,9 @@ class HpaGiftTests extends TestCase
 
     public function testGiftSale()
     {
-        $response = $this->device->giftSale(100)
-                ->execute();
+        $response = $this->device->sale(100)
+            ->withPaymentMethodType(PaymentMethodType::GIFT)
+            ->execute();
         
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
@@ -59,17 +60,18 @@ class HpaGiftTests extends TestCase
     
     public function testLoyaltySale()
     {
-        $response = $this->device->giftSale(100)
-                ->withCurrency(CurrencyType::POINTS)
-                ->execute();
+        $response = $this->device->sale(100)
+            ->withPaymentMethodType(PaymentMethodType::GIFT)
+            ->withCurrency(CurrencyType::POINTS)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
     }
     
-    public function testGiftAddValue()
+    public function testaddValue()
     {
-        $response = $this->device->giftAddValue(100)
+        $response = $this->device->addValue(100)
                 ->execute();
 
         $this->assertNotNull($response);
@@ -78,7 +80,7 @@ class HpaGiftTests extends TestCase
     
     public function testLoyaltyAddValue()
     {
-        $response = $this->device->giftAddValue(100)
+        $response = $this->device->addValue(100)
                 ->withCurrency(CurrencyType::POINTS)
                 ->execute();
 
@@ -88,17 +90,19 @@ class HpaGiftTests extends TestCase
     
     public function testGiftVoid()
     {
-        $responseSale = $this->device->giftSale(100)
-                ->execute();
+        $responseSale = $this->device->sale(100)
+            ->withPaymentMethodType(PaymentMethodType::GIFT)
+            ->execute();
 
         $this->assertNotNull($responseSale);
         $this->assertEquals('0', $responseSale->resultCode);
         
         $this->waitAndReset();
         
-        $response = $this->device->giftVoid()
-                ->withTransactionId($responseSale->transactionId)
-                ->execute();
+        $response = $this->device->void()
+            ->withPaymentMethodType(PaymentMethodType::GIFT)
+            ->withTransactionId($responseSale->transactionId)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
@@ -106,7 +110,7 @@ class HpaGiftTests extends TestCase
     
     public function testGiftBalance()
     {
-        $response = $this->device->giftBalance()
+        $response = $this->device->balance()
                 ->execute();
 
         $this->assertNotNull($response);
@@ -115,7 +119,7 @@ class HpaGiftTests extends TestCase
     
     public function testLoyaltyBalance()
     {
-        $response = $this->device->giftBalance()
+        $response = $this->device->balance()
                 ->withCurrency(CurrencyType::POINTS)
                 ->execute();
 
@@ -129,7 +133,7 @@ class HpaGiftTests extends TestCase
      */
     public function testAddValueWithoutAmount()
     {
-        $this->device->giftAddValue()
+        $this->device->addValue()
                 ->execute();
     }
     
@@ -140,8 +144,9 @@ class HpaGiftTests extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
         
-        $response = $this->device->giftSale(100)
-                ->execute();
+        $response = $this->device->sale(100)
+            ->withPaymentMethodType(PaymentMethodType::GIFT)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);

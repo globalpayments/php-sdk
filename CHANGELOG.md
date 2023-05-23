@@ -6,11 +6,19 @@
 
 ## Latest Version
 #### Enhancements:
+- Propay: Change file encoding for: AccountPermissions, BeneficialOwnerData, BusinessData, OwnersData, SignificantOwnerData, UploadDocumentData
+- [Breaking] Terminals (HPA, PAX, UPA): Architecture update
+- GP-API: Unit tests updates on: GpApiMerchantAccountsTest, GpApiDigitalWalletTest, GpApiMerchantsOnboardTest
+
+## v7.0.3 (05/09/2023)
+#### Enhancements:
 - GP-API: Manage fund transfers, splits and reverse splits in your partner network. 
     - https://developer.globalpay.com/api/transfers
     - https://developer.globalpay.com/api/transactions#/Split%20a%20Transaction%20Amount/splitTransaction
 - Updates on unit tests for: PayLink, 3DS1 and RiskAssessment
 
+#### Bug Fixes:
+- Portico/Heartland: fix to allow CreditAuth transaction type with wallet data
 
 ## v7.0.2 (05/02/2023)
 #### Enhancements:

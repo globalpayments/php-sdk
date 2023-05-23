@@ -5,7 +5,7 @@ namespace GlobalPayments\Api\Terminals\PAX\Interfaces;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Terminals\{ConnectionConfig, TerminalUtils};
 use GlobalPayments\Api\Terminals\Enums\{ControlCodes, ConnectionModes};
-use GlobalPayments\Api\Terminals\Interfaces\IDeviceCommInterface;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceCommInterface;
 
 /*
  * TCP interface for the device connection and parse response

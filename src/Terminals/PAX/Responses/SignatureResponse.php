@@ -7,7 +7,7 @@ use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
 
-class SignatureResponse extends PaxDeviceResponse
+class SignatureResponse extends PaxTerminalResponse
 {
 
     public $totalLength;

@@ -6,7 +6,7 @@ class SendFileData
 {
     
     /*
-     * Value from Enum HpaSendFileType
+     * Value from Enum SendFileType
      */
     public $imageType;
     

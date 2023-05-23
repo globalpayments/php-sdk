@@ -1,6 +1,7 @@
 <?php
 namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals\HPA;
 
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
@@ -10,6 +11,8 @@ use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 
 class HpaVerificationTests extends TestCase
 {
+    private $device;
+
     public function setup() : void
     {
         $this->device = DeviceService::create($this->getConfig());
@@ -66,7 +69,7 @@ class HpaVerificationTests extends TestCase
     
     public function testCase01()
     {
-        $response = $this->device->creditSale(23)
+        $response = $this->device->sale(23)
                 ->execute();
         
         $this->assertNotNull($response);
@@ -106,7 +109,7 @@ class HpaVerificationTests extends TestCase
     
     public function testCase03()
     {
-        $response = $this->device->creditSale(25)
+        $response = $this->device->sale(25)
                 ->execute();
         
         $this->assertNotNull($response);
@@ -131,7 +134,7 @@ class HpaVerificationTests extends TestCase
     
     public function testCase04()
     {
-        $response = $this->device->creditSale(90.08)
+        $response = $this->device->sale(90.08)
                 ->execute();
         
         $this->assertNotNull($response);
@@ -158,7 +161,7 @@ class HpaVerificationTests extends TestCase
     
     public function testCase05()
     {
-        $response = $this->device->creditSale(155)
+        $response = $this->device->sale(155)
                 ->execute();
         
         $this->assertNotNull($response);
@@ -181,7 +184,7 @@ class HpaVerificationTests extends TestCase
     
     public function testCase06()
     {
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
                 ->execute();
         
         $this->assertNotNull($response);
@@ -189,7 +192,7 @@ class HpaVerificationTests extends TestCase
         
         $this->device->reset();
 
-        $voidResponse = $this->device->creditVoid()
+        $voidResponse = $this->device->void()
                 ->withTransactionId($response->transactionId)
                 ->execute();
         
@@ -263,7 +266,7 @@ class HpaVerificationTests extends TestCase
     
     public function testCase09()
     {
-        $response = $this->device->creditRefund(9)
+        $response = $this->device->refund(9)
                 ->execute();
         
         $this->assertNotNull($response);
@@ -293,7 +296,7 @@ class HpaVerificationTests extends TestCase
     */
     public function testCase10a()
     {
-        $response = $this->device->giftBalance()
+        $response = $this->device->balance()
                 ->execute();
         
         $this->assertNotNull($response);
@@ -318,8 +321,9 @@ class HpaVerificationTests extends TestCase
 
     public function testCase10c()
     {
-        $response = $this->device->giftSale(1)
-        ->execute();
+        $response = $this->device->sale(1)
+            ->withPaymentMethodType(PaymentMethodType::GIFT)
+            ->execute();
         
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
@@ -347,8 +351,9 @@ class HpaVerificationTests extends TestCase
     
     public function testCase11a()
     {
-        $response = $this->device->ebtPurchase(101.01)
-                ->execute();
+        $response = $this->device->sale(101.01)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->execute();
         
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
@@ -359,8 +364,9 @@ class HpaVerificationTests extends TestCase
     
     public function testCase11b()
     {
-        $response = $this->device->ebtRefund(104.01)
-                ->execute();
+        $response = $this->device->refund(104.01)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->execute();
         
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
@@ -371,8 +377,9 @@ class HpaVerificationTests extends TestCase
     
     public function testCase11c()
     {
-        $response = $this->device->ebtBalance()
-                ->execute();
+        $response = $this->device->balance()
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->execute();
         
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
@@ -406,8 +413,9 @@ enter Test Card #4.
     
     public function testCase12a()
     {
-        $response = $this->device->ebtPurchase(101.01)
-                ->execute();
+        $response = $this->device->sale(101.01)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->execute();
         
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
@@ -418,8 +426,9 @@ enter Test Card #4.
     
     public function testCase12b()
     {
-        $response = $this->device->ebtBalance()
-                ->execute();
+        $response = $this->device->balance()
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->execute();
         
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);

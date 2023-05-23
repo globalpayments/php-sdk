@@ -2,11 +2,11 @@
 
 namespace GlobalPayments\Api\Terminals\PAX\Responses;
 
-use GlobalPayments\Api\Terminals\PAX\Responses\PaxDeviceResponse;
+use GlobalPayments\Api\Terminals\PAX\Responses\PaxTerminalResponse;
 use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxMessageId;
 use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 
-class InitializeResponse extends PaxDeviceResponse
+class InitializeResponse extends PaxTerminalResponse
 {
 
     public $serialNumber;

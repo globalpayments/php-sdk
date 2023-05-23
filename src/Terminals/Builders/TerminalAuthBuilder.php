@@ -1,15 +1,16 @@
 <?php
 namespace GlobalPayments\Api\Terminals\Builders;
 
+use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Terminals\Builders\TerminalBuilder;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Terminals\ConnectionContainer;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\Terminals\Enums\CurrencyType;
 use GlobalPayments\Api\Entities\Enums\TaxType;
+use GlobalPayments\Api\Terminals\TerminalResponse;
 
 class TerminalAuthBuilder extends TerminalBuilder
 {
@@ -77,15 +78,16 @@ class TerminalAuthBuilder extends TerminalBuilder
     }
 
     /**
-     *
-     * {@inheritdoc}
-     *
-     * @return Transaction
+     * @param string $configName
+     * @return TerminalResponse
+     * @throws \GlobalPayments\Api\Entities\Exceptions\ApiException
      */
-    public function execute()
+    public function execute(string $configName = "default") : TerminalResponse
     {
-        parent::execute();
-        return ConnectionContainer::instance()->processTransaction($this);
+        parent::execute($configName);
+        $client = ServicesContainer::instance()->getDeviceController($configName);
+
+        return $client->processTransaction($this);
     }
 
     public function withAddress($address)

@@ -1,7 +1,7 @@
 <?php
 namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals;
 
-use GlobalPayments\Api\Terminals\Interfaces\ILogManagement;
+use GlobalPayments\Api\Terminals\Abstractions\ILogManagement;
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
 
 class LogManagement implements ILogManagement

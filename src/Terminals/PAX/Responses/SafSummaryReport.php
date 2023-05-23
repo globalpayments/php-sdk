@@ -5,7 +5,7 @@ use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxMessageId;
 use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 use GlobalPayments\Api\Terminals\PAX\SubGroups\HostResponse;
 
-class SafSummaryReport extends PaxDeviceResponse
+class SafSummaryReport extends PaxTerminalResponse
 {
 
     public $safTotalCount;

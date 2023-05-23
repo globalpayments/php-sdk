@@ -6,6 +6,7 @@ use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
 use GlobalPayments\Api\Services\DeviceService;
+use GlobalPayments\Api\Terminals\TerminalResponse;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\LogManagement;
@@ -43,7 +44,8 @@ class UpaCreditTests extends TestCase
 
     public function testCreditSaleSwipe()
     {
-        $response = $this->device->creditSale(10)
+        /** @var TerminalResponse $response */
+        $response = $this->device->sale(10)
             ->withAllowDuplicates(1)
             ->execute();
 
@@ -57,7 +59,7 @@ class UpaCreditTests extends TestCase
      */
     public function testCreditSaleEMV()
     {
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
             ->withAllowDuplicates(1)
             ->execute();
 
@@ -70,20 +72,20 @@ class UpaCreditTests extends TestCase
         $this->assertNotNull($response->applicationId);
         $this->assertNotNull($response->applicationCryptogramType);
         $this->assertNotNull($response->applicationCryptogram);
-        $this->assertNotNull($response->customerVerificationMethod);
+        $this->assertNotNull($response->cardHolderVerificationMethod);
         $this->assertNotNull($response->terminalVerificationResults);
     }
 
     public function testCreditVoid()
     {
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
             ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
         $this->assertNotNull($response->terminalRefNumber);
 
-        $refundResponse = $this->device->creditVoid()
+        $refundResponse = $this->device->void()
             ->withTerminalRefNumber($response->terminalRefNumber)
             ->execute();
 
@@ -93,7 +95,7 @@ class UpaCreditTests extends TestCase
 
     public function testSaleRefund()
     {
-        $refundResponse = $this->device->creditRefund(10)
+        $refundResponse = $this->device->refund(10)
             ->execute();
 
         $this->assertNotNull($refundResponse);
@@ -102,13 +104,13 @@ class UpaCreditTests extends TestCase
 
     public function testCreditTipAdjust()
     {
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
             ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
 
-        $adjust = $this->device->creditTipAdjust(1.05)
+        $adjust = $this->device->tipAdjust(1.05)
             ->withTerminalRefNumber($response->terminalRefNumber)
             ->execute();
 
@@ -118,7 +120,7 @@ class UpaCreditTests extends TestCase
 
     public function testCardVerify()
     {
-        $response = $this->device->creditVerify()
+        $response = $this->device->verify()
             ->withClerkId(1234)
             ->execute();
 
@@ -128,7 +130,7 @@ class UpaCreditTests extends TestCase
 
     public function testSaleReversal()
     {
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
             ->execute();
 
         $this->assertNotNull($response);
@@ -144,7 +146,7 @@ class UpaCreditTests extends TestCase
 
     public function testVerifyWithTokenRequest()
     {
-        $response = $this->device->creditVerify()
+        $response = $this->device->verify()
             ->withRequestMultiUseToken(1)
             ->withCardOnFileIndicator(StoredCredentialInitiator::MERCHANT)
             ->execute();
@@ -156,7 +158,7 @@ class UpaCreditTests extends TestCase
 
     public function testPreAuth()
     {
-        $response = $this->device->creditAuth(10)
+        $response = $this->device->authorize(10)
                 ->withAllowDuplicates(1)
                 ->execute();
 
@@ -165,7 +167,7 @@ class UpaCreditTests extends TestCase
 
         $this->assertNotNull($response->transactionId);
 
-        $captureResponse = $this->device->creditCapture(10)
+        $captureResponse = $this->device->capture(10)
                 ->withTransactionId($response->transactionId)
                 ->execute();
 
@@ -182,7 +184,7 @@ class UpaCreditTests extends TestCase
         $autoSubAmounts->setClinicSubTotal(5);
         $autoSubAmounts->setVisionSubTotal(5);
 
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
                 ->withAllowDuplicates(1)
                 ->withAutoSubstantiation($autoSubAmounts)
                 ->execute();
@@ -193,7 +195,7 @@ class UpaCreditTests extends TestCase
 
     public function testCreditTokenRequest()
     {
-        $response = $this->device->creditToken()
+        $response = $this->device->tokenize()
         ->withCardOnFileIndicator(StoredCredentialInitiator::MERCHANT)
         ->execute();
         
@@ -201,7 +203,7 @@ class UpaCreditTests extends TestCase
         $this->assertEquals('00', $response->deviceResponseCode);
         $this->assertNotNull($response->token);
         
-        $saleResponse = $this->device->creditSale(10)
+        $saleResponse = $this->device->sale(10)
         ->withToken($response->token)
         ->execute();
         
@@ -211,7 +213,7 @@ class UpaCreditTests extends TestCase
     
     public function testCardVerifyTokenSale()
     {
-        $response = $this->device->creditVerify()
+        $response = $this->device->verify()
         ->withRequestMultiUseToken(1)
         ->withCardOnFileIndicator(StoredCredentialInitiator::MERCHANT)
         ->execute();
@@ -227,7 +229,7 @@ class UpaCreditTests extends TestCase
         $autoSubAmounts->setClinicSubTotal(5);
         $autoSubAmounts->setVisionSubTotal(5);
         
-        $saleResponse = $this->device->creditSale(100)
+        $saleResponse = $this->device->sale(100)
         ->withToken($response->token)
         ->withCardOnFileIndicator(StoredCredentialInitiator::MERCHANT)
         ->withAutoSubstantiation($autoSubAmounts)

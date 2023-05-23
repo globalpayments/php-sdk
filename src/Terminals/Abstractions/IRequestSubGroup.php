@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api\Terminals\Interfaces;
+namespace GlobalPayments\Api\Terminals\Abstractions;
 
 interface IRequestSubGroup
 {

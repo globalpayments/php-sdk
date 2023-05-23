@@ -2,17 +2,23 @@
 
 namespace GlobalPayments\Api\Terminals\HPA;
 
+use GlobalPayments\Api\Entities\Exceptions\NotImplementedException;
+use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
+use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
+use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
 use GlobalPayments\Api\Terminals\DeviceController;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
+use GlobalPayments\Api\Terminals\TerminalResponse;
+use GlobalPayments\Api\Terminals\TerminalUtils;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
-use GlobalPayments\Api\Terminals\HPA\HpaTcpInterface;
-use GlobalPayments\Api\Terminals\HPA\HpaInterface;
+use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\Terminals\HPA\HpaInterface;
+use GlobalPayments\Api\Terminals\HPA\HpaTcpInterface;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
 use GlobalPayments\Api\Terminals\HPA\Entities\Enums\HpaMessageId;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Terminals\TerminalUtils;
 use GlobalPayments\Api\Terminals\HPA\Requests\HpaSendFileRequest;
 
 /*
@@ -45,7 +51,21 @@ class HpaController extends DeviceController
         }
     }
 
-    public function manageTransaction($builder)
+    public function configureInterface() : IDeviceInterface
+    {
+        if (empty($this->device)) {
+            $this->device = new HpaInterface($this);
+        }
+
+        return $this->device;
+    }
+
+    public function processReport(TerminalReportBuilder $builder) : TerminalResponse
+    {
+        throw new NotImplementedException();
+    }
+
+    public function manageTransaction(TerminalManageBuilder $builder) : TerminalResponse
     {
         $this->builderData = $builder;
         $xml = new \DOMDocument();
@@ -73,7 +93,7 @@ class HpaController extends DeviceController
         return $response;
     }
 
-    public function processTransaction($builder)
+    public function processTransaction(TerminalAuthBuilder $builder) : TerminalResponse
     {
         $this->builderData = $builder;
         $xml = new \DOMDocument('1.0', 'utf-8');

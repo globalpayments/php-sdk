@@ -3,7 +3,7 @@
 namespace GlobalPayments\Api\Terminals;
 
 use GlobalPayments\Api\Terminals\Enums\ControlCodes;
-use GlobalPayments\Api\Terminals\Interfaces\ILogManagement;
+use GlobalPayments\Api\Terminals\Abstractions\ILogManagement;
 
 class TerminalUtils
 {

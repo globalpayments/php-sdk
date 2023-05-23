@@ -18,6 +18,7 @@ class GpApiDigitalWalletTest extends TestCase
     private $currency = 'EUR';
     private $amount = 10;
     private $googlePayToken;
+    private $clickToPayToken;
 
     public function setup(): void
     {
@@ -26,14 +27,15 @@ class GpApiDigitalWalletTest extends TestCase
         $this->card->expMonth = date('m');
         $this->card->expYear = date('Y', strtotime('+1 year'));
         $this->card->cardHolderName = "James Mason";
+        $this->clickToPayToken = '8144735251653223601';
         $this->googlePayToken = '{
-          "signature": "MEYCIQChBRI9LwVnpkueFTULQBJbAHodFE6HnWX1iPFVdvfQ5wIhAMxZR232GGIa/yIROdEcIbh3x9qqILLUJ8K/KvqzncET",
+          "signature": "MEQCIDoMJc0jcHAzk846Y7BT6XVN/YrwypNtShE+nF/XWMiAAiAd0nhStaWT0Fw3mWjJXPRy4J+GXhdm5WOjlgEu9DS7pQ",
           "protocolVersion": "ECv1",
-          "signedMessage": "{\"encryptedMessage\":\"lUzJWAt/5VVerPaDLHctV0x7CHbAijOonczp2JtgVe9GS1fCiTwUuq6wCN6CWKe5mC+lRjpsgfTXuPFTgOGCCoTSYxAmb4hbtvjD7vlK+lHy/3UDtLGt0BxgPruT2IzyAzR5cNwf4fvmWwucTdf1nbywkAs5hIrVeQvxC1UkvBcsSz/pIMiBYkWRXk0NGH+g0AvyyYYUFZLZyZ/cfVXbUSRD012Ky8dvbt9Cu1VncBLhSuQ/0p8ifB/sWznp1ZZ3OTv5eMwHIW4oj18k22JJXhbbI5D8KEnkwg6zO5CBo+Ka29lTLbRd5Ok0MWSApeGfvQGqfSuPJJck/+HbJVshBYwuf6VEE0JLqXTIauEsYMY1rwb5St/57y8fDoHcNb5XYiE8/qN4G8YB0a8gGyEaMSLM5B9esgy8UQDWBc7nEOd7C13EDSe6O4joIdH0EFlICDYN\",\"ephemeralPublicKey\":\"BPp6cBv4ogIfYGfqtGPr2gwhNE3gLxco7Ka7laO1U7Jdijz2AHnodW1HgztnuBfuSXUKCVYOhblYYXt+pJE/zLI\\u003d\",\"tag\":\"dTBKFQag7foGF/MYBUJBsI8bFVQ766kEUb04jLk5hcA\\u003d\"}"
+          "signedMessage": "{\"encryptedMessage\":\"c9G2ljhM/OK3IrJapYrVYCi/HUQOX9IZfPE7mSLhxe26R/fpCkXF8i0j9DhM7kttoQBa1KmzNwAP4kaIR9XQB/IZsnZ0YllS+Jo0KYmOoLfcW/OUFYzRXZGbvJZRts7PP4U/NPXDiSDQM7ACna7Nca9o5UBIrY4ZL8MLiIbdBI8BSlCdJYqw4kyXibY2C5QMG+2lzF3fn4kSsz2odC8c9BuW/2D2Rz2Lau9awUMtQUpIHI4W6VU8t1FtDWppWzPUbD0CBw88ZlBOdHTgu2OJE5bR/+NXz99Rn7h3hmqnnMu/0JNxryvZr+Ed1cmLqoVbRf+3ik5WVUsyOcQWrouH8vjOTVq208o8MbSA1wX0LK4gAWVnyRpPsUkz5KJOKvKWIzT3VlV7m9BxlVc7E4RQe7/QJO5LKVcV5cotKXdGK9YINLSyIwkLRcKR9qQ92Q4z0h4g\",\"ephemeralPublicKey\":\"BPUg4L7vjs5ucmOzR+GNmLxWp1LnEsFV/Bc6WQY6qgtyxT4HFnziN/3nkbspF0l4auZX1UjCV1scYjE910Lp2TU\\u003d\",\"tag\":\"x0md5a9GwLxoCWrxQYS4jJfPjuQv9ajrJMd5zNjbd+A\\u003d\"}"
         }';
     }
 
-    public static function tearDownAfterClass() : void
+    public static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
     }
@@ -45,7 +47,7 @@ class GpApiDigitalWalletTest extends TestCase
 
     public function testClickToPayEncrypted()
     {
-        $this->card->token = "9113329269393758302";
+        $this->card->token = $this->clickToPayToken;
         $this->card->mobileType = EncyptedMobileType::CLICK_TO_PAY;
 
         $response = $this->card->charge($this->amount)
@@ -60,7 +62,7 @@ class GpApiDigitalWalletTest extends TestCase
 
     public function testClickToPayEncryptedChargeThenRefund()
     {
-        $this->card->token = "9113329269393758302";
+        $this->card->token = $this->clickToPayToken;
         $this->card->mobileType = EncyptedMobileType::CLICK_TO_PAY;
 
         $response = $this->card->charge($this->amount)
@@ -83,7 +85,7 @@ class GpApiDigitalWalletTest extends TestCase
 
     public function testClickToPayEncryptedChargeThenReverse()
     {
-        $this->card->token = "9113329269393758302";
+        $this->card->token = $this->clickToPayToken;
         $this->card->mobileType = EncyptedMobileType::CLICK_TO_PAY;
 
         $response = $this->card->charge($this->amount)
@@ -106,7 +108,7 @@ class GpApiDigitalWalletTest extends TestCase
 
     public function testClickToPayEncryptedAuthorize()
     {
-        $this->card->token = "9113329269393758302";
+        $this->card->token = $this->clickToPayToken;
         $this->card->mobileType = EncyptedMobileType::CLICK_TO_PAY;
 
         $exceptionCaught = false;
@@ -127,7 +129,7 @@ class GpApiDigitalWalletTest extends TestCase
 
     public function testClickToPayEncryptedRefund()
     {
-        $this->card->token = "9113329269393758302";
+        $this->card->token = $this->clickToPayToken;
         $this->card->mobileType = EncyptedMobileType::CLICK_TO_PAY;
 
         $exceptionCaught = false;
@@ -259,7 +261,8 @@ class GpApiDigitalWalletTest extends TestCase
         $this->assertNotEmpty($transaction->transactionId);
     }
 
-    private function assertClickToPayPayerDetails($response){
+    private function assertClickToPayPayerDetails($response)
+    {
         $this->assertNotNull($response->payerDetails);
         $this->assertNotNull($response->payerDetails->email);
         $this->assertNotNull($response->payerDetails->billingAddress);

@@ -3,7 +3,7 @@
 namespace GlobalPayments\Api\Terminals\HPA\Requests;
 
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
-use GlobalPayments\Api\Terminals\HPA\Entities\Enums\HpaSendFileType;
+use GlobalPayments\Api\Entities\Enums\SendFileType;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 
 class HpaSendFileRequest
@@ -27,7 +27,7 @@ class HpaSendFileRequest
         list($width, $height) = getimagesize($sendFileInfo->imageLocation);
 
         //validate image size
-        if ($sendFileInfo->imageType == HpaSendFileType::BANNER) {
+        if ($sendFileInfo->imageType == SendFileType::BANNER) {
             if ($this->deviceConfig->deviceType == DeviceType::HPA_ISC250 &&
                     ($height > 60 || $width > 480)) {
                 throw new BuilderException("Incorrect file height and width");
@@ -35,7 +35,7 @@ class HpaSendFileRequest
                     ($height > 40 || $width > 320)) {
                 throw new BuilderException("Incorrect file height and width");
             }
-        } elseif ($sendFileInfo->imageType == HpaSendFileType::IDLELOGO) {
+        } elseif ($sendFileInfo->imageType == SendFileType::IDLELOGO) {
             if ($this->deviceConfig->deviceType == DeviceType::HPA_ISC250 &&
                     ($height > 272 || $width > 480)) {
                 throw new BuilderException("Incorrect file height and width");
@@ -58,8 +58,8 @@ class HpaSendFileRequest
             $fileInfo['fileDataSize'] = strlen($hex);
 
             return $fileInfo;
-        } catch (Exception $e) {
-            throw new BuilderException("Input error: " . $e->getMessage);
+        } catch (\Exception $e) {
+            throw new BuilderException("Input error: " . $e->getMessage());
         }
     }
 }

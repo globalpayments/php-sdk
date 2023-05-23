@@ -2,22 +2,24 @@
 
 namespace GlobalPayments\Api\Services;
 
-use GlobalPayments\Api\Terminals\ConnectionContainer;
+use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
 
 class DeviceService
 {
-
     /**
      * Initiates a new object
      *
-     * @param ServicesConfig $config Service config
+     * @param ConnectionConfig $config
+     * @param string $configName
      *
-     * @return void
+     * @return IDeviceInterface
+     * @throws \GlobalPayments\Api\Entities\Exceptions\ApiException
      */
-    public static function create(ConnectionConfig $config)
+    public static function create(ConnectionConfig $config, string $configName = "default") : IDeviceInterface
     {
-        ConnectionContainer::configure($config);
-        return ConnectionContainer::instance()->device;
+        ServicesContainer::configureService($config, $configName);
+        return ServicesContainer::instance()->getDeviceInterface($configName);
     }
 }

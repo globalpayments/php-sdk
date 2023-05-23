@@ -102,7 +102,6 @@ class GpApiMerchantsOnboardTest extends TestCase
         $this->assertNotEmpty($merchant->userId);
     }
 
-    //TODO - add idempotency key on service
     public function testBoardMerchant_WithIdempotencyKey()
     {
         $idempotencyKey = GenerationUtils::getGuid();
@@ -143,6 +142,47 @@ class GpApiMerchantsOnboardTest extends TestCase
             $errorFound = true;
             $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
             $this->assertEquals('40039', $e->responseCode);
+        } finally {
+            $this->assertTrue($errorFound);
+        }
+    }
+
+    public function testBoardMerchant_DuplicateMerchantName()
+    {
+        $merchantData = $this->getMerchantData();
+        $products = $this->getProductList();
+        $persons = $this->getPersonList();
+        $paymentStatistics = $this->getPaymentStatistics();
+
+        $merchant = PayFacService::createMerchant()
+            ->withUserPersonalData($merchantData)
+            ->withDescription('Merchant Business Description')
+            ->withProductData($products)
+            ->withPersonsData($persons)
+            ->withPaymentStatistics($paymentStatistics)
+            ->execute();
+
+        /** @var User $merchant */
+        $this->assertTrue($merchant instanceof User);
+        $this->assertEquals("SUCCESS", $merchant->responseCode);
+        $this->assertEquals(UserStatus::UNDER_REVIEW, $merchant->userStatus);
+        $this->assertEquals($merchantData->userName, $merchant->name);
+        $this->assertEquals("Merchant Boarding in progress", $merchant->statusDescription);
+        $this->assertNotEmpty($merchant->userId);
+
+        $errorFound = false;
+        try {
+            PayFacService::createMerchant()
+                ->withUserPersonalData($merchantData)
+                ->withDescription('Merchant Business Description')
+                ->withProductData($products)
+                ->withPersonsData($persons)
+                ->withPaymentStatistics($paymentStatistics)
+                ->execute();
+        } catch (GatewayException $e) {
+            $errorFound = true;
+            $this->assertStringContainsString('Duplicate Merchant Name', $e->getMessage());
+            $this->assertEquals('40041', $e->responseCode);
         } finally {
             $this->assertTrue($errorFound);
         }

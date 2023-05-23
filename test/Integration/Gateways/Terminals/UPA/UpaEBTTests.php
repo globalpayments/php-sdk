@@ -1,6 +1,7 @@
 <?php
 namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals\UPA;
 
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
@@ -40,7 +41,8 @@ class UpaEBTTests extends TestCase
 
     public function testEbtPurchase()
     {
-        $response = $this->device->ebtPurchase(10)
+        $response = $this->device->sale(10)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
             ->execute();
 
         $this->assertNotNull($response);
@@ -49,7 +51,9 @@ class UpaEBTTests extends TestCase
 
     public function testEbtBalance()
     {
-        $response = $this->device->ebtBalance();
+        $response = $this->device->balance()
+            ->withPaymentMethodType(PaymentMethodType::EBT)
+            ->execute();
         
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
@@ -58,7 +62,8 @@ class UpaEBTTests extends TestCase
 
     public function testEbtRefund()
     {
-        $response = $this->device->ebtRefund(10)
+        $response = $this->device->refund(10)
+            ->withPaymentMethodType(PaymentMethodType::EBT)
             ->execute();
         
         $this->assertNotNull($response);

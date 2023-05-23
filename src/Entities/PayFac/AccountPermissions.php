@@ -50,7 +50,7 @@ class AccountPermissions
     public $proPayOut;
     
     /**
-     * Valid values between 0 and 999999999. Expressed as number of pennies in USD or number of account’s currency
+     * Valid values between 0 and 999999999. Expressed as number of pennies in USD or number of account's currency
      * without decimals.
      *
      * Optional
@@ -60,7 +60,7 @@ class AccountPermissions
     public $creditCardMonthLimit;
     
     /**
-     * Valid values between 0 and 999999999. Expressed as number of pennies in USD or number of account’s currency
+     * Valid values between 0 and 999999999. Expressed as number of pennies in USD or number of account's currency
      * without decimals.
      *
      * Optional
@@ -71,7 +71,7 @@ class AccountPermissions
     
     /**
      * Used to update status of ProPay account. Note: the ONLY value that will allow an account to
-     * process transactions is ‘ReadyToProcess’ Valid values are:
+     * process transactions is "ReadyToProcess" Valid values are:
         * ReadyToProcess
         * FraudAccount
         * RiskwiseDeclined

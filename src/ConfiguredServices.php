@@ -8,6 +8,7 @@ use GlobalPayments\Api\Gateways\ISecure3dProvider;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Gateways\OpenBankingProvider;
 use GlobalPayments\Api\Services\FraudService;
+use GlobalPayments\Api\Terminals\DeviceController;
 
 class ConfiguredServices
 {
@@ -99,5 +100,11 @@ class ConfiguredServices
     public function getOpenBankingProvider()
     {
         return $this->openBankingProvider;
+    }
+
+    public function setDeviceController(DeviceController $deviceController)
+    {
+        $this->deviceController= $deviceController;
+        $this->deviceInterface = $deviceController->configureInterface();
     }
 }

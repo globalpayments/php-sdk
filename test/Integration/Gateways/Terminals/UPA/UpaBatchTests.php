@@ -41,7 +41,7 @@ class UpaBatchTests extends TestCase
 
     public function testBatchClose()
     {
-        $response = $this->device->eod();
+        $response = $this->device->endOfDay();
 
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->deviceResponseCode);
@@ -64,7 +64,7 @@ class UpaBatchTests extends TestCase
         $this->assertNotNull($response->reportRecords);
         
         foreach ($response->reportRecords as $transaction) {
-            $captureResponse = $this->device->creditCapture($transaction['authorizedAmount'])
+            $captureResponse = $this->device->capture($transaction['authorizedAmount'])
             ->withTransactionId($transaction['referenceNumber'])
             ->execute();
             

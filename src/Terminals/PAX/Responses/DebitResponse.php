@@ -2,15 +2,15 @@
 
 namespace GlobalPayments\Api\Terminals\PAX\Responses;
 
-use GlobalPayments\Api\Terminals\PAX\Responses\PaxDeviceResponse;
+use GlobalPayments\Api\Terminals\PAX\Responses\PaxTerminalResponse;
 use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxMessageId;
 
-class PaxCreditResponse extends PaxDeviceResponse
+class DebitResponse extends PaxTerminalResponse
 {
 
     public function __construct($rawResponse)
     {
-        parent::__construct($rawResponse, PaxMessageId::T01_RSP_DO_CREDIT);
+        parent::__construct($rawResponse, PaxMessageId::T03_RSP_DO_DEBIT);
     }
 
     public function parseResponse($messageReader)

@@ -47,9 +47,9 @@ class HpaCreditTests extends TestCase
         $this->device->reset();
     }
 
-    public function testCreditSale()
+    public function testSale()
     {
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
                 ->execute();
         
         $this->assertNotNull($response);
@@ -57,9 +57,9 @@ class HpaCreditTests extends TestCase
         $this->assertNotNull($response->transactionId);
     }
 
-    public function testCreditAuth()
+    public function testAuthorize()
     {
-        $response = $this->device->creditAuth(10)
+        $response = $this->device->authorize(10)
                 ->execute();
 
         $this->assertNotNull($response);
@@ -67,9 +67,9 @@ class HpaCreditTests extends TestCase
         $this->assertNotNull($response->transactionId);
     }
 
-    public function testCreditCapture()
+    public function testCapture()
     {
-        $authResponse = $this->device->creditAuth(15)
+        $authResponse = $this->device->authorize(15)
                 ->execute();
 
         $this->assertNotNull($authResponse);
@@ -78,7 +78,7 @@ class HpaCreditTests extends TestCase
        
         $this->waitAndReset();
 
-        $response = $this->device->creditCapture(15)
+        $response = $this->device->capture(15)
                 ->withTransactionId($authResponse->transactionId)
                 ->execute();
 
@@ -86,9 +86,9 @@ class HpaCreditTests extends TestCase
         $this->assertEquals('0', $response->resultCode);
     }
 
-    public function testCreditVoid()
+    public function testVoid()
     {
-        $saleResponse = $this->device->creditSale(10)
+        $saleResponse = $this->device->sale(10)
                 ->execute();
 
         $this->assertNotNull($saleResponse);
@@ -97,7 +97,7 @@ class HpaCreditTests extends TestCase
 
         $this->waitAndReset();
 
-        $response = $this->device->creditVoid()
+        $response = $this->device->void()
                 ->withTransactionId($saleResponse->transactionId)
                 ->execute();
 
@@ -107,29 +107,27 @@ class HpaCreditTests extends TestCase
 
     public function testCreditRefundByCard()
     {
-        $response = $this->device->creditRefund(15)
+        $response = $this->device->refund(15)
                 ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
     }
 
-    public function testCreditVerify()
+    public function testVerify()
     {
-        $response = $this->device->creditVerify()
+        $response = $this->device->verify()
                 ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     * @expectedExceptionMessage amount cannot be null for this transaction type
-     */
     public function testSaleWithoutAmount()
     {
-        $response = $this->device->creditSale()
+        $this->expectException(GlobalPayments\Api\Entities\Exceptions\BuilderException::class);
+        $this->expectExceptionMessage("amount cannot be null for this transaction type");
+        $response = $this->device->sale()
                 ->execute();
 
         $this->assertNotNull($response);
@@ -142,20 +140,18 @@ class HpaCreditTests extends TestCase
      */
     public function testAuthWithoutAmount()
     {
-        $response = $this->device->creditAuth()
+        $response = $this->device->authorize()
                 ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     * @expectedExceptionMessage amount cannot be null for this transaction type
-     */
     public function testCaptureWithoutAmount()
     {
-        $response = $this->device->creditCapture()
+        $this->expectException(GlobalPayments\Api\Entities\Exceptions\BuilderException::class);
+        $this->expectExceptionMessage("amount cannot be null for this transaction type");
+        $response = $this->device->capture()
                 ->withTransactionId(1234)
                 ->execute();
 
@@ -163,24 +159,20 @@ class HpaCreditTests extends TestCase
         $this->assertEquals('0', $response->resultCode);
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     * @expectedExceptionMessage amount cannot be null for this transaction type
-     */
     public function testRefundWithoutAmount()
     {
-        $response = $this->device->creditRefund()
+        $this->expectException(GlobalPayments\Api\Entities\Exceptions\BuilderException::class);
+        $this->expectExceptionMessage("amount cannot be null for this transaction type");
+        $response = $this->device->refund()
                 ->withTransactionId(1234)
                 ->execute();
     }
 
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     * @expectedExceptionMessage transactionId cannot be null for this transaction type
-     */
     public function testCaptureWithoutTransactionId()
     {
-        $response = $this->device->creditCapture(10)
+        $this->expectExceptionMessage("transactionId cannot be null for this transaction type");
+        $this->expectException(GlobalPayments\Api\Entities\Exceptions\BuilderException::class);
+        $response = $this->device->capture(10)
                 ->execute();
     }
     
@@ -191,7 +183,7 @@ class HpaCreditTests extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
         
-        $response = $this->device->creditSale(15)
+        $response = $this->device->sale(15)
                 ->execute();
 
         $this->assertNotNull($response);
@@ -204,7 +196,7 @@ class HpaCreditTests extends TestCase
         $requestIdProvider = new RequestIdProvider();
         $requestId = $requestIdProvider->getRequestId();
         
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
                 ->withRequestId($requestId)
                 ->execute();
         
@@ -213,7 +205,7 @@ class HpaCreditTests extends TestCase
         
         $this->waitAndReset();
         
-        $lostResponse = $this->device->creditSale(10)
+        $lostResponse = $this->device->sale(10)
                 ->withRequestId($requestId)
                 ->execute();
                 

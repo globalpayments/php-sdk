@@ -2,7 +2,7 @@
 
 namespace GlobalPayments\Api\Terminals\PAX\SubGroups;
 
-use GlobalPayments\Api\Terminals\Interfaces\IRequestSubGroup;
+use GlobalPayments\Api\Terminals\Abstractions\IRequestSubGroup;
 use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 
 class TraceRequest implements IRequestSubGroup

@@ -13,7 +13,7 @@ use GlobalPayments\Api\Services\DeviceService;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 use GlobalPayments\Api\Terminals\HPA\Entities\LineItem;
-use GlobalPayments\Api\Terminals\HPA\Entities\Enums\HpaSendFileType;
+use GlobalPayments\Api\Entities\Enums\SendFileType;
 use GlobalPayments\Api\Terminals\HPA\Entities\SendFileData;
 
 class HpaAdminTests extends TestCase
@@ -118,12 +118,12 @@ class HpaAdminTests extends TestCase
         $response = $this->device->initialize();
     }
     
-    public function testEod()
+    public function testEndOfDay()
     {
         $this->device->reset();
         $this->device->closeLane();
         
-        $response = $this->device->eod();
+        $response = $this->device->endOfDay();
         
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
@@ -282,7 +282,7 @@ class HpaAdminTests extends TestCase
     {
         $sendFileInfo = new SendFileData();
         $sendFileInfo->imageLocation = dirname(__FILE__) . '/sampleimages/hpa_banner_iSC250_60_480.jpg';
-        $sendFileInfo->imageType = HpaSendFileType::BANNER;
+        $sendFileInfo->imageType = SendFileType::BANNER;
         
         $response = $this->device->sendFile($sendFileInfo);
 
@@ -298,7 +298,7 @@ class HpaAdminTests extends TestCase
     {
         $sendFileInfo = new SendFileData();
         $sendFileInfo->imageLocation = dirname(__FILE__) . '/sampleimages/hpa_logo_iSC250_272_480.jpg';
-        $sendFileInfo->imageType = HpaSendFileType::IDLELOGO;
+        $sendFileInfo->imageType = SendFileType::IDLELOGO;
         
         $response = $this->device->sendFile($sendFileInfo);
 
@@ -324,7 +324,7 @@ class HpaAdminTests extends TestCase
     {
         $sendFileInfo = new SendFileData();
         $sendFileInfo->imageLocation = dirname(__FILE__) . '/sampleimages/image_500_500.jpg';
-        $sendFileInfo->imageType = HpaSendFileType::BANNER;
+        $sendFileInfo->imageType = SendFileType::BANNER;
         
         $this->device->sendFile($sendFileInfo);
     }

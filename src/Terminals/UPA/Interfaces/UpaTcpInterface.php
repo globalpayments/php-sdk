@@ -2,10 +2,11 @@
 
 namespace GlobalPayments\Api\Terminals\UPA\Interfaces;
 
-use GlobalPayments\Api\Terminals\Interfaces\IDeviceCommInterface;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceCommInterface;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Terminals\Enums\ControlCodes;
+use GlobalPayments\Api\Terminals\Messaging\IMessageSentInterface;
 use GlobalPayments\Api\Terminals\UPA\Entities\Enums\UpaMessageId;
 use GlobalPayments\Api\Terminals\TerminalUtils;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
@@ -42,11 +43,11 @@ class UpaTcpInterface implements IDeviceCommInterface
     {
         $this->deviceDetails = $config;
     }
-    
-    /*
-     * Create socket connection with device
-     * Throws GatewayException incase of connection error
-     */
+
+/*
+ * Create socket connection with device
+ * Throws GatewayException incase of connection error
+ */
     public function connect()
     {
         if (is_resource($this->tcpConnection)) {

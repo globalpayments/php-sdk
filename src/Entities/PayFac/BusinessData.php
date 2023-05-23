@@ -15,7 +15,7 @@ class BusinessData
 
     /**
      * This field can be used to provide DBA information on an account. ProPay accounts can be
-       configured to display DBA on cc statements. (Note most banks’ CC statements allow for 29
+       configured to display DBA on cc statements. (Note most banks' CC statements allow for 29
        characters so 255 max length is not advised.)
      *
      * @var string
@@ -37,7 +37,7 @@ class BusinessData
     public $merchantCategoryCode;
     
     /**
-     * The Business’ website URL
+     * The Business' website URL
      *
      * @var string
      */

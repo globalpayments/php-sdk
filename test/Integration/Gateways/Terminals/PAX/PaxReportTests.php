@@ -34,7 +34,7 @@ class PaxReportTests extends TestCase
         $card->cvn = '123';
         $card->cardHolderName = 'Joe Smith';
                 
-        $response = $this->device->creditSale(10)
+        $response = $this->device->sale(10)
                 ->withPaymentMethod($card)
                 ->withAllowDuplicates(1)
                 ->execute();

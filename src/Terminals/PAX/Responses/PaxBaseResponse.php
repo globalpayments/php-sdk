@@ -2,12 +2,12 @@
 
 namespace GlobalPayments\Api\Terminals\PAX\Responses;
 
-use GlobalPayments\Api\Terminals\PAX\Entities\PaxResponse;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Terminals\TerminalResponse;
 use GlobalPayments\Api\Utils\MessageReader;
 use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 
-class PaxBaseResponse extends PaxResponse
+class PaxBaseResponse extends TerminalResponse
 {
     public $messageId;
 
@@ -22,7 +22,7 @@ class PaxBaseResponse extends PaxResponse
         $code = $messageReader->readCode();
         $this->status = $messageReader->readToCode(ControlCodes::FS);
         $this->command = $messageReader->readToCode(ControlCodes::FS);
-        $this->versionNumber = $messageReader->readToCode(ControlCodes::FS);
+        $this->version = $messageReader->readToCode(ControlCodes::FS);
         $this->deviceResponseCode = $messageReader->readToCode(ControlCodes::FS);
         $this->deviceResponseText = $messageReader->readToCode(ControlCodes::FS);
         $this->checkResponse();
@@ -31,7 +31,7 @@ class PaxBaseResponse extends PaxResponse
     /*
      * Check the device response code
      *
-     * @param PaxResponse $gatewayResponse parsed response from device
+     * @param DeviceResponse $gatewayResponse parsed response from device
      * @param array       $acceptedCodes list of success response codes
      *
      * @return raise GatewayException incase of different unexpected code
