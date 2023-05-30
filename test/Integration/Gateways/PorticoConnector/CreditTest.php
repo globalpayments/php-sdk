@@ -382,4 +382,24 @@ class CreditTest extends TestCase
         $this->assertNotNull($reverse);
         $this->assertEquals('00', $reverse->responseCode);
     }
+
+    public function testRefundWithAllowDup()
+    {
+        $data = array();
+        for ($i = 0; $i < 2; $i++) {
+            $response = $this->card->charge(10)->withCurrency('USD')->withAllowDuplicates(true)->execute();
+            $data[] = $response;
+        }
+
+        for ($j = 0; $j < count($data); $j++) {
+            $refundResponse = Transaction::fromId($data[$j]->transactionId)
+                ->refund(10)
+                ->withCurrency('USD')
+                ->withAllowDuplicates(true)
+                ->execute();
+
+            $this->assertNotNull($refundResponse);
+            $this->assertEquals('00', $refundResponse->responseCode);
+        }
+    }
 }

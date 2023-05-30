@@ -5,6 +5,10 @@
 # Changelog
 
 ## Latest Version
+#### Bug Fixes:
+- Portico/Heartland: fix 'AllowDup' flag not included with some CreditReturn transactions
+
+## v8.0.0 (05/23/2023)
 #### Enhancements:
 - Propay: Change file encoding for: AccountPermissions, BeneficialOwnerData, BusinessData, OwnersData, SignificantOwnerData, UploadDocumentData
 - [Breaking] Terminals (HPA, PAX, UPA): Architecture update

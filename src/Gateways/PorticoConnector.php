@@ -629,6 +629,15 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 );
             }
 
+            if ($builder->allowDuplicates !== null && !empty($builder->allowDuplicates)) {
+                $root->appendChild(
+                    $xml->createElement(
+                        'AllowDup',
+                        ($builder->allowDuplicates ? 'Y' : 'N')
+                    )
+                );
+            }
+
             // Level II Data
             if (
                 $builder->transactionType === TransactionType::EDIT
