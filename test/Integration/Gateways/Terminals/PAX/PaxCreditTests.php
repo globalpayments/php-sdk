@@ -9,7 +9,9 @@ use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\{ConnectionModes, DeviceType};
 use GlobalPayments\Api\Tests\Data\TestCards;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
+use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
+use SebastianBergmann\RecursionContext\InvalidArgumentException;
 
 class PaxCreditTests extends TestCase
 {
@@ -41,7 +43,7 @@ class PaxCreditTests extends TestCase
     protected function getConfig()
     {
         $config = new ConnectionConfig();
-        $config->ipAddress = '192.168.0.116';
+        $config->ipAddress = '192.168.0.130';
         $config->port = '10009';
         $config->deviceType = DeviceType::PAX_S300;
         $config->connectionMode = ConnectionModes::TCP_IP;
@@ -332,6 +334,14 @@ class PaxCreditTests extends TestCase
         $this->assertNotNull($response->merchantFee);
     }
 
+    /**
+     * PAX devices require the tip adjust amount or gratuity amount to be
+     * the total amount of the sale + tip
+     * 
+     * @return void 
+     * @throws InvalidArgumentException 
+     * @throws ExpectationFailedException 
+     */
     public function testCreditTipAdjust()
     {
         $response = $this->device->sale(10)
@@ -343,14 +353,14 @@ class PaxCreditTests extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->responseCode);
 
-        $tipAdjustResponse = $this->device->tipAdjust()
+        $tipAdjustResponse = $this->device->tipAdjust("12.50")
             ->withTransactionId($response->transactionId)
-            ->withGratuity("2.50")
             ->execute();
 
         echo $tipAdjustResponse->transactionId;
 
         $this->assertNotNull($tipAdjustResponse);
         $this->assertEquals('00', $response->responseCode);
+        $this->assertEquals(12.50, $tipAdjustResponse->transactionAmount);
     }
 }

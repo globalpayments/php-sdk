@@ -30,7 +30,7 @@ class UserPersonalData
     
     /**
      * Merchant/Individual Date of birth. Must be in "mm-dd-yyyy" format. *Individual must be 18+ to obtain an
-        account. The value 01-01-1981 will give a successful response. All others will return a Status 66 (Failed KYC)
+     * account. The value 01-01-1981 will give a successful response. All others will return a Status 66 (Failed KYC)
      *
      * @var string
      */
@@ -46,8 +46,8 @@ class UserPersonalData
     
     /**
      * Merchant/Individual email address. Must be unique in ProPay system. *ProPay's system will send automated
-        emails to the email address on file unless NotificationEmail is provided.
-       *Truncated, if value provided is greater than max value
+     * emails to the email address on file unless NotificationEmail is provided.
+     * Truncated, if value provided is greater than max value
      *
      * @var string
      */
@@ -69,7 +69,7 @@ class UserPersonalData
     
     /**
      * Communication Email Address. *ProPay's system will send automated emails to the email address on file rather
-        than the Source Email.
+     * than the Source Email.
      *
      * @var string
      */
@@ -77,7 +77,7 @@ class UserPersonalData
     
     /**
      * Required to specify the currency in which funds should be held, if other than USD. An affiliation must be granted
-        permission to create accounts in currencies other than USD. ISO 4217 standard 3 character currency code.
+     * permission to create accounts in currencies other than USD. ISO 4217 standard 3 character currency code.
      *
      * @var string
      */
@@ -106,12 +106,57 @@ class UserPersonalData
     
     /**
      * ProPay account username. Must be unique in ProPay system. *Username defaults to <sourceEmail> if userId is not
-provided.
+     * provided.
      *
      * @var string
      */
     public $userId;
-    
+
+    /**
+     * Signup IP Address
+     *
+     * @var string
+     */
+    public $ipSignup;
+
+    /**
+     * The submerchant is attesting that they are a US citizen.
+     *
+     * @var bool
+     */
+    public $uSCitizen;
+
+    /**
+     * Ownership or a controlling interest in the entity that have not already been disclosed
+     * elsewhere in the application process
+     *
+     * @var bool
+     */
+    public $bOAttestation;
+
+    /**
+      * The IP address of the device that was used to agree to ProPay's Terms and
+      * Conditions
+      *
+      * @var string
+      */
+    public $termsAcceptanceIP;
+
+    /**
+      * The timestamp associated with the agreement to ProPay's Terms and Conditions
+      *
+      * @var string
+      */
+    public $termsAcceptanceTimeStamp;
+
+    /**
+      *  This refers to the version of our terms and conditions that was provided to the submerchant for
+      * review and to which they are agreeing.
+      *
+      * @var string
+      */
+    public $termsVersion;
+   
     /**
      * Business Physical Address
      *
@@ -164,15 +209,16 @@ provided.
     public $type;
 
     /**
-     * Indicates to Global Payments where the user(example: merchant) wants to receive notifications of certain events that occur
-     * on the Global Payments system.
+     * Indicates to Global Payments where the user(example: merchant) wants to receive notifications of certain events
+     *  that occur on the Global Payments system.
      *
      * @var string
      */
     public $notificationStatusUrl;
 
     /**
-     * The merchants tax identification number. For example, in the US the (EIN) Employer Identification Number would be used.
+     * The merchants tax identification number. For example, in the US the (EIN)
+     * Employer Identification Number would be used.
      *
      * @var string
      */

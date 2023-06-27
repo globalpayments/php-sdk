@@ -132,7 +132,7 @@ class GpEcomHppClient
             implode('.', $hashParam),
             $this->shaHashType
         );
-        if ($newHash != $requestHash) {
+        if ($newHash !== $requestHash) {
             throw new ApiException("Incorrect hash. Please check your code and the Developers Documentation.");
         }
 

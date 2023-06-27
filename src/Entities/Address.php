@@ -70,6 +70,13 @@ class Address
     public $postalCode;
 
     /**
+     * Consumer's phone.
+     *
+     * @var string
+     */
+    public $phone;
+
+    /**
      * Consumer's country.
      *
      * @var string

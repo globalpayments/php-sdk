@@ -163,8 +163,11 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         if (
             $builder->paymentMethod->paymentMethodType !== PaymentMethodType::GIFT
             && $builder->paymentMethod->paymentMethodType !== PaymentMethodType::ACH
-            && ($builder->transactionType === TransactionType::AUTH
-                || $builder->transactionType === TransactionType::SALE)
+            && (
+                $builder->transactionType === TransactionType::AUTH
+                || $builder->transactionType === TransactionType::SALE
+                || $builder->transactionType === TransactionType::REFUND
+            )
         ) {
             if (
                 $builder->paymentMethod->paymentMethodType !== PaymentMethodType::RECURRING
@@ -182,6 +185,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 $builder->transactionModifier === TransactionModifier::NONE
                 && $builder->paymentMethod->paymentMethodType !== PaymentMethodType::EBT
                 && $builder->paymentMethod->paymentMethodType !== PaymentMethodType::RECURRING
+                && $builder->transactionType !== TransactionType::REFUND
             ) {
                 $block1->appendChild(
                     $xml->createElement(

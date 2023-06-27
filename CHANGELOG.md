@@ -5,6 +5,14 @@
 # Changelog
 
 ## Latest Version
+#### Enhancements:
+- Profac: Additional transaction support added | Account Management | Spilt Fund | Network Transaction
+- PAX Devices: Improved some tests
+
+#### Bug Fixes:
+- GP-ECOM: Fix type confusion vulnerability on sha1hash for hppResponse
+
+## v8.0.1 (05/30/2023)
 #### Bug Fixes:
 - Portico/Heartland: fix 'AllowDup' flag not included with some CreditReturn transactions
 

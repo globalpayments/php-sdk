@@ -29,6 +29,7 @@ class PorticoConfig extends GatewayConfig
     
     //ProPay
     public $certificationStr;
+    public $terminalId;
     public $selfSignedCertLocation;
     public $proPayUS = true;
 

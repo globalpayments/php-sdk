@@ -1,9 +1,9 @@
 <?php
+
 namespace GlobalPayments\Api\Builders;
 
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\AddressCollection;
-use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodFunction;
 use GlobalPayments\Api\Entities\Enums\StatusChangeReason;
@@ -40,6 +40,7 @@ class PayFacBuilder extends BaseBuilder
      * @var BankAccountData
      */
     public $achInformation;
+    public $mailingAddressInformation;
     public $secondaryBankInformation;
     public $grossBillingInformation;
     public $accountNumber;
@@ -59,8 +60,23 @@ class PayFacBuilder extends BaseBuilder
     public $externalId;
     public $sourceEmail;
     public $deviceDetails;
+    public $deviceData;
+
     /** @var string */
     public $description;
+
+    /** @var string */
+    public $gatewayTransactionId;
+
+    /** @var string */
+    public $globaltransId;
+
+    /** @var string */
+    public $globalTransSource;
+
+    /** @var string */
+    public $cardBrandTransactionId;
+
     /**
      * @var array<Product>
      */
@@ -105,6 +121,15 @@ class PayFacBuilder extends BaseBuilder
     /** @var AddressCollection */
     public $addresses;
 
+    /**
+     * Required for partners ordering Portico devices. Valid values:
+     * [ UTC, PT, MST, MT, CT, ET, HST, AT, AST, AKST, ACT, EET, EAT, MET, NET, PLT,
+     * IST, BST, VST, CTT, JST, ACT, AET, SST, NST, MIT, CNT, AGT, CAT]
+     *
+     * @var string
+     */
+    public $timezone;
+
     const UPLOAD_FILE_TYPES = [
         'tif', 'tiff', 'bmp', 'jpg', 'jpeg', 'gif', 'png', 'doc', 'docx'
     ];
@@ -134,11 +159,9 @@ class PayFacBuilder extends BaseBuilder
     {
         parent::execute($configName);
         $client = ServicesContainer::instance()->getPayFac($configName);
-        if (
-            method_exists($client, "hasBuiltInMerchantManagementService") &&
-            $client->hasBuiltInMerchantManagementService()
-        ) {
-            return $client->processBoardingUser($this);
+        if (method_exists($client, "hasBuiltInMerchantManagementService")
+            && $client->hasBuiltInMerchantManagementService()) {
+             return $client->processBoardingUser($this);
         }
 
         return $client->processPayFac($this);
@@ -246,7 +269,8 @@ class PayFacBuilder extends BaseBuilder
 
         $this->validations->of(TransactionType::SPLIT_FUNDS)
                 ->with(TransactionModifier::NONE)
-                ->check('transNum')->isNotNull()
+                ->check('accountNumber')->isNotNull()
+                ->check('amount')->isNotNull()
                 ->check('receivingAccountNumber')->isNotNull();
 
         $this->validations->of(TransactionType::REVERSE_SPLITPAY)
@@ -274,7 +298,7 @@ class PayFacBuilder extends BaseBuilder
      *
      * var Object GlobalPayments\Api\Entities\PayFac\BankAccountData;
      */
-    public function withBankAccountData(BankAccountData $bankAccountData, $paymentMethodFunction =  null)
+    public function withBankAccountData(BankAccountData $bankAccountData, $paymentMethodFunction = null)
     {
         $this->bankAccountData = $bankAccountData;
         if (!empty($paymentMethodFunction)) {
@@ -336,7 +360,7 @@ class PayFacBuilder extends BaseBuilder
         return $this;
     }
     
-    public function withCreditCardData($creditCardInformation, $paymentMethodFunction =  null)
+    public function withCreditCardData($creditCardInformation, $paymentMethodFunction = null)
     {
         $this->creditCardInformation = $creditCardInformation;
         if (!empty($paymentMethodFunction)) {
@@ -352,7 +376,13 @@ class PayFacBuilder extends BaseBuilder
         $this->achInformation = $achInformation;
         return $this;
     }
-    
+
+    public function withMailingAddress($mailingAddressInformation)
+    {
+        $this->mailingAddressInformation = $mailingAddressInformation;
+        return $this;
+    }
+
     public function withSecondaryBankAccountData($secondaryBankInformation)
     {
         $this->secondaryBankInformation = $secondaryBankInformation;
@@ -413,7 +443,7 @@ class PayFacBuilder extends BaseBuilder
        
     /*
      * Document details
-     * 
+     *
      * var GlobalPayments\Api\Entities\PayFac\UploadDocumentData
      */
     public function withUploadDocumentData($uploadDocumentData)
@@ -463,7 +493,7 @@ class PayFacBuilder extends BaseBuilder
         $this->ccAmount = $ccAmount;
         return $this;
     }
-    
+
     public function withRequireCCRefund($requireCCRefund)
     {
         $this->requireCCRefund = $requireCCRefund;
@@ -493,10 +523,40 @@ class PayFacBuilder extends BaseBuilder
         $this->sourceEmail = $sourceEmail;
         return $this;
     }
-    
+
+    public function withGatewayTransactionId($gatewayTransactionId)
+    {
+        $this->gatewayTransactionId = $gatewayTransactionId;
+        return $this;
+    }
+
+    public function withGlobaltransId($globaltransId)
+    {
+        $this->globaltransId = $globaltransId;
+        return $this;
+    }
+
+    public function withGlobalTransSource($globalTransSource)
+    {
+        $this->globalTransSource = $globalTransSource;
+        return $this;
+    }
+
+    public function withCardBrandTransactionId($cardBrandTransactionId)
+    {
+        $this->cardBrandTransactionId = $cardBrandTransactionId;
+        return $this;
+    }
+
     public function withDeviceDetails($deviceDetails)
     {
         $this->deviceDetails = $deviceDetails;
+        return $this;
+    }
+
+    public function withDeviceData($deviceData)
+    {
+        $this->deviceData = $deviceData;
         return $this;
     }
 
@@ -584,6 +644,12 @@ class PayFacBuilder extends BaseBuilder
 
         $this->addresses->add($address, $type);
 
+        return $this;
+    }
+
+    public function withTimeZone($timezone)
+    {
+        $this->timezone = $timezone;
         return $this;
     }
 }

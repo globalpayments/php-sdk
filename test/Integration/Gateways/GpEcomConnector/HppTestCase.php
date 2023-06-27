@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
+use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Services\HostedService;
 use GlobalPayments\Api\HostedPaymentConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
@@ -237,5 +238,28 @@ class HppTestCase extends TestCase
         // TODO: update your application and display transaction outcome to the customer
         $this->assertNotEquals(null, $parsedResponse);
         $this->assertEquals("00", $responseCode);
+    }
+
+    public function testCheckHashVulnerability()
+    {
+        $config = new GpEcomConfig();
+        $config->merchantId = 'heartlandgpsandbox';
+        $config->accountId = 'hpp';
+        $config->sharedSecret = 'secret';
+        $config->serviceUrl = 'https://pay.sandbox.realexpayments.com/pay';
+
+        $service = new HostedService($config);
+
+        $responseJson = '{"MERCHANT_ID":"heartlandgpsandbox","ACCOUNT":"hpp","ORDER_ID":"NjMwNkMxMTAtMTA5RUNDRQ","TIMESTAMP":"20180720104340","RESULT":"00","PASREF":"15320798200414985","AUTHCODE":"12345","AVSPOSTCODERESULT":"U","CVNRESULT":"U","HPP_LANG":"GB","SHIPPING_CODE":null,"SHIPPING_CO":null,"BILLING_CODE":"123|56","BILLING_CO":"IRELAND","ECI":null,"CAVV":null,"XID":null,"MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","CARD_PAYMENT_BUTTON":null,"MESSAGE":"[ test system ] Authorised","AMOUNT":"100","SHA1HASH":true,"DCC_INFO":null,"HPP_FRAUDFILTER_MODE":null,"TSS_INFO":null}';
+
+        $exceptionCaught = false;
+        try {
+            $service->parseResponse($responseJson);
+        } catch (ApiException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Incorrect hash. Please check your code and the Developers Documentation.', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
     }
 }

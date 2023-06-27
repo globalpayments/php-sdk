@@ -15,8 +15,8 @@ class BusinessData
 
     /**
      * This field can be used to provide DBA information on an account. ProPay accounts can be
-       configured to display DBA on cc statements. (Note most banks' CC statements allow for 29
-       characters so 255 max length is not advised.)
+     * configured to display DBA on cc statements. (Note most banks' CC statements allow for 29
+     *  characters so 255 max length is not advised.)
      *
      * @var string
      */
@@ -80,8 +80,13 @@ class BusinessData
      * @var GlobalPayments\Api\Entities\Address
      */
     public $businessAddress;
-    
-    
+
+    /* Business Type
+     *
+     * @var string
+     */
+    public $businessType;
+
     public function __construct()
     {
         $this->businessAddress = new Address();

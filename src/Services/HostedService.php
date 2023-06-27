@@ -143,7 +143,7 @@ class HostedService
             $this->shaHashType
         );
 
-        if ($hash != $shaHash) {
+        if ($hash !== $shaHash) {
             throw new ApiException("Incorrect hash. Please check your code and the Developers Documentation.");
         }
 

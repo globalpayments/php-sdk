@@ -28,9 +28,10 @@ class PayFacService
     {
         return new PayFacBuilder(TransactionType::EDIT);
     }
+
     /*
-     *   This method will reset a ProPay web login password. An email will be sent to the account email address on 
-     *   file from customerservice@propay.com containing a temporary password that can be used to login, 
+     *   This method will reset a ProPay web login password. An email will be sent to the account email address on
+     *   file from customerservice@propay.com containing a temporary password that can be used to login,
      *   but must be changed to something new by the user at that point.
      *
      */
@@ -38,18 +39,20 @@ class PayFacService
     {
         return new PayFacBuilder(TransactionType::RESET_PASSWORD);
     }
+
     /*
-     *  This method will extend the expiration date of a ProPay account by one year. 
-     *  This may also be used to change the tier of an existing account. 
+     *  This method will extend the expiration date of a ProPay account by one year.
+     *  This may also be used to change the tier of an existing account.
      *
      */
     public static function renewAccount()
     {
         return new PayFacBuilder(TransactionType::RENEW_ACCOUNT);
     }
+
     /*
-     *  This method will update the beneficial owner data for the specified account number. 
-     *  This method should be used if the beneficial data was not sent. 
+     *  This method will update the beneficial owner data for the specified account number.
+     *  This method should be used if the beneficial data was not sent.
      *  while creating merchant. Note: this method can be used only when the OwnerCount value is passed while creating merchant.
      *
      */
@@ -57,19 +60,21 @@ class PayFacService
     {
         return new PayFacBuilder(TransactionType::UPDATE_OWNERSHIP_DETAILS);
     }
+
     /*
-     *  This method will remove a ProPay account from an affiliation. The affiliation must have appropriate settings 
-     *  to enable this feature. 
+     *  This method will remove a ProPay account from an affiliation. The affiliation must have appropriate settings
+     *  to enable this feature.
      *
      */
     public static function disownAccount()
     {
         return new PayFacBuilder(TransactionType::DEACTIVATE);
     }
+
     /*
-     *  This method can be used to send an image file to ProPay, and is specifically designed to support the documents 
-     *  you use to dispute a credit card chargeback. This version of document upload has you "tag" the
-     *  document to a specific transaction that has been charged-back
+     * This method can be used to send an image file to ProPay, and is specifically designed to support the documents
+     * you use to dispute a credit card chargeback. This version of document upload has you "tag" the
+     * document to a specific transaction that has been charged-back
      *
      */
     public static function uploadDocumentChargeback()
@@ -77,9 +82,9 @@ class PayFacService
         return new PayFacBuilder(TransactionType::UPLOAD_CHARGEBACK_DOCUMENT);
     }
     /*
-     *  This method can be used to send an image file to ProPay. The ProPay Risk team may request that you perform this 
-     *  action to underwrite an account that was denied via automated boarding, to increase the processing limit on 
-     *  accounts, or to provide data when we've had to put an accounts ability to process on hold.
+     * This method can be used to send an image file to ProPay. The ProPay Risk team may request that you perform this
+     * action to underwrite an account that was denied via automated boarding, to increase the processing limit on
+     * accounts, or to provide data when we've had to put an accounts ability to process on hold.
      *
      */
     public static function UploadDocument()
@@ -162,5 +167,10 @@ class PayFacService
         return (new PayFacBuilder(TransactionType::FETCH))
             ->withModifier(TransactionModifier::MERCHANT)
             ->withUserReference($userReference);
+    }
+
+    public static function orderDevice()
+    {
+        return new PayFacBuilder(TransactionType::DEVICE_ORDER);
     }
 }

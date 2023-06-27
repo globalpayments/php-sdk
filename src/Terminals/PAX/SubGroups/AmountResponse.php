@@ -42,7 +42,7 @@ class AmountResponse implements IResponseSubGroup
             ];
 
             foreach ($responseIndexMapping as $property => $index) {
-                $this->{$property} = (isset($response[$index]))
+                $this->{$property} = (isset($response[$index]) && !empty($response[$index]))
                                         ? TerminalUtils::reformatAmount($response[$index])
                                         : '';
             }
