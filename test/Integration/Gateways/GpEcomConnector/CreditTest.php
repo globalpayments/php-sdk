@@ -17,7 +17,7 @@ use GlobalPayments\Api\Utils\GenerationUtils;
 
 class CreditTest extends TestCase
 {
-    protected $card;
+    protected CreditCardData $card;
 
     public function setup() : void
     {

@@ -32,7 +32,7 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
      * @param $builder
      * @return bool
      */
-    public static function canProcess($builder)
+    public static function canProcess($builder = null)
     {
         if ($builder instanceof ManagementBuilder) {
             return true;
@@ -305,5 +305,10 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
         $reflector = new \ReflectionClass(TransactionType::class);
 
         return array_search($transactionType,$reflector->getConstants());
+    }
+
+    public function buildRequestFromJson($jsonRequest, $config)
+    {
+        // TODO: Implement buildRequestFromJson() method.
     }
 }

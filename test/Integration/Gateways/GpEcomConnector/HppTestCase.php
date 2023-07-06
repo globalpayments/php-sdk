@@ -11,12 +11,8 @@ use PHPUnit\Framework\TestCase;
 
 class HppTestCase extends TestCase
 {
-
-    /** @var HostedService */
-    protected $service;
-
-    /** @var GpEcomHppClient */
-    protected $client;
+    protected HostedService $service;
+    protected GpEcomHppClient $client;
 
     protected function config()
     {

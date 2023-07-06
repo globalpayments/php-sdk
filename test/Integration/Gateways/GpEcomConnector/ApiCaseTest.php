@@ -3,13 +3,13 @@
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
 use GlobalPayments\Api\Entities\FraudRuleCollection;
+use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Enums\AddressType;
-use GlobalPayments\Api\Entities\EcommerceInfo;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Enums\ReasonCode;
 use GlobalPayments\Api\Entities\Transaction;
@@ -137,15 +137,16 @@ class ApiCaseTest extends TestCase
         $card->cardHolderName = 'James Mason';
 
         // supply the details from the 3D Secure verify-signature response
-        $threeDSecureInfo = new EcommerceInfo();
+        $threeDSecureInfo = new ThreeDSecure();
         $threeDSecureInfo->cavv = "AAACBllleHchZTBWIGV4AAAAAAA=";
         $threeDSecureInfo->xid = "crqAeMwkEL9r4POdxpByWJ1/wYg=";
         $threeDSecureInfo->eci = "5";
 
+        $card->threeDSecure = $threeDSecureInfo;
+
         try {
             // create the authorization with 3D Secure information
             $response = $card->charge(15)
-                    ->withEcommerceInfo($threeDSecureInfo)
                     ->withCurrency("EUR")
                     ->execute();
 

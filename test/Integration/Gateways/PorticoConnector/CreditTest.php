@@ -16,9 +16,9 @@ use GlobalPayments\Api\Tests\Data\TestCards;
 
 class CreditTest extends TestCase
 {
-    protected $card;
-    protected $track;
-    private $enableCryptoUrl = true;
+    protected CreditCardData $card;
+    protected CreditTrackData $track;
+    private bool $enableCryptoUrl = true;
 
     public function setup() : void
     {

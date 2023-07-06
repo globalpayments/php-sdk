@@ -12,7 +12,7 @@ use GlobalPayments\Api\Terminals\Enums\StopBits;
 
 interface ITerminalConfiguration
 {
-    public function getConnectionMode() : ConnectionModes;
+    public function getConnectionMode();
     public function setConnectionMode(ConnectionModes $connectionModes) : void;
     public function getDeviceType() : DeviceType;
     public function setDeviceType(DeviceType $deviceType) : void;
@@ -35,6 +35,9 @@ interface ITerminalConfiguration
 
     public function getTimeout() : int;
 
-//    public function getGatewayConfig() : GatewayConfig;
-//    public function setGatewayConfig(GatewayConfig $gatewayConfig) : void;
+    public function getGatewayConfig() : GatewayConfig;
+    public function setGatewayConfig(GatewayConfig $gatewayConfig) : void;
+
+    public function getConfigName() : string;
+    public function setConfigName(string $configName) : void;
 }

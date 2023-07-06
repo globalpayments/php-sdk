@@ -22,7 +22,7 @@ class TransactionApiAuthorizationRequestBuilder implements IRequestBuilder
      *
      * @return bool
      */
-    public static function canProcess($builder)
+    public static function canProcess($builder = null)
     {
         return $builder instanceof AuthorizationBuilder;
     }
@@ -388,5 +388,10 @@ class TransactionApiAuthorizationRequestBuilder implements IRequestBuilder
         }
 
         return [StringUtils::validateToNumber($phoneNumber), StringUtils::validateToNumber($phoneCountryCode)];
+    }
+
+    public function buildRequestFromJson($jsonRequest, $config)
+    {
+        // TODO: Implement buildRequestFromJson() method.
     }
 }

@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Builders;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\PayLinkData;
+use GlobalPayments\Api\Entities\TransactionApi\TransactionApiData;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 
 abstract class TransactionBuilder extends BaseBuilder
@@ -195,11 +196,11 @@ abstract class TransactionBuilder extends BaseBuilder
     /**
      * Set the request transactionData
      *
-     * @param array $data Request transactionData
+     * @param TransactionApiData $data Request transactionData
      *
      * @return $this
      */
-    public function withTransactionData($data)
+    public function withTransactionData(TransactionApiData $data)
     {
         $this->transactionData = $data;
         return $this;

@@ -19,8 +19,6 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\ITrackData;
 
 class CardUtils
 {
-
- 
     private static $trackOnePattern = "/%?[B0]?([\d]+)\\^[^\\^]+\\^([\\d]{4})([^?]+)?/";
     private static $trackTwoPattern = "/;?([\d]+)=([\d]{4})([^?]+)?/";
 
@@ -236,7 +234,7 @@ class CardUtils
      * @param string $cardType
      * @return mixed
      */
-    public static function getBaseCardType($cardType)
+    public static function getBaseCardType(string $cardType)
     {
         foreach (array_keys(self::$cardTypes) as $baseCardType) {
             if (substr($cardType, 0, strlen($baseCardType)) == $baseCardType) {

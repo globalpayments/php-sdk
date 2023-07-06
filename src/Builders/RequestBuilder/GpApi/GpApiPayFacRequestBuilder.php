@@ -34,7 +34,7 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
      *
      * @return bool
      */
-    public static function canProcess($builder)
+    public static function canProcess($builder = null)
     {
         if ($builder instanceof PayFacBuilder) {
             return true;
@@ -333,5 +333,10 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
                 'payment_methods' => $this->setPaymentMethod(),
             ]
         );
+    }
+
+    public function buildRequestFromJson($jsonRequest, $config)
+    {
+        // TODO: Implement buildRequestFromJson() method.
     }
 }

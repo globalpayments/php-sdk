@@ -31,11 +31,8 @@ use ReflectionClass;
 class RecurringTest extends TestCase
 {
 
-    /** @var $newCustomer */
-    public $newCustomer;
-
-    /** @var $card */
-    public $card;
+    public Customer $newCustomer;
+    public CreditCardData $card;
 
     public function getCustomerId()
     {

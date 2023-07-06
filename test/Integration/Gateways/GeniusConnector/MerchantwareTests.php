@@ -11,7 +11,7 @@ use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GeniusConfig;
 
-class CreditTest extends TestCase
+class MerchantwareTests extends TestCase
 {
     protected $address;
     protected $applePay;

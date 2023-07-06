@@ -25,7 +25,7 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
      *
      * @return bool
      */
-    public static function canProcess($builder)
+    public static function canProcess($builder = null)
     {
         if ($builder instanceof RecurringBuilder) {
             return true;
@@ -372,5 +372,10 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
         throw new UnsupportedTransactionException(
             'The selected gateway does not support this transaction type.'
         );
+    }
+
+    public function buildRequestFromJson($jsonRequest, $config)
+    {
+        // TODO: Implement buildRequestFromJson() method.
     }
 }

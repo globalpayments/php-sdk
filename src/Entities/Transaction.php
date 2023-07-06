@@ -15,8 +15,6 @@ use GlobalPayments\Api\PaymentMethods\TransactionReference;
  *
  * @property string $authorizationCode The authorization code provided by the issuer.
  * @property string $clientTransactionId The client transaction ID supplied in the request.
- * @property string $checkSaleId The check sale ID supplied in the request.
- * @property string $checkRefundId The check refund ID supplied in the request.
  * @property string $orderId The order ID supplied in the request.
  * @property PaymentMethodType $paymentMethodType The type of payment made in the request.
  * @property string $transactionId The transaction ID.
@@ -569,16 +567,6 @@ class Transaction
                     return $this->transactionReference->clientTransactionId;
                 }
                 return null;
-            case 'checkRefundId':
-                if ($this->transactionReference !== null) {
-                    return $this->transactionReference->checkRefundId;
-                }
-                return null;
-            case 'checkSaleId':
-                if ($this->transactionReference !== null) {
-                    return $this->transactionReference->checkSaleId;
-                }
-                return null;
             case 'orderId':
                 if ($this->transactionReference !== null) {
                     return $this->transactionReference->orderId;
@@ -628,8 +616,6 @@ class Transaction
             'authorizationId',
             'paymentMethodType',
             'clientTransactionId',
-            'checkRefundId',
-            'checkSaleId',
             'alternativePaymentResponse',
             'bnplResponse',
             'transfersFundsAccount'
@@ -650,18 +636,6 @@ class Transaction
                     $this->transactionReference = new TransactionReference();
                 }
                 $this->transactionReference->clientTransactionId = $value;
-                return;
-            case 'checkRefundId':
-                if (!$this->transactionReference instanceof TransactionReference) {
-                    $this->transactionReference = new TransactionReference();
-                }
-                $this->transactionReference->checkRefundId = $value;
-                return;
-            case 'checkSaleId':
-                if (!$this->transactionReference instanceof TransactionReference) {
-                    $this->transactionReference = new TransactionReference();
-                }
-                $this->transactionReference->checkSaleId = $value;
                 return;
             case 'orderId':
                 if (!$this->transactionReference instanceof TransactionReference) {

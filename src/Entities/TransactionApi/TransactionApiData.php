@@ -14,6 +14,7 @@ class TransactionApiData
     public $softDescriptor;
     public $region;
     public $paymentPurposeCode;
+    public $language;
 
     /**
      * @var bool

@@ -3,10 +3,12 @@
 namespace GlobalPayments\Api\Gateways;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
+use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\FraudBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Builders\PayFacBuilder;
 use GlobalPayments\Api\Builders\ReportBuilder;
+use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiMiCRequestBuilder;
 use GlobalPayments\Api\Builders\RequestBuilder\RequestBuilderFactory;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
@@ -27,12 +29,15 @@ use GlobalPayments\Api\Entities\RiskAssessment;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\User;
+use GlobalPayments\Api\Gateways\Interfaces\IDeviceCloudService;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Mapping\GpApiMapping;
 use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceMessage;
+use GlobalPayments\Api\Utils\GenerationUtils;
 
-class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dProvider, IPayFacProvider, IFraudCheckService
+class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dProvider, IPayFacProvider, IFraudCheckService, IDeviceCloudService
 {
     const GP_API_VERSION = '2021-03-22';
     const IDEMPOTENCY_HEADER = 'x-gp-idempotency';
@@ -186,7 +191,29 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         return GpApiMapping::mapRiskAssessmentResponse($response);
     }
 
-    private function executeProcess($builder)
+    public function processPassThrough($jsonRequest)
+    {
+        if (empty($this->accessToken)) {
+            $this->signIn();
+        }
+        $requestBuilder = new GpApiMiCRequestBuilder();
+        $request = $requestBuilder->buildRequestFromJson($jsonRequest, $this->gpApiConfig);
+        if (empty($request)) {
+            throw new GatewayException("Request was not generated!");
+        }
+        $request->endpoint = $this->getMerchantUrl($request) . $request->endpoint;
+        $idempotencyKey = !empty($builder->idempotencyKey) ? $builder->idempotencyKey : null;
+
+        return $this->doTransaction(
+            $request->httpVerb,
+            $request->endpoint,
+            $request->requestBody,
+            $request->queryParams,
+            $idempotencyKey
+        );
+    }
+
+    private function executeProcess(BaseBuilder $builder)
     {
         $processFactory = new RequestBuilderFactory();
         /**
@@ -200,12 +227,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
          * @var GpApiRequest $request
          */
         $request =  $requestBuilder->buildRequest($builder, $this->gpApiConfig);
-        $merchantUrl = (
-            !empty($this->gpApiConfig->merchantId) &&
-            strpos($request->endpoint, GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT) === false) ?
-            GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $this->gpApiConfig->merchantId : '';
-
-        $request->endpoint = $merchantUrl . $request->endpoint;
+        $request->endpoint = $this->getMerchantUrl($request) . $request->endpoint;
 
         if (empty($request)) {
             throw new ApiException("Request was not generated!");
@@ -318,6 +340,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
             empty($accessTokenInfo->tokenizationAccountName)
         ) {
             $accessTokenInfo->tokenizationAccountID = $response->getTokenizationAccountID();
+            $accessTokenInfo->tokenizationAccountName = $response->getTokenizationAccountName();
         }
 
         if (
@@ -325,6 +348,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
             empty($accessTokenInfo->transactionProcessingAccountName)
         ) {
             $accessTokenInfo->transactionProcessingAccountID = $response->getTransactionProcessingAccountID();
+            $accessTokenInfo->transactionProcessingAccountName = $response->getTransactionProcessingAccountName();
         }
         if (
             empty($accessTokenInfo->disputeManagementAccountID) &&
@@ -371,5 +395,13 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         }
 
         return new GpApiTokenResponse($response);
+    }
+
+    private function getMerchantUrl(GpApiRequest $request)
+    {
+        return (
+            !empty($this->gpApiConfig->merchantId) &&
+            strpos($request->endpoint, GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT) === false) ?
+            GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $this->gpApiConfig->merchantId : '';
     }
 }

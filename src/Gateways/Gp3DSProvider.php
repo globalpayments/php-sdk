@@ -137,14 +137,14 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             if (empty($orderId)) {
                 $orderId = GenerationUtils::generateOrderId();
             }
-
+            /** @var ThreeDSecure $secureEcom */
             $secureEcom = $secure3d->threeDSecure;
 
             $request = $this->maybeSetKey($request, 'request_timestamp', $timestamp);
             $request = $this->maybeSetKey($request, 'authentication_source', $builder->getAuthenticationSource());
             $request = $this->maybeSetKey($request, 'authentication_request_type', $builder->getAuthenticationRequestType());
             $request = $this->maybeSetKey($request, 'message_category', $builder->getMessageCategory());
-            $request = $this->maybeSetKey($request, 'message_version', '2.1.0');
+            $request = $this->maybeSetKey($request, 'message_version', $secureEcom->acsEndVersion);
             $request = $this->maybeSetKey($request, 'server_trans_id', $secureEcom->serverTransactionId);
             $request = $this->maybeSetKey($request, 'merchant_id', $this->merchantId);
             $request = $this->maybeSetKey($request, 'account_id', $this->accountId);

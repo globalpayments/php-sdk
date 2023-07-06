@@ -10,7 +10,7 @@ use GlobalPayments\Api\Entities\TransactionApi\TransactionApiRequest;
 
 class TransactionApiReportRequestBuilder implements IRequestBuilder
 {
-    public static function canProcess($builder)
+    public static function canProcess($builder = null)
     {
         return $builder instanceof TransactionReportBuilder;
     }
@@ -73,5 +73,10 @@ class TransactionApiReportRequestBuilder implements IRequestBuilder
         }
 
         return new TransactionApiRequest($endpoint, $verb, $payload, $queryParams);
+    }
+
+    public function buildRequestFromJson($jsonRequest, $config)
+    {
+        // TODO: Implement buildRequestFromJson() method.
     }
 }

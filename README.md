@@ -32,7 +32,7 @@ This SDK makes it easy to integrate your PHP application with our Card Not Prese
 
 ## Requirements
 
-- PHP 7.1.0+
+- PHP 8.0.0+
 - OpenSSL 1.0.1+
 - PHP Curl extension
 - PHP DOM extension

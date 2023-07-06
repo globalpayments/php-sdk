@@ -54,18 +54,6 @@ class TransactionApiCreditTest extends TestCase
         $this->addressCa->state = "CA";
         $this->addressCa->country = "Canada";
         $this->addressCa->postalCode = "91765";
-
-        $this->customer =  new Customer();
-        $this->customer->id = "2e39a948-2a9e-4b4a-9c59-0b96765343b7";
-        $this->customer->title = "Mr.";
-        $this->customer->firstName = "Joe";
-        $this->customer->middleName = "Henry";
-        $this->customer->lastName = "Doe";
-        $this->customer->businessName = "ABC Company LLC";
-        $this->customer->email = "joe.doe@gmail.com";
-        $this->customer->dateOfBirth = "1980-01-01";
-        $this->customer->mobilePhone = new PhoneNumber('+35', '312345678', PhoneNumberType::MOBILE);
-        $this->customer->homePhone = new PhoneNumber('+1', '12345899', PhoneNumberType::HOME);
     }
 
     public function setUpConfig($country = "US")

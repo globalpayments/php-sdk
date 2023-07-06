@@ -14,10 +14,9 @@ use GlobalPayments\Api\Terminals\{
 use GlobalPayments\Api\Terminals\Builders\{
     TerminalAuthBuilder, TerminalManageBuilder
 };
-use GlobalPayments\Api\Terminals\UPA\Builders\UpaTerminalManageBuilder;
 use GlobalPayments\Api\Terminals\UPA\Entities\Enums\UpaMessageId;
 use GlobalPayments\Api\Terminals\UPA\Responses\{
-    UpaBatchReport, UpaDeviceResponse, UpaReportHandler
+    UpaBatchReport, TransactionResponse, UpaReportHandler
 };
 
 /**
@@ -46,7 +45,7 @@ class UpaInterface extends DeviceInterface
         );
                 
         $rawResponse = $this->upaController->send($message, UpaMessageId::EOD);
-        return new UpaDeviceResponse($rawResponse, UpaMessageId::EOD);
+        return new TransactionResponse($rawResponse, UpaMessageId::EOD);
     }
 
     public function cancel($cancelParams = null)
@@ -63,7 +62,7 @@ class UpaInterface extends DeviceInterface
         );
         
         $rawResponse = $this->upaController->send($message, UpaMessageId::CANCEL);
-        return new UpaDeviceResponse($rawResponse, UpaMessageId::CANCEL);
+        return new TransactionResponse($rawResponse, UpaMessageId::CANCEL);
     }
 
     public function authorize($amount = null) : TerminalAuthBuilder
@@ -74,7 +73,7 @@ class UpaInterface extends DeviceInterface
 
     public function creditReversal()
     {
-        return (new UpaTerminalManageBuilder(TransactionType::REVERSAL, PaymentMethodType::CREDIT));
+        return (new TerminalManageBuilder(TransactionType::REVERSAL, PaymentMethodType::CREDIT));
     }
     
     public function tipAdjust($tipAmount = null) : TerminalManageBuilder
@@ -119,7 +118,7 @@ class UpaInterface extends DeviceInterface
 
     public function void() : TerminalManageBuilder
     {
-        return (new UpaTerminalManageBuilder(TransactionType::VOID, PaymentMethodType::CREDIT));
+        return (new TerminalManageBuilder(TransactionType::VOID, PaymentMethodType::CREDIT));
     }
 
     public function lineItem(
@@ -137,14 +136,22 @@ class UpaInterface extends DeviceInterface
         if (!empty($rightText)) {
             $data['params']['lineItemRight'] = $rightText;
         }
-        $message = TerminalUtils::buildUPAMessage(
-            UpaMessageId::LINEITEM,
-            $this->upaController->requestIdProvider->getRequestId(),
-            $data
-        );
+        $requestMessage = [
+            'message' => UpaMessageType::MSG,
+            'data' => [
+                'command' => UpaMessageId::LINEITEM,
+                'requestId' => $requestId,
+                'EcrId' => $builder->ecrId ?? 12,
+                'data' => [
+                    'params' => $data['params'] ?? null,
+                ]
+            ]
+        ];
+
+        $message =  TerminalUtils::buildUpaRequest($requestMessage);
         $rawResponse = $this->upaController->send($message, UpaMessageId::LINEITEM);
 
-        return new UpaDeviceResponse($rawResponse, UpaMessageId::LINEITEM);
+        return new TransactionResponse($rawResponse, UpaMessageId::LINEITEM);
     }
 
     public function reboot() : DeviceResponse
@@ -156,7 +163,7 @@ class UpaInterface extends DeviceInterface
 
         $rawResponse = $this->upaController->send($message);
 
-        return new UpaDeviceResponse($rawResponse, UpaMessageId::REBOOT);
+        return new TransactionResponse($rawResponse, UpaMessageId::REBOOT);
     }
 
     public function sendFile($sendFileData)

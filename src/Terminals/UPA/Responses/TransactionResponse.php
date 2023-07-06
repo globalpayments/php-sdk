@@ -2,30 +2,45 @@
 
 namespace GlobalPayments\Api\Terminals\UPA\Responses;
 
-class UpaDeviceResponse extends UpaResponseHandler
+use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+
+class TransactionResponse extends UpaResponseHandler
 {
-    public function __construct($jsonResponse, $messageId)
+    public function __construct($jsonResponse)
     {
         $this->parseResponse($jsonResponse);
     }
 
     public function parseResponse($jsonResponse)
     {
-        if (!empty($jsonResponse['data']['cmdResult'])) {
-            $this->checkResponse($jsonResponse['data']['cmdResult']);
-            
-            if ($jsonResponse['data']['cmdResult']['result'] === 'Success') {
+        if ($this->isGpApiResponse($jsonResponse)) {
+            if (
+                !empty($jsonResponse['action']['result_code']) &&
+                $jsonResponse['action']['result_code'] === 'SUCCESS'
+            ) {
                 $this->deviceResponseCode = '00';
             }
-        }
-        
-        if (!empty($jsonResponse['data']['data'])) {
-            $responseMapping = $this->getResponseMapping();
-            foreach ($jsonResponse['data']['data'] as $responseData) {
-                if (is_array($responseData)) {
-                    foreach ($responseData as $key => $value) {
-                        $propertyName = !empty($responseMapping[$key]) ? $responseMapping[$key] : $key;
-                        $this->{$propertyName} = $value;
+
+            $this->status = $jsonResponse['status'] ?? null;
+            $this->transactionId = $jsonResponse['id'] ?? null;
+            $this->deviceResponseText = $jsonResponse['status'] ?? null;
+        } else {
+            if (!empty($jsonResponse['data']['cmdResult'])) {
+                $this->checkResponse($jsonResponse['data']['cmdResult']);
+
+                if ($jsonResponse['data']['cmdResult']['result'] === 'Success') {
+                    $this->deviceResponseCode = '00';
+                }
+            }
+
+            if (!empty($jsonResponse['data']['data'])) {
+                $responseMapping = $this->getResponseMapping();
+                foreach ($jsonResponse['data']['data'] as $responseData) {
+                    if (is_array($responseData)) {
+                        foreach ($responseData as $key => $value) {
+                            $propertyName = !empty($responseMapping[$key]) ? $responseMapping[$key] : $key;
+                            $this->{$propertyName} = $value;
+                        }
                     }
                 }
             }
@@ -43,6 +58,7 @@ class UpaDeviceResponse extends UpaResponseHandler
         return array(
             //host
             'responseId' => 'responseId',
+            'transactionId' => 'responseId',
             'tranNo' => 'terminalRefNumber',
             'respDateTime' => 'responseDateTime',
             'gatewayResponseCode' => 'gatewayResponseCode',
@@ -132,5 +148,10 @@ class UpaDeviceResponse extends UpaResponseHandler
             'batchId' => 'batchId',
             'availableBalance' => 'availableBalance'
         );
+    }
+
+    private function isGpApiResponse($jsonResponse)
+    {
+        return !empty($jsonResponse['provider']) && $jsonResponse['provider'] === GatewayProvider::GP_API;
     }
 }

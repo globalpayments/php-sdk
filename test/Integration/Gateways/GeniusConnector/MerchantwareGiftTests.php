@@ -11,7 +11,7 @@ use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GeniusConfig;
 
-class GiftTest extends TestCase
+class MerchantwareGiftTests extends TestCase
 {
     protected $card;
     protected $track;

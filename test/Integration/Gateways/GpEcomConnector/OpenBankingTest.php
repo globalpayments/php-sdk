@@ -1,10 +1,8 @@
 <?php
 
-use GlobalPayments\Api\Entities\Enums\RemittanceReferenceType;
-use GlobalPayments\Api\Entities\Enums\ShaHashType;
+use GlobalPayments\Api\Entities\Enums\{BankPaymentStatus, BankPaymentType, RemittanceReferenceType, ShaHashType};
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
-use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
-use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
+use GlobalPayments\Api\Entities\Reporting\{SearchCriteria, TransactionSummary};
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\BankPayment;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
@@ -13,26 +11,27 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
-use GlobalPayments\Api\Entities\Enums\BankPaymentStatus;
 use PHPUnit\Framework\TestCase;
 
 class OpenBankingTest extends TestCase
 {
-    private $currency = 'GBP';
-    private $amount = 10.99;
+    private string $currency = 'GBP';
+    private float $amount = 10.99;
+    private string $remittanceReferenceValue = 'Nike Bounce Shoes';
 
-    public function setup() : void
+    public function setup(): void
     {
         $config = $this->getConfig();
         ServicesContainer::configureService($config);
     }
 
-    protected function getConfig()
+    protected function getConfig(): GpEcomConfig
     {
         $config = new GpEcomConfig();
         $config->merchantId = 'openbankingsandbox';
         $config->sharedSecret = 'sharedsecret';
-        $config->accountId = 'internet';
+        $config->accountId = 'internet3';
+
         $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
         $config->shaHashType = ShaHashType::SHA512;
 
@@ -45,13 +44,14 @@ class OpenBankingTest extends TestCase
 
         $trn = $bankPayment->charge($this->amount)
             ->withCurrency($this->currency)
-            ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
+            ->withRemittanceReference(RemittanceReferenceType::TEXT, $this->remittanceReferenceValue)
             ->execute();
 
         $this->assertOpenBankingResponse($trn);
 
         fwrite(STDERR, print_r($trn->bankPaymentResponse->redirectUrl, true));
-        sleep(2);
+        sleep(45);
+
         $response = ReportingService::bankPaymentDetail($trn->bankPaymentResponse->id)
             ->execute();
 
@@ -62,6 +62,53 @@ class OpenBankingTest extends TestCase
         $this->assertNull($response->result[0]->bankPaymentResponse->sortCode);
         $this->assertNull($response->result[0]->bankPaymentResponse->accountNumber);
         $this->assertNull($response->result[0]->bankPaymentResponse->accountName);
+        $this->assertNotNull($response->result[0]->bankPaymentResponse->tokenRequestId);
+        $this->assertNotNull($response->result[0]->orderId);
+        $this->assertNotNull($response->result[0]->bankPaymentResponse->id);
+        $this->assertEquals(BankPaymentType::FASTERPAYMENTS, $response->result[0]->bankPaymentResponse->type);
+        $this->assertEquals(BankPaymentStatus::SUCCESS, $response->result[0]->bankPaymentResponse->paymentStatus);
+    }
+
+    public function testFasterPaymentsRefund()
+    {
+        $bankPayment = $this->fasterPaymentsConfig();
+
+        $trn = $bankPayment->charge($this->amount)
+            ->withCurrency($this->currency)
+            ->withRemittanceReference(RemittanceReferenceType::TEXT, $this->remittanceReferenceValue)
+            ->execute();
+
+        $this->assertOpenBankingResponse($trn);
+
+        fwrite(STDERR, print_r($trn->bankPaymentResponse->redirectUrl, true));
+        sleep(45);
+
+        $refund = $trn->refund($this->amount)
+            ->withCurrency($this->currency)
+            ->execute();
+
+        print_r($refund);
+
+        $this->assertEquals(BankPaymentStatus::INITIATION_PROCESSING, $refund->responseMessage);
+        $this->assertNotNull($refund->transactionId);
+        $this->assertNotNull($refund->clientTransactionId);
+        $this->assertNull($refund->bankPaymentResponse->redirectUrl);
+
+        $response = ReportingService::bankPaymentDetail($trn->bankPaymentResponse->id)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals(1, $response->totalRecordCount);
+        $this->assertEquals($trn->bankPaymentResponse->id, $response->result[0]->transactionId);
+        $this->assertNull($response->result[0]->bankPaymentResponse->iban);
+        $this->assertNull($response->result[0]->bankPaymentResponse->sortCode);
+        $this->assertNull($response->result[0]->bankPaymentResponse->accountNumber);
+        $this->assertNull($response->result[0]->bankPaymentResponse->accountName);
+        $this->assertNotNull($response->result[0]->bankPaymentResponse->tokenRequestId);
+        $this->assertNotNull($response->result[0]->orderId);
+        $this->assertNotNull($response->result[0]->bankPaymentResponse->id);
+        $this->assertEquals(BankPaymentType::FASTERPAYMENTS, $response->result[0]->bankPaymentResponse->type);
+        $this->assertEquals(BankPaymentStatus::SUCCESS, $response->result[0]->bankPaymentResponse->paymentStatus);
     }
 
     public function testSEPACharge()
@@ -70,13 +117,14 @@ class OpenBankingTest extends TestCase
 
         $trn = $bankPayment->charge($this->amount)
             ->withCurrency('EUR')
-            ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
+            ->withRemittanceReference(RemittanceReferenceType::TEXT, $this->remittanceReferenceValue)
             ->execute();
 
         $this->assertOpenBankingResponse($trn);
 
-//        fwrite(STDERR, print_r($trn->bankPaymentResponse->redirectUrl, TRUE));
-        sleep(2);
+        fwrite(STDERR, print_r($trn->bankPaymentResponse->redirectUrl, TRUE));
+        sleep(45);
+
         $response = ReportingService::bankPaymentDetail($trn->bankPaymentResponse->id)
             ->execute();
 
@@ -87,6 +135,53 @@ class OpenBankingTest extends TestCase
         $this->assertNull($response->result[0]->bankPaymentResponse->sortCode);
         $this->assertNull($response->result[0]->bankPaymentResponse->accountNumber);
         $this->assertNull($response->result[0]->bankPaymentResponse->accountName);
+        $this->assertNotNull($response->result[0]->bankPaymentResponse->tokenRequestId);
+        $this->assertNotNull($response->result[0]->orderId);
+        $this->assertNotNull($response->result[0]->bankPaymentResponse->id);
+        $this->assertEquals(BankPaymentType::SEPA, $response->result[0]->bankPaymentResponse->type);
+        $this->assertEquals(BankPaymentStatus::SUCCESS, $response->result[0]->bankPaymentResponse->paymentStatus);
+    }
+
+    public function testSEPARefund()
+    {
+        $bankPayment = $this->sepaConfig();
+
+        $trn = $bankPayment->charge($this->amount)
+            ->withCurrency('EUR')
+            ->withRemittanceReference(RemittanceReferenceType::TEXT, $this->remittanceReferenceValue)
+            ->execute();
+
+        $this->assertOpenBankingResponse($trn);
+
+        fwrite(STDERR, print_r($trn->bankPaymentResponse->redirectUrl, TRUE));
+        sleep(45);
+
+        $refund = $trn->refund($this->amount)
+            ->withCurrency('EUR')
+            ->execute();
+
+        $this->assertEquals(BankPaymentStatus::INITIATION_PROCESSING, $refund->responseMessage);
+        $this->assertNotNull($refund->transactionId);
+        $this->assertNotNull($refund->clientTransactionId);
+        $this->assertNull($refund->bankPaymentResponse->redirectUrl);
+
+        print_r($refund);
+
+        $response = ReportingService::bankPaymentDetail($trn->bankPaymentResponse->id)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals(1, $response->totalRecordCount);
+        $this->assertEquals($trn->bankPaymentResponse->id, $response->result[0]->transactionId);
+        $this->assertNull($response->result[0]->bankPaymentResponse->iban);
+        $this->assertNull($response->result[0]->bankPaymentResponse->sortCode);
+        $this->assertNull($response->result[0]->bankPaymentResponse->accountNumber);
+        $this->assertNull($response->result[0]->bankPaymentResponse->accountName);
+        $this->assertNotNull($response->result[0]->bankPaymentResponse->tokenRequestId);
+        $this->assertNotNull($response->result[0]->orderId);
+        $this->assertNotNull($response->result[0]->bankPaymentResponse->id);
+        $this->assertEquals(BankPaymentType::SEPA, $response->result[0]->bankPaymentResponse->type);
+        $this->assertEquals(BankPaymentStatus::SUCCESS, $response->result[0]->bankPaymentResponse->paymentStatus);
     }
 
     public function testBankPaymentList()
@@ -139,18 +234,17 @@ class OpenBankingTest extends TestCase
         $trn = $response->result[rand(0, count($response->result) - 1)];
         $bankPaymentResponse = $trn->bankPaymentResponse;
         switch ($bankPaymentResponse->type) {
-            case \GlobalPayments\Api\Entities\Enums\BankPaymentType::FASTERPAYMENTS:
+            case BankPaymentType::FASTERPAYMENTS:
                 $this->assertNotNull($bankPaymentResponse->sortCode);
                 $this->assertNotNull($bankPaymentResponse->accountNumber);
                 $this->assertNotNull($bankPaymentResponse->accountName);
                 break;
-            case \GlobalPayments\Api\Entities\Enums\BankPaymentType::SEPA:
+            case BankPaymentType::SEPA:
                 $this->assertNotNull($bankPaymentResponse->iban);
                 $this->assertNotNull($bankPaymentResponse->accountName);
                 break;
             default:
                 $this->fail('Bank payment type unknown!');
-                break;
         }
     }
 
@@ -203,9 +297,9 @@ class OpenBankingTest extends TestCase
         $bankPayment->iban = '123456';
 
         $trn = $bankPayment->charge($this->amount)
-                ->withCurrency($this->currency)
-                ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
-                ->execute();
+            ->withCurrency($this->currency)
+            ->withRemittanceReference(RemittanceReferenceType::TEXT, $this->remittanceReferenceValue)
+            ->execute();
         $this->assertOpenBankingResponse($trn);
     }
 
@@ -230,18 +324,12 @@ class OpenBankingTest extends TestCase
     {
         $bankPayment = $this->fasterPaymentsConfig();
 
-        $exceptionCaught = false;
-        try {
-            $bankPayment->charge($this->amount)
+        $trn = $bankPayment->charge($this->amount)
                 ->withCurrency($this->currency)
-                ->withRemittanceReference(null, 'Nike Bounce shoes')
+                ->withRemittanceReference(null, $this->remittanceReferenceValue)
                 ->execute();
-        } catch (GatewayException $e) {
-            $exceptionCaught = true;
-            $this->assertEquals('Status Code: 400 - remittance_reference.type cannot be blank or null ', $e->getMessage());
-        } finally {
-            $this->assertTrue($exceptionCaught);
-        }
+
+        $this->assertOpenBankingResponse($trn);
     }
 
     public function testFasterPaymentsCharge_MissingRemittanceReferenceValue()
@@ -271,7 +359,7 @@ class OpenBankingTest extends TestCase
         try {
             $bankPayment->charge($this->amount)
                 ->withCurrency($this->currency)
-                ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
+                ->withRemittanceReference(RemittanceReferenceType::TEXT, $this->remittanceReferenceValue)
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
@@ -290,7 +378,7 @@ class OpenBankingTest extends TestCase
         try {
             $bankPayment->charge($this->amount)
                 ->withCurrency($this->currency)
-                ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
+                ->withRemittanceReference(RemittanceReferenceType::TEXT, $this->remittanceReferenceValue)
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
@@ -309,7 +397,7 @@ class OpenBankingTest extends TestCase
         try {
             $bankPayment->charge($this->amount)
                 ->withCurrency($this->currency)
-                ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
+                ->withRemittanceReference(RemittanceReferenceType::TEXT, $this->remittanceReferenceValue)
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
@@ -328,7 +416,7 @@ class OpenBankingTest extends TestCase
         try {
             $bankPayment->charge($this->amount)
                 ->withCurrency($this->currency)
-                ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
+                ->withRemittanceReference(RemittanceReferenceType::TEXT, $this->remittanceReferenceValue)
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
@@ -347,7 +435,7 @@ class OpenBankingTest extends TestCase
         try {
             $bankPayment->charge($this->amount)
                 ->withCurrency($this->currency)
-                ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
+                ->withRemittanceReference(RemittanceReferenceType::TEXT, $this->remittanceReferenceValue)
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
@@ -365,7 +453,7 @@ class OpenBankingTest extends TestCase
         try {
             $bankPayment->charge(1)
                 ->withCurrency('EUR')
-                ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
+                ->withRemittanceReference(RemittanceReferenceType::TEXT, $this->remittanceReferenceValue)
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
@@ -384,7 +472,7 @@ class OpenBankingTest extends TestCase
         try {
             $bankPayment->charge($this->amount)
                 ->withCurrency('EUR')
-                ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
+                ->withRemittanceReference(RemittanceReferenceType::TEXT, $this->remittanceReferenceValue)
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
@@ -403,7 +491,7 @@ class OpenBankingTest extends TestCase
         try {
             $bankPayment->charge($this->amount)
                 ->withCurrency('EUR')
-                ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
+                ->withRemittanceReference(RemittanceReferenceType::TEXT, $this->remittanceReferenceValue)
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
@@ -421,7 +509,7 @@ class OpenBankingTest extends TestCase
         try {
             $bankPayment->charge($this->amount)
                 ->withCurrency($this->currency)
-                ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
+                ->withRemittanceReference(RemittanceReferenceType::TEXT, $this->remittanceReferenceValue)
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
@@ -439,7 +527,7 @@ class OpenBankingTest extends TestCase
         try {
             $bankPayment->charge($this->amount)
                 ->withCurrency("CAD")
-                ->withRemittanceReference(RemittanceReferenceType::TEXT, 'Nike Bounce Shoes')
+                ->withRemittanceReference(RemittanceReferenceType::TEXT, $this->remittanceReferenceValue)
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
@@ -476,6 +564,7 @@ class OpenBankingTest extends TestCase
     {
         $this->assertEquals(BankPaymentStatus::PAYMENT_INITIATED, $trn->responseMessage);
         $this->assertNotNull($trn->transactionId);
+        $this->assertNotNull($trn->clientTransactionId);
         $this->assertNotNull($trn->bankPaymentResponse->redirectUrl);
     }
 }

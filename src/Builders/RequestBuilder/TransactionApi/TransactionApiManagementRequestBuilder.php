@@ -5,7 +5,8 @@ namespace GlobalPayments\Api\Builders\RequestBuilder\TransactionApi;
 use GlobalPayments\Api\Builders\{BaseBuilder, ManagementBuilder};
 use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Entities\TransactionApi\TransactionApiRequest;
-use GlobalPayments\Api\Entities\Enums\{PaymentMethodType, TransactionType, Region};
+use GlobalPayments\Api\Mapping\EnumMapping;
+use GlobalPayments\Api\Entities\Enums\{GatewayProvider, PaymentMethodType, TransactionType, Region};
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\ServiceConfigs\Gateways\TransactionApiConfig;
 use GlobalPayments\Api\Utils\AmountUtils;
@@ -16,7 +17,7 @@ class TransactionApiManagementRequestBuilder implements IRequestBuilder
      * @param $builder
      * @return bool
      */
-    public static function canProcess($builder)
+    public static function canProcess($builder = null)
     {
         if ($builder instanceof ManagementBuilder) {
             return true;
@@ -43,7 +44,11 @@ class TransactionApiManagementRequestBuilder implements IRequestBuilder
                 if (isset($builder->paymentMethod) && $builder->paymentMethod->paymentMethodType == PaymentMethodType::ACH) {
                     $verb = 'POST';
                     $payload["check"] = [
-                        "account_type" => isset($builder->bankTransferDetails->accountType) ? $builder->bankTransferDetails->accountType : "0.00",
+                        "account_type" => isset($builder->bankTransferDetails->accountType) ?
+                            EnumMapping::mapAccountType(
+                                GatewayProvider::TRANSACTION_API,
+                                $builder->bankTransferDetails->accountType
+                            ) : "0.00",
                         "check_number" => isset($builder->bankTransferDetails->checkNumber) ? $builder->bankTransferDetails->checkNumber : null
                     ];
                     $payload["payment"] = [
@@ -150,5 +155,10 @@ class TransactionApiManagementRequestBuilder implements IRequestBuilder
         }
 
         return new TransactionApiRequest($endpoint, $verb, $payload);
+    }
+
+    public function buildRequestFromJson($jsonRequest, $config)
+    {
+        // TODO: Implement buildRequestFromJson() method.
     }
 }

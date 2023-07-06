@@ -2,7 +2,9 @@
 
 namespace GlobalPayments\Api\Entities\TransactionApi;
 
-class TransactionApiRequest
+use GlobalPayments\Api\Entities\Request;
+
+class TransactionApiRequest extends Request
 {
     const CREDITSALE      = 'creditsales';
     const CREDITSALEREF   = 'creditsales/reference_id';
@@ -14,18 +16,4 @@ class TransactionApiRequest
     const CHECKSALESREF   = 'checksales/reference_id';
     const CREDITREFUND    = 'creditreturns';
     const CREDITREFUNDREF = 'creditreturns/reference_id';
-
-    public $endpoint;
-    public $requestBody;
-    public $queryParams;
-    public $httpVerb;
-    public $resultsField;
-
-    public function __construct($endpoint, $httpVerb, $requestBody = '', $queryParams = null)
-    {
-        $this->endpoint = $endpoint;
-        $this->httpVerb = $httpVerb;
-        $this->requestBody = $requestBody;
-        $this->queryParams = $queryParams;
-    }
 }

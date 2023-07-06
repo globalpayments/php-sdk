@@ -2208,7 +2208,7 @@ class SdkTest extends TestCase
         $response = $card->charge(100.01)
             ->withCurrency("EUR")
             ->withAddress($billingAddress)
-            ->withDescription("JAVA-Auth-034c1")
+            ->withDescription("PHP-Auth-034c1")
             ->execute();
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->responseCode);
@@ -18063,7 +18063,7 @@ class SdkTest extends TestCase
         $card->expMonth = 12;
         $card->expYear = TestCards::validCardExpYear();
         $card->cvn = "123";
-        $card->CvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
+        $card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
 
         // request
         $response = $card->verify()

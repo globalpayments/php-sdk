@@ -8,18 +8,19 @@ use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
+use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Entities\Request;
 use GlobalPayments\Api\Mapping\GpEcomMapping;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
 
-class GpEcomManagementRequestBuilder extends GpEcomRequestBuilder
+class GpEcomManagementRequestBuilder extends GpEcomRequestBuilder implements IRequestBuilder
 {
     /**
      * @param $builder
      * @return bool
      */
-    public static function canProcess($builder)
+    public static function canProcess($builder = null)
     {
         if ($builder instanceof ManagementBuilder) {
             return true;
@@ -34,7 +35,7 @@ class GpEcomManagementRequestBuilder extends GpEcomRequestBuilder
      *
      * @return Request
      */
-    public function buildRequest(BaseBuilder $builder, GpEcomConfig $config)
+    public function buildRequest(BaseBuilder $builder, $config)
     {
         /** @var ManagementBuilder $builder */
         $xml = new DOMDocument();
@@ -152,5 +153,10 @@ class GpEcomManagementRequestBuilder extends GpEcomRequestBuilder
         }
 
         return new Request('', 'POST', $xml->saveXML($request));
+    }
+
+    public function buildRequestFromJson($jsonRequest, $config)
+    {
+        // TODO: Implement buildRequestFromJson() method.
     }
 }

@@ -38,7 +38,8 @@ class RequestBuilderFactory
             GpApiManagementRequestBuilder::class,
             GpApiReportRequestBuilder::class,
             GpApiSecureRequestBuilder::class,
-            GpApiPayFacRequestBuilder::class
+            GpApiPayFacRequestBuilder::class,
+            GpApiMiCRequestBuilder::class
         ],
         GatewayProvider::TRANSACTION_API => [
             TransactionApiReportRequestBuilder::class,

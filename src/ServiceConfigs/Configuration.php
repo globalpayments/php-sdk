@@ -28,18 +28,16 @@ abstract class Configuration
      */
     public $webProxy;
 
-    abstract public function configureContainer(ConfiguredServices $services);
-
     /** @var bool */
     public $enableLogging;
 
     /** @var bool */
     public $forceGatewayTimeout;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     public $dynamicHeaders = [];
+
+    abstract public function configureContainer(ConfiguredServices $services);
 
     public function validate()
     {

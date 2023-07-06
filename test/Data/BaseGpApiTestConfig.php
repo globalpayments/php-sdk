@@ -17,13 +17,16 @@ class BaseGpApiTestConfig
     const PARTNER_SOLUTION_APP_ID = 'A1feRdMmEB6m0Y1aQ65H0bDi9ZeAEB2t';
     const PARTNER_SOLUTION_APP_KEY = '5jPt1OpB6LLitgi7';
 
-    public static $appId = self::APP_ID;
-    public static $appKey = self::APP_KEY;
+    public static string $appId = self::APP_ID;
+    public static string $appKey = self::APP_KEY;
 
-    private static $logEnabled = true;
-    private static $dynamicHeaderEnabled = false;
-    private static $permissionsEnabled = false;
-    private static $webProxyEnabled = false;
+    const UPA_MIC_DEVICE_APP_ID = '83cdNQ0YBmzxzkLpFHpDGn2ir0WKTW0N';
+    const UPA_MIC_DEVICE_APP_KEY = '1ASrcQZb0AEqR6ZT';
+
+    private static bool $logEnabled = true;
+    private static bool $dynamicHeaderEnabled = false;
+    private static bool $permissionsEnabled = false;
+    private static bool $webProxyEnabled = false;
 
     public static function gpApiSetupConfig($channel): GpApiConfig
     {

@@ -49,4 +49,10 @@ class BankPaymentResponse
 
     /** @var string */
     public $remittanceReferenceType;
+
+    /** @var float */
+    public $amount;
+
+    /** @var string */
+    public $currency;
 }

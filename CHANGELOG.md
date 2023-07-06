@@ -6,11 +6,21 @@
 
 ## Latest Version
 #### Enhancements:
-- Profac: Additional transaction support added | Account Management | Spilt Fund | Network Transaction
-- PAX Devices: Improved some tests
+- Add support for PHP8.2
+- Drop support for PHP lower than 8.0
+- [UPA MiC]: Add MiC connector for UPA via GP-API
+- [GP-ECOM]: Add refund for transaction with open banking
 
 #### Bug Fixes:
-- GP-ECOM: Fix type confusion vulnerability on sha1hash for hppResponse
+- [GP-ECOM]: Send the correct "message_version" in the initiate step on 3DS2
+
+## v8.0.2 (06/27/2023)
+#### Enhancements:
+- [Profac]: Additional transaction support added | Account Management | Spilt Fund | Network Transaction
+- [PAX Devices]: Improved some tests
+
+#### Bug Fixes:
+- [GP-ECOM]: Fix type confusion vulnerability on sha1hash for hppResponse
 
 ## v8.0.1 (05/30/2023)
 #### Bug Fixes:

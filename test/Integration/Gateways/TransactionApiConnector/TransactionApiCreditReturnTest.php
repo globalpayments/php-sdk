@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateways\TransactionApiConnector;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\TransactionApiConnector;
 
 use GlobalPayments\Api\Entities\{Address, Customer, PhoneNumber, Transaction};
 use GlobalPayments\Api\Entities\Enums\{
@@ -20,12 +20,11 @@ use PHPUnit\Framework\TestCase;
 
 class TransactionApiCreditReturnTest extends TestCase
 {
-    /**
-     * @var CreditCardData $card
-     */
-    private $card;
-
+    private CreditCardData $card;
     private $currency = "840";
+    private Address $address;
+    private Address $addressCa;
+
 
     public function setup(): void
     {
@@ -52,32 +51,20 @@ class TransactionApiCreditReturnTest extends TestCase
         $this->addressCa->state = "CA";
         $this->addressCa->country = "Canada";
         $this->addressCa->postalCode = "91765";
-
-        $this->customer =  new Customer();
-        $this->customer->id = "2e39a948-2a9e-4b4a-9c59-0b96765343b7";
-        $this->customer->title = "Mr.";
-        $this->customer->firstName = "Joe";
-        $this->customer->middleName = "Henry";
-        $this->customer->lastName = "Doe";
-        $this->customer->businessName = "ABC Company LLC";
-        $this->customer->email = "joe.doe@gmail.com";
-        $this->customer->dateOfBirth = "1980-01-01";
-        $this->customer->mobilePhone = new PhoneNumber('+35', '312345678', PhoneNumberType::MOBILE);
-        $this->customer->homePhone = new PhoneNumber('+1', '12345899', PhoneNumberType::HOME);
-    }
+      }
 
     public function setUpConfig($country = "US")
     {
-        $this->config = new TransactionApiConfig();
-        $this->config->accountCredential = '800000052925:80039923:eWcWNJhfxiJ7QyEHSHndWk4VHKbSmSue';
-        $this->config->apiSecret         = 'lucQKkwz3W3RGzABkSWUVZj1Mb0Yx3E9chAA8ESUVAv';
-        $this->config->apiKey            = 'qeG6EWZOiAwk4jsiHzsh2BN8VkN2rdAs';
-        $this->config->apiVersion        = '2021-04-08';
-        $this->config->apiPartnerName    = 'mobile_sdk';
-        $this->config->country           = $country;
-        $this->config->requestLogger     = new SampleRequestLogger(new Logger("logs"));
+        $config = new TransactionApiConfig();
+        $config->accountCredential = '800000052925:80039923:eWcWNJhfxiJ7QyEHSHndWk4VHKbSmSue';
+        $config->apiSecret         = 'lucQKkwz3W3RGzABkSWUVZj1Mb0Yx3E9chAA8ESUVAv';
+        $config->apiKey            = 'qeG6EWZOiAwk4jsiHzsh2BN8VkN2rdAs';
+        $config->apiVersion        = '2021-04-08';
+        $config->apiPartnerName    = 'mobile_sdk';
+        $config->country           = $country;
+        $config->requestLogger     = new SampleRequestLogger(new Logger("logs"));
 
-        return $this->config;
+        return $config;
     }
 
     public function test01USCreditReturn()
@@ -120,7 +107,8 @@ class TransactionApiCreditReturnTest extends TestCase
 
     public function test03CACreditSaleCreditReturn()
     {
-        ServicesContainer::configureService($this->setUpConfig('CA'));
+        $config = $this->setUpConfig('CA');
+        ServicesContainer::configureService($config);
 
         $transData = $this->getTransactionData(
             'CA',
@@ -138,7 +126,7 @@ class TransactionApiCreditReturnTest extends TestCase
 
         $creditSaleId = $response->transactionId;
 
-        $this->config->country = 'US';
+        $config->country = 'US';
 
         $transaction = Transaction::fromId(
             $creditSaleId,

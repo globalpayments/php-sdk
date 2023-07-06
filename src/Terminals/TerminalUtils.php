@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Terminals;
 
 use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 use GlobalPayments\Api\Terminals\Abstractions\ILogManagement;
+use GlobalPayments\Api\Terminals\UPA\UpaMessageType;
 
 class TerminalUtils
 {
@@ -122,11 +123,31 @@ class TerminalUtils
             $logProvider->setLog($message, $trace);
         }
     }
-    
-    public static function buildUPAMessage($messageType, $requestId, $otherData = null)
+
+    public static function buildUpaRequest($requestParams) : DeviceMessage
+    {
+        $buffer = array();
+        // Begin Message
+        array_push($buffer, chr(ControlCodes::STX));
+        array_push($buffer, chr(ControlCodes::LF));
+
+        // Add the Message
+        array_push($buffer, json_encode($requestParams));
+
+        // End the Message
+        array_push($buffer, chr(ControlCodes::LF));
+        array_push($buffer, chr(ControlCodes::ETX));
+        array_push($buffer, chr(ControlCodes::LF));
+
+        $deviceMessage = new DeviceMessage($buffer);
+        $deviceMessage->setJsonRequest($requestParams);
+        return $deviceMessage;
+    }
+
+    public static function buildUPAMessage($messageType, $requestId, $otherData = null) : DeviceMessage
     {
         $requestMessage = [
-            'message' => 'MSG',
+            'message' => UpaMessageType::MSG,
             'data' => [
                 'command' => $messageType,
                 'requestId' => $requestId,
@@ -138,13 +159,19 @@ class TerminalUtils
             $requestMessage['data']['data'] = $otherData;
         }
         
-        $message = chr(ControlCodes::STX);
-        $message .= chr(ControlCodes::LF);
-        $message .= json_encode($requestMessage);
-        $message .= chr(ControlCodes::LF);
-        $message .= chr(ControlCodes::ETX);
-        $message .= chr(ControlCodes::LF);
-        
-        return $message;
+        $buffer = array();
+        // Begin Message
+        array_push($buffer, chr(ControlCodes::STX));
+        array_push($buffer, chr(ControlCodes::LF));
+
+        // Add the Message
+        array_push($buffer, json_encode($requestMessage));
+
+        // End the Message
+        array_push($buffer, chr(ControlCodes::LF));
+        array_push($buffer, chr(ControlCodes::ETX));
+        array_push($buffer, chr(ControlCodes::LF));
+
+        return new DeviceMessage($buffer);
     }
 }

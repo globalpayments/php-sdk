@@ -932,7 +932,7 @@ class GpApiMapping
         $summary->status = $response->status ?? null;
         $summary->type = $response->type ?? null;
         $summary->usageMode = $response->usage_mode ?? null;
-        $summary->usageLimit = $response->usage_limit ?? null; //@TODO
+        $summary->usageLimit = $response->usage_limit ?? null;
         $summary->reference = $response->reference ?? null;
         $summary->name = $response->name ?? null;
         $summary->description = $response->description ?? null;

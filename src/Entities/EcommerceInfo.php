@@ -11,30 +11,22 @@ class EcommerceInfo
 {
     /**
      * Identifies eCommerce vs mail order / telephone order (MOTO) transactions.
-     *
      * Default value is `EcommerceChannel.ECOM`.
-     *
      * @var EcommerceChannel
      */
     public $channel;
 
     /**
      * The expected shipping month.
-     *
      * Default value is the date of one day in the future.
-     *
-     * @var integer
      */
-    public $shipDay;
+    public int|string $shipDay;
 
     /**
      * The expected shipping month.
-     *
      * Default value is the month of one day in the future.
-     *
-     * @var integer
      */
-    public $shipMonth;
+    public int|string $shipMonth;
 
     /**
      * Instantiates a new `EcommerceInfo` object.
@@ -50,6 +42,5 @@ class EcommerceInfo
         $this->shipMonth = (new \DateTime())
             ->add(new \DateInterval('P1D'))
             ->format('m');
-        $this->paymentDataType = '3DSecure';
     }
 }

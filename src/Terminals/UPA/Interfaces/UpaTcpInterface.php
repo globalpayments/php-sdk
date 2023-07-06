@@ -6,10 +6,8 @@ use GlobalPayments\Api\Terminals\Abstractions\IDeviceCommInterface;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Terminals\Enums\ControlCodes;
-use GlobalPayments\Api\Terminals\Messaging\IMessageSentInterface;
-use GlobalPayments\Api\Terminals\UPA\Entities\Enums\UpaMessageId;
 use GlobalPayments\Api\Terminals\TerminalUtils;
-use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
+use GlobalPayments\Api\Terminals\UPA\UpaMessageType;
 
 /*
  * TCP interface for the device connection and parse response
@@ -98,12 +96,12 @@ class UpaTcpInterface implements IDeviceCommInterface
                         
         TerminalUtils::manageLog(
             $this->deviceDetails->logManagementProvider,
-            "$requestType Request Message\n: $message"
+            "$requestType Request Message\n: {$message->toString()}"
         );
         
         if ($this->tcpConnection !== null) {
             try {
-                if (false === ($bytes_written = fwrite($this->tcpConnection, $message))) {
+                if (false === ($bytes_written = fwrite($this->tcpConnection, $message->toString()))) {
                     throw new GatewayException('Device error: failed to write to socket');
                 } else {
                     //set time out for read and write
@@ -119,7 +117,7 @@ class UpaTcpInterface implements IDeviceCommInterface
                             $etxCount++;
                             if ($etxCount === 2) {
                                 $requestMessage = [
-                                    'message' => 'ACK',
+                                    'message' => UpaMessageType::ACK,
                                     'data' => ""
                                 ];
                                 $ackMessage = chr(ControlCodes::STX) . chr(ControlCodes::LF);
@@ -158,7 +156,7 @@ class UpaTcpInterface implements IDeviceCommInterface
             foreach ($responseList as $rawMessage) {
                 $message = trim(preg_replace('/[\x00-\x0A\n]/', '', trim($rawMessage)));
                 $jsonResponse = json_decode(html_entity_decode($message), 1);
-                if ($jsonResponse['message'] == 'MSG') {
+                if ($jsonResponse['message'] == UpaMessageType::MSG) {
                     return $jsonResponse;
                 }
             }

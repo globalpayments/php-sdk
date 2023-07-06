@@ -22,15 +22,18 @@ class OpenBankingMapping
             return $transaction;
         }
 
-        $transaction->transactionId = $response->ob_trans_id;
+        $transaction->transactionId = $response->order->id ?? null;
+        $transaction->clientTransactionId = $response->ob_trans_id ?? null;
         $transaction->paymentMethodType = PaymentMethodType::BANK_PAYMENT;
-        $transaction->orderId = $response->order->id;
-        $transaction->responseMessage = $response->status;
+        $transaction->orderId = $response->order->id ?? null;
+        $transaction->responseMessage = $response->status ?? null;
 
         $obResponse = new BankPaymentResponse();
-        $obResponse->redirectUrl = $response->redirect_url;
-        $obResponse->paymentStatus = $response->status;
-        $obResponse->id = $response->ob_trans_id;
+        $obResponse->redirectUrl = $response->redirect_url ?? null;
+        $obResponse->paymentStatus = $response->status ?? null;
+        $obResponse->id = $response->ob_trans_id ?? null;
+        $obResponse->amount = $response->order->amount ?? null;
+        $obResponse->currency = $response->order->currency ?? null;
         $transaction->bankPaymentResponse = $obResponse;
 
         return $transaction;

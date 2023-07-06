@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Mapping;
 
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
@@ -26,10 +27,18 @@ class TransactionApiMapping
 
         $transaction->clientTransactionId = !empty($response->creditauth_id)
             ? $response->creditauth_id : null;
-        $transaction->checkSaleId = !empty($response->checksale_id)
-            ? $response->checksale_id : null;
-        $transaction->checkRefundId = !empty($response->checkrefund_id)
-            ? $response->checkrefund_id : null;
+
+        if (!empty($response->payment->type)) {
+            switch ($response->payment->type) {
+                case 'check':
+                    $transaction->paymentMethodType = PaymentMethodType::ACH;
+                    $transaction->transactionId = $response->checksale_id  ??
+                        ($response->checkrefund_id ?? null);
+                    break;
+                default:
+                    break;
+            }
+        }
         if (!empty($response->creditsale_id))
             $transaction->transactionId =  $response->creditsale_id;
         if (!empty($response->creditreturn_id))

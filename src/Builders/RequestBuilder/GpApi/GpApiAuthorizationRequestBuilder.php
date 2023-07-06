@@ -62,7 +62,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
      *
      * @return bool
      */
-    public static function canProcess($builder)
+    public static function canProcess($builder = null)
     {
         if ($builder instanceof AuthorizationBuilder) {
             return true;
@@ -830,5 +830,10 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             'mode' => $this->builder->fraudFilter,
             'rules' => $rules ?? null
         ];
+    }
+
+    public function buildRequestFromJson($jsonRequest, $config)
+    {
+        // TODO: Implement buildRequestFromJson() method.
     }
 }

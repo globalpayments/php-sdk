@@ -20,6 +20,10 @@ class DeviceService
     public static function create(ConnectionConfig $config, string $configName = "default") : IDeviceInterface
     {
         ServicesContainer::configureService($config, $configName);
+        if (!empty($config->gatewayConfig)) {
+            $config->setConfigName($configName);
+            ServicesContainer::configureService($config->gatewayConfig, $configName);
+        }
         return ServicesContainer::instance()->getDeviceInterface($configName);
     }
 }

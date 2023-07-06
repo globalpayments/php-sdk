@@ -28,7 +28,7 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
     /** @var SecureBuilder */
     private $builder;
 
-    public static function canProcess($builder)
+    public static function canProcess($builder = null)
     {
         if ($builder instanceof SecureBuilder) {
             return true;
@@ -389,5 +389,10 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
                 (new \DateTime($this->builder->getCustomerAuthenticationTimestamp()))->format('Y-m-d\TH:i:s.u\Z') : null,
             'authentication_type' => (string) $this->builder->getCustomerAuthenticationMethod()
         ];
+    }
+
+    public function buildRequestFromJson($jsonRequest, $config)
+    {
+        // TODO: Implement buildRequestFromJson() method.
     }
 }

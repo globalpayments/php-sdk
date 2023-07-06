@@ -59,6 +59,9 @@ class TerminalAuthBuilder extends TerminalBuilder
     
     public $autoSubstantiation;
 
+    /** @var string */
+    public $terminalRefNumber;
+
     /**
      *
      * {@inheritdoc}
@@ -192,6 +195,18 @@ class TerminalAuthBuilder extends TerminalBuilder
             $this->paymentMethod->transactionId = $transactionId;
         }
         $this->transactionId = $transactionId;
+        return $this;
+    }
+
+    public function withEcrId(int $ecrId)
+    {
+        $this->ecrId = $ecrId;
+        return $this;
+    }
+
+    public function withTerminalRefNumber(string $terminalRefNumber)
+    {
+        $this->terminalRefNumber = $terminalRefNumber;
         return $this;
     }
 

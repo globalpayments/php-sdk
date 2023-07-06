@@ -17,7 +17,7 @@ use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 
 class GpApiReportRequestBuilder implements IRequestBuilder
 {
-    public static function canProcess($builder)
+    public static function canProcess($builder = null)
     {
         if ($builder instanceof ReportBuilder) {
             return true;
@@ -335,5 +335,10 @@ class GpApiReportRequestBuilder implements IRequestBuilder
             $builder->searchBuilder->endDate->format('Y-m-d') : null;
 
         return $queryParams;
+    }
+
+    public function buildRequestFromJson($jsonRequest, $config)
+    {
+        // TODO: Implement buildRequestFromJson() method.
     }
 }

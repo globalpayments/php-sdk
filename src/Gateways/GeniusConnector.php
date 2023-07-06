@@ -74,10 +74,10 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
         if ($paymentMethod->paymentMethodType === PaymentMethodType::GIFT && !empty($builder->currency)) {
             $request->appendChild($xml->createElement('AmountType', $builder->currency));
         }
-        $request->appendChild($xml->createElement('Amount', $builder->amount));
-        $request->appendChild($xml->createElement('CashbackAmount', $builder->cashBackAmount));
-        $request->appendChild($xml->createElement('SurchargeAmount', $builder->convenienceAmount));
-        $request->appendChild($xml->createElement('AuthorizationCode', $builder->offlineAuthCode));
+        $request->appendChild($xml->createElement('Amount', $builder->amount ?? ''));
+        $request->appendChild($xml->createElement('CashbackAmount', $builder->cashBackAmount ?? ''));
+        $request->appendChild($xml->createElement('SurchargeAmount', $builder->convenienceAmount?? ''));
+        $request->appendChild($xml->createElement('AuthorizationCode', $builder->offlineAuthCode ?? ''));
 
         if ($builder->autoSubstantiation != null) {
             $healthcare = $xml->createElement('HealthCareAmountDetails');
@@ -93,13 +93,13 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
             $request->appendChild($healthcare);
         }
 
-        $request->appendChild($xml->createElement('InvoiceNumber', $builder->invoiceNumber));
-        $request->appendChild($xml->createElement('RegisterNumber', $this->registerNumber));
-        $request->appendChild($xml->createElement('MerchantTransactionId', $builder->clientTransactionId));
-        $request->appendChild($xml->createElement('CardAcceptorTerminalId', $this->terminalId));
+        $request->appendChild($xml->createElement('InvoiceNumber', $builder->invoiceNumber ?? ''));
+        $request->appendChild($xml->createElement('RegisterNumber', $this->registerNumber ?? ''));
+        $request->appendChild($xml->createElement('MerchantTransactionId', $builder->clientTransactionId ?? ''));
+        $request->appendChild($xml->createElement('CardAcceptorTerminalId', $this->terminalId ?? ''));
         // invoice object
-        $request->appendChild($xml->createElement('EnablePartialAuthorization', $builder->allowPartialAuth));
-        $request->appendChild($xml->createElement('ForceDuplicate', $builder->allowDuplicates));
+        $request->appendChild($xml->createElement('EnablePartialAuthorization', $builder->allowPartialAuth ?? ''));
+        $request->appendChild($xml->createElement('ForceDuplicate', $builder->allowDuplicates ?? ''));
 
         $transaction->appendChild($request);
         $response = $this->doTransaction($this->buildEnvelope($xml, $transaction), $endpoint);
@@ -137,7 +137,7 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
         // Request
         $request = $xml->createElement('Request');
         if ($transactionType !== TransactionType::REFUND) {
-            $request->appendChild($xml->createElement('Token', $builder->transactionId));
+            $request->appendChild($xml->createElement('Token', $builder->transactionId ?? ''));
         }
         $request->appendChild($xml->createElement('Amount', $builder->amount + $builder->gratuity));
         if (!empty($builder->invoiceNumber)) {
@@ -369,7 +369,7 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
                     $paymentData->appendChild($xml->createElement('Source', 'Keyed'));
                     $paymentData->appendChild($xml->createElement('CardNumber', $card->number));
                     $paymentData->appendChild($xml->createElement('ExpirationDate', $card->getShortExpiry()));
-                    $paymentData->appendChild($xml->createElement('CardHolder', $card->cardHolderName));
+                    $paymentData->appendChild($xml->createElement('CardHolder', $card->cardHolderName ?? ''));
                     $paymentData->appendChild($xml->createElement('CardVerificationValue', $card->cvn));
                 }
             } elseif ($paymentMethod instanceof CreditTrackData) {

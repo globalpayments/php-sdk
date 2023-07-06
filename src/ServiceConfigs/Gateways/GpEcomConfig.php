@@ -66,10 +66,11 @@ class GpEcomConfig extends GatewayConfig
         $services->recurringConnector = $gateway;
 
         if (empty($this->secure3dVersion)) {
-            $services->secure3dVersion = Secure3dVersion::ONE;
+            $this->secure3dVersion = Secure3dVersion::TWO;
         }
 
-        if ($this->secure3dVersion == Secure3dVersion::ONE || $this->secure3dVersion == Secure3dVersion::ANY) {
+        if ($this->secure3dVersion == Secure3dVersion::ONE ||
+            $this->secure3dVersion == Secure3dVersion::ANY) {
             $services->setSecure3dProvider(Secure3dVersion::ONE, $gateway);
         }
 

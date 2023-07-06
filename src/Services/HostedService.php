@@ -8,6 +8,7 @@ use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\ShaHashType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
@@ -19,14 +20,10 @@ class HostedService
 
     /**
      * Shared secret to authenticate with the gateway
-     *
-     * @var string
      */
-    public $sharedSecret;
-
-    public $shaHashType = ShaHashType::SHA1;
-
-    private static $supportedShaType = [
+    public string $sharedSecret;
+    public ShaHashType|string $shaHashType = ShaHashType::SHA1;
+    private static array $supportedShaType = [
         ShaHashType::SHA1,
         ShaHashType::SHA256
     ];
@@ -34,11 +31,10 @@ class HostedService
     /**
      * Instatiates a new object
      *
-     * @param ServicesConfig $config Service config
+     * @param GpEcomConfig $config Service config
      *
-     * @return void
      */
-    public function __construct($config)
+    public function __construct(GpEcomConfig $config)
     {
         if (!in_array($config->shaHashType, self::$supportedShaType)) {
             throw new ApiException(sprintf("%s not supported. Please check your code and the Developers Documentation.", $config->shaHashType));
@@ -52,11 +48,11 @@ class HostedService
      * Creates an authorization builder with type
      * `TransactionType::CREDIT_AUTH`
      *
-     * @param string|float $amount Amount to authorize
+     * @param float|string|nullCardUtils $amount Amount to authorize
      *
      * @return AuthorizationBuilder
      */
-    public function authorize($amount = null)
+    public function authorize(string|float $amount = null)
     {
         return (new AuthorizationBuilder(TransactionType::AUTH))
             ->withAmount($amount);

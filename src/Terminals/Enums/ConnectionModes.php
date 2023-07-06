@@ -11,4 +11,5 @@ class ConnectionModes extends Enum
     const SSL_TCP = 'SSL_TCP';
     const HTTP = 'HTTP';
     const HTTPS = 'HTTPS';
+    const MIC = 'MIC';
 }

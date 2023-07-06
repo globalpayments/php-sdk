@@ -34,14 +34,14 @@ class CreditCardNotPresentTest extends TestCase
     /**
      * @var CreditCardData $card
      */
-    private $card;
+    private CreditCardData $card;
 
     /**
      * @var string
      */
-    private $idempotencyKey;
+    private string $idempotencyKey;
 
-    private $currency = 'GBP';
+    private string $currency = 'GBP';
 
     public function setup(): void
     {
@@ -1327,7 +1327,7 @@ class CreditCardNotPresentTest extends TestCase
     public function testUpdatePaymentToken()
     {
         $startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
-        $endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
+        $endDate = (new \DateTime())->modify('-1 days')->setTime(0, 0, 0);
 
         $response = ReportingService::findStoredPaymentMethodsPaged(1, 1)
             ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::DESC)
@@ -1431,20 +1431,20 @@ class CreditCardNotPresentTest extends TestCase
             [GpApiAvsCheckTestCards::AVS_MASTERCARD_2, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED, "M", "I", "I"],
             [GpApiAvsCheckTestCards::AVS_MASTERCARD_3, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED, "M", "P", "P"],
             [GpApiAvsCheckTestCards::AVS_MASTERCARD_4, "MATCHED", "MATCHED", "MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "M", "M", "M"],
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_5, "MATCHED", "MATCHED", "NOT_MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "M", "M", "N"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_5, "MATCHED", "NOT_MATCHED", "NOT_MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "M", "N", "N"],
             [GpApiAvsCheckTestCards::AVS_MASTERCARD_6, "MATCHED", "NOT_MATCHED", "MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "M", "N", "M"],
             [GpApiAvsCheckTestCards::AVS_MASTERCARD_7, "MATCHED", "NOT_MATCHED", "NOT_MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "M", "N", "N"],
             [GpApiAvsCheckTestCards::AVS_MASTERCARD_8, "NOT_MATCHED", "NOT_MATCHED", "MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "N", "N", "M"],
             [GpApiAvsCheckTestCards::AVS_MASTERCARD_9, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED, "N", "U", "U"],
             [GpApiAvsCheckTestCards::AVS_MASTERCARD_10, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED, "N", "I", "I"],
             [GpApiAvsCheckTestCards::AVS_MASTERCARD_11, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED, "N", "P", "P"],
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_12, "NOT_MATCHED", "MATCHED", "MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "N", "M", "M"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_12, "NOT_MATCHED", "NOT_CHECKED", "MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "N", "P", "M"],
             [GpApiAvsCheckTestCards::AVS_MASTERCARD_13, "NOT_MATCHED", "MATCHED", "NOT_MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "N", "M", "N"],
             [GpApiAvsCheckTestCards::AVS_MASTERCARD_14, "NOT_MATCHED", "NOT_MATCHED", "NOT_MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "N", "N", "N"],
             [GpApiAvsCheckTestCards::AVS_VISA_1, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", 'DECLINED', TransactionStatus::DECLINED, "I", "U", "U"],
             [GpApiAvsCheckTestCards::AVS_VISA_2, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", 'DECLINED', TransactionStatus::DECLINED, "I", "I", "I"],
             [GpApiAvsCheckTestCards::AVS_VISA_3, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", 'DECLINED', TransactionStatus::DECLINED, "I", "P", "P"],
-            [GpApiAvsCheckTestCards::AVS_VISA_4, "NOT_CHECKED", "MATCHED", "MATCHED", 'DECLINED', TransactionStatus::DECLINED, "I", "M", "M"],
+            [GpApiAvsCheckTestCards::AVS_VISA_4, "MATCHED", "MATCHED", "MATCHED", 'DECLINED', TransactionStatus::DECLINED, "M", "M", "M"],
             [GpApiAvsCheckTestCards::AVS_VISA_5, "NOT_CHECKED", "MATCHED", "NOT_MATCHED", 'DECLINED', TransactionStatus::DECLINED, "I", "M", "N"],
             [GpApiAvsCheckTestCards::AVS_VISA_6, "NOT_CHECKED", "NOT_MATCHED", "MATCHED", 'DECLINED', TransactionStatus::DECLINED, "I", "N", "M"],
             [GpApiAvsCheckTestCards::AVS_VISA_7, "NOT_CHECKED", "NOT_MATCHED", "NOT_MATCHED", 'DECLINED', TransactionStatus::DECLINED, "I", "N", "N"],

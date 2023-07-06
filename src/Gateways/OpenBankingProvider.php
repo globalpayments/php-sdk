@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Gateways;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
+use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use GlobalPayments\Api\Entities\Enums\BankPaymentType;
 use GlobalPayments\Api\Entities\Enums\ReportType;
@@ -169,6 +170,52 @@ class OpenBankingProvider extends RestGateway implements IOpenBankingProvider
 
         return OpenBankingMapping::mapReportResponse($response, $builder->reportType);
     }
+
+    public function manageOpenBanking(ManagementBuilder $builder)
+    {
+        $httpVerb = $endpoint = $payload = null;
+        $amount = ($builder->amount !== null) ? preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount)) : null;
+        $timestamp = (new \DateTime())->format("YmdHis");
+        switch ($builder->transactionType) {
+            case TransactionType::REFUND:
+                $httpVerb = 'POST';
+                $endpoint = '/refunds';
+                $hash =  implode('.', [
+                    $this->merchantId,
+                    $this->accountId,
+                    $timestamp,
+                    $builder->transactionId,
+                    $builder->clientTransactionId,
+                    $amount
+                ]);
+                $this->setAuthorizationHeader($hash);
+                 $payload = [
+                    'request_timestamp' => $timestamp,
+                    'merchant_id' => $this->merchantId,
+                    'account_id' => $this->accountId,
+                    'order' => [
+                        'id' => $builder->transactionId,
+                        'ob_trans_id' => $builder->clientTransactionId,
+                        'amount' => $amount,
+                        'description' => $builder->description
+                        ]
+                    ];
+                break;
+            default:
+                break;
+        }
+
+        $payload = ArrayUtils::array_remove_empty($payload);
+        $payload = json_encode($payload, JSON_UNESCAPED_SLASHES);
+        try {
+            $response = parent::doTransaction($httpVerb, $endpoint, $payload);
+        } catch (GatewayException $gatewayException) {
+            throw $gatewayException;
+        }
+
+        return OpenBankingMapping::mapResponse($response);
+    }
+
 
     private function setAuthorizationHeader($hash)
     {

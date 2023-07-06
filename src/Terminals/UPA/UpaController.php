@@ -3,14 +3,20 @@
 namespace GlobalPayments\Api\Terminals\UPA;
 
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
+use GlobalPayments\Api\Entities\Exceptions\NotImplementedException;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceCommInterface;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceMessage;
 use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
 use GlobalPayments\Api\Terminals\DeviceController;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
+use GlobalPayments\Api\Terminals\DeviceMessage;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
+use GlobalPayments\Api\Terminals\UPA\Interfaces\UpaMicInterface;
 use GlobalPayments\Api\Terminals\UPA\Interfaces\UpaTcpInterface;
+use GlobalPayments\Api\Terminals\UPA\Responses\UpaMitcResponse;
 use GlobalPayments\Api\Terminals\UPA\Responses\UpaTransactionResponse;
 use GlobalPayments\Api\Terminals\UPA\SubGroups\RequestParamFields;
 use GlobalPayments\Api\Terminals\TerminalUtils;
@@ -18,7 +24,7 @@ use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Terminals\UPA\Entities\Enums\UpaMessageId;
 use GlobalPayments\Api\Terminals\UPA\SubGroups\RequestTransactionFields;
-use GlobalPayments\Api\Terminals\UPA\Responses\UpaDeviceResponse;
+use GlobalPayments\Api\Terminals\UPA\Responses\TransactionResponse;
 use GlobalPayments\Api\Terminals\TerminalResponse;
 
 /*
@@ -38,6 +44,7 @@ class UpaController extends DeviceController
      */
     public function __construct(ConnectionConfig $config)
     {
+        parent::__construct($config);
         $this->device = new UpaInterface($this);
         $this->requestIdProvider = $config->requestIdProvider;
         $this->deviceConfig = $config;
@@ -46,6 +53,9 @@ class UpaController extends DeviceController
             case ConnectionModes::TCP_IP:
             case ConnectionModes::SSL_TCP:
                 $this->deviceInterface = new UpaTcpInterface($config);
+                break;
+            case ConnectionModes::MIC:
+                $this->deviceInterface = new UpaMicInterface($config);
                 break;
             default:
                 throw new ConfigurationException('Unsupported connection mode.');
@@ -62,20 +72,21 @@ class UpaController extends DeviceController
         return $this->device;
     }
 
-    /*
-     * Send control message to device
-     *
-     * @param string $message control message to device
-     *
-     * @return UpaResponse parsed device response
-     */
-    public function send($message, $requestType = null)
+    public function manageTransaction(TerminalManageBuilder $builder) : TerminalResponse
     {
-        //send message to gateway
-        return $this->deviceInterface->send($message, $requestType);
+        $request = $this->buildManageTransaction($builder);
+
+        return $this->doTransaction($request);
     }
 
-    public function manageTransaction(TerminalManageBuilder $builder) : TerminalResponse
+    public function processTransaction(TerminalAuthBuilder $builder) : TerminalResponse
+    {
+        $request = $this->buildProcessTransaction($builder);
+
+        return $this->doTransaction($request);
+    }
+
+    private function buildManageTransaction(TerminalManageBuilder $builder) : IDeviceMessage
     {
         $requestId = (!empty($builder->requestId)) ?
             $builder->requestId :
@@ -84,16 +95,27 @@ class UpaController extends DeviceController
         $requestTransactionFields = new RequestTransactionFields();
         $requestTransactionFields->setParams($builder);
 
-        $transactionType = $this->mapTransactionType($builder->transactionType);
-        return $this->doTransaction(
-            $transactionType,
-            $requestId,
-            null,
-            $requestTransactionFields
-        );
+        $requestType = $this->mapTransactionType($builder->transactionType);
+
+        if (!is_null($requestTransactionFields) && !empty($requestTransactionFields->getElementString())) {
+            $transactionFields = $requestTransactionFields->getElementString();
+        }
+
+        $requestMessage = [
+            'message' => UpaMessageType::MSG,
+            'data' => [
+                'command' => $requestType,
+                'requestId' => $requestId,
+                'EcrId' => $builder->ecrId ?? 13,
+                'data' => [
+                    'transaction' => $transactionFields ?? null
+                ]
+            ]
+        ];
+        return TerminalUtils::buildUpaRequest($requestMessage);
     }
 
-    public function processTransaction(TerminalAuthBuilder $builder) : TerminalResponse
+    private function buildProcessTransaction(TerminalAuthBuilder $builder) : DeviceMessage
     {
         $requestId = (!empty($builder->requestId)) ?
             $builder->requestId :
@@ -105,17 +127,32 @@ class UpaController extends DeviceController
         $requestTransactionFields = new RequestTransactionFields();
         $requestTransactionFields->setParams($builder);
 
-        $transactionType = $this->mapTransactionType($builder->transactionType);
+        $requestType = $this->mapTransactionType($builder->transactionType);
 
-        return $this->doTransaction(
-            $transactionType,
-            $requestId,
-            $requestParamFields,
-            $requestTransactionFields
-        );
+        if (!is_null($requestParamFields) && !empty($requestParamFields->getElementString())) {
+            $data['params'] = $requestParamFields->getElementString();
+        }
+
+        if (!is_null($requestTransactionFields) && !empty($requestTransactionFields->getElementString())) {
+            $data['transaction'] = $requestTransactionFields->getElementString();
+        }
+
+        $requestMessage = [
+            'message' => UpaMessageType::MSG,
+            'data' => [
+                'command' => $requestType,
+                'requestId' => $requestId,
+                'EcrId' => $builder->ecrId ?? 13,
+            ]
+        ];
+        if (!empty($data)) {
+            $requestMessage['data']['data'] = $data;
+        }
+
+        return TerminalUtils::buildUpaRequest($requestMessage);
     }
 
-    private function mapTransactionType($type, $requestToken = null)
+    private function mapTransactionType($type)
     {
         switch ($type) {
             case TransactionType::SALE:
@@ -142,30 +179,35 @@ class UpaController extends DeviceController
                 );
         }
     }
-
-    private function doTransaction(
-        $requestType,
-        $requestId,
-        RequestParamFields $requestParamFields = null,
-        RequestTransactionFields $requestTransactionFields = null
-    ) {
-
-        $data = [];
-        if (!is_null($requestParamFields) && !empty($requestParamFields->getElementString())) {
-            $data['params'] = $requestParamFields->getElementString();
+    private function doTransaction(IDeviceMessage $request)
+    {
+        $request->awaitResponse = true;
+        $response = $this->connector->send($request);
+        if (empty($response)) {
+            return null;
         }
 
-        if (!is_null($requestTransactionFields) && !empty($requestTransactionFields->getElementString())) {
-            $data['transaction'] = $requestTransactionFields->getElementString();
-        }
-
-        $message = TerminalUtils::buildUPAMessage($requestType, $requestId, $data);
-        $response = $this->send($message, $requestType);
-        return new UpaDeviceResponse($response, $requestType);
+        return new TransactionResponse($response);
     }
 
     public function processReport(TerminalReportBuilder $builder) : TerminalResponse
     {
         return false;
+    }
+
+    public function configureConnector(): IDeviceCommInterface
+    {
+        switch ($this->settings->getConnectionMode())
+        {
+            case ConnectionModes::TCP_IP:
+                return new UpaTcpInterface($this->settings);
+            case ConnectionModes::HTTP:
+            case ConnectionModes::SERIAL:
+            case ConnectionModes::SSL_TCP:
+            case ConnectionModes::MIC:
+                return new UpaMicInterface($this->settings);
+            default:
+                throw  new NotImplementedException();
+        }
     }
 }

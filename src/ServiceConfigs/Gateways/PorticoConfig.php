@@ -35,9 +35,14 @@ class PorticoConfig extends GatewayConfig
 
     public function getPayPlanEndpoint()
     {
-        if (strpos(strtolower($this->secretApiKey), 'cert') !== false  || (empty($this->secretApiKey) && $this->environment = Environment::TEST)) {
+        if (
+            !empty($this->secretApiKey) &&
+            (strpos(strtolower($this->secretApiKey), 'cert') !== false  ||
+            (empty($this->secretApiKey) && $this->environment = Environment::TEST))
+        ) {
             return '/Portico.PayPlan.v2/';
         }
+
         return '/PayPlan.v2/';
     }
 

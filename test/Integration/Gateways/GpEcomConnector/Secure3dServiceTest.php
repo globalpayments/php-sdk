@@ -2,56 +2,38 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
-use GlobalPayments\Api\Entities\CustomWebProxy;
-use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
-use GlobalPayments\Api\Entities\Enums\MerchantInitiatedRequestType;
-use GlobalPayments\Api\Entities\Enums\MessageCategory;
-use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
+use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\BrowserData;
+use GlobalPayments\Api\Entities\Enums\ {
+    AddressType, AgeIndicator, AuthenticationRequestType, AuthenticationSource,
+    ChallengeRequestIndicator, ChallengeWindowSize, ColorDepth, CustomerAuthenticationMethod, DeliveryTimeFrame,
+    MerchantInitiatedRequestType, MessageCategory, MethodUrlCompletion, OrderTransactionType, PreOrderIndicator,
+    PriorAuthenticationMethod, ReorderIndicator, SdkInterface, SdkUiType, Secure3dStatus, Secure3dVersion,
+    ShippingMethod, GatewayProvider
+};
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
-use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\MerchantDataCollection;
-use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Services\Secure3dService;
+use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use GlobalPayments\Api\Tests\Integration\Gateways\ThreeDSecureAcsClient;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
-use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\BrowserData;
-use GlobalPayments\Api\Entities\Enums\ColorDepth;
-use GlobalPayments\Api\Entities\Enums\ChallengeWindowSize;
-use GlobalPayments\Api\Entities\Enums\AddressType;
-use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
-use GlobalPayments\Api\Entities\Enums\AuthenticationRequestType;
-use GlobalPayments\Api\Entities\Enums\DeliveryTimeFrame;
-use GlobalPayments\Api\Entities\Enums\ShippingMethod;
-use GlobalPayments\Api\Entities\Enums\PreOrderIndicator;
-use GlobalPayments\Api\Entities\Enums\ReorderIndicator;
-use GlobalPayments\Api\Entities\Enums\OrderTransactionType;
-use GlobalPayments\Api\Entities\Enums\AgeIndicator;
-use GlobalPayments\Api\Entities\Enums\PriorAuthenticationMethod;
-use GlobalPayments\Api\Entities\Enums\CustomerAuthenticationMethod;
-use GlobalPayments\Api\Entities\Enums\SdkInterface;
-use GlobalPayments\Api\Entities\Enums\SdkUiType;
-use GlobalPayments\Api\Entities\Enums\ChallengeRequestIndicator;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 
 class Secure3dServiceTest extends TestCase
 {
-    private $card;
-    private $stored;
-    private $shippingAddress;
-    private $billingAddress;
-    private $browserData;
-    /**
-     * @var string
-     */
-    private $gatewayProvider;
+    private CreditCardData $card;
+    private RecurringPaymentMethod $stored;
+    private Address $shippingAddress;
+    private Address $billingAddress;
+    private BrowserData $browserData;
+    private GatewayProvider|string $gatewayProvider;
 
-    public function setup() : void
+    public function setup(): void
     {
         $config = $this->getConfig();
         ServicesContainer::configureService($config);
@@ -92,6 +74,7 @@ class Secure3dServiceTest extends TestCase
         $this->browserData->colorDepth = ColorDepth::TWENTY_FOUR_BITS;
         $this->browserData->ipAddress = '123.123.123.123';
         $this->browserData->javaEnabled = true;
+        $this->browserData->javaScriptEnabled = true;
         $this->browserData->language = 'en';
         $this->browserData->screenHeight = 1080;
         $this->browserData->screenWidth = 1920;
@@ -158,9 +141,9 @@ class Secure3dServiceTest extends TestCase
                 ->withBrowserData($this->browserData)
                 ->withMethodUrlCompletion(MethodUrlCompletion::NO)
                 ->withChallengeRequestIndicator(ChallengeRequestIndicator::NO_PREFERENCE)
-                ->withMobileNumber('+44','11 33 44 44')
+                ->withMobileNumber('+44', '11 33 44 44')
                 ->withHomeNumber('44', '12444555')
-                ->withWorkNumber('+44','345 6667')
+                ->withWorkNumber('+44', '345 6667')
                 ->execute();
             $this->assertNotNull($initAuth);
 
@@ -185,6 +168,66 @@ class Secure3dServiceTest extends TestCase
         }
     }
 
+    public function testFullCycle_v2_FrictionlessCards()
+    {
+        $cards = array("4263970000005262" => "2.1.0", "4222000006724235" => "2.1.0", "4222000006285344" => "2.2.0", "4222000009719489" => "2.2.0");
+
+        foreach ($cards as $cardNumber => $cardVersion) {
+            $this->card->number = $cardNumber;
+            $secureEcom = Secure3dService::checkEnrollment($this->card)
+                ->execute('default', Secure3dVersion::TWO);
+            $this->assertNotNull($secureEcom);
+            $this->assertNotNull($secureEcom->serverTransactionId);
+
+            if ($secureEcom->enrolled) {
+                $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
+
+                // initiate authentication
+                $initAuth = Secure3dService::initiateAuthentication($this->card, $secureEcom)
+                    ->withAmount(10.01)
+                    ->withCurrency('USD')
+                    ->withOrderCreateDate(date('Y-m-d H:i:s'))
+                    ->withAddress($this->billingAddress, AddressType::BILLING)
+                    ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+                    ->withBrowserData($this->browserData)
+                    ->withMethodUrlCompletion(MethodUrlCompletion::NO)
+                    ->withChallengeRequestIndicator(ChallengeRequestIndicator::NO_PREFERENCE)
+                    ->execute();
+
+                $this->assertNotNull($initAuth);
+                $this->assertEquals(Secure3dVersion::TWO, $initAuth->getVersion());
+                $this->assertEquals('AUTHENTICATION_SUCCESSFUL' , $initAuth->status);
+                $this->assertNotNull($initAuth->issuerAcsUrl);
+                $this->assertNotNull($initAuth->acsTransactionId);
+                $this->assertNotNull($initAuth->acsReferenceNumber);
+                $this->assertNotNull($initAuth->authenticationValue);
+                $this->assertNotNull($initAuth->serverTransactionId);
+                $this->assertNull($initAuth->challengeMandated);
+                $this->assertEquals('05', $initAuth->eci);
+                $this->assertEquals($cardVersion, $initAuth->acsEndVersion);
+
+                // get authentication data
+                $secureEcom = Secure3dService::getAuthenticationData()
+                    ->withServerTransactionId($initAuth->serverTransactionId)
+                    ->execute();
+                $this->card->threeDSecure = $secureEcom;
+
+                if ($secureEcom->status == 'AUTHENTICATION_SUCCESSFUL') {
+                    $response = $this->card->charge(10.01)
+                        ->withCurrency('USD')
+                        ->execute();
+
+                    $this->assertNotNull($response);
+                    $this->assertEquals('00', $response->responseCode);
+                } else {
+                    $this->fail('Signature verification failed.');
+                }
+            } else {
+                $this->fail('Card not enrolled');
+            }
+        }
+    }
+
     public function testFullCycle_v2_1_challenge()
     {
         $this->card->number = '4012001038488884';
@@ -204,9 +247,9 @@ class Secure3dServiceTest extends TestCase
             ->withAddress($this->shippingAddress, AddressType::SHIPPING)
             ->withMethodUrlCompletion(MethodUrlCompletion::NO)
             ->withBrowserData($this->browserData)
-            ->withMobileNumber('+44','11 33 44 44')
+            ->withMobileNumber('+44', '11 33 44 44')
             ->withHomeNumber('44', '12444555')
-            ->withWorkNumber('+44','345 6667')
+            ->withWorkNumber('+44', '345 6667')
             ->execute();
 
         $this->assertNotNull($initAuth);
@@ -235,6 +278,71 @@ class Secure3dServiceTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->responseCode);
+    }
+
+    public function testFullCycle_v2_ChallengeRequiredCards()
+    {
+        $cards = array("4012001038488884" => "2.1.0", "4222000001227408" => "2.2.0");
+
+        foreach ($cards as $cardNumber => $cardVersion) {
+            $this->card->number = $cardNumber;
+            $secureEcom = Secure3dService::checkEnrollment($this->card)
+                ->execute('default', Secure3dVersion::TWO);
+            $this->assertNotNull($secureEcom);
+            $this->assertNotNull($secureEcom->serverTransactionId);
+            $this->assertTrue($secureEcom->enrolled);
+            $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
+
+            // initiate authentication
+            $initAuth = Secure3dService::initiateAuthentication($this->card, $secureEcom)
+                ->withAmount(10.01)
+                ->withCurrency('USD')
+                ->withOrderCreateDate(date('Y-m-d H:i:s'))
+                ->withAddress($this->billingAddress, AddressType::BILLING)
+                ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+                ->withMethodUrlCompletion(MethodUrlCompletion::NO)
+                ->withBrowserData($this->browserData)
+                ->execute();
+
+            $this->assertNotNull($initAuth);
+            $this->assertEquals(Secure3dVersion::TWO, $initAuth->getVersion());
+            $this->assertEquals(Secure3dStatus::CHALLENGE_REQUIRED, $initAuth->status);
+            $this->assertNotNull($initAuth->issuerAcsUrl);
+            $this->assertNotNull($initAuth->payerAuthenticationRequest);
+            $this->assertNotNull($initAuth->acsTransactionId);
+            $this->assertNotNull($initAuth->acsReferenceNumber);
+            $this->assertNotNull($initAuth->authenticationType);
+            $this->assertNotNull($initAuth->challengeMandated);
+            $this->assertEmpty($initAuth->eci);
+            $this->assertEquals($cardVersion, $initAuth->acsEndVersion);
+
+            // get authentication data
+            $secureEcom = Secure3dService::getAuthenticationData()
+                ->withServerTransactionId($initAuth->serverTransactionId)
+                ->execute();
+            $this->card->threeDSecure = $secureEcom;
+            $this->assertEquals('CHALLENGE_REQUIRED', $secureEcom->status);
+
+            $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
+            $authClient->setGatewayProvider($this->gatewayProvider);
+            $authResponse = $authClient->authenticate_v2($initAuth);
+            $this->assertTrue($authResponse->getStatus());
+            $this->assertNotEmpty($authResponse->getMerchantData());
+
+            // get authentication data
+            $secureEcom = Secure3dService::getAuthenticationData()
+                ->withServerTransactionId($initAuth->serverTransactionId)
+                ->execute();
+            $this->card->threeDSecure = $secureEcom;
+            $this->assertEquals('AUTHENTICATION_SUCCESSFUL', $secureEcom->status);
+
+            $response = $this->card->charge(10.01)
+                ->withCurrency('USD')
+                ->execute();
+
+            $this->assertNotNull($response);
+            $this->assertEquals('00', $response->responseCode);
+        }
     }
 
     public function testFullCycle_v2_2()
@@ -334,7 +442,7 @@ class Secure3dServiceTest extends TestCase
                     $secureEcom->payerAuthenticationRequest,
                     $secureEcom->getMerchantData()->toString()
                 );
-            
+
                 $payerAuthenticationResponse = $authResponse->getAuthResponse();
                 $md = MerchantDataCollection::parse($authResponse->getMerchantData());
 
@@ -507,7 +615,6 @@ class Secure3dServiceTest extends TestCase
 
                 // optionals
                 ->withMerchantInitiatedRequestType(AuthenticationRequestType::RECURRING_TRANSACTION)
-
                 ->execute();
             $this->assertNotNull($initAuth);
 
@@ -565,7 +672,6 @@ class Secure3dServiceTest extends TestCase
                 ->withPreOrderAvailabilityDate('20190418')
                 ->withReorderIndicator(ReorderIndicator::REORDER)
                 ->withOrderTransactionType(OrderTransactionType::GOODS_SERVICE_PURCHASE)
-
                 ->execute();
             $this->assertNotNull($initAuth);
 
@@ -628,7 +734,6 @@ class Secure3dServiceTest extends TestCase
                 ->withNumberOfAddCardAttemptsInLast24Hours(1)
                 ->withShippingAddressCreateDate('20190128')
                 ->withShippingAddressUsageIndicator(AgeIndicator::THIS_TRANSACTION)
-
                 ->execute();
             $this->assertNotNull($initAuth);
 
@@ -676,7 +781,6 @@ class Secure3dServiceTest extends TestCase
                 ->withPriorAuthenticationMethod(PriorAuthenticationMethod::FRICTIONLESS_AUTHENTICATION)
                 ->withPriorAuthenticationTransactionId('26c3f619-39a4-4040-bf1f-6fd433e6d615')
                 ->withPriorAuthenticationTimestamp((new \DateTime('2019-01-10T12:57:33.333Z'))->format(\DateTime::RFC3339_EXTENDED))
-
                 ->execute();
             $this->assertNotNull($initAuth);
 
@@ -725,7 +829,6 @@ class Secure3dServiceTest extends TestCase
                 ->withRecurringAuthorizationFrequency(25)
                 ->withRecurringAuthorizationExpiryDate('20190825')
                 ->withAuthenticationRequestType(AuthenticationRequestType::INSTALMENT_TRANSACTION)
-
                 ->execute();
             $this->assertNotNull($initAuth);
 
@@ -773,7 +876,6 @@ class Secure3dServiceTest extends TestCase
                 ->withCustomerAuthenticationData('string')
                 ->withCustomerAuthenticationTimestamp((new \DateTime('2019-01-10T12:57:33.333Z'))->format(\DateTime::RFC3339_EXTENDED))
                 ->withCustomerAuthenticationMethod(CustomerAuthenticationMethod::MERCHANT_SYSTEM)
-
                 ->execute();
             $this->assertNotNull($initAuth);
 
@@ -805,13 +907,13 @@ class Secure3dServiceTest extends TestCase
             ->execute('default', Secure3dVersion::TWO);
         $this->assertNotNull($secureEcom);
         $this->assertTrue($secureEcom->enrolled);
-            $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
-            $phemeralPublicKey = [
-                "kty" => "EC",
-                "crv" => "P-256",
-                "x" => "WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI",
-                "y" => "Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw"
-            ];
+        $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
+        $phemeralPublicKey = [
+            "kty" => "EC",
+            "crv" => "P-256",
+            "x" => "WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI",
+            "y" => "Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw"
+        ];
         // initiate authentication
         $initAuth = Secure3dService::initiateAuthentication($this->card, $secureEcom)
             ->withAmount(250.00)

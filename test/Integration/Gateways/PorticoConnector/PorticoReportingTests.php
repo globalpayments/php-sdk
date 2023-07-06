@@ -2,30 +2,23 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\PorticoConnector;
 
-use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
-use GlobalPayments\Api\Entities;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Services\ReportingService;
-use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\TimeZoneConversion;
-use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
-use GlobalPayments\Api\Entities\Reporting\SearchCriteriaBuilder;
-use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
-use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use DateTime;
 use DateInterval;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 
 class PorticoReportingTests extends TestCase
 {
-    protected $card;
-    private $enableCryptoUrl = true;
+    protected CreditCardData $card;
+    private bool $enableCryptoUrl = true;
     /** @var ReportingService */
-    private $reportingService;
+    private ReportingService $reportingService;
 
     public function setup() : void
     {
@@ -38,7 +31,6 @@ class PorticoReportingTests extends TestCase
         
         
         $this->reportingService = new ReportingService();
-        $this->searchCriteria = new SearchCriteriaBuilder();
 
         ServicesContainer::configureService($this->getConfig());
     }

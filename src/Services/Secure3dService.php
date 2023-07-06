@@ -18,10 +18,16 @@ class Secure3dService
             ->withPaymentMethod($paymentMethod);
     }
 
-    /** @return Secure3dBuilder */
+    /**
+     * @param IPaymentMethod $paymentMethod
+     * @param ThreeDSecure $secureEcom
+     * @return Secure3dBuilder
+     */
     public static function initiateAuthentication(IPaymentMethod $paymentMethod, ThreeDSecure $secureEcom)
     {
-        $paymentMethod->threeDSecure = $secureEcom;
+        if ($paymentMethod instanceof ISecure3d) {
+            $paymentMethod->threeDSecure = $secureEcom;
+        }
         
         return (new Secure3dBuilder(TransactionType::INITIATE_AUTHENTICATION))
             ->withPaymentMethod($paymentMethod);

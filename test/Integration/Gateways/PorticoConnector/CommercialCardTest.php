@@ -18,8 +18,12 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 
-final class CommercialCardTest extends TestCase {
-    public function setup() : void {
+final class CommercialCardTest extends TestCase
+{
+    private CreditCardData $card;
+
+    public function setup() : void
+    {
         $this->card = new CreditCardData();
         $this->card->number = '4111111111111111';
         $this->card->expMonth = 12;

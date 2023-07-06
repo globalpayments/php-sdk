@@ -13,6 +13,7 @@ use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
+use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Entities\Request;
 use GlobalPayments\Api\Mapping\EnumMapping;
 use GlobalPayments\Api\Mapping\GpEcomMapping;
@@ -23,14 +24,14 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Utils\CardUtils;
 use GlobalPayments\Api\Utils\GenerationUtils;
 
-class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
+class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder implements IRequestBuilder
 {
     /***
      * @param AuthorizationBuilder $builder
      *
      * @return bool
      */
-    public static function canProcess($builder)
+    public static function canProcess($builder = null)
     {
         if ($builder instanceof AuthorizationBuilder) {
             return true;
@@ -44,7 +45,7 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
      * @param GpEcomConfig $config
      * @return Request
      */
-    public function buildRequest(BaseBuilder $builder, GpEcomConfig $config)
+    public function buildRequest(BaseBuilder $builder, $config)
     {
         /** @var AuthorizationBuilder $builder */
         //for google payment amount and currency is required
@@ -221,11 +222,12 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
                 $cardElement->appendChild($xml->createElement("number", $card->number ?? ''));
                 $cardElement->appendChild($xml->createElement("expdate", $card->getShortExpiry() ?? ''));
                 $cardElement->appendChild($xml->createElement("chname", $card->cardHolderName ?? ''));
-
-                $cardElement->appendChild($xml->createElement(
-                    "type",
-                    strtoupper(EnumMapping::mapCardType(GatewayProvider::GP_ECOM, CardUtils::getBaseCardType($card->getCardType())))
-                ));
+                if (!empty($card->number)) {
+                    $cardElement->appendChild($xml->createElement(
+                        "type",
+                        strtoupper(EnumMapping::mapCardType(GatewayProvider::GP_ECOM, CardUtils::getBaseCardType($card->getCardType())))
+                    ));
+                }
 
                 if ($card->cvn !== null || isset($card->cvnPresenceIndicator)) {
                     //if cvn number is not empty indicator should be PRESENT
@@ -567,5 +569,10 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder
             }
         }
         return $requestValues;
+    }
+
+    public function buildRequestFromJson($jsonRequest, $config)
+    {
+        // TODO: Implement buildRequestFromJson() method.
     }
 }

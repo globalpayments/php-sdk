@@ -32,8 +32,8 @@ class ServicesContainer
      */
     public function __construct(IPaymentGateway $gateway = null, IRecurringService $recurring = null)
     {
-        $this->gateway = $gateway;
-        $this->recurring = $recurring;
+        $this->gatewayConnector = $gateway;
+        $this->recurringConnector = $recurring;
     }
 
     public static function configure(ServicesConfig $config, $configName = 'default')

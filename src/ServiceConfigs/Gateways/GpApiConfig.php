@@ -76,6 +76,12 @@ class GpApiConfig extends GatewayConfig
     /** @var string */
     public $merchantId;
 
+    /**
+     * Property used for terminal configuration
+     * @var string
+     */
+    public $deviceCurrency;
+
     public function __construct()
     {
         $this->gatewayProvider = GatewayProvider::GP_API;
@@ -85,7 +91,11 @@ class GpApiConfig extends GatewayConfig
     {
         if (empty($this->serviceUrl)) {
             $this->serviceUrl = ($this->environment == Environment::PRODUCTION) ?
-                ServiceEndpoints::GP_API_PRODUCTION : ServiceEndpoints::GP_API_TEST;
+                ServiceEndpoints::GP_API_PRODUCTION :
+                (
+                    $this->environment == Environment::QA ?
+                    ServiceEndpoints::GP_API_QA :ServiceEndpoints::GP_API_TEST
+                );
         }
         $gateway = new GpApiConnector($this);
         $gateway->serviceUrl = $this->serviceUrl;

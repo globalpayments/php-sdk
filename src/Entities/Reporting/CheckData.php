@@ -52,7 +52,7 @@ class CheckData
     /**
      * @var string
      */
-    public $maskedAccountNumber;
+    public $maskedCardNumber;
 
     /**
      * @var string

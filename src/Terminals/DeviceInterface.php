@@ -13,7 +13,7 @@ use GlobalPayments\Api\Terminals\Enums\CurrencyType;
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 
-class DeviceInterface implements IDeviceInterface
+abstract class DeviceInterface implements IDeviceInterface
 {
     /** @var DeviceController */
     public $controller;

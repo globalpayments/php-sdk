@@ -21,17 +21,18 @@ use PHPUnit\Framework\TestCase;
 
 class TransactionApiReportingTest extends TestCase
 {
-    private $eCheck;
+    private ECheck $eCheck;
 
-    private $customer;
+    private Customer $customer;
 
-    public $config;
-
-    private $currency = '840';
+    private TransactionApiConfig $config;
+    private CreditCardData $card;
+    private Address $address;
 
     public function setup(): void
     {
-        ServicesContainer::configureService($this->setUpConfig());
+        $this->setUpConfig();
+        ServicesContainer::configureService($this->config);
 
         $this->eCheck = new ECheck();
         $this->eCheck->accountNumber = '12121';
@@ -57,7 +58,6 @@ class TransactionApiReportingTest extends TestCase
         $this->customer->id = "2e39a948-2a9e-4b4a-9c59-0b96765343b7";
         $this->customer->title = "Mr.";
         $this->customer->firstName = "Joe";
-        $this->customer->middleName = "Henry";
         $this->customer->lastName = "Doe";
         $this->customer->businessName = "ABC Company LLC";
         $this->customer->email = "joe.doe@gmail.com";
@@ -76,8 +76,6 @@ class TransactionApiReportingTest extends TestCase
         $this->config->apiPartnerName    = 'mobile_sdk';
         $this->config->country           = 'US';
         $this->config->requestLogger     = new SampleRequestLogger(new Logger("logs"));
-
-        return $this->config;
     }
 
     public function test001CreditSaleByCreditSaleId()
@@ -184,7 +182,7 @@ class TransactionApiReportingTest extends TestCase
         ServicesContainer::configureService($this->setUpConfig());
         $this->config->accountCredential = "800000052925:80039990:n7j9rGFUml1Du7rcRs7XGYdJdVMmZKzh";
 
-        $this->transData = $this->getTransactionDataAch(
+        $transData = $this->getTransactionDataAch(
             'US',
             TransactionLanguage::EN_US,
             CountryUtils::getNumericCodeByCountry('US')
@@ -200,13 +198,13 @@ class TransactionApiReportingTest extends TestCase
         $response = $this->eCheck->charge(11)
             ->withCurrency('840')
             ->withEntryClass("PPD")
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withCustomerData($this->customer)
             ->execute();
 
-        $this->assertNotNull($response->transactionReference->checkSaleId);
+        $this->assertNotNull($response->transactionReference->transactionId);
 
-        $checkSaleId = $response->transactionReference->checkSaleId;
+        $checkSaleId = $response->transactionReference->transactionId;
 
         $response = ReportingService::findTransactions($checkSaleId)
             ->where(SearchCriteria::PAYMENT_METHOD_TYPE, PaymentMethodType::ACH)
@@ -222,7 +220,7 @@ class TransactionApiReportingTest extends TestCase
         ServicesContainer::configureService($this->setUpConfig());
         $this->config->accountCredential = "800000052925:80039990:n7j9rGFUml1Du7rcRs7XGYdJdVMmZKzh";
 
-        $this->transData = $this->getTransactionDataAch(
+        $transData = $this->getTransactionDataAch(
             'US',
             TransactionLanguage::EN_US,
             CountryUtils::getNumericCodeByCountry('US')
@@ -238,7 +236,7 @@ class TransactionApiReportingTest extends TestCase
         $response = $this->eCheck->charge(11)
             ->withCurrency('840')
             ->withEntryClass("PPD")
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withCustomerData($this->customer)
             ->execute();
 
@@ -260,7 +258,7 @@ class TransactionApiReportingTest extends TestCase
         ServicesContainer::configureService($this->setUpConfig());
         $this->config->accountCredential = "800000052925:80039990:n7j9rGFUml1Du7rcRs7XGYdJdVMmZKzh";
 
-        $this->transData = $this->getTransactionDataAch(
+        $transData = $this->getTransactionDataAch(
             'US',
             TransactionLanguage::EN_US,
             CountryUtils::getNumericCodeByCountry('US')
@@ -276,11 +274,11 @@ class TransactionApiReportingTest extends TestCase
         $response = $this->eCheck->refund(13)
             ->withCurrency('840')
             ->withEntryClass("PPD")
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withCustomerData($this->customer)
             ->execute();
 
-        $checkRefundId = $response->checkRefundId;
+        $checkRefundId = $response->transactionId;
         
         $response = ReportingService::findTransactions($checkRefundId)
             ->where(SearchCriteria::PAYMENT_TYPE, PaymentType::REFUND)
@@ -297,7 +295,7 @@ class TransactionApiReportingTest extends TestCase
         ServicesContainer::configureService($this->setUpConfig());
         $this->config->accountCredential = "800000052925:80039990:n7j9rGFUml1Du7rcRs7XGYdJdVMmZKzh";
 
-        $this->transData = $this->getTransactionDataAch(
+        $transData = $this->getTransactionDataAch(
             'US',
             TransactionLanguage::EN_US,
             CountryUtils::getNumericCodeByCountry('US')
@@ -313,7 +311,7 @@ class TransactionApiReportingTest extends TestCase
         $response = $this->eCheck->refund(15)
             ->withCurrency('840')
             ->withEntryClass("PPD")
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withCustomerData($this->customer)
             ->execute();
 
@@ -343,12 +341,12 @@ class TransactionApiReportingTest extends TestCase
 
     private function getTransactionDataAch($region, $language, $countryCode)
     {
-        $this->transData = new TransactionApiData();
-        $this->transData->countryCode = $countryCode;
-        $this->transData->language = $language;
-        $this->transData->region = $region;
-        $this->transData->checkVerify = false;
+        $transData = new TransactionApiData();
+        $transData->countryCode = $countryCode;
+        $transData->language = $language;
+        $transData->region = $region;
+        $transData->checkVerify = false;
 
-        return $this->transData;
+        return $transData;
     }
 }

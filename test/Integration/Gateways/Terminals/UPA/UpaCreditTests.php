@@ -86,7 +86,7 @@ class UpaCreditTests extends TestCase
         $this->assertNotNull($response->terminalRefNumber);
 
         $refundResponse = $this->device->void()
-            ->withTerminalRefNumber($response->terminalRefNumber)
+            ->withTransactionId($response->transactionId)
             ->execute();
 
         $this->assertNotNull($refundResponse);

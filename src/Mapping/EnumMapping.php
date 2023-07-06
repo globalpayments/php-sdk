@@ -25,17 +25,27 @@ class EnumMapping
      */
     public static function mapAccountType($gateway, $accountType)
     {
-        if ($gateway === GatewayProvider::GP_API) {
-            switch ($accountType) {
-                case AccountType::SAVINGS:
-                    return 'SAVING';
-                case AccountType::CHECKING:
-                    return 'CHECKING';
-                case AccountType::CREDIT:
-                    return 'CREDIT';
-                default:
-                    return null;
-            }
+        switch ($gateway) {
+            case GatewayProvider::GP_API:
+                switch ($accountType) {
+                    case AccountType::SAVINGS:
+                        return 'SAVING';
+                    case AccountType::CHECKING:
+                        return 'CHECKING';
+                    case AccountType::CREDIT:
+                        return 'CREDIT';
+                    default:
+                        return null;
+                }
+            case GatewayProvider::TRANSACTION_API:
+                switch ($accountType) {
+                    case AccountType::CHECKING:
+                        return 'Checking';
+                    default:
+                        return $accountType;
+                }
+            default:
+                return $accountType;
         }
     }
 
@@ -117,7 +127,7 @@ class EnumMapping
                         return $value;
                 }
             default:
-                return null;
+                return $value;
         }
     }
 

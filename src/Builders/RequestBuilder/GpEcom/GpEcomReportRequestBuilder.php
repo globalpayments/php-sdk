@@ -7,13 +7,14 @@ use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
+use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Entities\Request;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
 
-class GpEcomReportRequestBuilder
+class GpEcomReportRequestBuilder implements IRequestBuilder
 {
-    public static function canProcess($builder)
+    public static function canProcess($builder = null)
     {
         if ($builder instanceof TransactionReportBuilder) {
             return true;
@@ -28,7 +29,7 @@ class GpEcomReportRequestBuilder
      *
      * @return Request
      */
-    public function buildRequest(BaseBuilder $builder, GpEcomConfig $config)
+    public function buildRequest(BaseBuilder $builder, $config)
     {
         $xml = new DOMDocument();
         $timestamp = GenerationUtils::generateTimestamp();
@@ -69,5 +70,10 @@ class GpEcomReportRequestBuilder
             default:
                 throw new UnsupportedTransactionException("This reporting call is not supported by your currently configured gateway.");
         }
+    }
+
+    public function buildRequestFromJson($jsonRequest, $config)
+    {
+        // TODO: Implement buildRequestFromJson() method.
     }
 }

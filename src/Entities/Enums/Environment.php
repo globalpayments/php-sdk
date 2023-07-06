@@ -8,4 +8,5 @@ class Environment extends Enum
 {
     const TEST = "TEST";
     const PRODUCTION = "PRODUCTION";
+    const QA = 'QA';
 }

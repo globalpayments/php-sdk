@@ -142,15 +142,6 @@ class TransactionApiConnector extends RestGateway implements IPaymentGateway
             $this->signIn();
         }
 
-        //weird bug where if you populate the contentType header on this endpoint it throws a 502 bad gateway error
-        //if you don't send it the error is even weirder, you just have to send it empty
-        if (
-            strpos($endpoint, 'settlement') !== false ||
-            (strpos($endpoint, 'disputes') !== false && strpos($endpoint, 'challenge') == false)
-        ) {
-            $this->contentType = '';
-        }
-
         try {
             $response = parent::doTransaction(
                 $verb,

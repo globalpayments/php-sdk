@@ -112,7 +112,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
         switch ($name) {
             case 'secretApiKey':
                 $this->apiKey = $value;
-                $auth = sprintf('Basic %s', base64_encode($value));
+                $auth = sprintf('Basic %s', base64_encode((string) $value));
                 $this->headers['Authorization'] = $auth;
                 return;
             case 'developerId':

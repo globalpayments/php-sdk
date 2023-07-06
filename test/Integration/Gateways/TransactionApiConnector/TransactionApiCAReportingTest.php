@@ -27,6 +27,10 @@ class TransactionApiCAReportingTest extends TestCase
 
     private $config;
 
+    private CreditCardData $card;
+
+    private Address $addressCa;
+
     public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
@@ -50,7 +54,6 @@ class TransactionApiCAReportingTest extends TestCase
         $this->customer->id = "2e39a948-2a9e-4b4a-9c59-0b96765343b7";
         $this->customer->title = "Mr.";
         $this->customer->firstName = "Joe";
-        $this->customer->middleName = "Henry";
         $this->customer->lastName = "Doe";
         $this->customer->businessName = "ABC Company LLC";
         $this->customer->email = "joe.doe@gmail.com";
@@ -67,36 +70,35 @@ class TransactionApiCAReportingTest extends TestCase
         $this->customer =  new Customer();
         $this->customer->title = "Mr.";
         $this->customer->firstName = "Joe";
-        $this->customer->middle_name = "Henry";
         $this->customer->lastName = "Doe";
         $this->eCheck->customer = $this->customer;
     }
     public function setUpConfigACH()
     {
-        $this->config = new TransactionApiConfig();
-        $this->config->accountCredential = '800000052925:80039996:58xcGM3pbTtzcidVPY65XBqbB1EzWoD3';
-        $this->config->apiSecret         = 'lucQKkwz3W3RGzABkSWUVZj1Mb0Yx3E9chAA8ESUVAv';
-        $this->config->apiKey            = 'qeG6EWZOiAwk4jsiHzsh2BN8VkN2rdAs';
-        $this->config->apiVersion        = '2021-04-08';
-        $this->config->apiPartnerName    = 'mobile_sdk';
-        $this->config->country           = 'CA';
-        $this->config->requestLogger     = new SampleRequestLogger(new Logger("logs"));
+        $config = new TransactionApiConfig();
+        $config->accountCredential = '800000052925:80039996:58xcGM3pbTtzcidVPY65XBqbB1EzWoD3';
+        $config->apiSecret         = 'lucQKkwz3W3RGzABkSWUVZj1Mb0Yx3E9chAA8ESUVAv';
+        $config->apiKey            = 'qeG6EWZOiAwk4jsiHzsh2BN8VkN2rdAs';
+        $config->apiVersion        = '2021-04-08';
+        $config->apiPartnerName    = 'mobile_sdk';
+        $config->country           = 'CA';
+        $config->requestLogger     = new SampleRequestLogger(new Logger("logs"));
 
-        return $this->config;
+        return $config;
     }
 
     public function setUpConfig()
     {
-        $this->config = new TransactionApiConfig();
-        $this->config->accountCredential = '800000052925:80039923:eWcWNJhfxiJ7QyEHSHndWk4VHKbSmSue';
-        $this->config->apiSecret         = 'lucQKkwz3W3RGzABkSWUVZj1Mb0Yx3E9chAA8ESUVAv';
-        $this->config->apiKey            = 'qeG6EWZOiAwk4jsiHzsh2BN8VkN2rdAs';
-        $this->config->apiVersion        = '2021-04-08';
-        $this->config->apiPartnerName    = 'mobile_sdk';
-        $this->config->country           = 'CA';
-        $this->config->requestLogger     = new SampleRequestLogger(new Logger("logs"));
+        $config = new TransactionApiConfig();
+        $config->accountCredential = '800000052925:80039923:eWcWNJhfxiJ7QyEHSHndWk4VHKbSmSue';
+        $config->apiSecret         = 'lucQKkwz3W3RGzABkSWUVZj1Mb0Yx3E9chAA8ESUVAv';
+        $config->apiKey            = 'qeG6EWZOiAwk4jsiHzsh2BN8VkN2rdAs';
+        $config->apiVersion        = '2021-04-08';
+        $config->apiPartnerName    = 'mobile_sdk';
+        $config->country           = 'CA';
+        $config->requestLogger     = new SampleRequestLogger(new Logger("logs"));
 
-        return $this->config;
+        return $config;
     }
 
     public function test001CreditSaleByCreditSaleId()
@@ -215,7 +217,7 @@ class TransactionApiCAReportingTest extends TestCase
         ServicesContainer::configureService($this->setUpConfigACH());
         ServicesContainer::configureService($this->setUpConfigACH());
 
-        $this->transData = $this->getTransactionAchData(
+        $transData = $this->getTransactionAchData(
             'CA',
             TransactionLanguage::EN_CA,
             CountryUtils::getNumericCodeByCountry('CA')
@@ -228,13 +230,13 @@ class TransactionApiCAReportingTest extends TestCase
         $response = $this->eCheck->charge(11)
             ->withCurrency('124')
             ->withPaymentPurposeCode("150")
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withCustomerData($this->customer)
             ->execute();
 
-        $this->assertNotNull($response->transactionReference->checkSaleId);
+        $this->assertNotNull($response->transactionReference->transactionId);
 
-        $checkSaleId = $response->transactionReference->checkSaleId;
+        $checkSaleId = $response->transactionReference->transactionId;
 
         $response = ReportingService::findTransactions($checkSaleId)
             ->where(SearchCriteria::PAYMENT_METHOD_TYPE, PaymentMethodType::ACH)
@@ -249,7 +251,7 @@ class TransactionApiCAReportingTest extends TestCase
     {
         ServicesContainer::configureService($this->setUpConfigACH());
 
-        $this->transData = $this->getTransactionAchData(
+        $transData = $this->getTransactionAchData(
             'CA',
             TransactionLanguage::EN_CA,
             CountryUtils::getNumericCodeByCountry('CA')
@@ -262,7 +264,7 @@ class TransactionApiCAReportingTest extends TestCase
         $response = $this->eCheck->charge(11)
             ->withCurrency('124')
             ->withPaymentPurposeCode("150")
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withCustomerData($this->customer)
             ->execute();
 
@@ -284,7 +286,7 @@ class TransactionApiCAReportingTest extends TestCase
     {
         ServicesContainer::configureService($this->setUpConfigACH());
 
-        $this->transData = $this->getTransactionAchData(
+        $transData = $this->getTransactionAchData(
             'CA',
             TransactionLanguage::EN_CA,
             CountryUtils::getNumericCodeByCountry('CA')
@@ -297,13 +299,13 @@ class TransactionApiCAReportingTest extends TestCase
         $response = $this->eCheck->refund(11)
             ->withCurrency('124')
             ->withPaymentPurposeCode("150")
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withCustomerData($this->customer)
             ->execute();
 
-        $this->assertNotNull($response->transactionReference->checkRefundId);
+        $this->assertNotNull($response->transactionReference->transactionId);
 
-        $checkRefundId = $response->transactionReference->checkRefundId;
+        $checkRefundId = $response->transactionReference->transactionId;
 
         $response = ReportingService::findTransactions($checkRefundId)
             ->where(SearchCriteria::PAYMENT_TYPE, PaymentType::REFUND)
@@ -319,7 +321,7 @@ class TransactionApiCAReportingTest extends TestCase
     {
         ServicesContainer::configureService($this->setUpConfigACH());
 
-        $this->transData = $this->getTransactionAchData(
+        $transData = $this->getTransactionAchData(
             'CA',
             TransactionLanguage::EN_CA,
             CountryUtils::getNumericCodeByCountry('CA')
@@ -329,13 +331,13 @@ class TransactionApiCAReportingTest extends TestCase
         $this->eCheck->branchTransitNumber = "12345";
         $this->eCheck->financialInstitutionNumber = "999";
 
-        $this->transData->paymentPurposeCode = "150";
-        $this->transData->entryClass = "PPD";
+        $transData->paymentPurposeCode = "150";
+        $transData->entryClass = "PPD";
 
         $response = $this->eCheck->refund(18)
             ->withCurrency('124')
             ->withPaymentPurposeCode("150")
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withCustomerData($this->customer)
             ->execute();
 
@@ -367,12 +369,12 @@ class TransactionApiCAReportingTest extends TestCase
 
     private function getTransactionAchData($region, $language, $countryCode)
     {
-        $this->transData = new TransactionApiData();
-        $this->transData->countryCode = $countryCode;
-        $this->transData->language = $language;
-        $this->transData->region = $region;
-        $this->transData->checkVerify = false;
+        $transData = new TransactionApiData();
+        $transData->countryCode = $countryCode;
+        $transData->language = $language;
+        $transData->region = $region;
+        $transData->checkVerify = false;
 
-        return $this->transData;
+        return $transData;
     }
 }

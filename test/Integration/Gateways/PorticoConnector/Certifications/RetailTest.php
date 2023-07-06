@@ -1556,7 +1556,7 @@ class RetailTest extends TestCase
     public function testRetail082EbtVoucherPurchaseVisa()
     {
         $card = TestCards::asEBTManual(TestCards::visaManual(false, true), '32539F50C245A6A93D123412324000AA');
-        $card->SerialNumber = '123456789012345';
+        $card->serialNumber = '123456789012345';
         $card->approvalCode = '123456';
 
         $response = $card->charge(103.01)

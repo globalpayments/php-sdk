@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 final class AutoSubstantiationTest extends TestCase
 {
+    private CreditCardData $card;
     public function setup() : void
     {
         $this->card = new CreditCardData();

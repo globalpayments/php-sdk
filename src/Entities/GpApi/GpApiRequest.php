@@ -23,4 +23,5 @@ class GpApiRequest extends Request
     const RISK_ASSESSMENTS = '/risk-assessments';
     const ACCOUNTS_ENDPOINT = '/accounts';
     const TRANSFER_ENDPOINT = '/transfers';
+    const DEVICE_ENDPOINT = '/devices';
 }

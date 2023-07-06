@@ -65,6 +65,9 @@ class PayLinkSummary extends BaseSummary
      */
     public $usageCount;
 
+    /** @var string */
+    public $usageLimit;
+
     /**
      * Merchant defined field to reference the transaction.
      *

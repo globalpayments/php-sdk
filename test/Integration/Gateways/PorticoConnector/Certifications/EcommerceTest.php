@@ -6,7 +6,6 @@ use GlobalPayments\Api\Entities\{
     Address,
     EncryptionData,
     EcommerceInfo,
-    MobileData,
     Transaction,
     ThreeDSecure
 };
@@ -20,7 +19,10 @@ use GlobalPayments\Api\Entities\Enums\{
     TransactionModifier,
     Secure3dVersion
 };
-use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\Exceptions\{
+    ApiException,
+    GatewayException
+};
 use GlobalPayments\Api\PaymentMethods\{
     DebitTrackData,
     EBTCardData,

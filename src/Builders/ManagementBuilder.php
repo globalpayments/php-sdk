@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Builders;
 use GlobalPayments\Api\Entities\{DccRateData, FundsData, LodgingData, Transaction};
 use GlobalPayments\Api\Entities\Enums\{
     CommercialIndicator,
+    PaymentMethodType,
     PaymentMethodUsageMode,
     TaxType,
     TransactionModifier,
@@ -275,9 +276,19 @@ class ManagementBuilder extends TransactionBuilder
     public function execute($configName = 'default')
     {
         parent::execute($configName);
-        return ServicesContainer::instance()
-            ->getClient($configName)
-            ->manageTransaction($this);
+
+        $client = ServicesContainer::instance()->getClient($configName);
+        if ($client->supportsOpenBanking() &&
+            $this->paymentMethod instanceof TransactionReference &&
+            $this->paymentMethod->paymentMethodType == PaymentMethodType::BANK_PAYMENT
+        ) {
+            $obClient = ServicesContainer::instance()->getOpenBanking($configName);
+            if (get_class($obClient) != get_class($client)) {
+                return $obClient->manageOpenBanking($this);
+           }
+        }
+
+        return $client->manageTransaction($this);
     }
 
     /**

@@ -134,6 +134,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
      */
     public $clientTransactionId;
 
+    /** @var string */
+    public $uniqueDeviceId;
+
     /**
      * Indicates the version of this SDK used to send a gateway request.
      * 
@@ -571,7 +574,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 }
             }
 
-            $autoSubstantiationNode->appendChild($xml->createElement("MerchantVerificationValue", $builder->autoSubstantiation->merchantVerificationValue));
+            $autoSubstantiationNode->appendChild($xml->createElement("MerchantVerificationValue", $builder->autoSubstantiation->merchantVerificationValue ?? ''));
             $autoSubstantiationNode->appendChild($xml->createElement("RealTimeSubstantiation", $builder->autoSubstantiation->realTimeSubstantiation ? "Y" : "N"));
 
             if ($hasAdditionalAmount) { // Portico Gateway requires at least one healthcare amount subtotal
@@ -932,7 +935,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         $xml = new DOMDocument('1.0', 'utf-8');
 
         $transaction = $xml->createElement($this->mapReportType($builder));
-        $transaction->appendChild($xml->createElement('TzConversion', $builder->timeZoneConversion));
+        $transaction->appendChild($xml->createElement('TzConversion', $builder->timeZoneConversion ?? ''));
 
         if ($builder instanceof TransactionReportBuilder) {
             /*  if ($builder->deviceId !== null) {
@@ -1469,7 +1472,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         }
 
         if (isset($item) && isset($item->AuthAmt)) {
-            $summary->authorizatedAmount = (string)$item->AuthAmt;
+            $summary->authorizedAmount = (string)$item->AuthAmt;
         }
 
         if (isset($item) && isset($item->AuthCode)) {
@@ -1659,7 +1662,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         }
 
         if (isset($item) && isset($item->UserName)) {
-            $summary->userName = (string)$item->UserName;
+            $summary->username = (string)$item->UserName;
         }
 
         if (isset($item) && isset($item->AdditionalTxnFields)) {
@@ -2065,7 +2068,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 $xml->createElement($isCheck ? 'City' : 'CardHolderCity', htmlentities($builder->billingAddress->city ?? ''))
             );
             $holder->appendChild(
-                $xml->createElement($isCheck ? 'State' : 'CardHolderState', $builder->billingAddress->getProvince())
+                $xml->createElement($isCheck ? 'State' : 'CardHolderState', $builder->billingAddress->getProvince() ?? '')
             );
             $holder->appendChild(
                 $xml->createElement($isCheck ? 'Zip' : 'CardHolderZip', $address->checkZipCode($builder->billingAddress->postalCode))

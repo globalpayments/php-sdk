@@ -1,10 +1,7 @@
 <?php
 
 use GlobalPayments\Api\Entities\{Customer, Transaction};
-use GlobalPayments\Api\Entities\Enums\{
-    PaymentMethodType,
-    TransactionLanguage
-};
+use GlobalPayments\Api\Entities\Enums\{AccountType, PaymentMethodType, TransactionLanguage};
 
 use GlobalPayments\Api\Entities\TransactionApi\TransactionApiData;
 use GlobalPayments\Api\PaymentMethods\ECheck;
@@ -30,7 +27,6 @@ class TransactionApiAchTest extends TestCase
         $this->customer =  new Customer();
         $this->customer->title = "Mr.";
         $this->customer->firstName = "Joe";
-        $this->customer->middle_name = "Henry";
         $this->customer->lastName = "Doe";
         $this->eCheck->customer = $this->customer;
     }
@@ -75,7 +71,7 @@ class TransactionApiAchTest extends TestCase
     {
         ServicesContainer::configureService($this->setUpConfigUS());
 
-        $this->transData = $this->getTransactionData(
+        $transData = $this->getTransactionData(
             'US',
             TransactionLanguage::EN_US,
             CountryUtils::getNumericCodeByCountry('US')
@@ -86,7 +82,7 @@ class TransactionApiAchTest extends TestCase
 
         $response = $this->eCheck->charge(11)
             ->withCurrency('840')
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withEntryClass("PPD")
             ->withCustomerData($this->customer)
             ->execute();
@@ -99,7 +95,7 @@ class TransactionApiAchTest extends TestCase
     {
         ServicesContainer::configureService($this->setUpConfigUS());
 
-        $this->transData = $this->getTransactionData(
+        $transData = $this->getTransactionData(
             'US',
             TransactionLanguage::EN_US,
             CountryUtils::getNumericCodeByCountry('US')
@@ -110,7 +106,7 @@ class TransactionApiAchTest extends TestCase
 
         $response = $this->eCheck->refund(11)
             ->withCurrency('840')
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withEntryClass("PPD")
             ->withCustomerData($this->customer)
             ->execute();
@@ -123,7 +119,7 @@ class TransactionApiAchTest extends TestCase
     {
         ServicesContainer::configureService($this->setUpConfigUS());
 
-        $this->transData = $this->getTransactionData(
+        $transData = $this->getTransactionData(
             'US',
             TransactionLanguage::EN_US,
             CountryUtils::getNumericCodeByCountry('US')
@@ -135,14 +131,14 @@ class TransactionApiAchTest extends TestCase
         $response = $this->eCheck->charge(11)
             ->withCurrency('840')
             ->withEntryClass("PPD")
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withCustomerData($this->customer)
             ->execute();
 
-        $checkSaleId = $response->checkSaleId;
+        $checkSaleId = $response->transactionId;
         $transaction = Transaction::fromId($checkSaleId, null, PaymentMethodType::ACH);
 
-        $this->eCheck->account_type = "Checking";
+        $this->eCheck->accountType = AccountType::CHECKING;
 
         $response = $transaction->refund(5)
             ->withCurrency('840')
@@ -158,7 +154,7 @@ class TransactionApiAchTest extends TestCase
     {
         ServicesContainer::configureService($this->setUpConfigUS());
 
-        $this->transData = $this->getTransactionData(
+        $transData = $this->getTransactionData(
             'US',
             TransactionLanguage::EN_US,
             CountryUtils::getNumericCodeByCountry('US')
@@ -169,7 +165,7 @@ class TransactionApiAchTest extends TestCase
 
         $response = $this->eCheck->charge(11)
             ->withCurrency('840')
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withEntryClass("PPD")
             ->withCustomerData($this->customer)
             ->execute();
@@ -192,7 +188,7 @@ class TransactionApiAchTest extends TestCase
     {
         ServicesContainer::configureService($this->setUpConfigCA());
 
-        $this->transData = $this->getTransactionData(
+        $transData = $this->getTransactionData(
             'CA',
             TransactionLanguage::EN_CA,
             CountryUtils::getNumericCodeByCountry('CA')
@@ -204,7 +200,7 @@ class TransactionApiAchTest extends TestCase
 
         $response = $this->eCheck->charge(11)
             ->withCurrency('124')
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withPaymentPurposeCode("150")
             ->withCustomerData($this->customer)
             ->execute();
@@ -217,7 +213,7 @@ class TransactionApiAchTest extends TestCase
     {
         ServicesContainer::configureService($this->setUpConfigCA());
 
-        $this->transData = $this->getTransactionData(
+        $transData = $this->getTransactionData(
             'CA',
             TransactionLanguage::EN_CA,
             CountryUtils::getNumericCodeByCountry('CA')
@@ -229,7 +225,7 @@ class TransactionApiAchTest extends TestCase
 
         $response = $this->eCheck->refund(11)
             ->withCurrency('124')
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withPaymentPurposeCode("150")
             ->withCustomerData($this->customer)
             ->execute();
@@ -242,7 +238,7 @@ class TransactionApiAchTest extends TestCase
     {
         ServicesContainer::configureService($this->setUpConfigCA());
 
-        $this->transData = $this->getTransactionData(
+        $transData = $this->getTransactionData(
             'CA',
             TransactionLanguage::EN_CA,
             CountryUtils::getNumericCodeByCountry('CA')
@@ -255,11 +251,11 @@ class TransactionApiAchTest extends TestCase
         $response = $this->eCheck->charge(15)
             ->withCurrency('124')
             ->withPaymentPurposeCode("150")
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withCustomerData($this->customer)
             ->execute();
 
-        $checkSaleId = $response->transactionReference->checkSaleId;
+        $checkSaleId = $response->transactionReference->transactionId;
 
         $transaction = Transaction::fromId($checkSaleId, null, PaymentMethodType::ACH);
         $this->eCheck->checkNumber = (string)rand();
@@ -278,7 +274,7 @@ class TransactionApiAchTest extends TestCase
     {
         ServicesContainer::configureService($this->setUpConfigCA());
 
-        $this->transData = $this->getTransactionData(
+        $transData = $this->getTransactionData(
             'CA',
             TransactionLanguage::EN_CA,
             CountryUtils::getNumericCodeByCountry('CA')
@@ -291,7 +287,7 @@ class TransactionApiAchTest extends TestCase
         $response = $this->eCheck->charge(15)
             ->withCurrency('124')
             ->withPaymentPurposeCode("150")
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withCustomerData($this->customer)
             ->execute();
 
@@ -318,7 +314,7 @@ class TransactionApiAchTest extends TestCase
     {
         ServicesContainer::configureService($this->setUpConfigUS());
 
-        $this->transData = $this->getTransactionData(
+        $transData = $this->getTransactionData(
             'US',
             TransactionLanguage::EN_US,
             CountryUtils::getNumericCodeByCountry('US')
@@ -329,7 +325,7 @@ class TransactionApiAchTest extends TestCase
 
         $response = $this->eCheck->charge(11)
             ->withCurrency('840')
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withEntryClass("PPD")
             ->withRequestMultiUseToken(true)
             ->withCustomerData($this->customer)
@@ -343,7 +339,7 @@ class TransactionApiAchTest extends TestCase
 
         $response = $this->eCheck->charge(11)
             ->withCurrency('840')
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withEntryClass("PPD")
             ->withCustomerData($this->customer)
             ->execute();
@@ -356,7 +352,7 @@ class TransactionApiAchTest extends TestCase
     {
         ServicesContainer::configureService($this->setUpConfigCA());
 
-        $this->transData = $this->getTransactionData(
+        $transData = $this->getTransactionData(
             'CA',
             TransactionLanguage::EN_CA,
             CountryUtils::getNumericCodeByCountry('CA')
@@ -370,7 +366,7 @@ class TransactionApiAchTest extends TestCase
             ->withCurrency('124')
             ->withRequestMultiUseToken(true)
             ->withPaymentPurposeCode("150")
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withCustomerData($this->customer)
             ->execute();
 
@@ -382,7 +378,7 @@ class TransactionApiAchTest extends TestCase
 
         $response = $this->eCheck->charge(11)
             ->withCurrency('124')
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withPaymentPurposeCode("150")
             ->withCustomerData($this->customer)
             ->execute();
@@ -395,7 +391,7 @@ class TransactionApiAchTest extends TestCase
     {
         ServicesContainer::configureService($this->setUpConfigUS());
 
-        $this->transData = $this->getTransactionData(
+        $transData = $this->getTransactionData(
             'US',
             TransactionLanguage::EN_US,
             CountryUtils::getNumericCodeByCountry('US')
@@ -406,7 +402,7 @@ class TransactionApiAchTest extends TestCase
 
         $response = $this->eCheck->charge(15)
             ->withCurrency('840')
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withEntryClass("PPD")
             ->withRequestMultiUseToken(true)
             ->withCustomerData($this->customer)
@@ -420,7 +416,7 @@ class TransactionApiAchTest extends TestCase
 
         $response = $this->eCheck->refund(15)
             ->withCurrency('840')
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withEntryClass("PPD")
             ->withCustomerData($this->customer)
             ->execute();
@@ -433,7 +429,7 @@ class TransactionApiAchTest extends TestCase
     {
         ServicesContainer::configureService($this->setUpConfigCA());
 
-        $this->transData = $this->getTransactionData(
+        $transData = $this->getTransactionData(
             'CA',
             TransactionLanguage::EN_CA,
             CountryUtils::getNumericCodeByCountry('CA')
@@ -447,7 +443,7 @@ class TransactionApiAchTest extends TestCase
             ->withCurrency('124')
             ->withRequestMultiUseToken(true)
             ->withPaymentPurposeCode("150")
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withCustomerData($this->customer)
             ->execute();
 
@@ -460,7 +456,7 @@ class TransactionApiAchTest extends TestCase
         $response = $this->eCheck->refund(15)
             ->withCurrency('124')
             ->withPaymentPurposeCode("150")
-            ->withTransactionData($this->transData)
+            ->withTransactionData($transData)
             ->withEntryClass("PPD")
             ->withCustomerData($this->customer)
             ->execute();
@@ -473,12 +469,12 @@ class TransactionApiAchTest extends TestCase
 
     private function getTransactionData($region, $language, $countryCode)
     {
-        $this->transData = new TransactionApiData();
-        $this->transData->countryCode = $countryCode;
-        $this->transData->language = $language;
-        $this->transData->region = $region;
-        $this->transData->checkVerify = false;
+        $transData = new TransactionApiData();
+        $transData->countryCode = $countryCode;
+        $transData->language = $language;
+        $transData->region = $region;
+        $transData->checkVerify = false;
 
-        return $this->transData;
+        return $transData;
     }
 }
