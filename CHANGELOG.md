@@ -6,6 +6,10 @@
 
 ## Latest Version
 #### Enhancements:
+- Add appsec.properties for Macroscope
+
+## v9.0.0 (07/06/2023)
+#### Enhancements:
 - Add support for PHP8.2
 - Drop support for PHP lower than 8.0
 - [UPA MiC]: Add MiC connector for UPA via GP-API

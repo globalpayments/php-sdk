@@ -18,7 +18,7 @@ class BaseGpApiTestConfig
     const PARTNER_SOLUTION_APP_KEY = '5jPt1OpB6LLitgi7';
 
     public static string $appId = self::APP_ID;
-    public static string $appKey = self::APP_KEY;
+    public static string $appKey = self::APP_KEY; #gitleaks:allow
 
     const UPA_MIC_DEVICE_APP_ID = '83cdNQ0YBmzxzkLpFHpDGn2ir0WKTW0N';
     const UPA_MIC_DEVICE_APP_KEY = '1ASrcQZb0AEqR6ZT';

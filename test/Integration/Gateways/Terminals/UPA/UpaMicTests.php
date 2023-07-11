@@ -37,8 +37,8 @@ class UpaMicTests  extends TestCase
         $config = new ConnectionConfig();
         $config->deviceType = DeviceType::UPA_DEVICE;
         $config->connectionMode = ConnectionModes::MIC;
-        BaseGpApiTestConfig::$appId = BaseGpApiTestConfig::UPA_MIC_DEVICE_APP_ID;
-        BaseGpApiTestConfig::$appKey = BaseGpApiTestConfig::UPA_MIC_DEVICE_APP_KEY;
+        BaseGpApiTestConfig::$appId = BaseGpApiTestConfig::UPA_MIC_DEVICE_APP_ID; #gitleaks:allow
+        BaseGpApiTestConfig::$appKey = BaseGpApiTestConfig::UPA_MIC_DEVICE_APP_KEY; #gitleaks:allow
         $gpApiConfig = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
         $gpApiConfig->environment = Environment::QA;
         $gpApiConfig->country = 'US';

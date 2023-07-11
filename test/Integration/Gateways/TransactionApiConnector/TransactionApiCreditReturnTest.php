@@ -57,8 +57,8 @@ class TransactionApiCreditReturnTest extends TestCase
     {
         $config = new TransactionApiConfig();
         $config->accountCredential = '800000052925:80039923:eWcWNJhfxiJ7QyEHSHndWk4VHKbSmSue';
-        $config->apiSecret         = 'lucQKkwz3W3RGzABkSWUVZj1Mb0Yx3E9chAA8ESUVAv';
-        $config->apiKey            = 'qeG6EWZOiAwk4jsiHzsh2BN8VkN2rdAs';
+        $config->apiSecret         = 'lucQKkwz3W3RGzABkSWUVZj1Mb0Yx3E9chAA8ESUVAv'; #gitleaks:allow
+        $config->apiKey            = 'qeG6EWZOiAwk4jsiHzsh2BN8VkN2rdAs'; #gitleaks:allow
         $config->apiVersion        = '2021-04-08';
         $config->apiPartnerName    = 'mobile_sdk';
         $config->country           = $country;
