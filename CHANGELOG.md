@@ -6,6 +6,13 @@
 
 ## Latest Version
 #### Enhancements:
+- [GP-API] Improve Open Banking and 3DS tests
+
+#### Bug Fixes:
+-[PAX Devices]: Fix PAX controller
+
+## v9.0.1 (07/11/2023)
+#### Enhancements:
 - Add appsec.properties for Macroscope
 
 ## v9.0.0 (07/06/2023)

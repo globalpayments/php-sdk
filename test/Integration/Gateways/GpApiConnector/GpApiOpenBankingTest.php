@@ -21,10 +21,10 @@ use PHPUnit\Framework\TestCase;
 
 class GpApiOpenBankingTest extends TestCase
 {
-    private $currency = 'GBP';
-    private $amount = 10.99;
-    private $startDate;
-    private $endDate;
+    private string $currency = 'GBP';
+    private float $amount = 10.99;
+    private \DateTime $startDate;
+    private \DateTime $endDate;
 
     public function setup(): void
     {
@@ -86,8 +86,6 @@ class GpApiOpenBankingTest extends TestCase
             ->execute();
 
         $this->assertOpenBankingResponse($trn);
-
-        fwrite(STDERR, print_r($trn->bankPaymentResponse->redirectUrl, true));
         sleep(2);
 
         /** @var TransactionSummary $response */
@@ -98,7 +96,7 @@ class GpApiOpenBankingTest extends TestCase
         $this->assertEquals($trn->transactionId, $response->transactionId);
         $this->assertNotNull($response->bankPaymentResponse->sortCode);
         $this->assertNull($response->bankPaymentResponse->iban);
-        $this->assertNotNull($response->bankPaymentResponse->accountNumber);
+        $this->assertEquals(substr($bankPayment->accountNumber, -4), substr($response->accountNumberLast4,-4));
     }
 
     public function testSEPACharge()
@@ -111,15 +109,18 @@ class GpApiOpenBankingTest extends TestCase
             ->execute();
 
         $this->assertOpenBankingResponse($trn);
-        fwrite(STDERR, print_r($trn->bankPaymentResponse->redirectUrl, TRUE));
         sleep(2);
+
         /** @var TransactionSummary $response */
         $response = ReportingService::transactionDetail($trn->transactionId)
             ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals($trn->transactionId, $response->transactionId);
-        $this->assertNotNull($response->bankPaymentResponse->iban);
+        $this->assertEquals(
+            substr($bankPayment->iban, -4),
+            substr($response->bankPaymentResponse->maskedIbanLast4, -4)
+        );
         $this->assertNull($response->bankPaymentResponse->sortCode);
         $this->assertNull($response->bankPaymentResponse->accountNumber);
     }
@@ -214,19 +215,12 @@ class GpApiOpenBankingTest extends TestCase
     {
         $bankPayment = $this->fasterPaymentsConfig();
 
-        $errorFound = false;
-        try {
-            $bankPayment->charge($this->amount)
+        $trn = $bankPayment->charge($this->amount)
                 ->withCurrency($this->currency)
                 ->withRemittanceReference(null, 'Nike Bounce Shoes')
                 ->execute();
-        } catch (GatewayException $e) {
-            $errorFound = true;
-            $this->assertEquals('Status Code: SYSTEM_ERROR_DOWNSTREAM - Unable to process your request due to an error with a system down stream.', $e->getMessage());
-            $this->assertEquals('50046', $e->responseCode);
-        } finally {
-            $this->assertTrue($errorFound);
-        }
+
+        $this->assertOpenBankingResponse($trn);
     }
 
     public function testFasterPaymentsMissingRemittanceReferenceValue()

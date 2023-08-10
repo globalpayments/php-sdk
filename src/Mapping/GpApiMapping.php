@@ -479,6 +479,7 @@ class GpApiMapping
                     $summary->paymentType = PaymentMethodName::BANK_PAYMENT;
                     $bankPaymentResponse = new BankPaymentResponse();
                     $bankPaymentResponse->iban = $response->payment_method->bank_transfer->iban ?? null;
+                    $bankPaymentResponse->maskedIbanLast4 = $response->payment_method->bank_transfer->masked_iban_last4 ?? null;
                     $bankPaymentResponse->accountNumber = $response->payment_method->bank_transfer->account_number ?? null;
                     $bankPaymentResponse->accountName = $response->payment_method->bank_transfer->bank->name ?? null;
                     $bankPaymentResponse->sortCode = $response->payment_method->bank_transfer->bank->code ?? null;
@@ -487,6 +488,7 @@ class GpApiMapping
                     $bankPaymentResponse->remittanceReferenceType =
                         $response->payment_method->bank_transfer->remittance_reference->type ?? null;
                     $summary->bankPaymentResponse = $bankPaymentResponse;
+                    $summary->accountNumberLast4 = $response->payment_method->bank_transfer->masked_account_number_last4 ?? null;
                 } else { /** map APMs (Paypal) response info */
                     $apm = $response->payment_method->apm;
                     $alternativePaymentResponse = new AlternativePaymentResponse();

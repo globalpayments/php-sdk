@@ -18,6 +18,7 @@ class OpenBankingTest extends TestCase
     private string $currency = 'GBP';
     private float $amount = 10.99;
     private string $remittanceReferenceValue = 'Nike Bounce Shoes';
+    private bool $runAuto = true;
 
     public function setup(): void
     {
@@ -48,27 +49,31 @@ class OpenBankingTest extends TestCase
             ->execute();
 
         $this->assertOpenBankingResponse($trn);
-
-        fwrite(STDERR, print_r($trn->bankPaymentResponse->redirectUrl, true));
-        sleep(45);
+        sleep(2);
 
         $response = ReportingService::bankPaymentDetail($trn->bankPaymentResponse->id)
             ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals(1, $response->totalRecordCount);
-        $this->assertEquals($trn->bankPaymentResponse->id, $response->result[0]->transactionId);
-        $this->assertNull($response->result[0]->bankPaymentResponse->iban);
-        $this->assertNull($response->result[0]->bankPaymentResponse->sortCode);
-        $this->assertNull($response->result[0]->bankPaymentResponse->accountNumber);
-        $this->assertNull($response->result[0]->bankPaymentResponse->accountName);
-        $this->assertNotNull($response->result[0]->bankPaymentResponse->tokenRequestId);
-        $this->assertNotNull($response->result[0]->orderId);
-        $this->assertNotNull($response->result[0]->bankPaymentResponse->id);
-        $this->assertEquals(BankPaymentType::FASTERPAYMENTS, $response->result[0]->bankPaymentResponse->type);
-        $this->assertEquals(BankPaymentStatus::SUCCESS, $response->result[0]->bankPaymentResponse->paymentStatus);
+        /** @var TransactionSummary $trn */
+        $trnDetails = reset($response->result);
+        $this->assertEquals($trn->bankPaymentResponse->id, $trnDetails->transactionId);
+        $this->assertNull($trnDetails->bankPaymentResponse->iban);
+        $this->assertNull($trnDetails->bankPaymentResponse->sortCode);
+        $this->assertNull($trnDetails->bankPaymentResponse->accountNumber);
+        $this->assertNull($trnDetails->bankPaymentResponse->accountName);
+        $this->assertNotNull($trnDetails->bankPaymentResponse->tokenRequestId);
+        $this->assertNotNull($trnDetails->orderId);
+        $this->assertNotNull($trnDetails->bankPaymentResponse->id);
+        $this->assertEquals(BankPaymentType::FASTERPAYMENTS, $trnDetails->bankPaymentResponse->type);
+        $this->assertEquals(BankPaymentStatus::PAYMENT_INITIATED, $trnDetails->bankPaymentResponse->paymentStatus);
     }
 
+    /**
+     * In order to be able to run the full flow for refund you need to set the "runAuto" property to false.
+     * Open the redirect url printed in a browser and continue the flow.
+     */
     public function testFasterPaymentsRefund()
     {
         $bankPayment = $this->fasterPaymentsConfig();
@@ -79,36 +84,38 @@ class OpenBankingTest extends TestCase
             ->execute();
 
         $this->assertOpenBankingResponse($trn);
+        if ($this->runAuto === false) {
+            fwrite(STDERR, print_r($trn->bankPaymentResponse->redirectUrl, true));
+            sleep(45);
 
-        fwrite(STDERR, print_r($trn->bankPaymentResponse->redirectUrl, true));
-        sleep(45);
+            $refund = $trn->refund($this->amount)
+                ->withCurrency($this->currency)
+                ->execute();
 
-        $refund = $trn->refund($this->amount)
-            ->withCurrency($this->currency)
-            ->execute();
 
-        print_r($refund);
+            $this->assertEquals(BankPaymentStatus::INITIATION_PROCESSING, $refund->responseMessage);
+            $this->assertNotNull($refund->transactionId);
+            $this->assertNotNull($refund->clientTransactionId);
+            $this->assertNull($refund->bankPaymentResponse->redirectUrl);
 
-        $this->assertEquals(BankPaymentStatus::INITIATION_PROCESSING, $refund->responseMessage);
-        $this->assertNotNull($refund->transactionId);
-        $this->assertNotNull($refund->clientTransactionId);
-        $this->assertNull($refund->bankPaymentResponse->redirectUrl);
+            $response = ReportingService::bankPaymentDetail($trn->bankPaymentResponse->id)
+                ->execute();
 
-        $response = ReportingService::bankPaymentDetail($trn->bankPaymentResponse->id)
-            ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals(1, $response->totalRecordCount);
-        $this->assertEquals($trn->bankPaymentResponse->id, $response->result[0]->transactionId);
-        $this->assertNull($response->result[0]->bankPaymentResponse->iban);
-        $this->assertNull($response->result[0]->bankPaymentResponse->sortCode);
-        $this->assertNull($response->result[0]->bankPaymentResponse->accountNumber);
-        $this->assertNull($response->result[0]->bankPaymentResponse->accountName);
-        $this->assertNotNull($response->result[0]->bankPaymentResponse->tokenRequestId);
-        $this->assertNotNull($response->result[0]->orderId);
-        $this->assertNotNull($response->result[0]->bankPaymentResponse->id);
-        $this->assertEquals(BankPaymentType::FASTERPAYMENTS, $response->result[0]->bankPaymentResponse->type);
-        $this->assertEquals(BankPaymentStatus::SUCCESS, $response->result[0]->bankPaymentResponse->paymentStatus);
+            $this->assertNotNull($response);
+            $this->assertEquals(1, $response->totalRecordCount);
+            /** @var TransactionSummary $trnDetails */
+            $trnDetails = reset($response->result);
+            $this->assertEquals($trn->bankPaymentResponse->id, $trnDetails->transactionId);
+            $this->assertNull($trnDetails->bankPaymentResponse->iban);
+            $this->assertNull($trnDetails->bankPaymentResponse->sortCode);
+            $this->assertNull($trnDetails->bankPaymentResponse->accountNumber);
+            $this->assertNull($trnDetails->bankPaymentResponse->accountName);
+            $this->assertNotNull($trnDetails->bankPaymentResponse->tokenRequestId);
+            $this->assertNotNull($trnDetails->orderId);
+            $this->assertNotNull($trnDetails->bankPaymentResponse->id);
+            $this->assertEquals(BankPaymentType::FASTERPAYMENTS, $trnDetails->bankPaymentResponse->type);
+            $this->assertEquals(BankPaymentStatus::SUCCESS, $trnDetails->bankPaymentResponse->paymentStatus);
+        }
     }
 
     public function testSEPACharge()
@@ -121,27 +128,31 @@ class OpenBankingTest extends TestCase
             ->execute();
 
         $this->assertOpenBankingResponse($trn);
-
-        fwrite(STDERR, print_r($trn->bankPaymentResponse->redirectUrl, TRUE));
-        sleep(45);
+        sleep(2);
 
         $response = ReportingService::bankPaymentDetail($trn->bankPaymentResponse->id)
             ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals(1, $response->totalRecordCount);
-        $this->assertEquals($trn->bankPaymentResponse->id, $response->result[0]->transactionId);
-        $this->assertNull($response->result[0]->bankPaymentResponse->iban);
-        $this->assertNull($response->result[0]->bankPaymentResponse->sortCode);
-        $this->assertNull($response->result[0]->bankPaymentResponse->accountNumber);
-        $this->assertNull($response->result[0]->bankPaymentResponse->accountName);
-        $this->assertNotNull($response->result[0]->bankPaymentResponse->tokenRequestId);
-        $this->assertNotNull($response->result[0]->orderId);
-        $this->assertNotNull($response->result[0]->bankPaymentResponse->id);
-        $this->assertEquals(BankPaymentType::SEPA, $response->result[0]->bankPaymentResponse->type);
-        $this->assertEquals(BankPaymentStatus::SUCCESS, $response->result[0]->bankPaymentResponse->paymentStatus);
+        /** @var TransactionSummary $trnDetails */
+        $trnDetails = reset($response->result);
+        $this->assertEquals($trn->bankPaymentResponse->id, $trnDetails->transactionId);
+        $this->assertNull($trnDetails->bankPaymentResponse->iban);
+        $this->assertNull($trnDetails->bankPaymentResponse->sortCode);
+        $this->assertNull($trnDetails->bankPaymentResponse->accountNumber);
+        $this->assertNull($trnDetails->bankPaymentResponse->accountName);
+        $this->assertNotNull($trnDetails->bankPaymentResponse->tokenRequestId);
+        $this->assertNotNull($trnDetails->orderId);
+        $this->assertNotNull($trnDetails->bankPaymentResponse->id);
+        $this->assertEquals(BankPaymentType::SEPA, $trnDetails->bankPaymentResponse->type);
+        $this->assertEquals(BankPaymentStatus::PAYMENT_INITIATED, $trnDetails->bankPaymentResponse->paymentStatus);
     }
 
+    /**
+     * In order to be able to run the full flow for refund you need to set the "runAuto" property to false.
+     * Open the redirect url printed in a browser and continue the flow.
+     */
     public function testSEPARefund()
     {
         $bankPayment = $this->sepaConfig();
@@ -152,36 +163,37 @@ class OpenBankingTest extends TestCase
             ->execute();
 
         $this->assertOpenBankingResponse($trn);
+        if ($this->runAuto === false) {
+            fwrite(STDERR, print_r($trn->bankPaymentResponse->redirectUrl, TRUE));
+            sleep(45);
 
-        fwrite(STDERR, print_r($trn->bankPaymentResponse->redirectUrl, TRUE));
-        sleep(45);
+            $refund = $trn->refund($this->amount)
+                ->withCurrency('EUR')
+                ->execute();
 
-        $refund = $trn->refund($this->amount)
-            ->withCurrency('EUR')
-            ->execute();
+            $this->assertEquals(BankPaymentStatus::INITIATION_PROCESSING, $refund->responseMessage);
+            $this->assertNotNull($refund->transactionId);
+            $this->assertNotNull($refund->clientTransactionId);
+            $this->assertNull($refund->bankPaymentResponse->redirectUrl);
 
-        $this->assertEquals(BankPaymentStatus::INITIATION_PROCESSING, $refund->responseMessage);
-        $this->assertNotNull($refund->transactionId);
-        $this->assertNotNull($refund->clientTransactionId);
-        $this->assertNull($refund->bankPaymentResponse->redirectUrl);
+            $response = ReportingService::bankPaymentDetail($trn->bankPaymentResponse->id)
+                ->execute();
 
-        print_r($refund);
-
-        $response = ReportingService::bankPaymentDetail($trn->bankPaymentResponse->id)
-            ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals(1, $response->totalRecordCount);
-        $this->assertEquals($trn->bankPaymentResponse->id, $response->result[0]->transactionId);
-        $this->assertNull($response->result[0]->bankPaymentResponse->iban);
-        $this->assertNull($response->result[0]->bankPaymentResponse->sortCode);
-        $this->assertNull($response->result[0]->bankPaymentResponse->accountNumber);
-        $this->assertNull($response->result[0]->bankPaymentResponse->accountName);
-        $this->assertNotNull($response->result[0]->bankPaymentResponse->tokenRequestId);
-        $this->assertNotNull($response->result[0]->orderId);
-        $this->assertNotNull($response->result[0]->bankPaymentResponse->id);
-        $this->assertEquals(BankPaymentType::SEPA, $response->result[0]->bankPaymentResponse->type);
-        $this->assertEquals(BankPaymentStatus::SUCCESS, $response->result[0]->bankPaymentResponse->paymentStatus);
+            $this->assertNotNull($response);
+            $this->assertEquals(1, $response->totalRecordCount);
+            /** @var TransactionSummary $trnDetails */
+            $trnDetails = reset($response->result);
+            $this->assertEquals($trn->bankPaymentResponse->id, $trnDetails->transactionId);
+            $this->assertNull($trnDetails->bankPaymentResponse->iban);
+            $this->assertNull($trnDetails->bankPaymentResponse->sortCode);
+            $this->assertNull($trnDetails->bankPaymentResponse->accountNumber);
+            $this->assertNull($trnDetails->bankPaymentResponse->accountName);
+            $this->assertNotNull($trnDetails->bankPaymentResponse->tokenRequestId);
+            $this->assertNotNull($trnDetails->orderId);
+            $this->assertNotNull($trnDetails->bankPaymentResponse->id);
+            $this->assertEquals(BankPaymentType::SEPA, $trnDetails->bankPaymentResponse->type);
+            $this->assertEquals(BankPaymentStatus::SUCCESS, $trnDetails->bankPaymentResponse->paymentStatus);
+        }
     }
 
     public function testBankPaymentList()
@@ -531,7 +543,7 @@ class OpenBankingTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertStringContainsString(' Merchant currency is not enabled for Open Banking', $e->getMessage());
+            $this->assertStringContainsString('Invalid Payment Scheme required fields', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }

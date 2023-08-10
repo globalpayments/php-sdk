@@ -31,7 +31,7 @@ class OpenBankingMapping
         $obResponse = new BankPaymentResponse();
         $obResponse->redirectUrl = $response->redirect_url ?? null;
         $obResponse->paymentStatus = $response->status ?? null;
-        $obResponse->id = $response->ob_trans_id ?? null;
+        $obResponse->id = $response->ob_trans_id;
         $obResponse->amount = $response->order->amount ?? null;
         $obResponse->currency = $response->order->currency ?? null;
         $transaction->bankPaymentResponse = $obResponse;

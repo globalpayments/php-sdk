@@ -19,7 +19,6 @@ class PaxBaseResponse extends TerminalResponse
 
     public function parseResponse($messageReader)
     {
-        $code = $messageReader->readCode();
         $this->status = $messageReader->readToCode(ControlCodes::FS);
         $this->command = $messageReader->readToCode(ControlCodes::FS);
         $this->version = $messageReader->readToCode(ControlCodes::FS);

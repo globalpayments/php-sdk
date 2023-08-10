@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Terminals\PAX;
 
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceCommInterface;
 use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
@@ -439,5 +440,10 @@ class PaxController extends DeviceController
         ];
         $response = $this->doTransaction($commands);
         return new EBTResponse($response);
+    }
+
+    public function configureConnector(): IDeviceCommInterface
+    {
+        // TODO: Implement configureConnector() method.
     }
 }
