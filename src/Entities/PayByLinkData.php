@@ -2,20 +2,20 @@
 
 namespace GlobalPayments\Api\Entities;
 
-use GlobalPayments\Api\Entities\Enums\PayLinkStatus;
-use GlobalPayments\Api\Entities\Enums\PayLinkType;
+use GlobalPayments\Api\Entities\Enums\PayByLinkStatus;
+use GlobalPayments\Api\Entities\Enums\PayByLinkType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use PHPStanVendor\Nette\Utils\DateTime;
 
 /**
- * A PayLink resource.
+ * A PayByLink resource.
  */
-class PayLinkData
+class PayByLinkData
 {
     /**
      * Describes the type of link that will be created.
      *
-     * @var PayLinkType
+     * @var PayByLinkType
      */
     public $type;
 
@@ -35,7 +35,7 @@ class PayLinkData
      */
     public $usageLimit;
 
-    /** @var PayLinkStatus */
+    /** @var PayByLinkStatus */
     public $status;
 
     /**

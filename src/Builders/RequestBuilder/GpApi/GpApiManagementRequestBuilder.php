@@ -226,27 +226,27 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                         ]
                     ];
                 break;
-            case TransactionType::PAYLINK_UPDATE:
-                $endpoint = GpApiRequest::PAYLINK_ENDPOINT . '/' . $builder->paymentLinkId;
+            case TransactionType::PAYBYLINK_UPDATE:
+                $endpoint = GpApiRequest::PAYBYLINK_ENDPOINT . '/' . $builder->paymentLinkId;
                 $verb = 'PATCH';
                 $payload = [
-                    'usage_mode'=> $builder->payLinkData->usageMode ?? null,
-                    'usage_limit' => $builder->payLinkData->usageLimit ?? null,
-                    'name' => $builder->payLinkData->name ?? null,
+                    'usage_mode'=> $builder->payByLinkData->usageMode ?? null,
+                    'usage_limit' => $builder->payByLinkData->usageLimit ?? null,
+                    'name' => $builder->payByLinkData->name ?? null,
                     'description' => $builder->description ?? null,
-                    'type' => $builder->payLinkData->type ?? null,
-                    'status' => $builder->payLinkData->status ?? null,
-                    'shippable' => isset($builder->payLinkData->shippable) ?
-                        json_encode($builder->payLinkData->shippable) : null,
-                    'shipping_amount' => !empty($builder->payLinkData->shippingAmount) ?
-                        StringUtils::toNumeric($builder->payLinkData->shippingAmount) : null,
+                    'type' => $builder->payByLinkData->type ?? null,
+                    'status' => $builder->payByLinkData->status ?? null,
+                    'shippable' => isset($builder->payByLinkData->shippable) ?
+                        json_encode($builder->payByLinkData->shippable) : null,
+                    'shipping_amount' => !empty($builder->payByLinkData->shippingAmount) ?
+                        StringUtils::toNumeric($builder->payByLinkData->shippingAmount) : null,
                     'transactions' => [
                         'amount' => !empty($builder->amount) ? StringUtils::toNumeric($builder->amount) : null
                     ],
-                    'expiration_date' => !empty($payLink->expirationDate) ?
-                        (new \DateTime($payLink->expirationDate))->format('Y-m-d\TH:i:s\Z') : null,
+                    'expiration_date' => !empty($builder->payByLinkData->expirationDate) ?
+                        (new \DateTime($builder->payByLinkData->expirationDate))->format('Y-m-d\TH:i:s\Z') : null,
 
-                    'images' => $builder->payLinkData->images ?? null,
+                    'images' => $builder->payByLinkData->images ?? null,
                 ];
                 break;
             case TransactionType::RELEASE:

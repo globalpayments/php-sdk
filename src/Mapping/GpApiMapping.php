@@ -30,7 +30,7 @@ use GlobalPayments\Api\Entities\FraudRule;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\PayerDetails;
-use GlobalPayments\Api\Entities\PayLinkResponse;
+use GlobalPayments\Api\Entities\PayByLinkResponse;
 use GlobalPayments\Api\Entities\PaymentMethodList;
 use GlobalPayments\Api\Entities\Person;
 use GlobalPayments\Api\Entities\PersonList;
@@ -40,7 +40,7 @@ use GlobalPayments\Api\Entities\Reporting\DepositSummary;
 use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
 use GlobalPayments\Api\Entities\Reporting\MerchantAccountSummary;
 use GlobalPayments\Api\Entities\Reporting\MerchantSummary;
-use GlobalPayments\Api\Entities\Reporting\PayLinkSummary;
+use GlobalPayments\Api\Entities\Reporting\PayByLinkSummary;
 use GlobalPayments\Api\Entities\Reporting\StoredPaymentMethodSummary;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\RiskAssessment;
@@ -93,11 +93,11 @@ class GpApiMapping
                 break;
             case self::LINK_CREATE:
             case self::LINK_EDIT:
-                $transaction->payLinkResponse = self::mapPayLinkResponse($response);
+                $transaction->payByLinkResponse = self::mapPayByLinkResponse($response);
                 if (!empty($response->transactions)) {
                     $trn = $response->transactions;
                     $transaction->balanceAmount = isset($trn->amount) ? StringUtils::toAmount($trn->amount) : null;
-                    $transaction->payLinkResponse->allowedPaymentMethods = $trn->allowed_payment_methods;
+                    $transaction->payByLinkResponse->allowedPaymentMethods = $trn->allowed_payment_methods;
                 }
 
                 return $transaction;
@@ -388,13 +388,13 @@ class GpApiMapping
                     array_push($report->result, self::mapActionsSummary($action));
                 }
                 break;
-            case ReportType::PAYLINK_DETAIL:
-                $report = self::mapPayLinkSummary($response);
+            case ReportType::PAYBYLINK_DETAIL:
+                $report = self::mapPayByLinkSummary($response);
                 break;
-            case ReportType::FIND_PAYLINK_PAGED:
+            case ReportType::FIND_PAYBYLINK_PAGED:
                 $report = self::setPagingInfo($response);
                 foreach ($response->links as $link) {
-                    array_push($report->result, self::mapPayLinkSummary($link));
+                    array_push($report->result, self::mapPayByLinkSummary($link));
                 }
                 break;
             case ReportType::FIND_MERCHANTS_PAGED:
@@ -920,11 +920,11 @@ class GpApiMapping
 
     /**
      * @param $response
-     * @return PayLinkSummary
+     * @return PayByLinkSummary
      */
-    public static function mapPayLinkSummary($response)
+    public static function mapPayByLinkSummary($response)
     {
-        $summary = new PayLinkSummary();
+        $summary = new PayByLinkSummary();
         $summary->merchantId = $response->merchant_id ?? null;
         $summary->merchantName = $response->merchant_name ?? null;
         $summary->accountId = $response->account_id ?? null;
@@ -961,24 +961,24 @@ class GpApiMapping
         return $summary;
     }
 
-    public static function mapPayLinkResponse($response)
+    public static function mapPayByLinkResponse($response)
     {
-        $payLinkResponse = new PayLinkResponse();
-        $payLinkResponse->id = $response->id;
-        $payLinkResponse->accountName = $response->account_name ?? null;
-        $payLinkResponse->url = $response->url ?? null;
-        $payLinkResponse->status = $response->status ?? null;
-        $payLinkResponse->type = $response->type ?? null;
-        $payLinkResponse->usageMode = $response->usage_mode ?? null;
-        $payLinkResponse->usageLimit = $response->usage_limit ?? null;
-        $payLinkResponse->reference = $response->reference ?? null;
-        $payLinkResponse->name = $response->name ?? null;
-        $payLinkResponse->description = $response->description ?? null;
-        $payLinkResponse->viewedCount = $response->viewed_count ?? null;
-        $payLinkResponse->expirationDate = !empty($response->expiration_date) ? new \DateTime($response->expiration_date) : null;
-        $payLinkResponse->isShippable = $response->shippable ?? null;
+        $payByLinkResponse = new PayByLinkResponse();
+        $payByLinkResponse->id = $response->id;
+        $payByLinkResponse->accountName = $response->account_name ?? null;
+        $payByLinkResponse->url = $response->url ?? null;
+        $payByLinkResponse->status = $response->status ?? null;
+        $payByLinkResponse->type = $response->type ?? null;
+        $payByLinkResponse->usageMode = $response->usage_mode ?? null;
+        $payByLinkResponse->usageLimit = $response->usage_limit ?? null;
+        $payByLinkResponse->reference = $response->reference ?? null;
+        $payByLinkResponse->name = $response->name ?? null;
+        $payByLinkResponse->description = $response->description ?? null;
+        $payByLinkResponse->viewedCount = $response->viewed_count ?? null;
+        $payByLinkResponse->expirationDate = !empty($response->expiration_date) ? new \DateTime($response->expiration_date) : null;
+        $payByLinkResponse->isShippable = $response->shippable ?? null;
 
-        return $payLinkResponse;
+        return $payByLinkResponse;
     }
 
     /**

@@ -12,7 +12,7 @@ use GlobalPayments\Api\Entities\Enums\DisputeStage;
 use GlobalPayments\Api\Entities\Enums\DisputeStatus;
 use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
 use GlobalPayments\Api\Entities\Enums\FraudFilterResult;
-use GlobalPayments\Api\Entities\Enums\PayLinkStatus;
+use GlobalPayments\Api\Entities\Enums\PayByLinkStatus;
 use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\Enums\PaymentProvider;
@@ -495,11 +495,9 @@ class SearchCriteriaBuilder
     public $httpResponseCode;
 
     /**
-     * This is the PayLink id
-     *
-     * @var string
+     * This is the PayByLink id
      */
-    public $payLinkId;
+    public string $payByLinkId;
 
     /** @var string */
     public $description;
@@ -507,8 +505,8 @@ class SearchCriteriaBuilder
     /** @var \DateTime */
     public $expirationDate;
 
-    /** @var PayLinkStatus */
-    public $payLinkStatus;
+    /** @var PayByLinkStatus */
+    public $payByLinkStatus;
 
     /** @var MerchantAccountStatus */
     public $accountStatus;

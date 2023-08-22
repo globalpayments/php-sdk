@@ -6,6 +6,10 @@
 
 ## Latest Version
 #### Enhancements:
+- [GP-API] Rename PayLink to PayByLink
+
+## v9.0.2 (08/10/2023)
+#### Enhancements:
 - [GP-API] Improve Open Banking and 3DS tests
 
 #### Bug Fixes:

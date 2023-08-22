@@ -3,12 +3,12 @@
 namespace GlobalPayments\Api\Entities\Reporting;
 
 use DateTime;
-use GlobalPayments\Api\Entities\Enums\PayLinkStatus;
-use GlobalPayments\Api\Entities\Enums\PayLinkType;
+use GlobalPayments\Api\Entities\Enums\PayByLinkStatus;
+use GlobalPayments\Api\Entities\Enums\PayByLinkType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 
-class PayLinkSummary extends BaseSummary
+class PayByLinkSummary extends BaseSummary
 {
     /** @var string */
     public $accountId;
@@ -33,14 +33,14 @@ class PayLinkSummary extends BaseSummary
     /**
      * Indicates where a link is in its lifecycle.
      *
-     * @var PayLinkStatus
+     * @var PayByLinkStatus
      */
     public $status;
 
     /**
      * Describes the type of link that will be created.
      *
-     * @var PayLinkType
+     * @var PayByLinkType
      */
     public $type;
 

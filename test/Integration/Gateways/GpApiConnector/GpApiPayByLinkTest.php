@@ -11,9 +11,9 @@ use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\ColorDepth;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
-use GlobalPayments\Api\Entities\Enums\PayLinkSortProperty;
-use GlobalPayments\Api\Entities\Enums\PayLinkStatus;
-use GlobalPayments\Api\Entities\Enums\PayLinkType;
+use GlobalPayments\Api\Entities\Enums\PayByLinkSortProperty;
+use GlobalPayments\Api\Entities\Enums\PayByLinkStatus;
+use GlobalPayments\Api\Entities\Enums\PayByLinkType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
@@ -22,14 +22,14 @@ use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
-use GlobalPayments\Api\Entities\PayLinkData;
+use GlobalPayments\Api\Entities\PayByLinkData;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
-use GlobalPayments\Api\Entities\Reporting\PayLinkSummary;
+use GlobalPayments\Api\Entities\Reporting\PayByLinkSummary;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
-use GlobalPayments\Api\Services\PayLinkService;
+use GlobalPayments\Api\Services\PayByLinkService;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -39,16 +39,16 @@ use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 
-class PayLinkTest extends TestCase
+class GpApiPayByLinkTest extends TestCase
 {
     private $startDate;
     private $endDate;
     private $amount = 2.11;
-    private $payLink;
+    private PayByLinkData $payByLink;
     private $card;
     private $shippingAddress;
     private $browserData;
-    private $payLinkId;
+    private string $payByLinkId;
 
     public static function tearDownAfterClass(): void
     {
@@ -61,19 +61,19 @@ class PayLinkTest extends TestCase
         $this->startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
         $this->endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
 
-        $this->payLink = new PayLinkData();
-        $this->payLink->type = PayLinkType::PAYMENT;
-        $this->payLink->usageMode = PaymentMethodUsageMode::SINGLE;
-        $this->payLink->allowedPaymentMethods = [PaymentMethodName::CARD];
-        $this->payLink->usageLimit = 3;
-        $this->payLink->name = 'Mobile Bill Payment';
-        $this->payLink->isShippable = true;
-        $this->payLink->shippingAmount = 1.23;
-        $this->payLink->expirationDate = date('Y-m-d H:i:s', strtotime(' + 10 days'));//date('Y-m-d H:i:s') + 10;
-        $this->payLink->images = [];
-        $this->payLink->returnUrl = 'https://www.example.com/returnUrl';
-        $this->payLink->statusUpdateUrl = 'https://www.example.com/statusUrl';
-        $this->payLink->cancelUrl = 'https://www.example.com/returnUrl';
+        $this->payByLink = new PayByLinkData();
+        $this->payByLink->type = PayByLinkType::PAYMENT;
+        $this->payByLink->usageMode = PaymentMethodUsageMode::SINGLE;
+        $this->payByLink->allowedPaymentMethods = [PaymentMethodName::CARD];
+        $this->payByLink->usageLimit = 3;
+        $this->payByLink->name = 'Mobile Bill Payment';
+        $this->payByLink->isShippable = true;
+        $this->payByLink->shippingAmount = 1.23;
+        $this->payByLink->expirationDate = date('Y-m-d H:i:s', strtotime(' + 10 days'));//date('Y-m-d H:i:s') + 10;
+        $this->payByLink->images = [];
+        $this->payByLink->returnUrl = 'https://www.example.com/returnUrl';
+        $this->payByLink->statusUpdateUrl = 'https://www.example.com/statusUrl';
+        $this->payByLink->cancelUrl = 'https://www.example.com/returnUrl';
 
         $this->card = new CreditCardData();
         $this->card->number = "4263970000005262";
@@ -104,14 +104,14 @@ class PayLinkTest extends TestCase
         $this->browserData->timeZone = "0";
         $this->browserData->userAgent = "Mozilla/5.0 (Windows NT 6.1; Win64, x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36";
 
-        $response = PayLinkService::findPayLink(1, 1)
-            ->orderBy(PayLinkSortProperty::TIME_CREATED, SortDirection::ASC)
+        $response = PayByLinkService::findPayByLink(1, 1)
+            ->orderBy(PayByLinkSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::START_DATE, $this->startDate)
             ->andWith(SearchCriteria::END_DATE, $this->endDate)
-            ->andWith(SearchCriteria::PAYLINK_STATUS, PayLinkStatus::ACTIVE)
+            ->andWith(SearchCriteria::PAYBYLINK_STATUS, PayByLinkStatus::ACTIVE)
             ->execute();
         if (count($response->result) == 1) {
-            $this->payLinkId = $response->result[0]->id;
+            $this->payByLinkId = $response->result[0]->id;
         }
     }
 
@@ -132,124 +132,124 @@ class PayLinkTest extends TestCase
         return $config;
     }
 
-    public function testReportPayLinkDetail()
+    public function testReportPayByLinkDetail()
     {
-        $paylinkId = 'LNK_GderFbTKFzj7X507E7OgDfuRnlKViP';
-        /** @var PayLinkSummary $response */
-        $response = PayLinkService::payLinkDetail($paylinkId)
+        $payBylinkId = 'LNK_GderFbTKFzj7X507E7OgDfuRnlKViP';
+        /** @var PayByLinkSummary $response */
+        $response = PayByLinkService::payByLinkDetail($payBylinkId)
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertInstanceOf(PayLinkSummary::class, $response);
-        $this->assertEquals($paylinkId, $response->id);
+        $this->assertInstanceOf(PayByLinkSummary::class, $response);
+        $this->assertEquals($payBylinkId, $response->id);
     }
 
-    public function testReportPayLinkDetail_RandomId()
+    public function testReportPayByLinkDetail_RandomId()
     {
-        $paylinkId = GenerationUtils::getGuid();
+        $payByLinkId = GenerationUtils::getGuid();
 
         $exceptionCaught = false;
         try {
-            PayLinkService::payLinkDetail($paylinkId)
+            PayByLinkService::payByLinkDetail($payByLinkId)
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40118', $e->responseCode);
-            $this->assertEquals("Status Code: RESOURCE_NOT_FOUND - Links " . $paylinkId . " not found at this /ucp/links/" . $paylinkId . "", $e->getMessage());
+            $this->assertEquals("Status Code: RESOURCE_NOT_FOUND - Links " . $payByLinkId . " not found at this /ucp/links/" . $payByLinkId . "", $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
     }
 
-    public function testFindPayLinkByDate()
+    public function testFindPayByLinkByDate()
     {
-        $response = PayLinkService::findPayLink(1, 10)
-            ->orderBy(PayLinkSortProperty::TIME_CREATED, SortDirection::ASC)
+        $response = PayByLinkService::findPayByLink(1, 10)
+            ->orderBy(PayByLinkSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::START_DATE, $this->startDate)
             ->andWith(SearchCriteria::END_DATE, $this->endDate)
             ->execute();
 
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
-        /** @var PayLinkSummary $randomPayLink */
-        $randomPayLink = $response->result[array_rand($response->result)];
-        $this->assertNotNull($randomPayLink);
-        $this->assertInstanceOf(PayLinkSummary::class, $randomPayLink);
+        /** @var PayByLinkSummary $randomPayByLink */
+        $randomPayByLink = $response->result[array_rand($response->result)];
+        $this->assertNotNull($randomPayByLink);
+        $this->assertInstanceOf(PayByLinkSummary::class, $randomPayByLink);
     }
 
-    public function testCreatePayLink()
+    public function testCreatePayByLink()
     {
-        $payLink = new PayLinkData();
-        $payLink->type = PayLinkType::PAYMENT;
-        $payLink->usageMode = PaymentMethodUsageMode::SINGLE;
-        $payLink->allowedPaymentMethods = [PaymentMethodName::CARD];
-        $payLink->usageLimit = 1;
-        $payLink->name = 'Mobile Bill Payment';
-        $payLink->isShippable = true;
-        $payLink->shippingAmount = 1.23;
-        $payLink->expirationDate = date('Y-m-d H:i:s', strtotime(' + 10 days'));//date('Y-m-d H:i:s') + 10;
-        $payLink->images = [];
-        $payLink->returnUrl = 'https://www.example.com/returnUrl';
-        $payLink->statusUpdateUrl = 'https://www.example.com/statusUrl';
-        $payLink->cancelUrl = 'https://www.example.com/returnUrl';
+        $payByLink = new PayByLinkData();
+        $payByLink->type = PayByLinkType::PAYMENT;
+        $payByLink->usageMode = PaymentMethodUsageMode::SINGLE;
+        $payByLink->allowedPaymentMethods = [PaymentMethodName::CARD];
+        $payByLink->usageLimit = 1;
+        $payByLink->name = 'Mobile Bill Payment';
+        $payByLink->isShippable = true;
+        $payByLink->shippingAmount = 1.23;
+        $payByLink->expirationDate = date('Y-m-d H:i:s', strtotime(' + 10 days'));//date('Y-m-d H:i:s') + 10;
+        $payByLink->images = [];
+        $payByLink->returnUrl = 'https://www.example.com/returnUrl';
+        $payByLink->statusUpdateUrl = 'https://www.example.com/statusUrl';
+        $payByLink->cancelUrl = 'https://www.example.com/returnUrl';
 
-        $response = PayLinkService::create($payLink, $this->amount)
+        $response = PayByLinkService::create($payByLink, $this->amount)
             ->withCurrency('GBP')
             ->withClientTransactionId(GenerationUtils::getGuid())
             ->withDescription('March and April Invoice')
             ->execute();
 
-        $this->assertPayLinkResponse($response);
-        $this->assertEquals("YES", $response->payLinkResponse->isShippable);
+        $this->assertPayByLinkResponse($response);
+        $this->assertEquals("YES", $response->payByLinkResponse->isShippable);
 
-        fwrite(STDERR, print_r($response->payLinkResponse->url, TRUE));
+        fwrite(STDERR, print_r($response->payByLinkResponse->url, TRUE));
     }
 
-    public function testCreatePayLink_MultipleUsage()
+    public function testCreatePayByLink_MultipleUsage()
     {
-        $payLink = new PayLinkData();
-        $payLink->type = PayLinkType::PAYMENT;
-        $payLink->usageMode = PaymentMethodUsageMode::MULTIPLE;
-        $payLink->allowedPaymentMethods = [PaymentMethodName::CARD];
-        $payLink->usageLimit = 2;
-        $payLink->name = 'Mobile Bill Payment';
-        $payLink->isShippable = true;
-        $payLink->shippingAmount = 1.23;
-        $payLink->expirationDate = date('Y-m-d H:i:s', strtotime(' + 10 days'));//date('Y-m-d H:i:s') + 10;
-        $payLink->images = [];
-        $payLink->returnUrl = 'https://www.example.com/returnUrl';
-        $payLink->statusUpdateUrl = 'https://www.example.com/statusUrl';
-        $payLink->cancelUrl = 'https://www.example.com/returnUrl';
+        $payByLink = new PayByLinkData();
+        $payByLink->type = PayByLinkType::PAYMENT;
+        $payByLink->usageMode = PaymentMethodUsageMode::MULTIPLE;
+        $payByLink->allowedPaymentMethods = [PaymentMethodName::CARD];
+        $payByLink->usageLimit = 2;
+        $payByLink->name = 'Mobile Bill Payment';
+        $payByLink->isShippable = true;
+        $payByLink->shippingAmount = 1.23;
+        $payByLink->expirationDate = date('Y-m-d H:i:s', strtotime(' + 10 days'));//date('Y-m-d H:i:s') + 10;
+        $payByLink->images = [];
+        $payByLink->returnUrl = 'https://www.example.com/returnUrl';
+        $payByLink->statusUpdateUrl = 'https://www.example.com/statusUrl';
+        $payByLink->cancelUrl = 'https://www.example.com/returnUrl';
 
-        $response = PayLinkService::create($payLink, $this->amount)
+        $response = PayByLinkService::create($payByLink, $this->amount)
             ->withCurrency('GBP')
             ->withClientTransactionId(GenerationUtils::getGuid())
             ->withDescription('March and April Invoice')
             ->execute();
 
-        $this->assertPayLinkResponse($response);
+        $this->assertPayByLinkResponse($response);
 
-        fwrite(STDERR, print_r($response->payLinkResponse->url, TRUE));
+        fwrite(STDERR, print_r($response->payByLinkResponse->url, TRUE));
     }
 
-    public function testCreatePayLink_ThenCharge()
+    public function testCreatePayByLink_ThenCharge()
     {
-        $response = PayLinkService::create($this->payLink, $this->amount)
+        $response = PayByLinkService::create($this->payByLink, $this->amount)
             ->withCurrency('GBP')
             ->withClientTransactionId(GenerationUtils::getGuid())
             ->withDescription('March and April Invoice')
             ->execute();
 
-        $this->assertPayLinkResponse($response);
-        $this->assertEquals("YES", $response->payLinkResponse->isShippable);
+        $this->assertPayByLinkResponse($response);
+        $this->assertEquals("YES", $response->payByLinkResponse->isShippable);
 
-        fwrite(STDERR, print_r($response->payLinkResponse->url, TRUE));
+        fwrite(STDERR, print_r($response->payByLinkResponse->url, TRUE));
 
         ServicesContainer::configureService($this->setupTransactionConfig(), "createTransaction");
 
         $transaction = $this->card->charge($this->amount)
             ->withCurrency('GBP')
-            ->withPaymentLinkId($response->payLinkResponse->id)
+            ->withPaymentLinkId($response->payByLinkResponse->id)
             ->execute("createTransaction");
 
         $this->assertNotNull($transaction);
@@ -258,35 +258,35 @@ class PayLinkTest extends TestCase
 
         sleep(2);
 
-        $getResponse = PayLinkService::payLinkDetail($response->payLinkResponse->id)
+        $getResponse = PayByLinkService::payByLinkDetail($response->payByLinkResponse->id)
             ->execute();
 
         $this->assertNotNull($getResponse);
-        $this->assertInstanceOf(PayLinkSummary::class, $getResponse);
-        $this->assertEquals($response->payLinkResponse->id, $getResponse->id);
+        $this->assertInstanceOf(PayByLinkSummary::class, $getResponse);
+        $this->assertEquals($response->payByLinkResponse->id, $getResponse->id);
     }
 
-    public function testCreatePayLink_MultipleUsage_ThenCharge()
+    public function testCreatePayByLink_MultipleUsage_ThenCharge()
     {
-        $this->payLink->usageMode = PaymentMethodUsageMode::MULTIPLE;
-        $this->payLink->usageLimit = 2;
+        $this->payByLink->usageMode = PaymentMethodUsageMode::MULTIPLE;
+        $this->payByLink->usageLimit = 2;
 
-        $response = PayLinkService::create($this->payLink, $this->amount)
+        $response = PayByLinkService::create($this->payByLink, $this->amount)
             ->withCurrency('GBP')
             ->withClientTransactionId(GenerationUtils::getGuid())
             ->withDescription('March and April Invoice')
             ->execute();
 
-        $this->assertPayLinkResponse($response);
+        $this->assertPayByLinkResponse($response);
 
-        fwrite(STDERR, print_r($response->payLinkResponse->url, TRUE));
+        fwrite(STDERR, print_r($response->payByLinkResponse->url, TRUE));
 
         ServicesContainer::configureService($this->setupTransactionConfig(), "createTransaction");
 
-        for ($i = 1; $i <= $this->payLink->usageLimit; $i++) {
+        for ($i = 1; $i <= $this->payByLink->usageLimit; $i++) {
             $transaction = $this->card->charge($this->amount)
                 ->withCurrency('GBP')
-                ->withPaymentLinkId($response->payLinkResponse->id)
+                ->withPaymentLinkId($response->payByLinkResponse->id)
                 ->execute("createTransaction");
 
             $this->assertNotNull($transaction);
@@ -296,34 +296,34 @@ class PayLinkTest extends TestCase
 
         sleep(2);
 
-        $getResponse = PayLinkService::payLinkDetail($response->payLinkResponse->id)
+        $getResponse = PayByLinkService::payByLinkDetail($response->payByLinkResponse->id)
             ->execute();
 
         $this->assertNotNull($getResponse);
-        $this->assertInstanceOf(PayLinkSummary::class, $getResponse);
-        $this->assertEquals($response->payLinkResponse->id, $getResponse->id);
-        $this->assertCount($this->payLink->usageLimit, $getResponse->transactions);
+        $this->assertInstanceOf(PayByLinkSummary::class, $getResponse);
+        $this->assertEquals($response->payByLinkResponse->id, $getResponse->id);
+        $this->assertCount($this->payByLink->usageLimit, $getResponse->transactions);
         $this->assertEquals(0, intval($getResponse->viewedCount));
         $this->assertEquals(0, intval($getResponse->usageCount));
     }
 
-    public function testCreatePayLink_ThenAuthorizeAndCapture()
+    public function testCreatePayByLink_ThenAuthorizeAndCapture()
     {
-        $response = PayLinkService::create($this->payLink, $this->amount)
+        $response = PayByLinkService::create($this->payByLink, $this->amount)
             ->withCurrency('GBP')
             ->withClientTransactionId(GenerationUtils::getGuid())
             ->withDescription('March and April Invoice')
             ->execute();
 
-        $this->assertPayLinkResponse($response);
+        $this->assertPayByLinkResponse($response);
 
-        fwrite(STDERR, print_r($response->payLinkResponse->url, TRUE));
+        fwrite(STDERR, print_r($response->payByLinkResponse->url, TRUE));
 
         ServicesContainer::configureService($this->setupTransactionConfig(), "createTransaction");
 
         $authorize = $this->card->authorize($this->amount)
             ->withCurrency('GBP')
-            ->withPaymentLinkId($response->payLinkResponse->id)
+            ->withPaymentLinkId($response->payByLinkResponse->id)
             ->execute("createTransaction");
 
         $this->assertNotNull($authorize);
@@ -339,25 +339,25 @@ class PayLinkTest extends TestCase
 
         sleep(2);
 
-        $getResponse = PayLinkService::payLinkDetail($response->payLinkResponse->id)
+        $getResponse = PayByLinkService::payByLinkDetail($response->payByLinkResponse->id)
             ->execute();
 
         $this->assertNotNull($getResponse);
-        $this->assertInstanceOf(PayLinkSummary::class, $getResponse);
-        $this->assertEquals($response->payLinkResponse->id, $getResponse->id);
+        $this->assertInstanceOf(PayByLinkSummary::class, $getResponse);
+        $this->assertEquals($response->payByLinkResponse->id, $getResponse->id);
     }
 
-    public function testCreatePayLink_ThenCharge_WithTokenizedCard()
+    public function testCreatePayByLink_ThenCharge_WithTokenizedCard()
     {
-        $response = PayLinkService::create($this->payLink, $this->amount)
+        $response = PayByLinkService::create($this->payByLink, $this->amount)
             ->withCurrency('GBP')
             ->withClientTransactionId(GenerationUtils::getGuid())
             ->withDescription('March and April Invoice')
             ->execute();
 
-        $this->assertPayLinkResponse($response);
+        $this->assertPayByLinkResponse($response);
 
-        fwrite(STDERR, print_r($response->payLinkResponse->url, TRUE));
+        fwrite(STDERR, print_r($response->payByLinkResponse->url, TRUE));
 
         ServicesContainer::configureService($this->setupTransactionConfig(), "createTransaction");
 
@@ -371,7 +371,7 @@ class PayLinkTest extends TestCase
 
         $transaction = $tokenizedCard->charge($this->amount)
             ->withCurrency('GBP')
-            ->withPaymentLinkId($response->payLinkResponse->id)
+            ->withPaymentLinkId($response->payByLinkResponse->id)
             ->execute("createTransaction");
 
         $this->assertNotNull($transaction);
@@ -380,25 +380,25 @@ class PayLinkTest extends TestCase
 
         sleep(2);
 
-        $getResponse = PayLinkService::payLinkDetail($response->payLinkResponse->id)
+        $getResponse = PayByLinkService::payByLinkDetail($response->payByLinkResponse->id)
             ->execute();
 
         $this->assertNotNull($getResponse);
-        $this->assertInstanceOf(PayLinkSummary::class, $getResponse);
-        $this->assertEquals($response->payLinkResponse->id, $getResponse->id);
+        $this->assertInstanceOf(PayByLinkSummary::class, $getResponse);
+        $this->assertEquals($response->payByLinkResponse->id, $getResponse->id);
     }
 
-    public function testCreatePayLink_ThenCharge_With3DS()
+    public function testCreatePayByLink_ThenCharge_With3DS()
     {
-        $response = PayLinkService::create($this->payLink, $this->amount)
+        $response = PayByLinkService::create($this->payByLink, $this->amount)
             ->withCurrency('GBP')
             ->withClientTransactionId(GenerationUtils::getGuid())
             ->withDescription('March and April Invoice')
             ->execute();
 
-        $this->assertPayLinkResponse($response);
+        $this->assertPayByLinkResponse($response);
 
-        fwrite(STDERR, print_r($response->payLinkResponse->url, TRUE));
+        fwrite(STDERR, print_r($response->payByLinkResponse->url, TRUE));
 
         ServicesContainer::configureService($this->setupTransactionConfig(), "createTransaction");
 
@@ -440,7 +440,7 @@ class PayLinkTest extends TestCase
 
         $transaction = $this->card->charge($this->amount)
             ->withCurrency('GBP')
-            ->withPaymentLinkId($response->payLinkResponse->id)
+            ->withPaymentLinkId($response->payByLinkResponse->id)
             ->execute("createTransaction");
 
         $this->assertNotNull($transaction);
@@ -449,58 +449,58 @@ class PayLinkTest extends TestCase
 
         sleep(2);
 
-        $getResponse = PayLinkService::payLinkDetail($response->payLinkResponse->id)
+        $getResponse = PayByLinkService::payByLinkDetail($response->payByLinkResponse->id)
             ->execute();
 
         $this->assertNotNull($getResponse);
-        $this->assertInstanceOf(PayLinkSummary::class, $getResponse);
-        $this->assertEquals($response->payLinkResponse->id, $getResponse->id);
+        $this->assertInstanceOf(PayByLinkSummary::class, $getResponse);
+        $this->assertEquals($response->payByLinkResponse->id, $getResponse->id);
     }
 
-    public function testEditPayLink()
+    public function testEditPayByLink()
     {
-        $response = PayLinkService::findPayLink(1, 10)
-            ->orderBy(PayLinkSortProperty::TIME_CREATED, SortDirection::ASC)
+        $response = PayByLinkService::findPayByLink(1, 10)
+            ->orderBy(PayByLinkSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::START_DATE, $this->startDate)
             ->andWith(SearchCriteria::END_DATE, $this->endDate)
-            ->andWith(SearchCriteria::PAYLINK_STATUS, PayLinkStatus::ACTIVE)
+            ->andWith(SearchCriteria::PAYBYLINK_STATUS, PayByLinkStatus::ACTIVE)
             ->execute();
 
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
-        /** @var PayLinkSummary $randomPayLink */
-        $randomPayLink = $response->result[array_rand($response->result)];
-        $this->assertNotNull($randomPayLink);
-        $this->assertInstanceOf(PayLinkSummary::class, $randomPayLink);
-        $this->assertNotNull($randomPayLink->id);
+        /** @var PayByLinkSummary $randomPayByLink */
+        $randomPayByLink = $response->result[array_rand($response->result)];
+        $this->assertNotNull($randomPayByLink);
+        $this->assertInstanceOf(PayByLinkSummary::class, $randomPayByLink);
+        $this->assertNotNull($randomPayByLink->id);
 
-        $payLinkData = new PayLinkData();
-        $payLinkData->name = 'bla bla bla';
-        $payLinkData->usageMode = PaymentMethodUsageMode::MULTIPLE;
-        $payLinkData->type = PayLinkType::PAYMENT;
-        $payLinkData->usageLimit = 5;
-        $payLinkData->isShippable = false;
+        $payByLinkData = new PayByLinkData();
+        $payByLinkData->name = 'bla bla bla';
+        $payByLinkData->usageMode = PaymentMethodUsageMode::MULTIPLE;
+        $payByLinkData->type = PayByLinkType::PAYMENT;
+        $payByLinkData->usageLimit = 5;
+        $payByLinkData->isShippable = false;
         $amount = 10.08;
-        $response = PayLinkService::edit($randomPayLink->id)
+        $response = PayByLinkService::edit($randomPayByLink->id)
             ->withAmount($amount)
-            ->withPayLinkData($payLinkData)
-            ->withDescription('Update Paylink description')
+            ->withPayByLinkData($payByLinkData)
+            ->withDescription('Update PayByLink description')
             ->execute();
 
         $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(PayLinkStatus::ACTIVE, $response->responseMessage);
+        $this->assertEquals(PayByLinkStatus::ACTIVE, $response->responseMessage);
         $this->assertEquals($amount, $response->balanceAmount);
-        $this->assertNotNull($response->payLinkResponse->url);
-        $this->assertNotNull($response->payLinkResponse->id);
+        $this->assertNotNull($response->payByLinkResponse->url);
+        $this->assertNotNull($response->payByLinkResponse->id);
     }
 
-    public function testCreatePayLink_MissingType()
+    public function testCreatePayByLink_MissingType()
     {
-        $this->payLink->type = null;
+        $this->payByLink->type = null;
 
         $exceptionCaught = false;
         try {
-            PayLinkService::create($this->payLink, $this->amount)
+            PayByLinkService::create($this->payByLink, $this->amount)
                 ->withCurrency('GBP')
                 ->withDescription('March and April Invoice')
                 ->execute();
@@ -513,13 +513,13 @@ class PayLinkTest extends TestCase
         }
     }
 
-    public function testCreatePayLink_MissingUsageMode()
+    public function testCreatePayByLink_MissingUsageMode()
     {
-        $this->payLink->usageMode = null;
+        $this->payByLink->usageMode = null;
 
         $exceptionCaught = false;
         try {
-            PayLinkService::create($this->payLink, $this->amount)
+            PayByLinkService::create($this->payByLink, $this->amount)
                 ->withCurrency('GBP')
                 ->withDescription('March and April Invoice')
                 ->execute();
@@ -532,13 +532,13 @@ class PayLinkTest extends TestCase
         }
     }
 
-    public function testCreatePayLink_MissingPaymentMethod()
+    public function testCreatePayByLink_MissingPaymentMethod()
     {
-        $this->payLink->allowedPaymentMethods = null;
+        $this->payByLink->allowedPaymentMethods = null;
 
         $exceptionCaught = false;
         try {
-            PayLinkService::create($this->payLink, $this->amount)
+            PayByLinkService::create($this->payByLink, $this->amount)
                 ->withCurrency('GBP')
                 ->withDescription('March and April Invoice')
                 ->execute();
@@ -551,13 +551,13 @@ class PayLinkTest extends TestCase
         }
     }
 
-    public function testCreatePayLink_MissingName()
+    public function testCreatePayByLink_MissingName()
     {
-        $this->payLink->name = null;
+        $this->payByLink->name = null;
 
         $exceptionCaught = false;
         try {
-            PayLinkService::create($this->payLink, $this->amount)
+            PayByLinkService::create($this->payByLink, $this->amount)
                 ->withCurrency('GBP')
                 ->withDescription('March and April Invoice')
                 ->execute();
@@ -570,27 +570,27 @@ class PayLinkTest extends TestCase
         }
     }
 
-    public function testCreatePayLink_MissingShippable()
+    public function testCreatePayByLink_MissingShippable()
     {
-        $this->payLink->isShippable = null;
+        $this->payByLink->isShippable = null;
 
-        $response = PayLinkService::create($this->payLink, $this->amount)
+        $response = PayByLinkService::create($this->payByLink, $this->amount)
             ->withCurrency('GBP')
             ->withClientTransactionId(GenerationUtils::getGuid())
             ->withDescription('March and April Invoice')
             ->execute();
 
-        $this->assertPayLinkResponse($response);
-        $this->assertEquals("NO", $response->payLinkResponse->isShippable);
+        $this->assertPayByLinkResponse($response);
+        $this->assertEquals("NO", $response->payByLinkResponse->isShippable);
     }
 
-    public function testCreatePayLink_MissingShippingAmount()
+    public function testCreatePayByLink_MissingShippingAmount()
     {
-        $this->payLink->shippingAmount = null;
+        $this->payByLink->shippingAmount = null;
 
         $exceptionCaught = false;
         try {
-            PayLinkService::create($this->payLink, $this->amount)
+            PayByLinkService::create($this->payByLink, $this->amount)
                 ->withCurrency('GBP')
                 ->withDescription('March and April Invoice')
                 ->withClientTransactionId(GenerationUtils::getGuid())
@@ -604,11 +604,11 @@ class PayLinkTest extends TestCase
         }
     }
 
-    public function testCreatePayLink_MissingDescription()
+    public function testCreatePayByLink_MissingDescription()
     {
         $exceptionCaught = false;
         try {
-            PayLinkService::create($this->payLink, $this->amount)
+            PayByLinkService::create($this->payByLink, $this->amount)
                 ->withCurrency('GBP')
                 ->execute();
         } catch (ApiException $e) {
@@ -620,11 +620,11 @@ class PayLinkTest extends TestCase
         }
     }
 
-    public function testCreatePayLink_MissingCurrency()
+    public function testCreatePayByLink_MissingCurrency()
     {
         $exceptionCaught = false;
         try {
-            PayLinkService::create($this->payLink, $this->amount)
+            PayByLinkService::create($this->payByLink, $this->amount)
                 ->withDescription('March and April Invoice')
                 ->execute();
         } catch (ApiException $e) {
@@ -636,17 +636,17 @@ class PayLinkTest extends TestCase
         }
     }
 
-    public function testEditPayLink_MissingUsageMode()
+    public function testEditPayByLink_MissingUsageMode()
     {
-        $this->assertNotNull($this->payLinkId);
-        $this->payLink->usageMode = null;
+        $this->assertNotNull($this->payByLinkId);
+        $this->payByLink->usageMode = null;
 
         $exceptionCaught = false;
         try {
-            PayLinkService::edit($this->payLinkId)
+            PayByLinkService::edit($this->payByLinkId)
                 ->withAmount($this->amount)
-                ->withPayLinkData($this->payLink)
-                ->withDescription('Update Paylink description')
+                ->withPayByLinkData($this->payByLink)
+                ->withDescription('Update PayByLink description')
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
@@ -656,17 +656,17 @@ class PayLinkTest extends TestCase
         }
     }
 
-    public function testEditPayLink_MissingType()
+    public function testEditPayByLink_MissingType()
     {
-        $this->assertNotNull($this->payLinkId);
-        $this->payLink->type = null;
+        $this->assertNotNull($this->payByLinkId);
+        $this->payByLink->type = null;
 
         $exceptionCaught = false;
         try {
-            PayLinkService::edit($this->payLinkId)
+            PayByLinkService::edit($this->payByLinkId)
                 ->withAmount($this->amount)
-                ->withPayLinkData($this->payLink)
-                ->withDescription('Update Paylink description')
+                ->withPayByLinkData($this->payByLink)
+                ->withDescription('Update PayByLink description')
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
@@ -676,17 +676,17 @@ class PayLinkTest extends TestCase
         }
     }
 
-    public function testEditPayLink_MissingUsageLimit()
+    public function testEditPayByLink_MissingUsageLimit()
     {
-        $this->assertNotNull($this->payLinkId);
-        $this->payLink->usageLimit = null;
+        $this->assertNotNull($this->payByLinkId);
+        $this->payByLink->usageLimit = null;
 
         $exceptionCaught = false;
         try {
-            PayLinkService::edit($this->payLinkId)
+            PayByLinkService::edit($this->payByLinkId)
                 ->withAmount($this->amount)
-                ->withPayLinkData($this->payLink)
-                ->withDescription('Update Paylink description')
+                ->withPayByLinkData($this->payByLink)
+                ->withDescription('Update PayBylink description')
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
@@ -696,14 +696,14 @@ class PayLinkTest extends TestCase
         }
     }
 
-    public function testEditPayLink_MissingPayLinkData()
+    public function testEditPayByLink_MissingPayByLinkData()
     {
-        $this->assertNotNull($this->payLinkId);
+        $this->assertNotNull($this->payByLinkId);
         $exceptionCaught = false;
         try {
-            PayLinkService::edit($this->payLinkId)
+            PayByLinkService::edit($this->payByLinkId)
                 ->withAmount($this->amount)
-                ->withDescription('Update Paylink description')
+                ->withDescription('Update PayByLink description')
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
@@ -713,15 +713,15 @@ class PayLinkTest extends TestCase
         }
     }
 
-    public function testEditPayLink_MissingAmount()
+    public function testEditPayByLink_MissingAmount()
     {
-        $this->assertNotNull($this->payLinkId);
+        $this->assertNotNull($this->payByLinkId);
         $exceptionCaught = false;
         try {
-            PayLinkService::edit($this->payLinkId)
+            PayByLinkService::edit($this->payByLinkId)
                 ->withAmount(null)
-                ->withPayLinkData($this->payLink)
-                ->withDescription('Update Paylink description')
+                ->withPayByLinkData($this->payByLink)
+                ->withDescription('Update PayByLink description')
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
@@ -731,14 +731,14 @@ class PayLinkTest extends TestCase
         }
     }
 
-    public function testEditPayLink_RandomPayLinkId()
+    public function testEditPayByLink_RandomPayByLinkId()
     {
         $exceptionCaught = false;
         try {
-            PayLinkService::edit(GenerationUtils::getGuid())
+            PayByLinkService::edit(GenerationUtils::getGuid())
                 ->withAmount($this->amount)
-                ->withPayLinkData($this->payLink)
-                ->withDescription('Update Paylink description')
+                ->withPayByLinkData($this->payByLink)
+                ->withDescription('Update PayByLink description')
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
@@ -749,29 +749,29 @@ class PayLinkTest extends TestCase
         }
     }
 
-    public function testFindPayLinkByStatus()
+    public function testFindPayByLinkByStatus()
     {
-        $response = PayLinkService::findPayLink(1, 10)
-            ->orderBy(PayLinkSortProperty::TIME_CREATED, SortDirection::ASC)
+        $response = PayByLinkService::findPayByLink(1, 10)
+            ->orderBy(PayByLinkSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::START_DATE, $this->startDate)
             ->andWith(SearchCriteria::END_DATE, $this->endDate)
-            ->andWith(SearchCriteria::PAYLINK_STATUS, PayLinkStatus::EXPIRED)
+            ->andWith(SearchCriteria::PAYBYLINK_STATUS, PayByLinkStatus::EXPIRED)
             ->execute();
 
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
-        /** @var PayLinkSummary $randomPayLink */
-        $randomPayLink = $response->result[array_rand($response->result)];
-        $this->assertNotNull($randomPayLink);
-        $this->assertInstanceOf(PayLinkSummary::class, $randomPayLink);
-        $this->assertEquals(PayLinkStatus::EXPIRED, $randomPayLink->status);
+        /** @var PayByLinkSummary $randomPayByLink */
+        $randomPayByLink = $response->result[array_rand($response->result)];
+        $this->assertNotNull($randomPayByLink);
+        $this->assertInstanceOf(PayByLinkSummary::class, $randomPayByLink);
+        $this->assertEquals(PayByLinkStatus::EXPIRED, $randomPayByLink->status);
     }
 
-    public function testFindPayLinkUsageModeAndName()
+    public function testFindPayByLinkUsageModeAndName()
     {
         $name = 'iphone 14';
-        $response = PayLinkService::findPayLink(1, 10)
-            ->orderBy(PayLinkSortProperty::TIME_CREATED, SortDirection::ASC)
+        $response = PayByLinkService::findPayByLink(1, 10)
+            ->orderBy(PayByLinkSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::START_DATE, $this->startDate)
             ->andWith(SearchCriteria::END_DATE, $this->endDate)
             ->andWith(SearchCriteria::PAYMENT_METHOD_USAGE_MODE, PaymentMethodUsageMode::SINGLE)
@@ -780,19 +780,19 @@ class PayLinkTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
-        /** @var PayLinkSummary $randomPayLink */
-        $randomPayLink = $response->result[array_rand($response->result)];
-        $this->assertNotNull($randomPayLink);
-        $this->assertInstanceOf(PayLinkSummary::class, $randomPayLink);
-        $this->assertEquals(PaymentMethodUsageMode::SINGLE, $randomPayLink->usageMode);
-        $this->assertEquals($name, $randomPayLink->name);
+        /** @var PayByLinkSummary $randomPayByLink */
+        $randomPayByLink = $response->result[array_rand($response->result)];
+        $this->assertNotNull($randomPayByLink);
+        $this->assertInstanceOf(PayByLinkSummary::class, $randomPayByLink);
+        $this->assertEquals(PaymentMethodUsageMode::SINGLE, $randomPayByLink->usageMode);
+        $this->assertEquals($name, $randomPayByLink->name);
     }
 
-    public function testFindPayLinkByAmount()
+    public function testFindPayByLinkByAmount()
     {
         $amount = 10.00;
-        $response = PayLinkService::findPayLink(1, 10)
-            ->orderBy(PayLinkSortProperty::TIME_CREATED, SortDirection::ASC)
+        $response = PayByLinkService::findPayByLink(1, 10)
+            ->orderBy(PayByLinkSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::START_DATE, $this->startDate)
             ->andWith(SearchCriteria::END_DATE, $this->endDate)
             ->andWith(DataServiceCriteria::AMOUNT, $amount)
@@ -800,17 +800,17 @@ class PayLinkTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
-        /** @var PayLinkSummary $randomPayLink */
-        $randomPayLink = $response->result[array_rand($response->result)];
-        $this->assertNotNull($randomPayLink);
-        $this->assertInstanceOf(PayLinkSummary::class, $randomPayLink);
-        $this->assertEquals($amount, $randomPayLink->amount);
+        /** @var PayByLinkSummary $randomPayByLink */
+        $randomPayByLink = $response->result[array_rand($response->result)];
+        $this->assertNotNull($randomPayByLink);
+        $this->assertInstanceOf(PayByLinkSummary::class, $randomPayByLink);
+        $this->assertEquals($amount, $randomPayByLink->amount);
     }
-    public function testFindPayLinkByExpireDate()
+    public function testFindPayByLinkByExpireDate()
     {
         $date = new \DateTime('2024-05-09');
-        $response = PayLinkService::findPayLink(1, 10)
-            ->orderBy(PayLinkSortProperty::TIME_CREATED, SortDirection::ASC)
+        $response = PayByLinkService::findPayByLink(1, 10)
+            ->orderBy(PayByLinkSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::START_DATE, $this->startDate)
             ->andWith(SearchCriteria::END_DATE, $this->endDate)
             ->andWith(SearchCriteria::EXPIRATION_DATE, $date)
@@ -818,20 +818,20 @@ class PayLinkTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
-        /** @var PayLinkSummary $randomPayLink */
-        $randomPayLink = $response->result[array_rand($response->result)];
-        $this->assertNotNull($randomPayLink);
-        $this->assertInstanceOf(PayLinkSummary::class, $randomPayLink);
-        $this->assertEquals($date->format('Y-m-d'), $randomPayLink->expirationDate->format('Y-m-d'));
+        /** @var PayByLinkSummary $randomPayByLink */
+        $randomPayByLink = $response->result[array_rand($response->result)];
+        $this->assertNotNull($randomPayByLink);
+        $this->assertInstanceOf(PayByLinkSummary::class, $randomPayByLink);
+        $this->assertEquals($date->format('Y-m-d'), $randomPayByLink->expirationDate->format('Y-m-d'));
     }
 
-    private function assertPayLinkResponse(Transaction $response)
+    private function assertPayByLinkResponse(Transaction $response)
     {
         $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(PayLinkStatus::ACTIVE, $response->responseMessage);
+        $this->assertEquals(PayByLinkStatus::ACTIVE, $response->responseMessage);
         $this->assertEquals($this->amount, $response->balanceAmount);
-        $this->assertNotNull($response->payLinkResponse->url);
-        $this->assertNotNull($response->payLinkResponse->id);
+        $this->assertNotNull($response->payByLinkResponse->url);
+        $this->assertNotNull($response->payByLinkResponse->id);
     }
 
     private function setupTransactionConfig()

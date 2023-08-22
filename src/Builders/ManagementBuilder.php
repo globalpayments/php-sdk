@@ -332,11 +332,11 @@ class ManagementBuilder extends TransactionBuilder
         $this->validations->of(TransactionType::TOKEN_UPDATE)
             ->check('paymentMethod')->isInstanceOf(CreditCardData::class);
 
-        $this->validations->of(TransactionType::PAYLINK_UPDATE)
+        $this->validations->of(TransactionType::PAYBYLINK_UPDATE)
             ->check('amount')->isNotNull()
-            ->check('usageMode')->isNotNullInSubProperty('payLinkData')
-            ->check('usageLimit')->isNotNullInSubProperty('payLinkData')
-            ->check('type')->isNotNullInSubProperty('payLinkData');
+            ->check('usageMode')->isNotNullInSubProperty('payByLinkData')
+            ->check('usageLimit')->isNotNullInSubProperty('payByLinkData')
+            ->check('type')->isNotNullInSubProperty('payByLinkData');
     }
 
     /**

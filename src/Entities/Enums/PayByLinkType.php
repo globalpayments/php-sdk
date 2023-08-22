@@ -2,7 +2,7 @@
 
 namespace GlobalPayments\Api\Entities\Enums;
 
-class PayLinkType
+class PayByLinkType
 {
     const PAYMENT = 'PAYMENT';
 }

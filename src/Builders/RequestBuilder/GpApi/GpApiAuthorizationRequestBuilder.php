@@ -15,7 +15,7 @@ use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
 use GlobalPayments\Api\Entities\Enums\CaptureMode;
-use GlobalPayments\Api\Entities\Enums\PayLinkStatus;
+use GlobalPayments\Api\Entities\Enums\PayByLinkStatus;
 use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
 use GlobalPayments\Api\Entities\Enums\PaymentProvider;
 use GlobalPayments\Api\Entities\Enums\PaymentType;
@@ -28,7 +28,7 @@ use GlobalPayments\Api\Entities\GpApi\DTO\Card;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\IRequestBuilder;
-use GlobalPayments\Api\Entities\PayLinkData;
+use GlobalPayments\Api\Entities\PayByLinkData;
 use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Entities\Product;
 use GlobalPayments\Api\Gateways\OpenBankingProvider;
@@ -135,37 +135,37 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                 $requestData['payment_method'] = $this->createPaymentMethodParam($builder, $config);
                 break;
             case TransactionType::CREATE:
-                if ($builder->payLinkData instanceof PayLinkData) {
-                    /** @var PayLinkData $payLink */
-                    $payLink = $builder->payLinkData;
-                    $endpoint = GpApiRequest::PAYLINK_ENDPOINT;
+                if ($builder->payByLinkData instanceof PayByLinkData) {
+                    /** @var PayByLinkData $payByLink */
+                    $payByLink = $builder->payByLinkData;
+                    $endpoint = GpApiRequest::PAYBYLINK_ENDPOINT;
                     $verb = 'POST';
                     $requestData['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
                     $requestData['account_id'] = $config->accessTokenInfo->transactionProcessingAccountID;
-                    $requestData['type'] = $payLink->type;
-                    $requestData['usage_mode'] = $payLink->usageMode;
-                    $requestData['usage_limit'] = (string) $payLink->usageLimit;
+                    $requestData['type'] = $payByLink->type;
+                    $requestData['usage_mode'] = $payByLink->usageMode;
+                    $requestData['usage_limit'] = (string) $payByLink->usageLimit;
                     $requestData['reference'] = $builder->clientTransactionId;
-                    $requestData['name'] = $payLink->name;
+                    $requestData['name'] = $payByLink->name;
                     $requestData['description'] = $builder->description;
-                    $requestData['shippable'] = $payLink->isShippable == true ? 'YES' : 'NO';
-                    $requestData['shipping_amount'] = StringUtils::toNumeric($payLink->shippingAmount);
-                    $requestData['expiration_date'] = !empty($payLink->expirationDate) ?
-                        (new \DateTime($payLink->expirationDate))->format('Y-m-d\TH:i:s\Z') : null;
+                    $requestData['shippable'] = $payByLink->isShippable == true ? 'YES' : 'NO';
+                    $requestData['shipping_amount'] = StringUtils::toNumeric($payByLink->shippingAmount);
+                    $requestData['expiration_date'] = !empty($payByLink->expirationDate) ?
+                        (new \DateTime($payByLink->expirationDate))->format('Y-m-d\TH:i:s\Z') : null;
                     //@TODO - remove status when GP-API will fix the issue (status shouldn't be sent in request)
-                    $requestData['status'] = PayLinkStatus::ACTIVE;
-                    $requestData['images'] = $payLink->images;
+                    $requestData['status'] = PayByLinkStatus::ACTIVE;
+                    $requestData['images'] = $payByLink->images;
                     $requestData['transactions'] = [
                         'amount' => StringUtils::toNumeric($builder->amount),
                         'channel' => $config->channel,
                         'currency' => $builder->currency,
                         'country' => $config->country,
-                        'allowed_payment_methods' => $payLink->allowedPaymentMethods
+                        'allowed_payment_methods' => $payByLink->allowedPaymentMethods
                     ];
                     $requestData['notifications'] = [
-                        'return_url' => $payLink->returnUrl,
-                        'status_url' => $payLink->statusUpdateUrl,
-                        'cancel_url' => $payLink->cancelUrl
+                        'return_url' => $payByLink->returnUrl,
+                        'status_url' => $payByLink->statusUpdateUrl,
+                        'cancel_url' => $payByLink->cancelUrl
                     ];
                 }
                 break;

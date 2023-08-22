@@ -81,7 +81,7 @@ class SearchCriteria extends Enum
     const RISK_ASSESSMENT_MODE = 'riskAssessmentMode';
     const RISK_ASSESSMENT_RESULT = 'riskAssessmentResult';
     const RISK_ASSESSMENT_REASON_CODE = 'riskAssessmentReasonCode';
-    const PAYLINK_STATUS = 'payLinkStatus';
+    const PAYBYLINK_STATUS = 'payByLinkStatus';
     const DESCRIPTION = 'description';
     const EXPIRATION_DATE = 'expirationDate';
     const ACCOUNT_STATUS = 'accountStatus';

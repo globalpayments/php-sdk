@@ -6,7 +6,7 @@ use GlobalPayments\Api\Entities\Enums\MerchantAccountsSortProperty;
 use GlobalPayments\Api\Entities\Enums\ActionSortProperty;
 use GlobalPayments\Api\Entities\Enums\DepositSortProperty;
 use GlobalPayments\Api\Entities\Enums\DisputeSortProperty;
-use GlobalPayments\Api\Entities\Enums\PayLinkSortProperty;
+use GlobalPayments\Api\Entities\Enums\PayByLinkSortProperty;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Enums\StoredPaymentMethodSortProperty;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
@@ -78,8 +78,8 @@ class TransactionReportBuilder extends ReportBuilder
      */
     public $actionOrderBy;
 
-    /** @var PayLinkSortProperty */
-    public $payLinkOrderBy;
+    /** @var PayByLinkSortProperty */
+    public $payByLinkOrderBy;
 
     /**
      * @var SortDirection
@@ -275,9 +275,9 @@ class TransactionReportBuilder extends ReportBuilder
         return $this;
     }
 
-    public function withPayLinkId($payLinkId)
+    public function withPayByLinkId($payByLinkId)
     {
-        $this->searchBuilder->payLinkId = $payLinkId;
+        $this->searchBuilder->payByLinkId = $payByLinkId;
         return $this;
     }
 
@@ -313,8 +313,8 @@ class TransactionReportBuilder extends ReportBuilder
             case ReportType::FIND_ACTIONS_PAGED:
                 $this->actionOrderBy = $sortProperty;
                 break;
-            case ReportType::FIND_PAYLINK_PAGED:
-                $this->payLinkOrderBy = $sortProperty;
+            case ReportType::FIND_PAYBYLINK_PAGED:
+                $this->payByLinkOrderBy = $sortProperty;
                 break;
             default:
                 throw new \InvalidArgumentException("Invalid order found");
@@ -334,7 +334,7 @@ class TransactionReportBuilder extends ReportBuilder
         $this->validations->of(ReportType::DOCUMENT_DISPUTE_DETAIL)
             ->check('disputeDocumentId')->isNotNullInSubProperty('searchBuilder');
 
-        $this->validations->of(ReportType::PAYLINK_DETAIL)
-            ->check('payLinkId')->isNotNullInSubProperty('searchBuilder');
+        $this->validations->of(ReportType::PAYBYLINK_DETAIL)
+            ->check('payByLinkId')->isNotNullInSubProperty('searchBuilder');
     }
 }

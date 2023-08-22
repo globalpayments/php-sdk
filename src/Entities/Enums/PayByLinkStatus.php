@@ -4,7 +4,7 @@ namespace GlobalPayments\Api\Entities\Enums;
 
 use GlobalPayments\Api\Entities\Enum;
 
-class PayLinkStatus  extends Enum
+class PayByLinkStatus  extends Enum
 {
     const  ACTIVE = 'ACTIVE';
     const INACTIVE = 'INACTIVE';

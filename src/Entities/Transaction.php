@@ -337,8 +337,7 @@ class Transaction
      */
     public $bankPaymentResponse;
 
-    /** @var PayLinkResponse */
-    public $payLinkResponse;
+    public PayByLinkResponse $payByLinkResponse;
 
     /** @var CardIssuerResponse $cardIssuerResponse */
     public $cardIssuerResponse;

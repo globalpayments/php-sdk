@@ -213,12 +213,12 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                         'http_response_code' => $builder->searchBuilder->httpResponseCode
                     ];
                 break;
-            case ReportType::PAYLINK_DETAIL:
-                $endpoint = GpApiRequest::PAYLINK_ENDPOINT . '/' . $builder->searchBuilder->payLinkId;
+            case ReportType::PAYBYLINK_DETAIL:
+                $endpoint = GpApiRequest::PAYBYLINK_ENDPOINT . '/' . $builder->searchBuilder->payByLinkId;
                 $verb = 'GET';
                 break;
-            case ReportType::FIND_PAYLINK_PAGED:
-                $endpoint = GpApiRequest::PAYLINK_ENDPOINT;
+            case ReportType::FIND_PAYBYLINK_PAGED:
+                $endpoint = GpApiRequest::PAYBYLINK_ENDPOINT;
                 $verb = 'GET';
                 $this->addBasicParams($queryParams, $builder);
                 $queryParams['from_time_created'] = !empty($builder->searchBuilder->startDate) ?
@@ -226,8 +226,8 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $queryParams['to_time_created'] = !empty($builder->searchBuilder->endDate) ?
                     $builder->searchBuilder->endDate->format('Y-m-d') : null;
                 $queryParams['order'] = $builder->order;
-                $queryParams['order_by'] = $builder->payLinkOrderBy;
-                $queryParams['status'] = $builder->searchBuilder->payLinkStatus;
+                $queryParams['order_by'] = $builder->payByLinkOrderBy;
+                $queryParams['status'] = $builder->searchBuilder->payByLinkStatus;
                 $queryParams['usage_mode'] = $builder->searchBuilder->paymentMethodUsageMode;
                 $queryParams['name'] = $builder->searchBuilder->displayName;
                 $queryParams['amount'] = StringUtils::toNumeric($builder->searchBuilder->amount);;
