@@ -50,12 +50,15 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Utils\CardUtils;
 use GlobalPayments\Api\Utils\EmvUtils;
 use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Utils\Logging\ProtectSensitiveData;
 use GlobalPayments\Api\Utils\StringUtils;
 
 class GpApiAuthorizationRequestBuilder implements IRequestBuilder
 {
     /** @var AuthorizationBuilder */
     private $builder;
+
+    private array $maskedValues = [];
 
     /***
      * @param AuthorizationBuilder $builder
@@ -115,6 +118,14 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                         ) : null;
                     $card->cvv = $builderCard->cvn;
                     $requestData['card'] = $card;
+                    $this->maskedValues = ProtectSensitiveData::hideValues(
+                        [
+                            'card.expiry_month' => $card->expiry_month,
+                            'card.expiry_year' => $card->expiry_year,
+                            'card.cvv' => $card->cvv
+                        ]
+                    );
+                    $this->maskedValues = ProtectSensitiveData::hideValue('card.number', $card->number, 4, 6);
                 } else {
                     $endpoint = GpApiRequest::VERIFICATIONS_ENDPOINT;
                     $verb = 'POST';
@@ -189,6 +200,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             default:
                 return '';
         }
+        GpApiRequest::$maskedValues = $this->maskedValues;
 
         return new GpApiRequest($endpoint, $verb, $requestData);
     }
@@ -317,7 +329,8 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     'country' => $builder->billingAddress->countryCode
                 ];
                 if (!empty($builder->customerData)) {
-                    $payer['name'] = $builder->customerData->firstName . ' ' . $builder->customerData->lastName;
+                    $payerName = $builder->customerData->firstName . ' ' . $builder->customerData->lastName;
+                    $payer['name'] = $payerName;
                     $payer['date_of_birth'] = $builder->customerData->dateOfBirth;
                 }
                 list($phoneNumber, $phoneCountryCode) = $this->getPhoneNumber($builder, PhoneNumberType::HOME);
@@ -425,7 +438,12 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                         [
                             'id' => $secureEcom->serverTransactionId,
                             'three_ds' => [
-                                'exempt_status' => $secureEcom->exemptStatus
+                                'exempt_status' => $secureEcom->exemptStatus,
+                                'message_version' => $secureEcom->messageVersion,
+                                'eci' => $secureEcom->eci,
+                                'server_trans_reference' => $secureEcom->serverTransactionId,
+                                'ds_trans_reference' => $secureEcom->directoryServerTransactionId,
+                                'value' => $secureEcom->authenticationValue
                             ]
                         ];
                 }
@@ -456,7 +474,13 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                         ]
                     ]
                 ];
-
+                $this->maskedValues = ProtectSensitiveData::hideValues(
+                    [
+                        'payment_method.bank_transfer.account_number' => $paymentMethodContainer->accountNumber,
+                        'payment_method.bank_transfer.bank.code' => $paymentMethodContainer->routingNumber,
+                    ],
+                    4
+                );
                 return $paymentMethod;
             case IEncryptable::class:
                 if (!empty($paymentMethodContainer->encryptionData)) {
@@ -506,6 +530,13 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                         'value' => $builder->remittanceReferenceValue
                     ]
                 ];
+                $this->maskedValues = ProtectSensitiveData::hideValues(
+                    [
+                        'payment_method.bank_transfer.account_number' => $paymentMethodContainer->accountNumber,
+                        'payment_method.bank_transfer.iban' => $paymentMethodContainer->iban
+                    ],
+                    4
+                );
                 return $paymentMethod;
             case BNPL::class:
                 if (!empty($builder->customerData->firstName) && !empty($builder->customerData->lastName)) {
@@ -529,7 +560,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             }
 
             if (is_null($paymentMethod->id)) {
-                $paymentMethod->card = CardUtils::generateCard($builder, GatewayProvider::GP_API);
+                $paymentMethod->card = CardUtils::generateCard($builder, GatewayProvider::GP_API, $this->maskedValues);
             }
         } else {
             /* digital wallet */

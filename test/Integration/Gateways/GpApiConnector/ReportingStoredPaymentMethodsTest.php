@@ -10,6 +10,7 @@ use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\StoredPaymentMethodSummary;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -28,7 +29,7 @@ class ReportingStoredPaymentMethodsTest extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }

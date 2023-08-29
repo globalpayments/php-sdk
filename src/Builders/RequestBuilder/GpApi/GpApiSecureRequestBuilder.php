@@ -21,12 +21,14 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Utils\CountryUtils;
 use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Utils\Logging\ProtectSensitiveData;
 use GlobalPayments\Api\Utils\StringUtils;
 
 class GpApiSecureRequestBuilder implements IRequestBuilder
 {
     /** @var SecureBuilder */
     private $builder;
+    private array $maskedValues = [];
 
     public static function canProcess($builder = null)
     {
@@ -91,6 +93,7 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
                      sprintf("Your current gateway does not %s transaction type.", $builder->transactionType)
                  );
         }
+        GpApiRequest::$maskedValues = $this->maskedValues;
 
         return new GpApiRequest(
             $endpoint,
@@ -193,14 +196,25 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
 
         }
         if ($cardData instanceof ICardData && empty($cardData->token)) {
+            $expMonth = $cardData->expMonth ?? '';
+            $expYear = !empty($cardData->expYear) ?
+                substr(str_pad($cardData->expYear, 4, '0', STR_PAD_LEFT), 2, 2) : '';
             $paymentMethod->card = (object) [
                 'brand' => !empty($cardData->getCardType()) ? strtoupper($cardData->getCardType()) : '',
                 'number' => $cardData->number ?? '',
-                'expiry_month' => !empty($cardData->expMonth) ? $cardData->expMonth : '',
-                'expiry_year' => !empty($cardData->expYear) ?
-                    substr(str_pad($cardData->expYear, 4, '0', STR_PAD_LEFT), 2, 2) : ''
+                'expiry_month' => $expMonth,
+                'expiry_year' => $expYear
             ];
-            $paymentMethod->name = !empty($cardData->cardHolderName) ? $cardData->cardHolderName : null;
+            $paymentMethod->name = $cardData->cardHolderName ?? '';
+            $this->maskedValues = ProtectSensitiveData::hideValues(
+                [
+                    'payment_method.card.expiry_month' => $expMonth,
+                    'payment_method.card.expiry_year' => $expYear,
+                ]
+            );
+            $this->maskedValues = ProtectSensitiveData::hideValue(
+                    'payment_method.card.number', $cardData->number ?? '', 4, 6
+            );
         }
 
 

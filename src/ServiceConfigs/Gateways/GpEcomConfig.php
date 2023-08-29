@@ -61,6 +61,7 @@ class GpEcomConfig extends GatewayConfig
         $gateway->serviceUrl = $this->serviceUrl;
         $gateway->requestLogger = $this->requestLogger;
         $gateway->webProxy = $this->webProxy;
+        $gateway->environment = $this->environment;
 
         $services->gatewayConnector = $gateway;
         $services->recurringConnector = $gateway;
@@ -86,6 +87,7 @@ class GpEcomConfig extends GatewayConfig
             $secure3d2->timeout = $gateway->timeout;
             $secure3d2->requestLogger = $this->requestLogger;
             $secure3d2->webProxy = $this->webProxy;
+            $secure3d2->environment = $this->environment;
 
             $services->setSecure3dProvider(Secure3dVersion::TWO, $secure3d2);
         }
@@ -100,7 +102,7 @@ class GpEcomConfig extends GatewayConfig
             $openBanking->timeout = $gateway->timeout;
             $openBanking->requestLogger = $this->requestLogger;
             $openBanking->webProxy = $this->webProxy;
-
+            $openBanking->environment = $this->environment;
             $services->setOpenBankingProvider($openBanking);
         }
     }

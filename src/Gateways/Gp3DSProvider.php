@@ -17,6 +17,7 @@ use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\Utils\CardUtils;
 use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Utils\Logging\ProtectSensitiveData;
 use GlobalPayments\Api\Utils\StringUtils;
 
 class Gp3DSProvider extends RestGateway implements ISecure3dProvider
@@ -106,6 +107,7 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             if ($paymentMethod instanceof CreditCardData) {
                 $cardData = $paymentMethod;
                 $request = $this->maybeSetKey($request, 'number', $cardData->number);
+                $this->maskedRequestData = ProtectSensitiveData::hideValue('number', $cardData->number, 4, 6);
                 $request = $this->maybeSetKey(
                     $request,
                     'scheme',
@@ -165,18 +167,22 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             if ($paymentMethod instanceof CreditCardData) {
                 $cardData = $paymentMethod;
                 $hashValue = $cardData->number;
-
                 $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'number', $cardData->number);
+                $this->maskedRequestData = ProtectSensitiveData::hideValue('card_detail.number', $cardData->number, 4, 6);
                 $request['card_detail'] = $this->maybeSetKey(
                     $request['card_detail'],
                     'scheme',
                     strtoupper(CardUtils::getBaseCardType($cardData->getCardType()))
                 );
-                $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'expiry_month', $cardData->expMonth);
-                $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'expiry_year',
-                                                substr(str_pad($cardData->expYear, 4, '0', STR_PAD_LEFT), 2, 2));
-                $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'full_name', $cardData->cardHolderName);
 
+                $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'expiry_month', $cardData->expMonth);
+                $expYear = substr(str_pad($cardData->expYear, 4, '0', STR_PAD_LEFT), 2, 2);
+                $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'expiry_year', $expYear);
+                $request['card_detail'] = $this->maybeSetKey($request['card_detail'], 'full_name', $cardData->cardHolderName);
+                $this->maskedRequestData = ProtectSensitiveData::hideValues([
+                    'card_detail.expiry_month' => $cardData->expMonth,
+                    'card_detail.expiry_year' => $expYear
+                ]);
                 if (!empty($cardData->cardHolderName)) {
                     $names = explode(' ', $cardData->cardHolderName, 2);
                     if (count($names) >= 1) {
@@ -474,21 +480,5 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
         } else {
             return $cardType;
         }
-    }
-
-    /**
-     * @throws GatewayException
-     * @return string */
-    private function handleResponse(GatewayResponse $response)
-    {
-        if ($response->statusCode != 200 && $response->statusCode != 204) {
-            $parsed = json_decode($response->rawResponse, true);
-            if (array_key_exists('error', $parsed)) {
-                $error = $parsed['error'];
-                throw new GatewayException(sprintf("Status code: %s - %s", $response->statusCode, $error));
-            }
-            throw new GatewayException(sprintf("Status code: %s - %s", $response->statusCode, $error));
-        }
-        return $response->rawResponse;
     }
 }

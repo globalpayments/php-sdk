@@ -7,6 +7,7 @@ use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
@@ -14,10 +15,10 @@ use PHPUnit\Framework\TestCase;
 
 class DccCardNotPresentTest extends TestCase
 {
-    private $currency = 'EUR';
-    private $amount = 15.11;
+    private string $currency = 'EUR';
+    private float $amount = 15.11;
     /** @var CreditCardData */
-    private $card;
+    private CreditCardData $card;
 
     public function setup(): void
     {
@@ -34,7 +35,7 @@ class DccCardNotPresentTest extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
         $accessTokenInfo = new AccessTokenInfo();

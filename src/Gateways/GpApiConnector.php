@@ -233,7 +233,9 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
             throw new ApiException("Request was not generated!");
         }
         $idempotencyKey = !empty($builder->idempotencyKey) ? $builder->idempotencyKey : null;
-
+        if (!empty($request::$maskedValues)) {
+            $this->maskedRequestData = $request::$maskedValues;
+        }
         return $this->doTransaction(
             $request->httpVerb,
             $request->endpoint,

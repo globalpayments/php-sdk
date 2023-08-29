@@ -19,6 +19,7 @@ use GlobalPayments\Api\Mapping\EnumMapping;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
+use GlobalPayments\Api\Utils\Logging\ProtectSensitiveData;
 use GlobalPayments\Api\Utils\StringUtils;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 
@@ -27,6 +28,8 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
     private static $allowedActions =[
         PaymentMethodType::BANK_PAYMENT => []
     ];
+
+    private array $maskedValues = [];
 
     /**
      * @param $builder
@@ -91,12 +94,20 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                 $card->expiry_year = !empty($builderCard->expYear) ?
                     substr(str_pad($builderCard->expYear, 4, '0', STR_PAD_LEFT), 2, 2) : null;
                 $card->number = !empty($builderCard->number) ? $builderCard->number : null;
+                $this->maskedValues = ProtectSensitiveData::hideValue(
+                    'card.number', $card->number, 4, 6
+                );
+                $this->maskedValues = ProtectSensitiveData::hideValues(
+                    [
+                        'card.expiry_year' => $card->expiry_year,
+                        'card.expiry_month' => $card->expiry_month
+                    ]
+                );
                 $payload = [
                     'usage_mode' => !empty($builder->paymentMethodUsageMode) ? $builder->paymentMethodUsageMode : null,
                     'name' => !empty($builderCard->cardHolderName) ? $builderCard->cardHolderName : null,
                     'card' => $card
                 ];
-
                 break;
             case TransactionType::REFUND:
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/refund';
@@ -285,6 +296,8 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
             default:
                 return null;
         }
+
+        GpApiRequest::$maskedValues = $this->maskedValues;
 
         return new GpApiRequest($endpoint, $verb, $payload);
     }

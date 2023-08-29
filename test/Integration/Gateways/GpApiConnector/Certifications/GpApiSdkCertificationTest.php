@@ -7,6 +7,7 @@ use GlobalPayments\Api\Entities\Enums\CvnPresenceIndicator;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use PHPUnit\Framework\TestCase;
@@ -16,7 +17,7 @@ class GpApiSdkCertificationTest extends TestCase
     /**
      * @var CreditCardData $card
      */
-    private $card;
+    private CreditCardData $card;
 
     public function setup(): void
     {
@@ -29,7 +30,7 @@ class GpApiSdkCertificationTest extends TestCase
         $this->card->cvnPresenceIndicator = CvnPresenceIndicator::PRESENT;
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }

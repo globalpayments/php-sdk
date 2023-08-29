@@ -2,6 +2,7 @@
 
 namespace Gateways\GpApiConnector;
 
+use DateTime;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
@@ -14,6 +15,7 @@ use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -23,14 +25,14 @@ use ReflectionClass;
 
 class ReportingTransactionsTest extends TestCase
 {
-    private $startDate;
-    private $endDate;
+    private DateTime $startDate;
+    private DateTime $endDate;
 
     public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
-        $this->startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
-        $this->endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
+        $this->startDate = (new DateTime())->modify('-30 days')->setTime(0, 0, 0);
+        $this->endDate = (new DateTime())->modify('-3 days')->setTime(0, 0, 0);
     }
 
     public static function tearDownAfterClass(): void
@@ -105,7 +107,7 @@ class ReportingTransactionsTest extends TestCase
 
     public function testReportFindTransactionsById_WrongId()
     {
-        $transactionId = GenerationUtils::getGuid();;
+        $transactionId = GenerationUtils::getGuid();
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->withTransactionId($transactionId)
@@ -367,7 +369,7 @@ class ReportingTransactionsTest extends TestCase
 
     public function testReportFindTransactionsBy_WrongReference()
     {
-        $referenceNumber = GenerationUtils::getGuid();;
+        $referenceNumber = GenerationUtils::getGuid();
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
@@ -406,7 +408,7 @@ class ReportingTransactionsTest extends TestCase
 
     public function testReportFindTransactionsBy_WrongBrandReference()
     {
-        $brandReference = GenerationUtils::getGuid();;
+        $brandReference = GenerationUtils::getGuid();
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
@@ -646,8 +648,8 @@ class ReportingTransactionsTest extends TestCase
         $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
         foreach ($response->result as $rs) {
-            $this->assertLessThanOrEqual(new \DateTime('today midnight'), $rs->transactionDate);
-            $this->assertGreaterThanOrEqual((new \DateTime())->modify('-30 days 00:00:00'), $rs->transactionDate);
+            $this->assertLessThanOrEqual(new DateTime('today midnight'), $rs->transactionDate);
+            $this->assertGreaterThanOrEqual((new DateTime())->modify('-30 days 00:00:00'), $rs->transactionDate);
         }
     }
 
@@ -671,7 +673,7 @@ class ReportingTransactionsTest extends TestCase
         }
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }

@@ -19,7 +19,7 @@ class AccessTokenTest extends TestCase
     /**
      * @var GpApiConfig $config
      */
-    private $config;
+    private GpApiConfig $config;
 
     public function setUp(): void
     {
@@ -67,7 +67,7 @@ class AccessTokenTest extends TestCase
             GpApiService::generateTransactionKey($this->config);
         } catch (GatewayException $e) {
             $this->assertEquals('40119', $e->responseCode);
-            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Invalid permissions [ TEST_1,TEST_2 ] provided in the input field - permissions', $e->getMessage());
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Invalid permissions TEST_1,TEST_2 provided in the input field - permissions', $e->getMessage());
         }
     }
 

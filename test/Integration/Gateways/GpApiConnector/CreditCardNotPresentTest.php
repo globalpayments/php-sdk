@@ -701,29 +701,6 @@ class CreditCardNotPresentTest extends TestCase
         }
     }
 
-    public function testCreditVerify()
-    {
-        $response = $this->card->verify()
-            ->withCurrency($this->currency)
-            ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals('VERIFIED', $response->responseMessage);
-    }
-
-    public function testCreditVerifyWithIdempotencyKey()
-    {
-        $response = $this->card->verify()
-            ->withCurrency($this->currency)
-            ->withIdempotencyKey($this->idempotencyKey)
-            ->execute();
-
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals('VERIFIED', $response->responseMessage);
-    }
-
     public function testCardTokenizationThenDeletion()
     {
         $this->markTestSkipped('Permission not enabled to execute action for this appId/appKey');

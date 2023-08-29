@@ -23,9 +23,12 @@ use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Utils\CardUtils;
 use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Utils\Logging\ProtectSensitiveData;
 
 class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder implements IRequestBuilder
 {
+    private array $maskedValues = [];
+
     /***
      * @param AuthorizationBuilder $builder
      *
@@ -222,11 +225,13 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder implements 
                 $cardElement->appendChild($xml->createElement("number", $card->number ?? ''));
                 $cardElement->appendChild($xml->createElement("expdate", $card->getShortExpiry() ?? ''));
                 $cardElement->appendChild($xml->createElement("chname", $card->cardHolderName ?? ''));
+                $this->maskedValues = ProtectSensitiveData::hideValue('card.expdate', $card->getShortExpiry() ?? '');
                 if (!empty($card->number)) {
                     $cardElement->appendChild($xml->createElement(
                         "type",
                         strtoupper(EnumMapping::mapCardType(GatewayProvider::GP_ECOM, CardUtils::getBaseCardType($card->getCardType())))
                     ));
+                    $this->maskedValues = ProtectSensitiveData::hideValue('card.number', $card->number, 4, 6);
                 }
 
                 if ($card->cvn !== null || isset($card->cvnPresenceIndicator)) {
@@ -239,6 +244,7 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder implements 
                     $cvnElement->appendChild($xml->createElement("number", $card->cvn ?? ''));
                     $cvnElement->appendChild($xml->createElement("presind", $cvnPresenceIndicator ?? ''));
                     $cardElement->appendChild($cvnElement);
+                    $this->maskedValues = ProtectSensitiveData::hideValue('card.cvn.number', $card->cvn ?? '');
                 }
                 $request->appendChild($cardElement);
             }
@@ -415,6 +421,8 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder implements 
             }
             $request->appendChild($mpi);
         }
+
+        Request::$maskedValues = $this->maskedValues;
 
         return new Request('', 'POST', $xml->saveXML($request));
     }

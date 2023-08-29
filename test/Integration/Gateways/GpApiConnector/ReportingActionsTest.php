@@ -9,6 +9,7 @@ use GlobalPayments\Api\Entities\Enums\StoredPaymentMethodSortProperty;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Reporting\ActionSummary;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -17,10 +18,11 @@ use PHPUnit\Framework\TestCase;
 
 class ReportingActionsTest extends TestCase
 {
-    private $startDate;
-    private $endDate;
+    private DateTime $startDate;
+    private DateTime $endDate;
+
     /** @var ActionSummary */
-    private $actionSummary;
+    private mixed $actionSummary;
 
     public function setup(): void
     {
@@ -45,7 +47,7 @@ class ReportingActionsTest extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
@@ -125,7 +127,7 @@ class ReportingActionsTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertTrue(empty($response->result));
+        $this->assertEmpty($response->result);
         $this->assertCount(0, $response->result);
     }
 

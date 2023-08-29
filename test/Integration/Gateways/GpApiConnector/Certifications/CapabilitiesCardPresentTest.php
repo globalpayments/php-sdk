@@ -8,6 +8,7 @@ use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use PHPUnit\Framework\TestCase;
@@ -15,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 
 class CapabilitiesCardPresentTest extends TestCase
 {
-    private $card;
+    private CreditCardData $card;
 
     public function setup(): void
     {
@@ -28,7 +29,7 @@ class CapabilitiesCardPresentTest extends TestCase
         $this->card->cardHolderName = 'Jon Dow';
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
     }

@@ -21,6 +21,7 @@ use GlobalPayments\Api\Entities\Product;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Utils\CountryUtils;
+use GlobalPayments\Api\Utils\Logging\ProtectSensitiveData;
 
 class GpApiPayFacRequestBuilder implements IRequestBuilder
 {
@@ -28,6 +29,8 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
      * @var PayFacBuilder
      */
     private $builder;
+
+    private array $maskedValues = [];
 
     /***
      * @param PayFacBuilder $builder
@@ -100,6 +103,8 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
         if (empty($endpoint)) {
             throw new ArgumentException('Action not available on this service!');
         }
+        GpApiRequest::$maskedValues = $this->maskedValues;
+
         return new GpApiRequest($endpoint, $verb, $requestData, $queryParams);
     }
 
@@ -144,6 +149,15 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
 
     private function mapCreditCardInfo(CreditCardData $creditCardInformation)
     {
+        $this->maskedValues = ProtectSensitiveData::hideValues(
+            [
+                'payer.payment_method.card.expiry_month' => $creditCardInformation->expMonth,
+                'payer.payment_method.card.expiry_year' => $creditCardInformation->expYear,
+                'payer.payment_method.card.cvv' => $creditCardInformation->cvn
+            ]
+        );
+        $this->maskedValues = ProtectSensitiveData::hideValue('payer.payment_method.card.number', $creditCardInformation->number, 4, 6);
+
         return [
             'number' => $creditCardInformation->number,
             'expiry_month' => !empty($creditCardInformation->expMonth) ?

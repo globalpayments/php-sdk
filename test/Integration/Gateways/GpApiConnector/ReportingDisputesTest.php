@@ -2,6 +2,7 @@
 
 namespace Gateways\GpApiConnector;
 
+use DateTime;
 use GlobalPayments\Api\Entities\DisputeDocument;
 use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\Channel;
@@ -15,6 +16,7 @@ use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -23,18 +25,18 @@ use PHPUnit\Framework\TestCase;
 
 class ReportingDisputesTest extends TestCase
 {
-    private $arn;
-    private $startDate;
-    private $endDate;
+    private string $arn;
+    private DateTime $startDate;
+    private DateTime $endDate;
 
     public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
-        $this->startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
-        $this->endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
+        $this->startDate = (new DateTime())->modify('-30 days')->setTime(0, 0, 0);
+        $this->endDate = (new DateTime())->modify('-3 days')->setTime(0, 0, 0);
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
@@ -167,7 +169,7 @@ class ReportingDisputesTest extends TestCase
 
     public function testReportFindDisputes_By_From_And_To_Stage_Time_Created()
     {
-        $endDate = (new \DateTime())->modify('-10 days');
+        $endDate = (new DateTime())->modify('-10 days');
         $disputes = ReportingService::findDisputesPaged(1, 10)
             ->where(DataServiceCriteria::START_STAGE_DATE, $this->startDate)
             ->andWith(DataServiceCriteria::END_STAGE_DATE, $endDate)
@@ -618,7 +620,7 @@ class ReportingDisputesTest extends TestCase
 
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
-        $this->assertTrue(count($summary->result) == 0);
+        $this->assertEmpty($summary->result);
     }
 
     public function testReportFindSettlementDisputes_FilterBy_Stage()
@@ -683,7 +685,7 @@ class ReportingDisputesTest extends TestCase
 
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
-        $this->assertTrue(count($summary->result) == 0);
+        $this->assertEmpty($summary->result);
     }
 
     public function testReportFindSettlementDisputes_FilterBy_WrongSystemHierarchy()
@@ -698,7 +700,7 @@ class ReportingDisputesTest extends TestCase
 
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
-        $this->assertTrue(count($summary->result) == 0);
+        $this->assertEmpty($summary->result);
     }
 
     #endregion

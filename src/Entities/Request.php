@@ -9,6 +9,7 @@ class Request
     public $queryParams;
     public $httpVerb;
     public $resultsField;
+    static array $maskedValues;
 
     public function __construct($endpoint, $httpVerb, $requestBody = '', $queryParams = null)
     {

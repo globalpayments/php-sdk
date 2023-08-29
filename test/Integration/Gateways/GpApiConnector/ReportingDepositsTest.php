@@ -2,6 +2,7 @@
 
 namespace Gateways\GpApiConnector;
 
+use DateTime;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\DepositSortProperty;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
@@ -16,17 +17,18 @@ use PHPUnit\Framework\TestCase;
 
 class ReportingDepositsTest extends TestCase
 {
-    private $startDate;
-    private $endDate;
+    private DateTime $startDate;
+    private DateTime $endDate;
+
     /** @var DepositSummary */
-    private $depositSummary;
+    private mixed $depositSummary;
 
     public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
 
-        $this->startDate = $startDate = (new \DateTime())->modify('-1 year')->setTime(0, 0, 0);
-        $this->endDate = $endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
+        $this->startDate = $startDate = (new DateTime())->modify('-1 year')->setTime(0, 0, 0);
+        $this->endDate = $endDate = (new DateTime())->modify('-3 days')->setTime(0, 0, 0);
         $response = ReportingService::findDepositsPaged(1, 1)
             ->orderBy(DepositSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::START_DATE, $startDate)
@@ -186,7 +188,7 @@ class ReportingDepositsTest extends TestCase
 
     public function testReportFindDepositsByAmount()
     {
-        $amount = $amount = !empty($this->depositSummary) ? $this->depositSummary->amount : 100;
+        $amount = !empty($this->depositSummary) ? $this->depositSummary->amount : 100;
 
         try {
             $response = ReportingService::findDepositsPaged(1, 10)

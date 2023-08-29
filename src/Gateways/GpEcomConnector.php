@@ -152,7 +152,9 @@ class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         if (empty($request)) {
             throw new ApiException("Request was not generated!");
         }
-
+        if (!empty($request::$maskedValues)) {
+            $this->maskedRequestData = $request::$maskedValues;
+        }
         $response = $this->doTransaction($request->requestBody);
 
         return $this->xml2object($response);

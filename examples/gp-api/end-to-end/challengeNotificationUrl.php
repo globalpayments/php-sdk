@@ -43,5 +43,5 @@ try {
 <script>
    GlobalPayments.ThreeDSecure.handleChallengeNotification({
             "threeDSServerTransID": <?php echo '"' . isset($serverTransID) ? $serverTransID : "" . '"'; ?>,
-            "transStatus": <?php echo '"' . $transStatus . '"}'; ?>);
+            "transStatus": <?php echo '"' . $transStatus ?? "" . '"}'; ?>);
 </script>

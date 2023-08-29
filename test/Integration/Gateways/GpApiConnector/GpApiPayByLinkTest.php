@@ -2,6 +2,7 @@
 
 namespace Gateways\GpApiConnector;
 
+use DateTime;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\BrowserData;
 use GlobalPayments\Api\Entities\Enums\AddressType;
@@ -41,13 +42,13 @@ use PHPUnit\Framework\TestCase;
 
 class GpApiPayByLinkTest extends TestCase
 {
-    private $startDate;
-    private $endDate;
-    private $amount = 2.11;
+    private DateTime $startDate;
+    private DateTime $endDate;
+    private float $amount = 2.11;
     private PayByLinkData $payByLink;
-    private $card;
-    private $shippingAddress;
-    private $browserData;
+    private CreditCardData $card;
+    private Address $shippingAddress;
+    private BrowserData $browserData;
     private string $payByLinkId;
 
     public static function tearDownAfterClass(): void
@@ -58,8 +59,8 @@ class GpApiPayByLinkTest extends TestCase
     public function setup() : void
     {
         ServicesContainer::configureService($this->setUpConfig());
-        $this->startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
-        $this->endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
+        $this->startDate = (new DateTime())->modify('-30 days')->setTime(0, 0, 0);
+        $this->endDate = (new DateTime())->modify('-3 days')->setTime(0, 0, 0);
 
         $this->payByLink = new PayByLinkData();
         $this->payByLink->type = PayByLinkType::PAYMENT;
@@ -115,8 +116,7 @@ class GpApiPayByLinkTest extends TestCase
         }
     }
 
-
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         $config = new GpApiConfig();
         $config->appId = 'v2yRaFOLwFaQc0fSZTCyAdQCBNByGpVK';
@@ -808,7 +808,7 @@ class GpApiPayByLinkTest extends TestCase
     }
     public function testFindPayByLinkByExpireDate()
     {
-        $date = new \DateTime('2024-05-09');
+        $date = new DateTime('2024-05-09');
         $response = PayByLinkService::findPayByLink(1, 10)
             ->orderBy(PayByLinkSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::START_DATE, $this->startDate)
@@ -825,7 +825,7 @@ class GpApiPayByLinkTest extends TestCase
         $this->assertEquals($date->format('Y-m-d'), $randomPayByLink->expirationDate->format('Y-m-d'));
     }
 
-    private function assertPayByLinkResponse(Transaction $response)
+    private function assertPayByLinkResponse(Transaction $response): void
     {
         $this->assertEquals('SUCCESS', $response->responseCode);
         $this->assertEquals(PayByLinkStatus::ACTIVE, $response->responseMessage);
@@ -834,7 +834,7 @@ class GpApiPayByLinkTest extends TestCase
         $this->assertNotNull($response->payByLinkResponse->id);
     }
 
-    private function setupTransactionConfig()
+    private function setupTransactionConfig(): GpApiConfig
     {
         $configTrn = new GpApiConfig();
         $configTrn->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';

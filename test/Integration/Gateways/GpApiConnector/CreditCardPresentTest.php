@@ -19,6 +19,7 @@ use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -27,8 +28,8 @@ use PHPUnit\Framework\TestCase;
 
 class CreditCardPresentTest extends TestCase
 {
-    private $currency = 'USD';
-    private $amount = 15.11;
+    private string $currency = 'USD';
+    private float $amount = 15.11;
 
     public function setup(): void
     {
@@ -40,7 +41,7 @@ class CreditCardPresentTest extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
     }

@@ -13,6 +13,7 @@ use GlobalPayments\Api\Mapping\OpenBankingMapping;
 use GlobalPayments\Api\PaymentMethods\BankPayment;
 use GlobalPayments\Api\Utils\ArrayUtils;
 use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Utils\Logging\ProtectSensitiveData;
 
 class OpenBankingProvider extends RestGateway implements IOpenBankingProvider
 {
@@ -101,6 +102,14 @@ class OpenBankingProvider extends RestGateway implements IOpenBankingProvider
                     'return_url' => $paymentMethod->returnUrl,
                     'status_url' => $paymentMethod->statusUpdateUrl
                     ];
+                $this->maskedRequestData = ProtectSensitiveData::hideValues(
+                    [
+                        'payment.destination.account_number' => $paymentMethod->accountNumber,
+                        'payment.destination.iban' => $paymentMethod->iban,
+
+                    ],
+                    4
+                );
                 break;
             default:
                 break;

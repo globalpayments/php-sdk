@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Gateways;
 
+use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\IRequestLogger;
 use GlobalPayments\Api\Entities\IWebProxy;
 
@@ -47,6 +48,11 @@ abstract class Gateway
      */
     public $dynamicHeaders;
 
+    /** @var Environment */
+    public $environment;
+
+    public array $maskedRequestData;
+
     /**
      * @param string $contentType
      *
@@ -57,6 +63,7 @@ abstract class Gateway
         $this->headers = [];
         $this->dynamicHeaders = [];
         $this->contentType = $contentType;
+        $this->maskedRequestData = [];
     }
 
     /**
@@ -91,7 +98,11 @@ abstract class Gateway
             $headers = $this->prepareHeaders($data);
 
             if (isset($this->requestLogger)) {
-                $this->requestLogger->requestSent($verb, $this->serviceUrl . $endpoint . $queryString,  $headers, null,  $data);
+                $dataLogged = $data;
+                if (!empty($data) && !empty($this->maskedRequestData) && $this->environment === Environment::PRODUCTION) {
+                    $dataLogged = $this->maskSensitiveData($data);
+                }
+                $this->requestLogger->requestSent($verb, $this->serviceUrl . $endpoint . $queryString,  $headers, null,  $dataLogged);
             }
 
             curl_setopt($request, CURLOPT_CONNECTTIMEOUT, $this->timeout);
@@ -150,6 +161,38 @@ abstract class Gateway
                 $e
             );
         }
+    }
+
+    private function maskSensitiveData($data)
+    {
+        $json = $this->xmlToJson($data, $isXML);
+        foreach ($this->maskedRequestData as $key => $value) {
+            $val = $json;
+            foreach($fields = explode('.', $key) as $k => $item) {
+                if ($k == count($fields) -1 && isset($val->{$item})) {
+                    $val->{$item} = $value;
+                    break;
+                }
+                if (!isset($val->$item)) {
+                    break;
+                }
+                $val = $val->$item;
+            }
+        }
+
+        return $isXML === true ? $json->asXML() : json_encode($json);
+
+    }
+
+    public function xmlToJson($data, &$isXML = false)
+    {
+        $xml = @simplexml_load_string($data);
+        if ($xml === false) {
+            return json_decode($data);
+        }
+        $isXML = true;
+
+        return $xml;
     }
 
     private function prepareHeaders($data)

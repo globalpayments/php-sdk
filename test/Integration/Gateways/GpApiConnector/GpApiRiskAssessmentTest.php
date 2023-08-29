@@ -20,7 +20,9 @@ use GlobalPayments\Api\Entities\Enums\ReorderIndicator;
 use GlobalPayments\Api\Entities\Enums\RiskAssessmentStatus;
 use GlobalPayments\Api\Entities\Enums\ShippingMethod;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\RiskAssessment;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\FraudService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -31,19 +33,19 @@ use ReflectionClass;
 class GpApiRiskAssessmentTest extends TestCase
 {
     /** @var Address */
-    private $shippingAddress;
+    private Address $shippingAddress;
 
     /** @var BrowserData */
-    private $browserData;
+    private BrowserData $browserData;
 
     /** @var string */
-    private $currency;
+    private string $currency;
 
     /** @var string|float */
-    private $amount;
+    private string|float $amount;
 
     /** @var CreditCardData */
-    private $card;
+    private CreditCardData $card;
 
     public function setup(): void
     {
@@ -86,7 +88,7 @@ class GpApiRiskAssessmentTest extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
@@ -95,7 +97,7 @@ class GpApiRiskAssessmentTest extends TestCase
     {
         $idempotencyKey = GenerationUtils::getGuid();
 
-        /** @var \GlobalPayments\Api\Entities\RiskAssessment $response */
+        /** @var RiskAssessment $response */
         $response = FraudService::riskAssess($this->card)
             ->withAmount($this->amount)
             ->withCurrency($this->currency)
@@ -113,7 +115,7 @@ class GpApiRiskAssessmentTest extends TestCase
     {
         $idempotencyKey = GenerationUtils::getGuid();
 
-        /** @var \GlobalPayments\Api\Entities\RiskAssessment $response */
+        /** @var RiskAssessment $response */
         $response = FraudService::riskAssess($this->card)
             ->withAmount($this->amount)
             ->withCurrency($this->currency)
@@ -202,7 +204,7 @@ class GpApiRiskAssessmentTest extends TestCase
 
     public function testTransactionRiskAnalysisBasicOption_WithIdempotency()
     {
-        /** @var \GlobalPayments\Api\Entities\RiskAssessment $response */
+        /** @var RiskAssessment $response */
         $response = FraudService::riskAssess($this->card)
             ->withAmount($this->amount)
             ->withCurrency($this->currency)
@@ -218,7 +220,7 @@ class GpApiRiskAssessmentTest extends TestCase
     {
         $source = array(AuthenticationSource::BROWSER, AuthenticationSource::MERCHANT_INITIATED, AuthenticationSource::MOBILE_SDK);
         foreach ($source as $value) {
-            /** @var \GlobalPayments\Api\Entities\RiskAssessment $response */
+            /** @var RiskAssessment $response */
             $response = FraudService::riskAssess($this->card)
                 ->withAmount($this->amount)
                 ->withCurrency($this->currency)
@@ -237,7 +239,7 @@ class GpApiRiskAssessmentTest extends TestCase
         $deliveryTimeFrame = new DeliveryTimeFrame();
         $reflectionClass = new ReflectionClass($deliveryTimeFrame);
         foreach ($reflectionClass->getConstants() as $value) {
-            /** @var \GlobalPayments\Api\Entities\RiskAssessment $response */
+            /** @var RiskAssessment $response */
             $response = FraudService::riskAssess($this->card)
                 ->withAmount($this->amount)
                 ->withCurrency($this->currency)
@@ -257,7 +259,7 @@ class GpApiRiskAssessmentTest extends TestCase
         $shippingMethod = new ShippingMethod();
         $reflectionClass = new ReflectionClass($shippingMethod);
         foreach ($reflectionClass->getConstants() as $value) {
-            /** @var \GlobalPayments\Api\Entities\RiskAssessment $response */
+            /** @var RiskAssessment $response */
             $response = FraudService::riskAssess($this->card)
                 ->withAmount($this->amount)
                 ->withCurrency($this->currency)
@@ -277,7 +279,7 @@ class GpApiRiskAssessmentTest extends TestCase
         $shippingMethod = new OrderTransactionType();
         $reflectionClass = new ReflectionClass($shippingMethod);
         foreach ($reflectionClass->getConstants() as $value) {
-            /** @var \GlobalPayments\Api\Entities\RiskAssessment $response */
+            /** @var RiskAssessment $response */
             $response = FraudService::riskAssess($this->card)
                 ->withAmount($this->amount)
                 ->withCurrency($this->currency)
@@ -297,7 +299,7 @@ class GpApiRiskAssessmentTest extends TestCase
         $shippingMethod = new PriorAuthenticationMethod();
         $reflectionClass = new ReflectionClass($shippingMethod);
         foreach ($reflectionClass->getConstants() as $value) {
-            /** @var \GlobalPayments\Api\Entities\RiskAssessment $response */
+            /** @var RiskAssessment $response */
             $response = FraudService::riskAssess($this->card)
                 ->withAmount($this->amount)
                 ->withCurrency($this->currency)
@@ -317,7 +319,7 @@ class GpApiRiskAssessmentTest extends TestCase
         $shippingMethod = new CustomerAuthenticationMethod();
         $reflectionClass = new ReflectionClass($shippingMethod);
         foreach ($reflectionClass->getConstants() as $value) {
-            /** @var \GlobalPayments\Api\Entities\RiskAssessment $response */
+            /** @var RiskAssessment $response */
             $response = FraudService::riskAssess($this->card)
                 ->withAmount($this->amount)
                 ->withCurrency($this->currency)

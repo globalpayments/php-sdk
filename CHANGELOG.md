@@ -6,6 +6,14 @@
 
 ## Latest Version
 #### Enhancements:
+- Enhance logs based on environment (GP-API & GP-ECOM)
+- Security vulnerabilities fixes
+- [GP-API] Add missing properties to authentication->three_ds (message_version, eci,server_trans_reference, 
+ds_trans_reference,value)
+- Unit test updates  
+
+## v10.0.0 (08/22/2023)
+#### Enhancements:
 - [GP-API] Rename PayLink to PayByLink
 
 ## v9.0.2 (08/10/2023)

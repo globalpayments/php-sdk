@@ -10,6 +10,7 @@ use GlobalPayments\Api\Entities\Enums\ChallengeWindowSize;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\ColorDepth;
 use GlobalPayments\Api\Entities\Enums\ExemptStatus;
+use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
 use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
 use GlobalPayments\Api\Entities\Enums\OrderTransactionType;
@@ -27,6 +28,7 @@ use GlobalPayments\Api\Entities\MobileData;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -40,30 +42,30 @@ class GpApi3DSecureTest extends TestCase
     /**
      * @var Address
      */
-    private $shippingAddress;
+    private Address $shippingAddress;
 
     /**
      * @var BrowserData
      */
-    private $browserData;
+    private BrowserData $browserData;
+
+    /**
+     * @var string|GatewayProvider
+     */
+    private string|GatewayProvider $gatewayProvider;
 
     /**
      * @var string
      */
-    private $gatewayProvider;
-
-    /**
-     * @var string
-     */
-    private $currency;
+    private string $currency;
 
     /** @var string|float */
-    private $amount;
+    private string|float $amount;
 
     /**
      * @var CreditCardData
      */
-    private $card;
+    private CreditCardData $card;
 
     public function setup(): void
     {
@@ -107,7 +109,7 @@ class GpApi3DSecureTest extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
@@ -637,69 +639,6 @@ class GpApi3DSecureTest extends TestCase
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
-    public function ChallengeSuccessful3DSV2CardTests()
-    {
-        return [
-            'Challenge v2.1' => [GpApi3DSTestCards::CARD_CHALLENGE_REQUIRED_V2_1, Secure3dStatus::SUCCESS_AUTHENTICATED],
-            'Challenge v2.2' => [GpApi3DSTestCards::CARD_CHALLENGE_REQUIRED_V2_2, Secure3dStatus::SUCCESS_AUTHENTICATED]
-        ];
-    }
-
-    public function ChallengeRequiredFailed3DSV1CardTests()
-    {
-        return [
-            'Acs Client result code 5' => [5, Secure3dStatus::FAILED],
-            'Acs Client result code 7' => [7, Secure3dStatus::SUCCESS_ATTEMPT_MADE],
-            'Acs Client result code 9' => [9, Secure3dStatus::NOT_AUTHENTICATED]
-        ];
-    }
-
-    public function FrictionlessSuccessful3DSV2CardTests()
-    {
-        return [
-            'Frictionless v2.1' => [GpApi3DSTestCards::CARD_AUTH_SUCCESSFUL_V2_1, Secure3dStatus::SUCCESS_AUTHENTICATED],
-            'Frictionless no method url v2.1' => [GpApi3DSTestCards::CARD_AUTH_SUCCESSFUL_NO_METHOD_URL_V2_1, Secure3dStatus::SUCCESS_AUTHENTICATED],
-            'Frictionless v2.2' => [GpApi3DSTestCards::CARD_AUTH_SUCCESSFUL_V2_2, Secure3dStatus::SUCCESS_AUTHENTICATED],
-            'Frictionless no method url v2.2' => [GpApi3DSTestCards::CARD_AUTH_SUCCESSFUL_NO_METHOD_URL_V2_2, Secure3dStatus::SUCCESS_AUTHENTICATED]
-        ];
-    }
-
-    public function FrictionlessFailed3DSV2CardTests()
-    {
-        return [
-            'Frictionless failed 1' => [GpApi3DSTestCards::CARD_AUTH_ATTEMPTED_BUT_NOT_SUCCESSFUL_V2_1, Secure3dStatus::SUCCESS_ATTEMPT_MADE],
-            'Frictionless failed 2' => [GpApi3DSTestCards::CARD_AUTH_FAILED_V2_1, Secure3dStatus::NOT_AUTHENTICATED],
-            'Frictionless failed 3' => [GpApi3DSTestCards::CARD_AUTH_ISSUER_REJECTED_V2_1, Secure3dStatus::FAILED],
-            'Frictionless failed 4' => [GpApi3DSTestCards::CARD_AUTH_COULD_NOT_BE_PREFORMED_V2_1, Secure3dStatus::FAILED],
-            'Frictionless failed 5' => [GpApi3DSTestCards::CARD_AUTH_ATTEMPTED_BUT_NOT_SUCCESSFUL_V2_2, Secure3dStatus::SUCCESS_ATTEMPT_MADE],
-            'Frictionless failed 6' => [GpApi3DSTestCards::CARD_AUTH_FAILED_V2_2, Secure3dStatus::NOT_AUTHENTICATED],
-            'Frictionless failed 7' => [GpApi3DSTestCards::CARD_AUTH_ISSUER_REJECTED_V2_2, Secure3dStatus::FAILED],
-            'Frictionless failed 8' => [GpApi3DSTestCards::CARD_AUTH_COULD_NOT_BE_PREFORMED_V2_2, Secure3dStatus::FAILED]
-        ];
-    }
-
-
-    private function assertCheckEnrollmentChallengeV1(ThreeDSecure $secureEcom)
-    {
-        $this->assertNotNull($secureEcom);
-        $this->assertEquals(Secure3dStatus::ENROLLED, $secureEcom->enrolled);
-        $this->assertEquals(Secure3dVersion::ONE, $secureEcom->getVersion());
-        $this->assertEquals(Secure3dStatus::CHALLENGE_REQUIRED, $secureEcom->status);
-        $this->assertNotNull($secureEcom->issuerAcsUrl);
-        $this->assertNotNull($secureEcom->payerAuthenticationRequest);
-        $this->assertEmpty($secureEcom->eci);
-        $this->assertEquals("1.0.0", $secureEcom->messageVersion);
-    }
-
-    private function assertCheckEnrollmentCardNotEnrolledV1(ThreeDSecure $secureEcom)
-    {
-        $this->assertNotNull($secureEcom);
-        $this->assertEquals(Secure3dStatus::NOT_ENROLLED, $secureEcom->enrolled);
-        $this->assertEquals(Secure3dStatus::NOT_ENROLLED, $secureEcom->status);
-        $this->assertEmpty($secureEcom->eci);
-        $this->assertEquals('NO', $secureEcom->liabilityShift);
-    }
-
     public function testDecoupledAuth()
     {
         $this->card->number = GpApi3DSTestCards::CARD_AUTH_SUCCESSFUL_V2_1;
@@ -767,6 +706,73 @@ class GpApi3DSecureTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+    }
 
+    public function testChargeTransaction_WithRandom3DSValues()
+    {
+        $this->card->number = GpApi3DSTestCards::CARD_CHALLENGE_REQUIRED_V2_1;
+
+        $threeDS = new ThreeDSecure();
+        $threeDS->authenticationValue = GenerationUtils::getGuid();
+        $threeDS->directoryServerTransactionId = GenerationUtils::getGuid();
+        $threeDS->eci = GenerationUtils::getGuid();
+        $threeDS->messageVersion = GenerationUtils::getGuid();
+
+        $this->card->threeDSecure = $threeDS;
+
+        $response = $this->card->charge($this->amount)->withCurrency($this->currency)->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+    }
+
+    public function ChallengeSuccessful3DSV2CardTests(): array
+    {
+        return [
+            'Challenge v2.1' => [GpApi3DSTestCards::CARD_CHALLENGE_REQUIRED_V2_1, Secure3dStatus::SUCCESS_AUTHENTICATED],
+            'Challenge v2.2' => [GpApi3DSTestCards::CARD_CHALLENGE_REQUIRED_V2_2, Secure3dStatus::SUCCESS_AUTHENTICATED]
+        ];
+    }
+
+    public function ChallengeRequiredFailed3DSV1CardTests(): array
+    {
+        return [
+            'Acs Client result code 5' => [5, Secure3dStatus::FAILED],
+            'Acs Client result code 7' => [7, Secure3dStatus::SUCCESS_ATTEMPT_MADE],
+            'Acs Client result code 9' => [9, Secure3dStatus::NOT_AUTHENTICATED]
+        ];
+    }
+
+    public function FrictionlessSuccessful3DSV2CardTests(): array
+    {
+        return [
+            'Frictionless v2.1' => [GpApi3DSTestCards::CARD_AUTH_SUCCESSFUL_V2_1, Secure3dStatus::SUCCESS_AUTHENTICATED],
+            'Frictionless no method url v2.1' => [GpApi3DSTestCards::CARD_AUTH_SUCCESSFUL_NO_METHOD_URL_V2_1, Secure3dStatus::SUCCESS_AUTHENTICATED],
+            'Frictionless v2.2' => [GpApi3DSTestCards::CARD_AUTH_SUCCESSFUL_V2_2, Secure3dStatus::SUCCESS_AUTHENTICATED],
+            'Frictionless no method url v2.2' => [GpApi3DSTestCards::CARD_AUTH_SUCCESSFUL_NO_METHOD_URL_V2_2, Secure3dStatus::SUCCESS_AUTHENTICATED]
+        ];
+    }
+
+    public function FrictionlessFailed3DSV2CardTests(): array
+    {
+        return [
+            'Frictionless failed 1' => [GpApi3DSTestCards::CARD_AUTH_ATTEMPTED_BUT_NOT_SUCCESSFUL_V2_1, Secure3dStatus::SUCCESS_ATTEMPT_MADE],
+            'Frictionless failed 2' => [GpApi3DSTestCards::CARD_AUTH_FAILED_V2_1, Secure3dStatus::NOT_AUTHENTICATED],
+            'Frictionless failed 3' => [GpApi3DSTestCards::CARD_AUTH_ISSUER_REJECTED_V2_1, Secure3dStatus::FAILED],
+            'Frictionless failed 4' => [GpApi3DSTestCards::CARD_AUTH_COULD_NOT_BE_PREFORMED_V2_1, Secure3dStatus::FAILED],
+            'Frictionless failed 5' => [GpApi3DSTestCards::CARD_AUTH_ATTEMPTED_BUT_NOT_SUCCESSFUL_V2_2, Secure3dStatus::SUCCESS_ATTEMPT_MADE],
+            'Frictionless failed 6' => [GpApi3DSTestCards::CARD_AUTH_FAILED_V2_2, Secure3dStatus::NOT_AUTHENTICATED],
+            'Frictionless failed 7' => [GpApi3DSTestCards::CARD_AUTH_ISSUER_REJECTED_V2_2, Secure3dStatus::FAILED],
+            'Frictionless failed 8' => [GpApi3DSTestCards::CARD_AUTH_COULD_NOT_BE_PREFORMED_V2_2, Secure3dStatus::FAILED]
+        ];
+    }
+
+    private function assertCheckEnrollmentCardNotEnrolledV1(ThreeDSecure $secureEcom): void
+    {
+        $this->assertNotNull($secureEcom);
+        $this->assertEquals(Secure3dStatus::NOT_ENROLLED, $secureEcom->enrolled);
+        $this->assertEquals(Secure3dStatus::NOT_ENROLLED, $secureEcom->status);
+        $this->assertEmpty($secureEcom->eci);
+        $this->assertEquals('NO', $secureEcom->liabilityShift);
     }
 }
