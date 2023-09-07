@@ -32,10 +32,10 @@ use PHPUnit\Framework\TestCase;
 
 class GpApiBNPLTest extends TestCase
 {
-    private $paymentMethod;
-    private $currency;
-    private $shippingAddress;
-    private $billingAddress;
+    private BNPL $paymentMethod;
+    private string $currency;
+    private Address $shippingAddress;
+    private Address $billingAddress;
 
     public function setup(): void
     {
@@ -876,7 +876,7 @@ class GpApiBNPLTest extends TestCase
         }
     }
 
-    private function setCustomerData()
+    private function setCustomerData(): Customer
     {
         $customer = new Customer();
         $customer->id = "12345678";
@@ -889,7 +889,7 @@ class GpApiBNPLTest extends TestCase
         return $customer;
     }
 
-    private function setProductList()
+    private function setProductList(): array
     {
         $product = new Product();
         $product->productId = GenerationUtils::getGuid();

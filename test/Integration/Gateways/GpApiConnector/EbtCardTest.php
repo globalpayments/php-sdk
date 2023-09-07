@@ -4,6 +4,9 @@ namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
+use GlobalPayments\Api\PaymentMethods\EBTCardData;
+use GlobalPayments\Api\PaymentMethods\EBTTrackData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Tests\Data\TestCards;
@@ -11,12 +14,12 @@ use PHPUnit\Framework\TestCase;
 
 class EbtCardTest extends TestCase
 {
-    private $card;
+    private EBTCardData $card;
 
-    private $track;
+    private EBTTrackData $track;
 
-    private $amount = 10;
-    private $currency = 'USD';
+    private int $amount = 10;
+    private string $currency = 'USD';
 
     public function setup(): void
     {
@@ -30,7 +33,7 @@ class EbtCardTest extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
     }
@@ -137,7 +140,7 @@ class EbtCardTest extends TestCase
         $this->assertEbtTransactionResponse($response, TransactionStatus::REVERSED);
     }
 
-    private function assertEbtTransactionResponse($transactionResponse, $transactionStatus)
+    private function assertEbtTransactionResponse($transactionResponse, $transactionStatus): void
     {
         $this->assertNotNull($transactionResponse);
         $this->assertEquals('SUCCESS', $transactionResponse->responseCode);

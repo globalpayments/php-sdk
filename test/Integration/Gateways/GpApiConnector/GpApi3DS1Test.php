@@ -4,8 +4,8 @@ namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Enums\ChallengeRequestIndicator;
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
-use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialReason;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialSequence;
@@ -14,11 +14,11 @@ use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Tests\Data\GpApi3DSTestCards;
-use GlobalPayments\Api\Tests\Integration\Gateways\ThreeDSecureAcsClient;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -28,20 +28,20 @@ class GpApi3DS1Test extends TestCase
     /**
      * @var string
      */
-    private $gatewayProvider;
+    private string|GatewayProvider $gatewayProvider;
 
     /**
      * @var string
      */
-    private $currency;
+    private string $currency;
 
-    /** @var string|float */
-    private $amount;
+    /** @var float */
+    private float $amount;
 
     /**
      * @var CreditCardData
      */
-    private $card;
+    private CreditCardData $card;
 
     public function setup(): void
     {
@@ -63,7 +63,7 @@ class GpApi3DS1Test extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
@@ -267,7 +267,7 @@ class GpApi3DS1Test extends TestCase
         }
     }
 
-    private function assertCheckEnrollmentCardNotEnrolledV1(ThreeDSecure $secureEcom)
+    private function assertCheckEnrollmentCardNotEnrolledV1(ThreeDSecure $secureEcom): void
     {
         $this->assertNotNull($secureEcom);
         $this->assertEquals(Secure3dStatus::NOT_ENROLLED, $secureEcom->enrolled);

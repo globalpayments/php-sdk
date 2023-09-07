@@ -11,6 +11,7 @@ use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\BatchService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -22,15 +23,15 @@ class GpApiBatchTest extends TestCase
     /**
      * @var CreditTrackData
      */
-    private $creditTrackData;
+    private CreditTrackData $creditTrackData;
 
     /**
      * @var CreditCardData
      */
-    private $creditCardData;
-    private $currency = 'USD';
-    private $amount = 2.11;
-    private $tag = '9F4005F000F0A0019F02060000000025009F03060000000000009F2608D90A06501B48564E82027C005F3401019F360200029F0702FF009F0802008C9F0902008C9F34030403029F2701809F0D05F0400088009F0E0508000000009F0F05F0400098005F280208409F390105FFC605DC4000A800FFC7050010000000FFC805DC4004F8009F3303E0B8C89F1A0208409F350122950500000080005F2A0208409A031409109B02E8009F21030811539C01009F37045EED3A8E4F07A00000000310109F0607A00000000310108407A00000000310109F100706010A03A400029F410400000001';
+    private CreditCardData $creditCardData;
+    private string $currency = 'USD';
+    private float $amount = 2.11;
+    private string $tag = '9F4005F000F0A0019F02060000000025009F03060000000000009F2608D90A06501B48564E82027C005F3401019F360200029F0702FF009F0802008C9F0902008C9F34030403029F2701809F0D05F0400088009F0E0508000000009F0F05F0400098005F280208409F390105FFC605DC4000A800FFC7050010000000FFC805DC4004F8009F3303E0B8C89F1A0208409F350122950500000080005F2A0208409A031409109B02E8009F21030811539C01009F37045EED3A8E4F07A00000000310109F0607A00000000310108407A00000000310109F100706010A03A400029F410400000001';
 
     public function setup() : void
     {
@@ -54,7 +55,7 @@ class GpApiBatchTest extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
     }
@@ -349,7 +350,7 @@ class GpApiBatchTest extends TestCase
         }
     }
 
-    private function assertBatchCloseResponse($batch, $amount)
+    private function assertBatchCloseResponse($batch, $amount): void
     {
         $this->assertNotNull($batch);
         $this->assertEquals('CLOSED', $batch->responseMessage);
@@ -357,7 +358,7 @@ class GpApiBatchTest extends TestCase
         $this->assertGreaterThanOrEqual(1, $batch->batchSummary->transactionCount);
     }
 
-    private function assertTransactionResponse($transaction, $transactionStatus)
+    private function assertTransactionResponse($transaction, $transactionStatus): void
     {
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);

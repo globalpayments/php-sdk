@@ -21,10 +21,10 @@ use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 
 class Secure3DSExemptionsTest extends TestCase
 {
-    private $card;
-    private $shippingAddress;
-    private $billingAddress;
-    private $browserData;
+    private CreditCardData $card;
+    private Address $shippingAddress;
+    private Address $billingAddress;
+    private BrowserData $browserData;
 
     public function setup() : void
     {
@@ -72,7 +72,7 @@ class Secure3DSExemptionsTest extends TestCase
         $this->browserData->userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64, x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36';
     }
 
-    protected function getConfig()
+    protected function getConfig(): GpEcomConfig
     {
         $config = new GpEcomConfig();
         $config->merchantId = 'myMerchantId';

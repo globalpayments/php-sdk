@@ -14,7 +14,7 @@ class HppTestCase extends TestCase
     protected HostedService $service;
     protected GpEcomHppClient $client;
 
-    protected function config()
+    protected function config(): GpEcomConfig
     {
         $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
@@ -184,7 +184,6 @@ class HppTestCase extends TestCase
         // TODO: grab the response JSON from the client-side for example:
         //sample response JSON:
         $responseJson = array("MERCHANT_ID" => "MerchantId", "ACCOUNT" => "internet", "ORDER_ID" => "GTI5Yxb0SumL_TkDMCAxQA", "AMOUNT" => "1999", "TIMESTAMP" => "20170725154824", "SHA1HASH" => "843680654f377bfa845387fdbace35acc9d95778", "RESULT" => "00", "AUTHCODE" => "12345", "CARD_PAYMENT_BUTTON" => "Place Order", "AVSADDRESSRESULT" => "M", "AVSPOSTCODERESULT" => "M", "BATCHID" => "445196", "MESSAGE" => "[ test system ] Authorised", "PASREF" => "15011597872195765", "CVNRESULT" => "M", "HPP_FRAUDFILTER_RESULT" => "HOLD", "HPP_FRAUDFILTER_RULE_56257838-4590-4227-b946-11e061fb15fe" => "HOLD", "HPP_FRAUDFILTER_RULE_cf609cf9-9e5a-4700-ac69-8aa09c119305" => "PASS");
-        ;
 
         $parsedResponse = $service->parseResponse(json_encode($responseJson));
         $responseCode = $parsedResponse->responseCode; // 00

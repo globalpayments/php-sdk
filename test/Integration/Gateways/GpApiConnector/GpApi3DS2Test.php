@@ -11,6 +11,7 @@ use GlobalPayments\Api\Entities\Enums\ChallengeWindowSize;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\ColorDepth;
 use GlobalPayments\Api\Entities\Enums\DeliveryTimeFrame;
+use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
 use GlobalPayments\Api\Entities\Enums\SdkInterface;
 use GlobalPayments\Api\Entities\Enums\SdkUiType;
@@ -23,9 +24,11 @@ use GlobalPayments\Api\Entities\Enums\StoredCredentialSequence;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialType;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\MobileData;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -40,30 +43,30 @@ class GpApi3DS2Test extends TestCase
     /**
      * @var Address
      */
-    private $shippingAddress;
+    private Address $shippingAddress;
 
     /**
      * @var BrowserData
      */
-    private $browserData;
+    private BrowserData $browserData;
+
+    /**
+     * @var string|GatewayProvider
+     */
+    private string|GatewayProvider $gatewayProvider;
 
     /**
      * @var string
      */
-    private $gatewayProvider;
-
-    /**
-     * @var string
-     */
-    private $currency;
+    private string $currency;
 
     /** @var string|float */
-    private $amount;
+    private string|float $amount;
 
     /**
      * @var CreditCardData
      */
-    private $card;
+    private CreditCardData $card;
 
     public function setup(): void
     {
@@ -107,7 +110,7 @@ class GpApi3DS2Test extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
@@ -1127,7 +1130,7 @@ class GpApi3DS2Test extends TestCase
             ->execute();
 
         $this->assertCheckEnrollment3DSV2($secureEcom);
-        $mobileData = new \GlobalPayments\Api\Entities\MobileData();
+        $mobileData = new MobileData();
         $mobileData->encodedData = 'ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K';
         $mobileData->applicationReference = 'f283b3ec-27da-42a1-acea-f3f70e75bbdc';
         $mobileData->sdkInterface = SdkInterface::BROWSER;
@@ -1165,7 +1168,7 @@ class GpApi3DS2Test extends TestCase
             ->execute();
 
         $this->assertCheckEnrollment3DSV2($secureEcom);
-        $mobileData = new \GlobalPayments\Api\Entities\MobileData();
+        $mobileData = new MobileData();
         $mobileData->encodedData = 'ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K';
         $mobileData->applicationReference = 'f283b3ec-27da-42a1-acea-f3f70e75bbdc';
         $mobileData->sdkInterface = SdkInterface::BROWSER;
@@ -1202,7 +1205,7 @@ class GpApi3DS2Test extends TestCase
             ->execute();
 
         $this->assertCheckEnrollment3DSV2($secureEcom);
-        $mobileData = new \GlobalPayments\Api\Entities\MobileData();
+        $mobileData = new MobileData();
         $mobileData->encodedData = 'ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K';
         $mobileData->applicationReference = 'f283b3ec-27da-42a1-acea-f3f70e75bbdc';
         $mobileData->sdkInterface = SdkInterface::BROWSER;
@@ -1263,7 +1266,7 @@ class GpApi3DS2Test extends TestCase
         }
     }
 
-    private function assertCheckEnrollment3DSV2(ThreeDSecure $secureEcom)
+    private function assertCheckEnrollment3DSV2(ThreeDSecure $secureEcom): void
     {
         $this->assertNotNull($secureEcom);
         $this->assertEquals(Secure3dStatus::ENROLLED, $secureEcom->enrolled);
@@ -1274,7 +1277,7 @@ class GpApi3DS2Test extends TestCase
         $this->assertEmpty($secureEcom->eci);
     }
 
-    private function assertInitiate3DSV2(ThreeDSecure $initAuth)
+    private function assertInitiate3DSV2(ThreeDSecure $initAuth): void
     {
         $this->assertNotNull($initAuth);
         $this->assertEquals(Secure3dStatus::CHALLENGE_REQUIRED, $initAuth->status);

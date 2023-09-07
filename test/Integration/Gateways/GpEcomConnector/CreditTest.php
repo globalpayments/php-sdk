@@ -132,7 +132,7 @@ class CreditTest extends TestCase
         $this->assertEquals('00', $response->responseCode);
     }
 
-    protected function getConfig()
+    protected function getConfig(): GpEcomConfig
     {
         $config = new GpEcomConfig();
         $config->merchantId = 'heartlandgpsandbox';
@@ -145,7 +145,7 @@ class CreditTest extends TestCase
         return $config;
     }
     
-    protected function dccSetup()
+    protected function dccSetup(): void
     {
         $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";

@@ -2,6 +2,7 @@
 
 namespace Gateways\GpApiConnector;
 
+use DateTime;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\PaymentProvider;
@@ -14,6 +15,7 @@ use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\BankPayment;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -23,14 +25,14 @@ class GpApiOpenBankingTest extends TestCase
 {
     private string $currency = 'GBP';
     private float $amount = 10.99;
-    private \DateTime $startDate;
-    private \DateTime $endDate;
+    private DateTime $startDate;
+    private DateTime $endDate;
 
     public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
-        $this->startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
-        $this->endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
+        $this->startDate = (new DateTime())->modify('-30 days')->setTime(0, 0, 0);
+        $this->endDate = (new DateTime())->modify('-3 days')->setTime(0, 0, 0);
     }
 
     public static function tearDownAfterClass(): void
@@ -38,14 +40,14 @@ class GpApiOpenBankingTest extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
         $config->country = 'GB';
         return $config;
     }
 
-    private function fasterPaymentsConfig()
+    private function fasterPaymentsConfig(): BankPayment
     {
         $bankPayment = new BankPayment();
         $bankPayment->accountNumber = '99999999';
@@ -58,7 +60,7 @@ class GpApiOpenBankingTest extends TestCase
         return $bankPayment;
     }
 
-    private function sepaConfig()
+    private function sepaConfig(): BankPayment
     {
         $bankPayment = new BankPayment();
         $bankPayment->iban = 'GB33BUKB20201555555555';
@@ -69,7 +71,7 @@ class GpApiOpenBankingTest extends TestCase
         return $bankPayment;
     }
 
-    private function assertOpenBankingResponse(Transaction $trn)
+    private function assertOpenBankingResponse(Transaction $trn): void
     {
         $this->assertEquals(TransactionStatus::INITIATED, $trn->responseMessage);
         $this->assertNotNull($trn->transactionId);

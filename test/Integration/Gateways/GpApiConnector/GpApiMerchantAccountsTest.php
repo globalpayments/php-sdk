@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector;
 
+use DateTime;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\MerchantAccountsSortProperty;
@@ -30,18 +31,18 @@ use PHPUnit\Framework\TestCase;
 
 class GpApiMerchantAccountsTest extends TestCase
 {
-    private $startDate;
-    private $endDate;
-    private $accountId;
+    private DateTime $startDate;
+    private DateTime $endDate;
+    private string $accountId;
     /** @var GpApiConfig */
-    private $config;
+    private GpApiConfig $config;
 
     public function setup(): void
     {
         $this->setUpConfig();
         ServicesContainer::configureService($this->config);
-        $this->startDate = (new \DateTime())->modify('-1 year')->setTime(0, 0, 0);
-        $this->endDate = (new \DateTime())->modify('-3 days')->setTime(0, 0, 0);
+        $this->startDate = (new DateTime())->modify('-1 year')->setTime(0, 0, 0);
+        $this->endDate = (new DateTime())->modify('-3 days')->setTime(0, 0, 0);
 
         $response = ReportingService::findAccounts(1, 10)
             ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::ASC)
@@ -58,7 +59,7 @@ class GpApiMerchantAccountsTest extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): void
     {
         BaseGpApiTestConfig::$appId = BaseGpApiTestConfig::PARTNER_SOLUTION_APP_ID;
         BaseGpApiTestConfig::$appKey = BaseGpApiTestConfig::PARTNER_SOLUTION_APP_KEY;
@@ -204,7 +205,7 @@ class GpApiMerchantAccountsTest extends TestCase
             ->where(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
             ->execute();
 
-        $this->assertTrue(count($merchants->result) > 0);
+        $this->assertNotEmpty($merchants->result);
         $merchant = User::fromId(reset($merchants->result)->id, UserType::MERCHANT);
 
         $response = ReportingService::findAccounts(1, 10)
@@ -215,7 +216,7 @@ class GpApiMerchantAccountsTest extends TestCase
             ->andWith(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
             ->execute();
 
-        $this->assertTrue(count($response->result) > 0);
+        $this->assertNotEmpty($response->result);
         /** @var MerchantAccountSummary $accountSummary */
         $index = array_search(
             MerchantAccountType::FUND_MANAGEMENT, array_column($response->result, 'type')
@@ -312,7 +313,7 @@ class GpApiMerchantAccountsTest extends TestCase
             ->where(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
             ->execute();
 
-        $this->assertTrue(count($merchants->result) > 0);
+        $this->assertNotEmpty($merchants->result);
         $merchant = User::fromId(reset($merchants->result)->id, UserType::MERCHANT);
 
         $response = ReportingService::findAccounts(1, 10)
@@ -323,7 +324,7 @@ class GpApiMerchantAccountsTest extends TestCase
             ->andWith(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
             ->execute();
 
-        $this->assertTrue(count($response->result) > 0);
+        $this->assertNotEmpty($response->result);
         /** @var MerchantAccountSummary $accountSummary */
         $index = array_search(
             MerchantAccountType::FUND_MANAGEMENT, array_column($response->result, 'type')
@@ -363,7 +364,7 @@ class GpApiMerchantAccountsTest extends TestCase
             ->where(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
             ->execute();
 
-        $this->assertTrue(count($merchants->result) > 0);
+        $this->assertNotEmpty($merchants->result);
         $merchant = User::fromId(reset($merchants->result)->id, UserType::MERCHANT);
 
         $response = ReportingService::findAccounts(1, 10)
@@ -374,7 +375,7 @@ class GpApiMerchantAccountsTest extends TestCase
             ->andWith(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
             ->execute();
 
-        $this->assertTrue(count($response->result) > 0);
+        $this->assertNotEmpty($response->result);
         /** @var MerchantAccountSummary $accountSummary */
         $index = array_search(
             MerchantAccountType::FUND_MANAGEMENT, array_column($response->result, 'type')
@@ -422,7 +423,7 @@ class GpApiMerchantAccountsTest extends TestCase
             ->where(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
             ->execute();
 
-        $this->assertTrue(count($merchants->result) > 0);
+        $this->assertNotEmpty($merchants->result);
         $merchant = User::fromId(reset($merchants->result)->id, UserType::MERCHANT);
 
         $response = ReportingService::findAccounts(1, 10)
@@ -433,7 +434,7 @@ class GpApiMerchantAccountsTest extends TestCase
             ->andWith(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
             ->execute();
 
-        $this->assertTrue(count($response->result) > 0);
+        $this->assertNotEmpty($response->result);
         /** @var MerchantAccountSummary $accountSummary */
         $index = array_search(
             MerchantAccountType::FUND_MANAGEMENT, array_column($response->result, 'type')
@@ -477,7 +478,7 @@ class GpApiMerchantAccountsTest extends TestCase
 
         $merchants = $this->getMerchants();
 
-        $this->assertTrue(count($merchants->result) > 0);
+        $this->assertNotEmpty($merchants->result);
 
         $accountSummary = $this->getAccountByType(
             reset($merchants->result)->id,
@@ -513,7 +514,7 @@ class GpApiMerchantAccountsTest extends TestCase
     {
         $merchants = $this->getMerchants();
 
-        $this->assertTrue(count($merchants->result) > 0);
+        $this->assertNotEmpty($merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -560,7 +561,7 @@ class GpApiMerchantAccountsTest extends TestCase
     {
         $merchants = $this->getMerchants();
 
-        $this->assertTrue(count($merchants->result) > 0);
+        $this->assertNotEmpty($merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -608,7 +609,7 @@ class GpApiMerchantAccountsTest extends TestCase
     {
         $merchants = $this->getMerchants();
 
-        $this->assertTrue(count($merchants->result) > 0);
+        $this->assertNotEmpty($merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -653,7 +654,7 @@ class GpApiMerchantAccountsTest extends TestCase
         $idempotencyKey = GenerationUtils::getGuid();
         $merchants = $this->getMerchants();
 
-        $this->assertTrue(count($merchants->result) > 0);
+        $this->assertNotEmpty($merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -716,7 +717,7 @@ class GpApiMerchantAccountsTest extends TestCase
     {
         $merchants = $this->getMerchants();
 
-        $this->assertTrue(count($merchants->result) > 0);
+        $this->assertNotEmpty($merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -767,7 +768,7 @@ class GpApiMerchantAccountsTest extends TestCase
     {
         $merchants = $this->getMerchants();
 
-        $this->assertTrue(count($merchants->result) > 0);
+        $this->assertNotEmpty($merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -817,7 +818,7 @@ class GpApiMerchantAccountsTest extends TestCase
     {
         $merchants = $this->getMerchants();
 
-        $this->assertTrue(count($merchants->result) > 0);
+        $this->assertNotEmpty($merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -868,7 +869,7 @@ class GpApiMerchantAccountsTest extends TestCase
     {
         $merchants = $this->getMerchants();
 
-        $this->assertTrue(count($merchants->result) > 0);
+        $this->assertNotEmpty($merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -919,7 +920,7 @@ class GpApiMerchantAccountsTest extends TestCase
     {
         $merchants = $this->getMerchants();
 
-        $this->assertTrue(count($merchants->result) > 0);
+        $this->assertNotEmpty($merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -970,7 +971,7 @@ class GpApiMerchantAccountsTest extends TestCase
     {
         $merchants = $this->getMerchants();
 
-        $this->assertTrue(count($merchants->result) > 0);
+        $this->assertNotEmpty($merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -1048,7 +1049,7 @@ class GpApiMerchantAccountsTest extends TestCase
             ->andWith(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
             ->execute();
 
-        $this->assertTrue(count($response->result) > 0);
+        $this->assertNotEmpty($response->result);
         $index = array_search($type, array_column($response->result, 'type'));
 
         return ($index !== false ? $response->result[$index] : null);

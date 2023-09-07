@@ -8,17 +8,18 @@ use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use PHPUnit\Framework\TestCase;
 
 class GpApiDigitalWalletTest extends TestCase
 {
-    private $card;
-    private $currency = 'EUR';
-    private $amount = 10;
-    private $googlePayToken;
-    private $clickToPayToken;
+    private CreditCardData $card;
+    private string $currency = 'EUR';
+    private float $amount = 10;
+    private string $googlePayToken;
+    private string $clickToPayToken;
 
     public function setup(): void
     {
@@ -40,7 +41,7 @@ class GpApiDigitalWalletTest extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
@@ -253,7 +254,7 @@ class GpApiDigitalWalletTest extends TestCase
         $this->assertTransactionResponse($reverse, TransactionStatus::REVERSED);
     }
 
-    private function assertTransactionResponse($transaction, $transactionStatus)
+    private function assertTransactionResponse($transaction, $transactionStatus): void
     {
         $this->assertNotNull($transaction);
         $this->assertEquals("SUCCESS", $transaction->responseCode);
@@ -261,7 +262,7 @@ class GpApiDigitalWalletTest extends TestCase
         $this->assertNotEmpty($transaction->transactionId);
     }
 
-    private function assertClickToPayPayerDetails($response)
+    private function assertClickToPayPayerDetails($response): void
     {
         $this->assertNotNull($response->payerDetails);
         $this->assertNotNull($response->payerDetails->email);

@@ -2,19 +2,19 @@
 
 namespace Gateways\GpApiConnector;
 
+use DateTime;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\AccountType;
 use GlobalPayments\Api\Entities\Enums\Channel;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodFunction;
 use GlobalPayments\Api\Entities\Enums\PersonFunctions;
 use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 use GlobalPayments\Api\Entities\Enums\StatusChangeReason;
 use GlobalPayments\Api\Entities\Enums\UserStatus;
 use GlobalPayments\Api\Entities\Enums\UserType;
-use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\PayFac\BankAccountData;
 use GlobalPayments\Api\Entities\PayFac\UserPersonalData;
 use GlobalPayments\Api\Entities\PaymentStatistics;
@@ -23,6 +23,7 @@ use GlobalPayments\Api\Entities\PersonList;
 use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Entities\Product;
 use GlobalPayments\Api\Entities\User;
+use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\PayFacService;
 use GlobalPayments\Api\Services\ReportingService;
@@ -30,9 +31,6 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Tests\Integration\Gateways\ProPay\TestData\TestAccountData;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use PHPUnit\Framework\TestCase;
 
 class GpApiMerchantsOnboardTest extends TestCase
@@ -42,7 +40,7 @@ class GpApiMerchantsOnboardTest extends TestCase
         ServicesContainer::configureService($this->setUpConfig());
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         BaseGpApiTestConfig::$appId = BaseGpApiTestConfig::PARTNER_SOLUTION_APP_ID;
         BaseGpApiTestConfig::$appKey = BaseGpApiTestConfig::PARTNER_SOLUTION_APP_KEY;
@@ -237,7 +235,7 @@ class GpApiMerchantsOnboardTest extends TestCase
 
     public function testSearchMerchants()
     {
-        /** @var \GlobalPayments\Api\Entities\GpApi\PagedResult $merchants */
+        /** @var PagedResult $merchants */
         $merchants = ReportingService::findMerchants(1, 10)->execute();
 
         $this->assertGreaterThan(0, $merchants->totalRecordCount);
@@ -246,11 +244,11 @@ class GpApiMerchantsOnboardTest extends TestCase
 
     public function testEditMerchantApplicantInfo()
     {
-        /** @var \GlobalPayments\Api\Entities\GpApi\PagedResult $merchants */
+        /** @var PagedResult $merchants */
         $merchants = ReportingService::findMerchants(1, 1)->execute();
 
         $this->assertGreaterThan(0, $merchants->totalRecordCount);
-        $this->assertEquals(1, count($merchants->result));
+        $this->assertCount(1, $merchants->result);
 
         $merchant = User::fromId(reset($merchants->result)->id, UserType::MERCHANT);
         $persons = $this->getPersonList('Update');
@@ -264,11 +262,11 @@ class GpApiMerchantsOnboardTest extends TestCase
 
     public function testEditMerchantPaymentProcessing()
     {
-        /** @var \GlobalPayments\Api\Entities\GpApi\PagedResult $merchants */
+        /** @var PagedResult $merchants */
         $merchants = ReportingService::findMerchants(1, 1)->execute();
 
         $this->assertGreaterThan(0, $merchants->totalRecordCount);
-        $this->assertEquals(1, count($merchants->result));
+        $this->assertCount(1, $merchants->result);
         $paymentStatistics = new PaymentStatistics();
         $paymentStatistics->totalMonthlySalesAmount = '1111';
         $paymentStatistics->highestTicketSalesAmount = '2222';
@@ -285,11 +283,11 @@ class GpApiMerchantsOnboardTest extends TestCase
 
     public function testEditMerchantBusinessInformation()
     {
-        /** @var \GlobalPayments\Api\Entities\GpApi\PagedResult $merchants */
+        /** @var PagedResult $merchants */
         $merchants = ReportingService::findMerchants(1, 1)->execute();
 
         $this->assertGreaterThan(0, $merchants->totalRecordCount);
-        $this->assertEquals(1, count($merchants->result));
+        $this->assertCount(1, $merchants->result);
 
         $merchant = User::fromId(reset($merchants->result)->id, UserType::MERCHANT);
         $merchant->userStatus = UserStatus::ACTIVE;
@@ -323,11 +321,11 @@ class GpApiMerchantsOnboardTest extends TestCase
 
     public function testEditMerchant_RemoveMerchantFromPartner_FewArguments()
     {
-        /** @var \GlobalPayments\Api\Entities\GpApi\PagedResult $merchants */
+        /** @var PagedResult $merchants */
         $merchants = ReportingService::findMerchants(1, 1)->execute();
 
         $this->assertGreaterThan(0, $merchants->totalRecordCount);
-        $this->assertEquals(1, count($merchants->result));
+        $this->assertCount(1, $merchants->result);
 
         $merchant = User::fromId(reset($merchants->result)->id, UserType::MERCHANT);
 
@@ -351,7 +349,7 @@ class GpApiMerchantsOnboardTest extends TestCase
         $merchants = ReportingService::findMerchants(1, 1)->execute();
 
         $this->assertGreaterThan(0, $merchants->totalRecordCount);
-        $this->assertEquals(1, count($merchants->result));
+        $this->assertCount(1, $merchants->result);
 
         $merchant = User::fromId(reset($merchants->result)->id, UserType::MERCHANT);
 
@@ -709,10 +707,10 @@ class GpApiMerchantsOnboardTest extends TestCase
         }
     }
 
-    private function getMerchantData()
+    private function getMerchantData(): UserPersonalData
     {
         $merchantData = new UserPersonalData();
-        $merchantData->userName = 'CERT_Propay_' . (new \DateTime())->format("YmdHis");
+        $merchantData->userName = 'CERT_Propay_' . (new DateTime())->format("YmdHis");
         $merchantData->legalName = 'Business Legal Name';
         $merchantData->dba = 'Doing Business As';
         $merchantData->merchantCategoryCode = '5999';
@@ -748,7 +746,7 @@ class GpApiMerchantsOnboardTest extends TestCase
         return $merchantData;
     }
 
-    private function getProductList()
+    private function getProductList(): array
     {
         $products = [
             'PRO_TRA_CP-US-CARD-A920_SP',
@@ -765,7 +763,7 @@ class GpApiMerchantsOnboardTest extends TestCase
         return $productData;
     }
 
-    private function getPersonList($type = '')
+    private function getPersonList($type = ''): PersonList
     {
         $person = new Person();
         $person->functions = PersonFunctions::APPLICANT;
@@ -795,7 +793,7 @@ class GpApiMerchantsOnboardTest extends TestCase
         return $persons;
     }
 
-    private function getBankAccountData()
+    private function getBankAccountData(): BankAccountData
     {
         $bankAccountInformation = new BankAccountData();
         $bankAccountInformation->accountHolderName = 'Bank Account Holder Name';
@@ -807,7 +805,7 @@ class GpApiMerchantsOnboardTest extends TestCase
         return $bankAccountInformation;
     }
 
-    private function getPaymentStatistics()
+    private function getPaymentStatistics(): PaymentStatistics
     {
         $paymentStatistics = new PaymentStatistics();
         $paymentStatistics->totalMonthlySalesAmount = '3000000';

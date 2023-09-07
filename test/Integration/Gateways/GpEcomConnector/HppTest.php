@@ -25,14 +25,16 @@ use GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector\Hpp\GpEcomHppC
 use GlobalPayments\Api\Entities\Enums\RemittanceReferenceType;
 use GlobalPayments\Api\Entities\Enums\ChallengeRequestIndicator;
 use PHPUnit\Framework\TestCase;
+use RecursiveArrayIterator;
+use RecursiveIteratorIterator;
 
 class HppTest extends TestCase
 {
-    private $billingAddress;
+    private Address $billingAddress;
 
-    private $shippingAddress;
+    private Address $shippingAddress;
 
-    private $hppVersionList = [
+    private array $hppVersionList = [
         HppVersion::VERSION_1,
         HppVersion::VERSION_2,
         ''
@@ -55,7 +57,7 @@ class HppTest extends TestCase
         $this->shippingAddress->country = "GB";
     }
 
-    public function basicSetup()
+    public function basicSetup(): HostedService
     {
         $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";
@@ -378,7 +380,7 @@ class HppTest extends TestCase
                 ->serialize();
         
         $this->assertNotNull($json);
-        $this->assertEquals($json, '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1900","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","DCC_ENABLE":"1","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","HPP_VERSION":"2","SHA1HASH":"448d742db89b05ce97152beb55157c904f3839cc"}');
+        $this->assertEquals('{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1900","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","DCC_ENABLE":"1","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","HPP_VERSION":"2","SHA1HASH":"448d742db89b05ce97152beb55157c904f3839cc"}', $json);
     }
     
     public function testDisableDynamicCurrencyConversionRequest()
@@ -698,7 +700,7 @@ class HppTest extends TestCase
             $this->assertNotNull($response);
 
             // Base64 encode values
-            $iterator = new \RecursiveIteratorIterator(new \RecursiveArrayIterator(json_decode($response, true)));
+            $iterator = new RecursiveIteratorIterator(new RecursiveArrayIterator(json_decode($response, true)));
             foreach ($iterator as $key => $value) {
                 if (!empty($value)) {
                     $iterator->getInnerIterator()->offsetSet($key, base64_encode($value));
@@ -933,8 +935,8 @@ class HppTest extends TestCase
             ->withHostedPaymentData($hostedPaymentData)
             ->serialize();
         $response = json_decode($json, true);
-        $this->assertEquals(true, $response['HPP_CAPTURE_ADDRESS']);
-        $this->assertEquals(false, $response['HPP_DO_NOT_RETURN_ADDRESS']);
+        $this->assertTrue($response['HPP_CAPTURE_ADDRESS']);
+        $this->assertFalse($response['HPP_DO_NOT_RETURN_ADDRESS']);
     }
 
     public function testOpenBankingInitiate()
@@ -988,7 +990,7 @@ class HppTest extends TestCase
         $config->sharedSecret = "secret";
         $config->hostedPaymentConfig = new HostedPaymentConfig();
         $config->hostedPaymentConfig->language = "GB";
-        $config->hostedPaymentConfig->responseUrl = "https://www.example.com/response";;
+        $config->hostedPaymentConfig->responseUrl = "https://www.example.com/response";
         $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
 
         $service = new HostedService($config);
@@ -1009,6 +1011,6 @@ class HppTest extends TestCase
 
         $jsonResponse = json_decode($json, true);
         $this->assertTrue(isset($jsonResponse['HPP_ENABLE_EXEMPTION_OPTIMIZATION']));
-        $this->assertEquals(true, $jsonResponse['HPP_ENABLE_EXEMPTION_OPTIMIZATION']);
+        $this->assertTrue($jsonResponse['HPP_ENABLE_EXEMPTION_OPTIMIZATION']);
     }
 }

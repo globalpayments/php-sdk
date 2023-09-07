@@ -2,9 +2,9 @@
 
 namespace Gateways\GpApiConnector;
 
+use DateTime;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\Channel;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
 use GlobalPayments\Api\Entities\Enums\FraudFilterResult;
 use GlobalPayments\Api\Entities\Enums\ReasonCode;
@@ -13,7 +13,6 @@ use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\FraudRuleCollection;
-use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
@@ -31,11 +30,11 @@ use PHPUnit\Framework\TestCase;
 class FraudManagementTest extends TestCase
 {
     /** @var CreditCardData */
-    private $card;
+    private CreditCardData $card;
     /** @var Address $address */
-    private $address;
+    private Address $address;
     /** @var string */
-    private $currency = 'USD';
+    private string $currency = 'USD';
 
     public function setup(): void
     {
@@ -60,7 +59,7 @@ class FraudManagementTest extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    private function setUpConfig()
+    private function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
@@ -720,8 +719,8 @@ class FraudManagementTest extends TestCase
 
     public function testGetTransactionWithFraudCheck()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
-        $endDate = (new \DateTime())->modify('-3 days');
+        $startDate = (new DateTime())->modify('-30 days');
+        $endDate = (new DateTime())->modify('-3 days');
 
         /** @var PagedResult $response */
         $response = ReportingService::findTransactionsPaged(1, 10)

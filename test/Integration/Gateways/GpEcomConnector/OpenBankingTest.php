@@ -2,6 +2,7 @@
 
 use GlobalPayments\Api\Entities\Enums\{BankPaymentStatus, BankPaymentType, RemittanceReferenceType, ShaHashType};
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\Reporting\{SearchCriteria, TransactionSummary};
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\BankPayment;
@@ -198,8 +199,8 @@ class OpenBankingTest extends TestCase
 
     public function testBankPaymentList()
     {
-        $startDate = (new \DateTime())->modify('-5 day');
-        $endDate = new \DateTime();
+        $startDate = (new DateTime())->modify('-5 day');
+        $endDate = new DateTime();
         $response = ReportingService::findBankPaymentTransactions(1, 10)
             ->where(SearchCriteria::START_DATE, $startDate)
             ->andWith(SearchCriteria::END_DATE, $endDate)
@@ -216,8 +217,8 @@ class OpenBankingTest extends TestCase
 
     public function testBankPaymentList_EmptyList()
     {
-        $startDate = (new \DateTime())->modify('-29 day');
-        $endDate = (new \DateTime())->modify('-28 day');
+        $startDate = (new DateTime())->modify('-29 day');
+        $endDate = (new DateTime())->modify('-28 day');
         $response = ReportingService::findBankPaymentTransactions(1, 10)
             ->where(SearchCriteria::START_DATE, $startDate)
             ->andWith(SearchCriteria::END_DATE, $endDate)
@@ -232,8 +233,8 @@ class OpenBankingTest extends TestCase
 
     public function testBankPaymentListWithReturnPii()
     {
-        $startDate = (new \DateTime())->modify('-29 day');
-        $endDate = (new \DateTime())->modify('-1 day');
+        $startDate = (new DateTime())->modify('-29 day');
+        $endDate = (new DateTime())->modify('-1 day');
         $response = ReportingService::findBankPaymentTransactions(1, 10)
             ->where(SearchCriteria::START_DATE, $startDate)
             ->andWith(SearchCriteria::END_DATE, $endDate)
@@ -241,7 +242,7 @@ class OpenBankingTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertTrue(count($response->result) > 0);
+        $this->assertNotEmpty($response->result);
         /** @var TransactionSummary $trn */
         $trn = $response->result[rand(0, count($response->result) - 1)];
         $bankPaymentResponse = $trn->bankPaymentResponse;
@@ -263,7 +264,7 @@ class OpenBankingTest extends TestCase
     public function testGetBankPaymentById()
     {
         $obTransId = 'DuVGjawYd1m8UkbZyi';
-        /** @var \GlobalPayments\Api\Entities\GpApi\PagedResult $response */
+        /** @var PagedResult $response */
         $response = ReportingService::bankPaymentDetail($obTransId)
             ->execute();
 
@@ -277,7 +278,7 @@ class OpenBankingTest extends TestCase
         $length = 18;
         $obTransId = substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 1, $length);
 
-        /** @var \GlobalPayments\Api\Entities\GpApi\PagedResult $response */
+        /** @var PagedResult $response */
         $response = ReportingService::bankPaymentDetail($obTransId)
             ->execute();
 
@@ -549,7 +550,7 @@ class OpenBankingTest extends TestCase
         }
     }
 
-    private function fasterPaymentsConfig()
+    private function fasterPaymentsConfig(): BankPayment
     {
         $bankPayment = new BankPayment();
         $bankPayment->accountNumber = '12345678';
@@ -561,7 +562,7 @@ class OpenBankingTest extends TestCase
         return $bankPayment;
     }
 
-    private function sepaConfig()
+    private function sepaConfig(): BankPayment
     {
         $bankPayment = new BankPayment();
         $bankPayment->iban = '123456';
@@ -572,7 +573,7 @@ class OpenBankingTest extends TestCase
         return $bankPayment;
     }
 
-    private function assertOpenBankingResponse(Transaction $trn)
+    private function assertOpenBankingResponse(Transaction $trn): void
     {
         $this->assertEquals(BankPaymentStatus::PAYMENT_INITIATED, $trn->responseMessage);
         $this->assertNotNull($trn->transactionId);

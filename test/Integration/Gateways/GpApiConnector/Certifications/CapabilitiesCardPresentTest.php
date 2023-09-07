@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector\Certifications;
+namespace Gateways\GpApiConnector\Certifications;
 
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
@@ -42,7 +42,7 @@ class CapabilitiesCardPresentTest extends TestCase
     public function testDebitSaleWithChipCondition()
     {
         $debitCard = new DebitTrackData();
-        $debitCard->value = ';4024720012345671=18125025432198712345?';
+        $debitCard->value = ';4024720012345671=30125025432198712345?';
         $debitCard->pinBlock = 'AFEC374574FC90623D010000116001EE';
         $debitCard->entryMethod = EntryMethod::SWIPE;
         $response = $debitCard->charge(100)

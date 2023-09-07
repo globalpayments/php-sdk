@@ -2,6 +2,7 @@
 
 namespace Gateways\GpApiConnector;
 
+use DateTime;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Enums\AccountType;
@@ -15,12 +16,13 @@ use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Enums\TransactionSortProperty;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
-use GlobalPayments\Api\Entities\FundsData;
 use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
+use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\ECheck;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -28,11 +30,11 @@ use PHPUnit\Framework\TestCase;
 
 class GpApiAchTest extends TestCase
 {
-    private $eCheck;
+    private ECheck $eCheck;
 
-    private $address;
+    private Address $address;
 
-    private $customer;
+    private Customer $customer;
 
     public function setup(): void
     {
@@ -80,7 +82,7 @@ class GpApiAchTest extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
@@ -148,8 +150,8 @@ class GpApiAchTest extends TestCase
         $this->eCheck->secCode = SecCode::PPD;
         $this->eCheck->accountNumber = '051904524';
         $this->eCheck->routingNumber = '123456780';
-        $startDate = (new \DateTime())->modify('-1 year');
-        $endDate = (new \DateTime())->modify('-2 days');
+        $startDate = (new DateTime())->modify('-1 year');
+        $endDate = (new DateTime())->modify('-2 days');
         $amount = '1.29';
         $response = ReportingService::findTransactionsPaged(1, 10)
             ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
@@ -163,7 +165,7 @@ class GpApiAchTest extends TestCase
         $this->assertNotNull($response);
         if (count($response->result) > 0) {
             $this->assertNotEmpty($response->result);
-            /** @var \GlobalPayments\Api\Entities\Reporting\TransactionSummary $transactionSummary */
+            /** @var TransactionSummary $transactionSummary */
             $transactionSummary = reset($response->result);
             $this->assertNotNull($transactionSummary);
             $this->assertEquals($amount, $transactionSummary->amount);

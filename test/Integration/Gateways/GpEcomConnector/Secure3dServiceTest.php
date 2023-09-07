@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
+use DateTime;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\BrowserData;
 use GlobalPayments\Api\Entities\Enums\ {
@@ -83,7 +84,7 @@ class Secure3dServiceTest extends TestCase
         $this->browserData->userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64, x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36';
     }
 
-    protected function getConfig()
+    protected function getConfig(): GpEcomConfig
     {
         $config = new GpEcomConfig();
         $config->merchantId = 'myMerchantId';
@@ -403,9 +404,7 @@ class Secure3dServiceTest extends TestCase
         $this->assertNotNull($secureEcom);
 
         if ($secureEcom->enrolled) {
-            if ($secureEcom->getVersion() === Secure3dVersion::TWO) {
-                $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
-
+            if ($secureEcom->getVersion() == Secure3dVersion::TWO) {
                 // initiate authentication
                 $initAuth = Secure3dService::initiateAuthentication($this->card, $secureEcom)
                     ->withAmount(10.01)
@@ -780,7 +779,7 @@ class Secure3dServiceTest extends TestCase
                 // optionals
                 ->withPriorAuthenticationMethod(PriorAuthenticationMethod::FRICTIONLESS_AUTHENTICATION)
                 ->withPriorAuthenticationTransactionId('26c3f619-39a4-4040-bf1f-6fd433e6d615')
-                ->withPriorAuthenticationTimestamp((new \DateTime('2019-01-10T12:57:33.333Z'))->format(\DateTime::RFC3339_EXTENDED))
+                ->withPriorAuthenticationTimestamp((new DateTime('2019-01-10T12:57:33.333Z'))->format(DateTime::RFC3339_EXTENDED))
                 ->execute();
             $this->assertNotNull($initAuth);
 
@@ -874,7 +873,7 @@ class Secure3dServiceTest extends TestCase
 
                 // optionals
                 ->withCustomerAuthenticationData('string')
-                ->withCustomerAuthenticationTimestamp((new \DateTime('2019-01-10T12:57:33.333Z'))->format(\DateTime::RFC3339_EXTENDED))
+                ->withCustomerAuthenticationTimestamp((new DateTime('2019-01-10T12:57:33.333Z'))->format(DateTime::RFC3339_EXTENDED))
                 ->withCustomerAuthenticationMethod(CustomerAuthenticationMethod::MERCHANT_SYSTEM)
                 ->execute();
             $this->assertNotNull($initAuth);
@@ -952,7 +951,7 @@ class Secure3dServiceTest extends TestCase
             ->withServerTransactionId($initAuth->serverTransactionId)
             ->execute();
 
-        $this->assertEquals('CHALLENGE_REQUIRED', $initAuth->status);
+        $this->assertEquals('CHALLENGE_REQUIRED', $secureEcom->status);
         $this->card->threeDSecure = $secureEcom;
 
         $response = $this->card->charge(10.01)

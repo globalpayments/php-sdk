@@ -316,7 +316,7 @@ class DccCardNotPresentTest extends TestCase
         }
     }
 
-    private function assertDccInfoResponse($dccDetails, $expectedDccValue)
+    private function assertDccInfoResponse($dccDetails, $expectedDccValue): void
     {
         $this->assertNotNull($dccDetails);
         $this->assertEquals('SUCCESS', $dccDetails->responseCode);
@@ -325,7 +325,7 @@ class DccCardNotPresentTest extends TestCase
         $this->assertEquals($expectedDccValue, $dccDetails->dccRateData->cardHolderAmount);
     }
 
-    private function assertTransactionResponse($transaction, $transactionStatus, $expectedDccValue)
+    private function assertTransactionResponse($transaction, $transactionStatus, $expectedDccValue): void
     {
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
@@ -335,7 +335,7 @@ class DccCardNotPresentTest extends TestCase
         }
     }
 
-    private function getAmount($dccDetails)
+    private function getAmount($dccDetails): float
     {
         return round($this->amount * $dccDetails->dccRateData->cardHolderRate, 2);
     }

@@ -2,6 +2,7 @@
 
 namespace Gateways\GpApiConnector;
 
+use DateTime;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\DepositStatus;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
@@ -13,6 +14,7 @@ use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -34,8 +36,8 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactionsByStartDateAndEndDate()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
-        $endDate = (new \DateTime())->modify('-3 days');
+        $startDate = (new DateTime())->modify('-30 days');
+        $endDate = (new DateTime())->modify('-3 days');
         try {
             $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
@@ -130,7 +132,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_NumberFirst6_And_NumberLast4()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $numberFirst6 = "376768";
         $numberLast4 = "5006";
 
@@ -155,7 +157,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_DepositStatus()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $depositStatus = new DepositStatus();
         $reflectionClass = new ReflectionClass($depositStatus);
         foreach ($reflectionClass->getConstants() as $value) {
@@ -182,7 +184,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_CardBrand()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $cardBrand = array("VISA", "MASTERCARD", "AMEX", "DINERS", "DISCOVER", "JCB", "CUP");
         foreach ($cardBrand as $value) {
             try {
@@ -208,7 +210,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_Wrong_CardBrand()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $cardBrand = "Bank of America";
         try {
             $response = ReportingService::findSettlementTransactionsPaged(1, 10)
@@ -226,7 +228,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_ARN()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $arn = "24137550037630153798573";
 
         try {
@@ -248,7 +250,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_Wrong_ARN()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $arn = GenerationUtils::getGuid();
 
         try {
@@ -267,7 +269,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_BrandReference()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $brandReference = "460008653352066";
 
         try {
@@ -289,7 +291,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_Wrong_BrandReference()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $brandReference = GenerationUtils::getGuid();
         $brandReference = trim(str_replace("-", "", $brandReference));
 
@@ -309,7 +311,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_AuthCode()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $authCode = "931951";
 
         try {
@@ -331,7 +333,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_Reference()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $reference = "50080513769";
 
         try {
@@ -353,7 +355,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_Random_Reference()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $reference = GenerationUtils::getGuid();
         $reference = trim(str_replace("-", "", $reference));
 
@@ -376,7 +378,7 @@ class ReportingSettlementTransactionsTest extends TestCase
      */
     public function testReportFindSettlementTransactions_FilterBy_Status()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $settleTransactionStatus = [TransactionStatus::FUNDED, TransactionStatus::REJECTED];
         foreach ($settleTransactionStatus as $value) {
             try {
@@ -402,7 +404,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_DepositID()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $depositId = "DEP_2342423423";
 
         try {
@@ -424,7 +426,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_Random_DepositID()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $depositID = GenerationUtils::getGuid();
         $depositID = trim(str_replace("-", "", $depositID));
 
@@ -444,8 +446,8 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_FromDepositTimeCreated_And_ToDepositTimeCreated()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
-        $endDate = (new \DateTime())->modify('-3 days');
+        $startDate = (new DateTime())->modify('-30 days');
+        $endDate = (new DateTime())->modify('-3 days');
         try {
             $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
@@ -466,8 +468,8 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_FromBatchTimeCreated_And_ToBatchTimeCreated()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
-        $endDate = (new \DateTime())->modify('-3 days');
+        $startDate = (new DateTime())->modify('-30 days');
+        $endDate = (new DateTime())->modify('-3 days');
         try {
             $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
@@ -488,8 +490,8 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_SystemMid_And_SystemHierarchy()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
-        $endDate = (new \DateTime())->modify('-10 days');
+        $startDate = (new DateTime())->modify('-30 days');
+        $endDate = (new DateTime())->modify('-10 days');
         $systemMid = "101023947262";
         $systemHierarchy = "055-70-024-011-019";
         try {
@@ -513,7 +515,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_Random_MerchantID()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $merchantID = "111";
 
         try {
@@ -532,7 +534,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_Random_SystemHierarchy()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $systemHierarchy = "100-00-000-000-001";
 
         try {
@@ -551,7 +553,7 @@ class ReportingSettlementTransactionsTest extends TestCase
 
     public function testReportFindSettlementTransactions_FilterBy_Invalid_MerchantID()
     {
-        $startDate = (new \DateTime())->modify('-30 days');
+        $startDate = (new DateTime())->modify('-30 days');
         $merchantID = GenerationUtils::getGuid();
         $merchantID = trim(str_replace("-", "", $merchantID));
 
@@ -567,7 +569,7 @@ class ReportingSettlementTransactionsTest extends TestCase
         }
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }

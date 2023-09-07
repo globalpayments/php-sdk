@@ -17,12 +17,18 @@ use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Services\HostedService;
 use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 use GlobalPayments\Api\Entities\Enums\HostedPaymentMethods;
+use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 
 // configure client, request and HPP settings
 $config = new GpEcomConfig();
+/* Credentials for OpenBanking HPP
 $config->merchantId = "openbankingsandbox";
 $config->accountId = "internet";
 $config->sharedSecret = "sharedsecret";
+*/
+$config->merchantId = "heartlandgpsandbox";
+$config->accountId = "hpp";
+$config->sharedSecret = "secret";
 $config->serviceUrl = "https://pay.sandbox.realexpayments.com/pay";
 $config->enableBankPayment = true;
 $config->hostedPaymentConfig = new HostedPaymentConfig();
@@ -42,12 +48,13 @@ if (isset($_REQUEST['notReturnAddress'])) {
     $hostedPaymentData->notReturnAddress = filter_var($_REQUEST['notReturnAddress'], FILTER_VALIDATE_BOOLEAN);
 }
 
-$hostedPaymentData->customerCountry = 'GB';
+$hostedPaymentData->customerCountry = 'DE';
 $hostedPaymentData->customerFirstName = 'James';
 $hostedPaymentData->customerLastName = 'Mason';
-$hostedPaymentData->transactionStatusUrl = $_SERVER['HTTP_REFERER'] . '/examples/hpp/response-endpoint.php';
-$hostedPaymentData->merchantResponseUrl = $_SERVER['HTTP_REFERER'] . '/examples/hpp/response-endpoint.php';
-$hostedPaymentData->presetPaymentMethods = [HostedPaymentMethods::CARDS, HostedPaymentMethods::OB];
+$baseUrl = 'https://ff6e-2a02-2f0e-5615-3300-b580-5acb-6bf-4b11.ngrok-free.app';
+$hostedPaymentData->transactionStatusUrl = "$baseUrl/examples/gp-ecom/hpp/status-endpoint.php";
+$hostedPaymentData->merchantResponseUrl =  "$baseUrl/examples/gp-ecom/hpp/response-endpoint.php";
+$hostedPaymentData->presetPaymentMethods = [HostedPaymentMethods::CARDS, HostedPaymentMethods::OB, AlternativePaymentType::SOFORTUBERWEISUNG];
 
 $billingAddress = new Address();
 $billingAddress->streetAddress1 = "Flat 123";
@@ -75,7 +82,7 @@ $hostedPaymentData->bankPayment = $bankPayment;
 
 try {
     $hppJson = $service->charge(19.99)
-        ->withCurrency("GBP")
+        ->withCurrency("EUR")
         ->withHostedPaymentData($hostedPaymentData)
         ->withAddress($billingAddress, AddressType::BILLING)
         ->withAddress($shippingAddress, AddressType::SHIPPING)

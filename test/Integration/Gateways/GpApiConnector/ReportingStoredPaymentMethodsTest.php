@@ -73,7 +73,7 @@ class ReportingStoredPaymentMethodsTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-        $this->assertTrue(count($response->result) > 0);
+        $this->assertNotEmpty($response->result);
     }
 
     public function testFindStoredPaymentMethod_By_LastUpdated_CurrentDay()
@@ -88,7 +88,7 @@ class ReportingStoredPaymentMethodsTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
-        $this->assertTrue(count($response->result) > 0);
+        $this->assertNotEmpty($response->result);
     }
 
     public function testFindStoredPaymentMethod_By_Id()

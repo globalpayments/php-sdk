@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Services;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
+use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\ShaHashType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
@@ -13,7 +14,6 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Transaction;
-use GlobalPayments\Api\ServiceConfigs\ServicesConfig;
 
 class HostedService
 {
@@ -95,12 +95,35 @@ class HostedService
             ->withPaymentMethod($transaction);
     }
 
+    private function mapTransactionStatusResponse($response) : array
+    {
+        return [
+            'ACCOUNT_HOLDER_NAME' => $response['accountholdername'],
+            'ACCOUNT_NUMBER' => $response['accountnumber'],
+            'TIMESTAMP' => $response['timestamp'],
+            'MERCHANT_ID' => $response['merchantid'],
+            'BANK_CODE' => $response['bankcode'],
+            'BANK_NAME' => $response['bankname'],
+            'HPP_CUSTOMER_BIC' => $response['bic'],
+            'COUNTRY' => $response['country'],
+            'HPP_CUSTOMER_EMAIL' => $response['customeremail'],
+            'TRANSACTION_STATUS' => $response['fundsstatus'],
+            'IBAN' => $response['iban'],
+            'MESSAGE' => $response['message'],
+            'ORDER_ID' => $response['orderid'],
+            'PASREF' => $response['pasref'],
+            'PAYMENTMETHOD' => $response['paymentmethod'],
+            'PAYMENT_PURPOSE' => $response['paymentpurpose'],
+            'RESULT' => $response['result'],
+            $this->shaHashType . "HASH" => $response[strtolower($this->shaHashType).'hash']
+        ];
+    }
+
     public function parseResponse($response, $encoded = false)
     {
         if (empty($response)) {
             throw new ApiException("Enable to parse : empty response");
         }
-
         $response = json_decode($response, true);
 
         if ($encoded) {
@@ -114,17 +137,24 @@ class HostedService
             $response = $iterator->getArrayCopy();
         }
 
+        if (!isset($response['MERCHANT_RESPONSE_URL'])) {
+            $response = $this->mapTransactionStatusResponse($response);
+        }
+
         $timestamp = $response["TIMESTAMP"];
         $merchantId = $response["MERCHANT_ID"];
         $orderId = $response["ORDER_ID"];
         $result = $response["RESULT"];
         $message = $response["MESSAGE"];
         $transactionId = $response["PASREF"];
-        $authCode = $response["AUTHCODE"];
+        $authCode = $response["AUTHCODE"] ?? "";
+        $paymentMethod = $response["PAYMENTMETHOD"] ?? "";
+
         if (empty($response[$this->shaHashType . "HASH"])) {
             throw new ApiException("SHA hash is missing. Please check your code and the Developers Documentation.");
         }
         $shaHash = $response[$this->shaHashType . "HASH"];
+
         $hash = GenerationUtils::generateNewHash(
             $this->sharedSecret,
             implode('.', [
@@ -134,7 +164,7 @@ class HostedService
                 $result,
                 $message,
                 $transactionId,
-                $authCode
+                !isset($response['MERCHANT_RESPONSE_URL']) ? $paymentMethod :$authCode
             ]),
             $this->shaHashType
         );
@@ -146,20 +176,27 @@ class HostedService
         $ref = new TransactionReference();
         $ref->authCode = $authCode;
         $ref->orderId = $orderId;
-        $ref->paymentMethodType = PaymentMethodType::CREDIT;
+        $ref->paymentMethodType = !empty($response['PAYMENTMETHOD']) ? PaymentMethodType::APM : PaymentMethodType::CREDIT;
         $ref->transactionId = $transactionId;
 
         $trans = new Transaction();
 
-        if (isset($response["AMOUNT"])) {
-            $trans->authorizedAmount = $response["AMOUNT"];
-        }
+        $trans->authorizedAmount = $response["AMOUNT"] ?? null;
 
-        $trans->cvnResponseCode = $response["CVNRESULT"];
+        $trans->cvnResponseCode = $response["CVNRESULT"] ?? null;
         $trans->responseCode = $result;
         $trans->responseMessage = $message;
-        $trans->avsResponseCode = $response["AVSPOSTCODERESULT"];
+        $trans->avsResponseCode = $response["AVSPOSTCODERESULT"] ?? null;
         $trans->transactionReference = $ref;
+        if (!empty($response['PAYMENTMETHOD'])) {
+            $apm = new AlternativePaymentResponse();
+            $apm->country = $response['COUNTRY'] ?? '';
+            $apm->providerName = $response['PAYMENTMETHOD'];
+            $apm->paymentStatus = $response['TRANSACTION_STATUS'] ?? null;
+            $apm->reasonCode = $response['PAYMENT_PURPOSE'] ?? null;
+            $apm->accountHolderName = $response['ACCOUNT_HOLDER_NAME'] ?? null;
+            $trans->alternativePaymentResponse = $apm;
+        }
 
         $trans->responseValues = $response;
 

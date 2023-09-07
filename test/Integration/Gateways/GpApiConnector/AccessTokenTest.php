@@ -221,7 +221,7 @@ class AccessTokenTest extends TestCase
         $this->assertEquals('VERIFIED', $response->responseMessage);
     }
 
-    private function assertAccessTokenResponse(AccessTokenInfo $accessTokenInfo)
+    private function assertAccessTokenResponse(AccessTokenInfo $accessTokenInfo): void
     {
         $this->assertNotNull($accessTokenInfo);
         $this->assertNotNull($accessTokenInfo->accessToken);
@@ -237,7 +237,7 @@ class AccessTokenTest extends TestCase
         $this->assertNotNull($accessTokenInfo->dataAccountID);
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         $this->config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
 

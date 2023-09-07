@@ -2,6 +2,7 @@
 
 namespace Gateways\GpApiConnector;
 
+use DateTime;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\EmvLastChipRead;
 use GlobalPayments\Api\Entities\Enums\EntryMethod;
@@ -167,7 +168,7 @@ class CreditCardPresentTest extends TestCase
 
     public function testReauthorizedAnExistingTransaction()
     {
-        $startDate = (new \DateTime())->modify('-29 days')->setTime(0, 0, 0);
+        $startDate = (new DateTime())->modify('-29 days')->setTime(0, 0, 0);
 
         $response = ReportingService::findTransactionsPaged(1, 1)
             ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::ASC)
@@ -747,7 +748,7 @@ class CreditCardPresentTest extends TestCase
         }
     }
 
-    private function initCreditCardData()
+    private function initCreditCardData(): CreditCardData
     {
         $card = new CreditCardData();
         $card->number = "5425230000004415";
@@ -760,7 +761,7 @@ class CreditCardPresentTest extends TestCase
         return $card;
     }
 
-    private function initCreditTrackData($entryMethod = EntryMethod::SWIPE)
+    private function initCreditTrackData($entryMethod = EntryMethod::SWIPE): CreditTrackData
     {
         $card = new CreditTrackData();
         $card->setTrackData('%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?');
@@ -769,7 +770,7 @@ class CreditCardPresentTest extends TestCase
         return $card;
     }
 
-    private function assertTransactionResponse($transaction, $transactionResponseCode, $transactionStatus)
+    private function assertTransactionResponse($transaction, $transactionResponseCode, $transactionStatus): void
     {
         $this->assertNotNull($transaction);
         $this->assertEquals($transactionResponseCode, $transaction->responseCode);

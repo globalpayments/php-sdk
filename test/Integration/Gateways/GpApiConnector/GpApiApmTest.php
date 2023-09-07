@@ -2,6 +2,7 @@
 
 namespace Gateways\GpApiConnector;
 
+use DateTime;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\Enums\AddressType;
@@ -15,6 +16,7 @@ use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -22,9 +24,9 @@ use PHPUnit\Framework\TestCase;
 
 class GpApiApmTest extends TestCase
 {
-    private $paymentMethod;
-    private $currency;
-    private $shippingAddress;
+    private AlternativePaymentMethod $paymentMethod;
+    private string $currency;
+    private Address $shippingAddress;
 
     public function setup(): void
     {
@@ -52,7 +54,7 @@ class GpApiApmTest extends TestCase
         $this->shippingAddress->countryCode = 'US';
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
@@ -64,8 +66,8 @@ class GpApiApmTest extends TestCase
 
     /**
      * How to have a success running test. When you will run the test in the console it will be printed the
-     * paypal redirect url. You need to copy the link and open it in a browser, do the login wih your paypal
-     * credentials and authorize the payment in the paypal form. You will be redirected to a blank page with a
+     * PayPal redirect url. You need to copy the link and open it in a browser, do the login wih your PayPal
+     * credentials and authorize the payment in the PayPal form. You will be redirected to a blank page with a
      * printed message like this: { "success": true }. This has to be done within a 25 seconds timeframe.
      * In case you need more time update the sleep() to what you need.
      */
@@ -84,7 +86,7 @@ class GpApiApmTest extends TestCase
         fwrite(STDERR, print_r($response->alternativePaymentResponse->redirectUrl, TRUE));
 
         sleep(25);
-        $startDate = new \DateTime();
+        $startDate = new DateTime();
         $response = ReportingService::findTransactionsPaged(1, 1)
             ->withTransactionId($response->transactionId)
             ->where(SearchCriteria::START_DATE, $startDate)
@@ -93,7 +95,7 @@ class GpApiApmTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
-        /** @var \GlobalPayments\Api\Entities\Reporting\TransactionSummary $transactionSummary */
+        /** @var TransactionSummary $transactionSummary */
         $transactionSummary = reset($response->result);
         $this->assertTrue($transactionSummary->alternativePaymentResponse instanceof AlternativePaymentResponse);
         $this->assertEquals(AlternativePaymentType::PAYPAL, $transactionSummary->alternativePaymentResponse->providerName);
@@ -124,7 +126,7 @@ class GpApiApmTest extends TestCase
         fwrite(STDERR, print_r($response->alternativePaymentResponse->redirectUrl, TRUE));
 
         sleep(25);
-        $startDate = new \DateTime();
+        $startDate = new DateTime();
         $response = ReportingService::findTransactionsPaged(1, 1)
             ->withTransactionId($response->transactionId)
             ->where(SearchCriteria::START_DATE, $startDate)
@@ -133,7 +135,7 @@ class GpApiApmTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
-        /** @var \GlobalPayments\Api\Entities\Reporting\TransactionSummary $transactionSummary */
+        /** @var TransactionSummary $transactionSummary */
         $transactionSummary = reset($response->result);
         $this->assertNotEmpty($transactionSummary->transactionId);
         $this->assertNotNull($transactionSummary->transactionId);
@@ -172,7 +174,7 @@ class GpApiApmTest extends TestCase
         fwrite(STDERR, print_r($trn->alternativePaymentResponse->redirectUrl, TRUE));
 
         sleep(25);
-        $startDate = new \DateTime();
+        $startDate = new DateTime();
         $response = ReportingService::findTransactionsPaged(1, 1)
             ->withTransactionId($trn->transactionId)
             ->where(SearchCriteria::START_DATE, $startDate)
@@ -181,7 +183,7 @@ class GpApiApmTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
-        /** @var \GlobalPayments\Api\Entities\Reporting\TransactionSummary $transactionSummary */
+        /** @var TransactionSummary $transactionSummary */
         $transactionSummary = reset($response->result);
         $this->assertTrue($transactionSummary->alternativePaymentResponse instanceof AlternativePaymentResponse);
         $this->assertEquals(AlternativePaymentType::PAYPAL, $transactionSummary->alternativePaymentResponse->providerName);
@@ -196,7 +198,6 @@ class GpApiApmTest extends TestCase
         $this->assertEquals('SUCCESS', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
 
-        /** @var Transaction $trnRefund */
         $trnRefund = $transaction->refund()->withCurrency($this->currency)->execute();
         $this->assertNotNull($trnRefund);
         $this->assertEquals('SUCCESS', $trnRefund->responseCode);
@@ -219,7 +220,7 @@ class GpApiApmTest extends TestCase
         fwrite(STDERR, print_r($trn->alternativePaymentResponse->redirectUrl, TRUE));
 
         sleep(25);
-        $startDate = new \DateTime();
+        $startDate = new DateTime();
         $response = ReportingService::findTransactionsPaged(1, 1)
             ->withTransactionId($trn->transactionId)
             ->where(SearchCriteria::START_DATE, $startDate)
@@ -228,7 +229,7 @@ class GpApiApmTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->result);
-        /** @var \GlobalPayments\Api\Entities\Reporting\TransactionSummary $transactionSummary */
+        /** @var TransactionSummary $transactionSummary */
         $transactionSummary = reset($response->result);
 
         $this->assertTrue($transactionSummary->alternativePaymentResponse instanceof AlternativePaymentResponse);
@@ -267,7 +268,7 @@ class GpApiApmTest extends TestCase
         fwrite(STDERR, print_r($response->alternativePaymentResponse->redirectUrl, TRUE));
 
         sleep(25);
-        $startDate = new \DateTime();
+        $startDate = new DateTime();
         $response = ReportingService::findTransactionsPaged(1, 1)
             ->withTransactionId($response->transactionId)
             ->where(SearchCriteria::START_DATE, $startDate)

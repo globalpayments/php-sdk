@@ -6,6 +6,11 @@
 
 ## Latest Version
 #### Enhancements:
+- [GP-ECOM] Support parseResponse for status_url on HostedService (HPP APMs)
+- [GP-ECOM] Added "custnum" from Customer on "payer_new" request
+
+## v10.0.1 (08/29/2023)
+#### Enhancements:
 - Enhance logs based on environment (GP-API & GP-ECOM)
 - Security vulnerabilities fixes
 - [GP-API] Add missing properties to authentication->three_ds (message_version, eci,server_trans_reference, 

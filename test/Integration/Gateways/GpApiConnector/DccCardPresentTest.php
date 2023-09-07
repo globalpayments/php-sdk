@@ -7,9 +7,11 @@ use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
+use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
 use GlobalPayments\Api\PaymentMethods\DebitTrackData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\GpApiService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -20,10 +22,10 @@ use PHPUnit\Framework\TestCase;
 
 class DccCardPresentTest extends TestCase
 {
-    private $currency = 'EUR';
-    private $amount = 15.11;
+    private string $currency = 'EUR';
+    private float $amount = 15.11;
     /** @var CreditCardData */
-    private $card;
+    private CreditCardData $card;
     const DCC_RATE_CONFIG = 'dcc_rate';
 
     public function setup(): void
@@ -50,7 +52,7 @@ class DccCardPresentTest extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
         $accessTokenInfo = new AccessTokenInfo();
@@ -59,7 +61,7 @@ class DccCardPresentTest extends TestCase
         return $config;
     }
 
-    public function setUpConfigDcc()
+    public function setUpConfigDcc(): GpApiConfig
     {
         $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
         $accessTokenInfo = new AccessTokenInfo();
@@ -69,7 +71,7 @@ class DccCardPresentTest extends TestCase
         return $config;
     }
 
-    private function getDccDetails()
+    private function getDccDetails(): Transaction
     {
         return $this->card->getDccRate()
             ->withAmount($this->amount)

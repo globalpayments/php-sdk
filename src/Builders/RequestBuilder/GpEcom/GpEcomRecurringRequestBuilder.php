@@ -276,7 +276,6 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
         $payer->appendChild($xml->createElement("surname", $customer->lastName ?? ''));
         $payer->appendChild($xml->createElement("company", $customer->company ?? ''));
 
-
         if ($customer->address != null) {
             $address = $xml->createElement("address");
             $address->appendChild($xml->createElement("line1", $customer->address->streetAddress1 ?? ''));
@@ -303,6 +302,7 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
 
         $payer->appendChild($phonenumbers);
         $payer->appendChild($xml->createElement("email", $customer->email ?? ''));
+        $payer->appendChild($xml->createElement("custnum", $customer->id ?? ''));
 
         return $payer;
     }

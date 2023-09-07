@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 class ReportingTest extends TestCase
 {
-    protected function config()
+    protected function config(): GpEcomConfig
     {
         $config = new GpEcomConfig();
         $config->merchantId = "heartlandgpsandbox";

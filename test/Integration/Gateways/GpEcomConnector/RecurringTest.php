@@ -56,7 +56,6 @@ class RecurringTest extends TestCase
         $config->accountId = "3dsecure";
         $config->refundPassword = "refund";
         $config->sharedSecret = "secret";
-        $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
         $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
         $config->channel = 'ECOM';
         return $config;
@@ -69,7 +68,6 @@ class RecurringTest extends TestCase
         $config->accountId = "apidcc";
         $config->refundPassword = "refund";
         $config->sharedSecret = "secret";
-        $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
 
         ServicesContainer::configureService($config);
     }
@@ -80,6 +78,7 @@ class RecurringTest extends TestCase
 
         $this->newCustomer = new Customer();
         $this->newCustomer->key = $this->getCustomerId();
+        $this->newCustomer->id = 'E8953893489';
         $this->newCustomer->title = "Mr.";
         $this->newCustomer->firstName = "James";
         $this->newCustomer->lastName = "Mason";

@@ -45,21 +45,21 @@ use PHPUnit\Framework\TestCase;
 class PartnershipModeTest extends TestCase
 {
     /** @var CreditCardData */
-    private $card;
+    private CreditCardData $card;
     /** @var string */
-    private $currency;
+    private string $currency;
 
     /** @var GpApiConfig */
-    private $baseConfig;
-    private $amount;
+    private GpApiConfig $baseConfig;
+    private float $amount;
 
     /** @var Address */
-    private $shippingAddress;
+    private Address $shippingAddress;
 
     /** @var BrowserData */
-    private $browserData;
+    private BrowserData $browserData;
 
-    private $merchantId;
+    private string $merchantId;
 
     public function setup(): void
     {
@@ -107,7 +107,7 @@ class PartnershipModeTest extends TestCase
         }
     }
 
-    private function setUpConfigMerchant()
+    private function setUpConfigMerchant(): void
     {
         $config = clone $this->baseConfig;
         $config->challengeNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';

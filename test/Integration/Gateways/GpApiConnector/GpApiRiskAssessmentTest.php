@@ -167,7 +167,7 @@ class GpApiRiskAssessmentTest extends TestCase
             ->withPreOrderAvailabilityDate(date('Y-m-d H:i:s'))
             ->withReorderIndicator(ReorderIndicator::REORDER)
             ->withOrderTransactionType(OrderTransactionType::GOODS_SERVICE_PURCHASE)
-            ->withCustomerAccountId(\GlobalPayments\Api\Utils\GenerationUtils::getGuid())
+            ->withCustomerAccountId(GenerationUtils::getGuid())
             ->withAccountAgeIndicator(AgeIndicator::LESS_THAN_THIRTY_DAYS)
             ->withAccountCreateDate(date('Y-m-d'))
             ->withAccountChangeDate(date('Y-m-d'))
