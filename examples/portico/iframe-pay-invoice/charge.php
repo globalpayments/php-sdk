@@ -37,7 +37,7 @@ try {
     $body .= '<p>Thank you, ' . $_GET['cardholder_name'] . ', for your order of $' . $_GET["payment_amount"] . '.</p>';
 
     echo "<b>Transaction Success! </b><br/> Transaction Id: " . $response->transactionId;
-    echo "<br />Invoice Number: " . isset($invoiceNumber) ? $invoiceNumber : "";
+    echo "<br />Invoice Number: " . isset($invoiceNumber) ? htmlspecialchars($invoiceNumber) : "";
 
     // i'm running windows, so i had to update this:
     //ini_set("SMTP", "my-mail-server");

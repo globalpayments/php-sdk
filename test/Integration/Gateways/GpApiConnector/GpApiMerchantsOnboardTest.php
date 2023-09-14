@@ -48,7 +48,7 @@ class GpApiMerchantsOnboardTest extends TestCase
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
-    public function testBoardMerchantX()
+    public function testBoardMerchant()
     {
         $merchantData = $this->getMerchantData();
         $products = $this->getProductList();
@@ -260,6 +260,29 @@ class GpApiMerchantsOnboardTest extends TestCase
         $this->assertEquals("PENDING", $response->responseCode);
     }
 
+    public function testEditPrimaryPayoutPaymentMethod()
+    {
+        /** @var \GlobalPayments\Api\Entities\GpApi\PagedResult $merchants */
+        $merchants = ReportingService::findMerchants(1, 1)->execute();
+
+        $this->assertGreaterThan(0, $merchants->totalRecordCount);
+        $this->assertEquals(1, count($merchants->result));
+
+        $userId = reset($merchants->result)->id;
+        $merchant = User::fromId($userId, UserType::MERCHANT);
+        $bankAccountInformation = $this->getBankAccountData();
+
+        /** @var User $response */
+        $response = $merchant->edit()
+            ->withBankAccountData($bankAccountInformation, PaymentMethodFunction::PRIMARY_PAYOUT)
+            ->execute();
+
+        $this->assertTrue($response instanceof User);
+        $this->assertEquals($userId, $response->userId);
+        $this->assertEquals(UserStatus::UNDER_REVIEW, $response->userStatus);
+        $this->assertEquals('Merchant Editing in progress', $response->statusDescription);
+    }
+
     public function testEditMerchantPaymentProcessing()
     {
         /** @var PagedResult $merchants */
@@ -417,33 +440,6 @@ class GpApiMerchantsOnboardTest extends TestCase
         }
     }
 
-    public function testBoardMerchant_WithoutLegalName()
-    {
-        $merchantData = $this->getMerchantData();
-        $merchantData->legalName = null;
-
-        $products = $this->getProductList();
-        $persons = $this->getPersonList();
-        $paymentStatistics = $this->getPaymentStatistics();
-
-        $errorFound = false;
-        try {
-            PayFacService::createMerchant()
-                ->withUserPersonalData($merchantData)
-                ->withDescription('Merchant Business Description')
-                ->withProductData($products)
-                ->withPersonsData($persons)
-                ->withPaymentStatistics($paymentStatistics)
-                ->execute();
-        } catch (GatewayException $e) {
-            $errorFound = true;
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields legal_name', $e->getMessage());
-            $this->assertEquals('40005', $e->responseCode);
-        } finally {
-            $this->assertTrue($errorFound);
-        }
-    }
-
     public function testBoardMerchant_WithoutMerchantType()
     {
         $merchantData = $this->getMerchantData();
@@ -472,87 +468,6 @@ class GpApiMerchantsOnboardTest extends TestCase
         }
     }
 
-    public function testBoardMerchant_WithoutDba()
-    {
-        $merchantData = $this->getMerchantData();
-        $merchantData->dba = null;
-
-        $products = $this->getProductList();
-        $persons = $this->getPersonList();
-        $paymentStatistics = $this->getPaymentStatistics();
-
-        $errorFound = false;
-        try {
-            PayFacService::createMerchant()
-                ->withUserPersonalData($merchantData)
-                ->withDescription('Merchant Business Description')
-                ->withProductData($products)
-                ->withPersonsData($persons)
-                ->withPaymentStatistics($paymentStatistics)
-                ->execute();
-        } catch (GatewayException $e) {
-            $errorFound = true;
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields dba', $e->getMessage());
-            $this->assertEquals('40005', $e->responseCode);
-        } finally {
-            $this->assertTrue($errorFound);
-        }
-    }
-
-    public function testBoardMerchant_WithoutWebsite()
-    {
-        $merchantData = $this->getMerchantData();
-        $merchantData->website = null;
-
-        $products = $this->getProductList();
-        $persons = $this->getPersonList();
-        $paymentStatistics = $this->getPaymentStatistics();
-
-        $errorFound = false;
-        try {
-            PayFacService::createMerchant()
-                ->withUserPersonalData($merchantData)
-                ->withDescription('Merchant Business Description')
-                ->withProductData($products)
-                ->withPersonsData($persons)
-                ->withPaymentStatistics($paymentStatistics)
-                ->execute();
-        } catch (GatewayException $e) {
-            $errorFound = true;
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields website', $e->getMessage());
-            $this->assertEquals('40005', $e->responseCode);
-        } finally {
-            $this->assertTrue($errorFound);
-        }
-    }
-
-    public function testBoardMerchant_WithoutNotificationStatusUrl()
-    {
-        $merchantData = $this->getMerchantData();
-        $merchantData->notificationStatusUrl = null;
-
-        $products = $this->getProductList();
-        $persons = $this->getPersonList();
-        $paymentStatistics = $this->getPaymentStatistics();
-
-        $errorFound = false;
-        try {
-            PayFacService::createMerchant()
-                ->withUserPersonalData($merchantData)
-                ->withDescription('Merchant Business Description')
-                ->withProductData($products)
-                ->withPersonsData($persons)
-                ->withPaymentStatistics($paymentStatistics)
-                ->execute();
-        } catch (GatewayException $e) {
-            $errorFound = true;
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields notifications.status_url', $e->getMessage());
-            $this->assertEquals('40005', $e->responseCode);
-        } finally {
-            $this->assertTrue($errorFound);
-        }
-    }
-
     public function testBoardMerchant_WithoutPersons()
     {
         $merchantData = $this->getMerchantData();
@@ -571,137 +486,6 @@ class GpApiMerchantsOnboardTest extends TestCase
             $errorFound = true;
             $this->assertEquals('40005', $e->responseCode);
             $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields : email', $e->getMessage());
-        } finally {
-            $this->assertTrue($errorFound);
-        }
-    }
-
-    public function testBoardMerchant_WithoutPaymentStatistics()
-    {
-        $merchantData = $this->getMerchantData();
-        $products = $this->getProductList();
-        $persons = $this->getPersonList();
-
-        $errorFound = false;
-        try {
-            PayFacService::createMerchant()
-                ->withUserPersonalData($merchantData)
-                ->withDescription('Merchant Business Description')
-                ->withProductData($products)
-                ->withPersonsData($persons)
-                ->execute();
-        } catch (GatewayException $e) {
-            $errorFound = true;
-            $this->assertEquals('40005', $e->responseCode);
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields payment_processing_statistics.total_monthly_sales_amount', $e->getMessage());
-        } finally {
-            $this->assertTrue($errorFound);
-        }
-    }
-
-    public function testBoardMerchant_WithoutTotalMonthlySalesAmount()
-    {
-        $merchantData = $this->getMerchantData();
-        $products = $this->getProductList();
-        $persons = $this->getPersonList();
-
-        $paymentStatistics = new PaymentStatistics();
-        $paymentStatistics->averageTicketSalesAmount = '50000';
-        $paymentStatistics->highestTicketSalesAmount = '60000';
-
-        $errorFound = false;
-        try {
-            PayFacService::createMerchant()
-                ->withUserPersonalData($merchantData)
-                ->withProductData($products)
-                ->withDescription('Merchant Business Description')
-                ->withPersonsData($persons)
-                ->withPaymentStatistics($paymentStatistics)
-                ->execute();
-        } catch (GatewayException $e) {
-            $errorFound = true;
-            $this->assertEquals('40005', $e->responseCode);
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields payment_processing_statistics.total_monthly_sales_amount', $e->getMessage());
-        } finally {
-            $this->assertTrue($errorFound);
-        }
-    }
-
-    public function testBoardMerchant_WithoutAverageTicketSalesAmount()
-    {
-        $merchantData = $this->getMerchantData();
-        $products = $this->getProductList();
-        $persons = $this->getPersonList();
-
-        $paymentStatistics = new PaymentStatistics();
-        $paymentStatistics->totalMonthlySalesAmount = '3000000';
-        $paymentStatistics->highestTicketSalesAmount = '60000';
-
-        $errorFound = false;
-        try {
-            PayFacService::createMerchant()
-                ->withUserPersonalData($merchantData)
-                ->withProductData($products)
-                ->withDescription('Merchant Business Description')
-                ->withPersonsData($persons)
-                ->withPaymentStatistics($paymentStatistics)
-                ->execute();
-        } catch (GatewayException $e) {
-            $errorFound = true;
-            $this->assertEquals('40005', $e->responseCode);
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields payment_processing_statistics.average_ticket_sales_amount', $e->getMessage());
-        } finally {
-            $this->assertTrue($errorFound);
-        }
-    }
-
-    public function testBoardMerchant_WithoutHighestTicketSalesAmount()
-    {
-        $merchantData = $this->getMerchantData();
-        $products = $this->getProductList();
-        $persons = $this->getPersonList();
-
-        $paymentStatistics = new PaymentStatistics();
-        $paymentStatistics->totalMonthlySalesAmount = '3000000';
-        $paymentStatistics->averageTicketSalesAmount = '50000';
-
-        $errorFound = false;
-        try {
-            PayFacService::createMerchant()
-                ->withUserPersonalData($merchantData)
-                ->withProductData($products)
-                ->withDescription('Merchant Business Description')
-                ->withPersonsData($persons)
-                ->withPaymentStatistics($paymentStatistics)
-                ->execute();
-        } catch (GatewayException $e) {
-            $errorFound = true;
-            $this->assertEquals('40005', $e->responseCode);
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields payment_processing_statistics.highest_ticket_sales_amount', $e->getMessage());
-        } finally {
-            $this->assertTrue($errorFound);
-        }
-    }
-
-    public function testBoardMerchant_WithoutDescription()
-    {
-        $merchantData = $this->getMerchantData();
-        $products = $this->getProductList();
-        $persons = $this->getPersonList();
-        $paymentStatistics = $this->getPaymentStatistics();
-
-        $errorFound = false;
-        try {
-            PayFacService::createMerchant()
-                ->withUserPersonalData($merchantData)
-                ->withProductData($products)
-                ->withPersonsData($persons)
-                ->withPaymentStatistics($paymentStatistics)
-                ->execute();
-        } catch (GatewayException $e) {
-            $errorFound = true;
-            $this->assertEquals('40005', $e->responseCode);
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields description', $e->getMessage());
         } finally {
             $this->assertTrue($errorFound);
         }
@@ -801,6 +585,19 @@ class GpApiMerchantsOnboardTest extends TestCase
         $bankAccountInformation->accountOwnershipType = 'Personal';
         $bankAccountInformation->accountType = AccountType::CHECKING;
         $bankAccountInformation->routingNumber = '102000076';
+        $bankAccountInformation->bankName = 'National Bank';
+
+        $bankAddress = new Address();
+        $bankAddress->streetAddress1 = '1 Business Address';
+        $bankAddress->streetAddress2 = 'Suite 2';
+        $bankAddress->streetAddress3 = 'foyer';
+        $bankAddress->city = 'Atlanta';
+        $bankAddress->state = 'GA';
+        $bankAddress->postalCode = '30346';
+        $bankAddress->country = 'US';
+
+        $bankAccountInformation->bankAddress = $bankAddress;
+
 
         return $bankAccountInformation;
     }

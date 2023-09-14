@@ -49,8 +49,8 @@ try {
     $responseMessage = $parsedResponse->responseMessage; // [ test system ] Authorised
     $responseValues = $parsedResponse->responseValues; // get values accessible by key
     echo "<pre>";
-    echo "Response Code : " . !empty($responseCode) ? $responseCode : "";
-    echo "\n Response Message : " . !empty($responseMessage) ? $responseMessage : "";
+    echo "Response Code : " . !empty($responseCode) ? htmlspecialchars($responseCode) : "";
+    echo "\n Response Message : " . !empty($responseMessage) ? htmlspecialchars($responseMessage) : "";
     echo "\n Response Values : ";
     if (!empty($responseValues))
         print_r($responseValues);

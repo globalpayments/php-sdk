@@ -12,8 +12,8 @@ $threeDSMethodData = $_REQUEST["threeDSMethodData"];
 try {
    $decodedThreeDSMethodData = base64_decode($threeDSMethodData);
    if (!empty($decodedThreeDSMethodData)) {
-      $convertedThreeDSMethodData = json_decode($decodedThreeDSMethodData, true);
-      $serverTransID = $convertedThreeDSMethodData['threeDSServerTransID'];
+      $convertedThreeDSMethodData = json_decode(htmlspecialchars($decodedThreeDSMethodData), true);
+      $serverTransID = htmlspecialchars($convertedThreeDSMethodData['threeDSServerTransID']);
    }
 
    // TODO: notify client-side that the Method URL step is complete

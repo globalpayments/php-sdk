@@ -22,6 +22,7 @@ $paymentToken = $requestData['tokenResponse'];
 console_log($serverTransactionId);
 function console_log($data)
 {
+    $data = htmlspecialchars($data);
     echo '<script>';
     echo 'if(' . $data . ') {';
     echo 'console.log(' . json_encode($data) . ')';
@@ -80,7 +81,7 @@ $eci = $secureEcom->eci;
         echo "<p><strong>Oh Dear! Your trasaction was not authenticated successfully!</strong></p>";
     }
     ?>
-    <p>Server Trans ID: <?= !empty($serverTransactionId) ? $serverTransactionId : "" ?></p>
+    <p>Server Trans ID: <?= !empty($serverTransactionId) ? htmlspecialchars($serverTransactionId) : "" ?></p>
     <p>Authentication Value: <?= !empty($authenticationValue) ? $authenticationValue : "" ?></p>
     <p>DS Trans ID: <?= $dsTransId ?></p>
     <p>Message Version: <?= $messageVersion ?></p>
@@ -88,7 +89,7 @@ $eci = $secureEcom->eci;
 
     <pre>
 <?php
-print_r($secureEcom);
+print_r(htmlspecialchars($secureEcom));
 ?>
 </pre>
     <h2>Transaction details:</h2>

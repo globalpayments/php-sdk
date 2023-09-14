@@ -16,7 +16,7 @@ $cres = $_REQUEST['cres'];
 try {
    $decodedString = base64_decode($cres);
    if (!empty($decodedString)) {
-      $convertedObject = json_decode($decodedString, true);
+      $convertedObject = json_decode(htmlspecialchars($decodedString), true);
    }
 
    date_default_timezone_set('Europe/Dublin');
@@ -27,7 +27,7 @@ try {
    fwrite($file, "\n**************************\n\n");
    fclose($file);
 
-   $serverTransID = $convertedObject['threeDSServerTransID'];
+   $serverTransID = htmlspecialchars($convertedObject['threeDSServerTransID']);
    $acsTransID = $convertedObject['acsTransID'];
    $messageType = $convertedObject['messageType'];
    $messageVersion = $convertedObject['messageVersion'];
@@ -42,6 +42,6 @@ try {
 <script src="globalpayments-3ds.js"></script>
 <script>
    GlobalPayments.ThreeDSecure.handleChallengeNotification({
-            "threeDSServerTransID": <?php echo '"' . isset($serverTransID) ? $serverTransID : "" . '"'; ?>,
-            "transStatus": <?php echo '"' . $transStatus ?? "" . '"}'; ?>);
+            "threeDSServerTransID": <?php echo '"' . isset($serverTransID) ? htmlspecialchars($serverTransID) : "" . '"'; ?>,
+            "transStatus": <?php echo '"' . $transStatus ? htmlspecialchars($transStatus) : "" . '"}'; ?>);
 </script>

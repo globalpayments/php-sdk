@@ -422,7 +422,7 @@ var RealexHpp = (function () {
 
         getUrlParser: function (url) {
             var parser = document.createElement('a');
-            parser.href = url;
+            parser.setAttribute('href', url);
             return parser;
         },
 

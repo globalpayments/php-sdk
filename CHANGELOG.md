@@ -6,6 +6,11 @@
 
 ## Latest Version
 #### Enhancements:
+- [GP-API]: Update onboarding merchant requests
+- Security vulnerabilities fixes
+
+## v10.0.2 (09/07/2023)
+#### Enhancements:
 - [GP-ECOM] Support parseResponse for status_url on HostedService (HPP APMs)
 - [GP-ECOM] Added "custnum" from Customer on "payer_new" request
 

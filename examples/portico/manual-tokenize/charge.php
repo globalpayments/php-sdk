@@ -39,6 +39,7 @@ try {
     $body .= '<p>Thank you, ' . $_GET['first-name'] . ', for your order of $' . $_GET["payment-amount"] . '.</p>';
 
     echo "Transaction Id: " . $response->transactionId;
+    $invoiceNumber = htmlspecialchars($invoiceNumber);
     echo "<br />Invoice Number: " . $invoiceNumber ? $invoiceNumber : "";
 
     // i'm running windows, so i had to update this:

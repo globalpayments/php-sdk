@@ -8,6 +8,7 @@ use GlobalPayments\Api\Builders\PayFacBuilder;
 use GlobalPayments\Api\Builders\RequestBuilder\RequestBuilder;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\AddressType;
+use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Enums\UserType;
@@ -18,6 +19,7 @@ use GlobalPayments\Api\Entities\PayFac\BankAccountData;
 use GlobalPayments\Api\Entities\PayFac\UserPersonalData;
 use GlobalPayments\Api\Entities\Person;
 use GlobalPayments\Api\Entities\Product;
+use GlobalPayments\Api\Mapping\EnumMapping;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Utils\CountryUtils;
@@ -29,6 +31,7 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
      * @var PayFacBuilder
      */
     private $builder;
+    private GpApiConfig $config;
 
     private array $maskedValues = [];
 
@@ -55,6 +58,7 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
     {
         /** @var PayFacBuilder $builder */
         $this->builder = $builder;
+        $this->config = $config;
         $requestData = $queryParams = null;
         switch ($builder->transactionType) {
             case TransactionType::CREATE:
@@ -110,25 +114,29 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
 
     private function setPaymentMethod()
     {
+        $paymentMethods = [];
         if (!empty($this->builder->creditCardInformation)) {
             $cardInfo = [
                 'functions' => $this->builder->paymentMethodsFunctions[get_class($this->builder->creditCardInformation)] ?? null,
                 'card' => $this->builder->creditCardInformation instanceof CreditCardData ?
                     $this->mapCreditCardInfo($this->builder->creditCardInformation) : null
             ];
+            array_push($paymentMethods, $cardInfo);
         }
         if (!empty($this->builder->bankAccountData)) {
             $bankData = [
-                'functions' => $this->builder->paymentMethodsFunctions[get_class($this->builder->bankAccountData)] ?? null,
+                'functions' => [$this->builder->paymentMethodsFunctions[get_class($this->builder->bankAccountData)] ?? null],
                 'name' => !empty($this->builder->bankAccountData) ? $this->builder->bankAccountData->accountHolderName : null,
                 'bank_transfer' => $this->builder->bankAccountData instanceof BankAccountData ?
-                    $this->mapBankTransferInfo($this->builder->bankAccountData) : null
+                    $this->mapBankTransferInfo($this->builder->bankAccountData) : null,
+                'notifications' => [
+                    'status_url' => $this->config->methodNotificationUrl
+                ]
             ];
+            array_push($paymentMethods, $bankData);
         }
-        return [
-            $cardInfo ?? null,
-            $bankData ?? null
-        ];
+
+        return $paymentMethods;
     }
 
     private function mapBankTransferInfo(BankAccountData $bankAccountData)
@@ -136,7 +144,7 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
         return [
             'account_holder_type' => $bankAccountData->accountOwnershipType,
             'account_number' => $bankAccountData->accountNumber,
-            'account_type' => $bankAccountData->accountType,
+            'account_type' => EnumMapping::mapAccountType(GatewayProvider::GP_API ,$bankAccountData->accountType),
             'bank' => [
                 'name' => $bankAccountData->bankName,
                 'code' => $bankAccountData->routingNumber, //@TODO confirmantion from GP-API team
