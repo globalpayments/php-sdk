@@ -17,4 +17,5 @@ class DeviceType extends Enum
     const UPA_DEVICE = 'UPA_DEVICE';
     const UPA_SATURN_1000 = 'UPA_SATURN_1000';
     const UPA_VERIFONE_T650P = 'UPA_VERIFONE_T650P';
+    const GENIUS_VERIFONE_P400 = 'GENIUS_VERIFONE_P400';
 }

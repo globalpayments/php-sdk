@@ -5,9 +5,12 @@ namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector;
 use DateTime;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\FundsStatus;
 use GlobalPayments\Api\Entities\Enums\MerchantAccountsSortProperty;
 use GlobalPayments\Api\Entities\Enums\MerchantAccountStatus;
 use GlobalPayments\Api\Entities\Enums\MerchantAccountType;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Enums\UsableBalanceMode;
@@ -18,7 +21,6 @@ use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\MerchantAccountSummary;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\User;
-use GlobalPayments\Api\Entities\UserAccount;
 use GlobalPayments\Api\PaymentMethods\FundsAccount;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\PayFacService;
@@ -562,6 +564,7 @@ class GpApiMerchantAccountsTest extends TestCase
         $merchants = $this->getMerchants();
 
         $this->assertNotEmpty($merchants->result);
+        $this->assertCount(2, $merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -610,6 +613,7 @@ class GpApiMerchantAccountsTest extends TestCase
         $merchants = $this->getMerchants();
 
         $this->assertNotEmpty($merchants->result);
+        $this->assertCount(2, $merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -656,6 +660,7 @@ class GpApiMerchantAccountsTest extends TestCase
 
         $this->assertNotEmpty($merchants->result);
         $merchantSender = reset($merchants->result);
+        $this->assertCount(2, $merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
         $accountSenderSummary = $this->getAccountByType(
@@ -718,6 +723,7 @@ class GpApiMerchantAccountsTest extends TestCase
         $merchants = $this->getMerchants();
 
         $this->assertNotEmpty($merchants->result);
+        $this->assertCount(2, $merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -769,6 +775,7 @@ class GpApiMerchantAccountsTest extends TestCase
         $merchants = $this->getMerchants();
 
         $this->assertNotEmpty($merchants->result);
+        $this->assertCount(2, $merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -819,6 +826,7 @@ class GpApiMerchantAccountsTest extends TestCase
         $merchants = $this->getMerchants();
 
         $this->assertNotEmpty($merchants->result);
+        $this->assertCount(2, $merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -870,6 +878,7 @@ class GpApiMerchantAccountsTest extends TestCase
         $merchants = $this->getMerchants();
 
         $this->assertNotEmpty($merchants->result);
+        $this->assertCount(2, $merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -921,6 +930,7 @@ class GpApiMerchantAccountsTest extends TestCase
         $merchants = $this->getMerchants();
 
         $this->assertNotEmpty($merchants->result);
+        $this->assertCount(2, $merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -972,6 +982,7 @@ class GpApiMerchantAccountsTest extends TestCase
         $merchants = $this->getMerchants();
 
         $this->assertNotEmpty($merchants->result);
+        $this->assertCount(2, $merchants->result);
         $merchantSender = reset($merchants->result);
         $merchantRecipient = $merchants->result[1];
         /** @var MerchantAccountSummary $accountSenderSummary */
@@ -1039,13 +1050,165 @@ class GpApiMerchantAccountsTest extends TestCase
         }
     }
 
+    public function testAddFunds()
+    {
+        $amount = "10";
+        $currency = "USD";
+        $accountId = "FMA_a78b841dfbd14803b3a31e4e0c514c72";
+        $merchantId = 'MER_5096d6b88b0b49019c870392bd98ddac';
+        $merchant = User::fromId($merchantId, UserType::MERCHANT);
+
+        /** @var User $response */
+        $response = PayFacService::addFunds()
+            ->withAmount($amount)
+            ->withAccountNumber($accountId)
+            ->withUserReference($merchant->userReference)
+            ->withPaymentMethodName(PaymentMethodName::BANK_TRANSFER)
+            ->withPaymentMethodType(PaymentMethodType::CREDIT)
+            ->withCurrency($currency)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals("SUCCESS", $response->responseCode);
+        $this->assertNotNull($response->fundsAccountDetails);
+        $this->assertEquals(FundsStatus::CAPTURED, $response->fundsAccountDetails->status);
+        $this->assertEquals($amount, $response->fundsAccountDetails->amount);
+        $this->assertEquals($currency, $response->fundsAccountDetails->currency);
+        $this->assertEquals('CREDIT', $response->fundsAccountDetails->paymentMethodType);
+        $this->assertEquals('BANK_TRANSFER', $response->fundsAccountDetails->paymentMethodName);
+        $this->assertNotNull($response->fundsAccountDetails->account);
+        $this->assertEquals($accountId, $response->fundsAccountDetails->account->id);
+    }
+
+    public function testAddFunds_OnlyMandatory()
+    {
+        $amount = "10";
+        $accountId = "FMA_a78b841dfbd14803b3a31e4e0c514c72";
+        $merchantId = 'MER_5096d6b88b0b49019c870392bd98ddac';
+        $merchant = User::fromId($merchantId, UserType::MERCHANT);
+
+        /** @var User $response */
+        $response = PayFacService::addFunds()
+            ->withAmount($amount)
+            ->withAccountNumber($accountId)
+            ->withUserReference($merchant->userReference)
+            ->withPaymentMethodType(PaymentMethodType::CREDIT)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals("SUCCESS", $response->responseCode);
+        $this->assertNotNull($response->fundsAccountDetails);
+        $this->assertEquals(FundsStatus::CAPTURED, $response->fundsAccountDetails->status);
+        $this->assertEquals($amount, $response->fundsAccountDetails->amount);
+        $this->assertEquals('CREDIT', $response->fundsAccountDetails->paymentMethodType);
+        $this->assertEquals('BANK_TRANSFER', $response->fundsAccountDetails->paymentMethodName);
+        $this->assertNotNull($response->fundsAccountDetails->account);
+        $this->assertEquals($accountId, $response->fundsAccountDetails->account->id);
+    }
+
+    public function testAddFunds_InsufficientFunds()
+    {
+        $amount = "10";
+        $accountId = "FMA_a78b841dfbd14803b3a31e4e0c514c72";
+        $merchantId = 'MER_5096d6b88b0b49019c870392bd98ddac';
+        $merchant = User::fromId($merchantId, UserType::MERCHANT);
+
+        /** @var User $response */
+        $response = PayFacService::addFunds()
+            ->withAmount($amount)
+            ->withAccountNumber($accountId)
+            ->withUserReference($merchant->userReference)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals("DECLINED", $response->responseCode);
+        $this->assertNotNull($response->fundsAccountDetails);
+        $this->assertEquals(FundsStatus::DECLINE, $response->fundsAccountDetails->status);
+        $this->assertEquals($amount, $response->fundsAccountDetails->amount);
+        $this->assertEquals('DEBIT', $response->fundsAccountDetails->paymentMethodType);
+        $this->assertEquals('BANK_TRANSFER', $response->fundsAccountDetails->paymentMethodName);
+        $this->assertNotNull($response->fundsAccountDetails->account);
+        $this->assertEquals($accountId, $response->fundsAccountDetails->account->id);
+    }
+
+    public function testAddFunds_WithoutAmount()
+    {
+        $currency = "USD";
+        $accountId = "FMA_a78b841dfbd14803b3a31e4e0c514c72";
+        $merchantId = 'MER_5096d6b88b0b49019c870392bd98ddac';
+        $merchant = User::fromId($merchantId, UserType::MERCHANT);
+
+        $errorFound = false;
+        try {
+            PayFacService::addFunds()
+                ->withAccountNumber($accountId)
+                ->withUserReference($merchant->userReference)
+                ->withPaymentMethodName(PaymentMethodName::BANK_TRANSFER)
+                ->withPaymentMethodType(PaymentMethodType::CREDIT)
+                ->withCurrency($currency)
+                ->execute();
+        } catch (BuilderException $e) {
+            $errorFound = true;
+            $this->assertEquals('amount cannot be null for this transaction type.', $e->getMessage());
+        } finally {
+            $this->assertTrue($errorFound);
+        }
+    }
+
+    public function testAddFunds_WithoutAccountNumber()
+    {
+        $amount = "10";
+        $currency = "USD";
+        $merchantId = 'MER_5096d6b88b0b49019c870392bd98ddac';
+        $merchant = User::fromId($merchantId, UserType::MERCHANT);
+
+        $errorFound = false;
+        try {
+            PayFacService::addFunds()
+                ->withAmount($amount)
+                ->withUserReference($merchant->userReference)
+                ->withPaymentMethodName(PaymentMethodName::BANK_TRANSFER)
+                ->withPaymentMethodType(PaymentMethodType::CREDIT)
+                ->withCurrency($currency)
+                ->execute();
+        } catch (BuilderException $e) {
+            $errorFound = true;
+            $this->assertEquals('accountNumber cannot be null for this transaction type.', $e->getMessage());
+        } finally {
+            $this->assertTrue($errorFound);
+        }
+    }
+
+    public function testAddFunds_WithoutUserRef()
+    {
+        $amount = "10";
+        $currency = "USD";
+        $accountId = "FMA_a78b841dfbd14803b3a31e4e0c514c72";
+
+        $errorFound = false;
+        try {
+            PayFacService::addFunds()
+                ->withAmount($amount)
+                ->withAccountNumber($accountId)
+                ->withPaymentMethodName(PaymentMethodName::BANK_TRANSFER)
+                ->withPaymentMethodType(PaymentMethodType::CREDIT)
+                ->withCurrency($currency)
+                ->execute();
+        } catch (GatewayException $e) {
+            $errorFound = true;
+            $this->assertEquals('property userId or config merchantId cannot be null for this transactionType', $e->getMessage());
+        } finally {
+            $this->assertTrue($errorFound);
+        }
+    }
+
     private function getAccountByType($merchantId, $type)
     {
         $response = ReportingService::findAccounts(1, 10)
             ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::ASC)
-            ->where(SearchCriteria::START_DATE, $this->startDate)
+            ->where(DataServiceCriteria::MERCHANT_ID, $merchantId)
+            ->andWith(SearchCriteria::START_DATE, $this->startDate)
             ->andWith(SearchCriteria::END_DATE, $this->endDate)
-            ->andWith(DataServiceCriteria::MERCHANT_ID, $merchantId)
             ->andWith(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
             ->execute();
 

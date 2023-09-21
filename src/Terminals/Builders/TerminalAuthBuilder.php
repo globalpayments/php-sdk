@@ -1,15 +1,19 @@
 <?php
+
 namespace GlobalPayments\Api\Terminals\Builders;
 
+use GlobalPayments\Api\Entities\AutoSubstantiation;
+use GlobalPayments\Api\Entities\Enums\{
+    PaymentMethodType,
+    StoredCredentialInitiator,
+    TaxType,
+    TransactionModifier,
+    TransactionType
+};
+use GlobalPayments\Api\PaymentMethods\{CreditCardData, TransactionReference};
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Terminals\Builders\TerminalBuilder;
-use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\Entities\Enums\TransactionModifier;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\Terminals\Enums\CurrencyType;
-use GlobalPayments\Api\Entities\Enums\TaxType;
 use GlobalPayments\Api\Terminals\TerminalResponse;
 
 class TerminalAuthBuilder extends TerminalBuilder
@@ -51,8 +55,6 @@ class TerminalAuthBuilder extends TerminalBuilder
 
     public $taxType;
     
-    public $clientTransactionId;
-    
     public $tokenRequest;
     
     public $tokenValue;
@@ -61,6 +63,18 @@ class TerminalAuthBuilder extends TerminalBuilder
 
     /** @var string */
     public $terminalRefNumber;
+
+    /**
+     * 
+     * @var bool
+     */
+    public $allowPartialAuth;
+
+    /**
+     * 
+     * @var StoredCredentialInitiator
+     */
+    public $transactionInitiator;
 
     /**
      *
@@ -182,11 +196,9 @@ class TerminalAuthBuilder extends TerminalBuilder
 
     /**
      * Previous request's transaction ID
-     *
-     * @param string $transactionId
-     *            Transaction ID
-     *
-     * @return AuthorizationBuilder
+     * 
+     * @param mixed $transactionId 
+     * @return $this 
      */
     public function withTransactionId($transactionId)
     {
@@ -198,6 +210,14 @@ class TerminalAuthBuilder extends TerminalBuilder
         return $this;
     }
 
+    public function withCardBrandStorage(
+        $transactionInitiator
+    )
+    {
+        $this->transactionInitiator = $transactionInitiator;
+        return $this;
+    }
+  
     public function withEcrId(int $ecrId)
     {
         $this->ecrId = $ecrId;
@@ -269,9 +289,25 @@ class TerminalAuthBuilder extends TerminalBuilder
         return $this;
     } 
     
-    public function withAutoSubstantiation($healthCareCardData)
+    /**
+     * 
+     * @param AutoSubstantiation $healthCareCardData 
+     * @return $this 
+     */
+    public function withAutoSubstantiation(AutoSubstantiation $healthCareCardData)
     {
         $this->autoSubstantiation = $healthCareCardData;
+        return $this;
+    }
+
+    /**
+     * 
+     * @param bool $value 
+     * @return $this 
+     */
+    public function withAllowPartialAuth(bool $value)
+    {
+        $this->allowPartialAuth = $value;
         return $this;
     }
 }

@@ -2,11 +2,8 @@
 
 namespace GlobalPayments\Api\Entities;
 
-class DisputeDocument
+class DisputeDocument extends Document
 {
-    /** @var string */
-    public $id;
-
     /** @var string */
     public $type;
 

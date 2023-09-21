@@ -2,6 +2,8 @@
 
 namespace GlobalPayments\Api\Entities\PayFac;
 
+use GlobalPayments\Api\Entities\Enums\FileType;
+
 class UploadDocumentData
 {
     /**
@@ -32,4 +34,9 @@ class UploadDocumentData
      * @var string
      */
     public $documentCategory;
+
+    public string $b64_content;
+
+    /** @var FileType  */
+    public string $documentFormat;
 }

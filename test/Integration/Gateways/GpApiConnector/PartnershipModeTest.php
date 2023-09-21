@@ -30,7 +30,7 @@ use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Transaction;
-use GlobalPayments\Api\Entities\TransferFundsAccountDetails;
+use GlobalPayments\Api\Entities\FundsAccountDetails;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\ECheck;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
@@ -100,7 +100,6 @@ class PartnershipModeTest extends TestCase
             ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
             ->execute();
-
         if (count($merchants->result) > 0) {
             $this->merchantId = reset($merchants->result)->id;
             $this->setUpConfigMerchant();
@@ -485,7 +484,7 @@ class PartnershipModeTest extends TestCase
         $this->assertEquals('SUCCESS', $split->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $split->responseMessage);
         $this->assertNotNull($split->transfersFundsAccount);
-        /** @var TransferFundsAccountDetails $transfer */
+        /** @var FundsAccountDetails $transfer */
         $transfer = $split->transfersFundsAccount->getIterator()->current();
         $this->assertEquals('00', $transfer->status);
         $this->assertEquals($transferAmount, $transfer->amount);

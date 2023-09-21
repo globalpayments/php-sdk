@@ -4,17 +4,24 @@ namespace GlobalPayments\Api\Terminals\Builders;
 
 class TerminalSearchBuilder
 {
-
     private $reportBuilder;
-    
-    public $TransactionType;
-    public $CardType;
-    public $RecordNumber;
-    public $TerminalReferenceNumber;
-    public $AuthCode;
-    public $ReferenceNumber;
-    public $MerchantId;
-    public $MerchantName;
+
+    /** @var string */
+    public $transactionId;
+
+    /** @var TransactionIdType */
+    public $transactionIdType;
+
+    /** @var TransactionType */
+    public $transactionType;
+
+    public $cardType;
+    public $recordNumber;
+    public $terminalReferenceNumber;
+    public $authCode;
+    public $referenceNumber;
+    public $merchantId;
+    public $merchantName;
 
     public function __construct($reportBuilder)
     {

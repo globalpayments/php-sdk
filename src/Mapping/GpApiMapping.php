@@ -12,6 +12,7 @@ use GlobalPayments\Api\Entities\Card;
 use GlobalPayments\Api\Entities\CardIssuerResponse;
 use GlobalPayments\Api\Entities\DisputeDocument;
 use GlobalPayments\Api\Entities\DccRateData;
+use GlobalPayments\Api\Entities\Document;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
 use GlobalPayments\Api\Entities\Enums\CaptureMode;
@@ -24,6 +25,7 @@ use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
+use GlobalPayments\Api\Entities\Enums\UserType;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\FraudManagementResponse;
 use GlobalPayments\Api\Entities\FraudRule;
@@ -31,6 +33,8 @@ use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\PayerDetails;
 use GlobalPayments\Api\Entities\PayByLinkResponse;
+use GlobalPayments\Api\Entities\PayFac\UploadDocumentData;
+use GlobalPayments\Api\Entities\PayFac\UserReference;
 use GlobalPayments\Api\Entities\PaymentMethodList;
 use GlobalPayments\Api\Entities\Person;
 use GlobalPayments\Api\Entities\PersonList;
@@ -48,14 +52,16 @@ use GlobalPayments\Api\Entities\ThirdPartyResponse;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\TransferFundsAccountCollection;
-use GlobalPayments\Api\Entities\TransferFundsAccountDetails;
+use GlobalPayments\Api\Entities\FundsAccountDetails;
 use GlobalPayments\Api\Entities\User;
+use GlobalPayments\Api\Entities\UserAccount;
 use GlobalPayments\Api\Entities\UserLinks;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\ECheck;
 use GlobalPayments\Api\Utils\StringUtils;
 use GlobalPayments\Api\Entities\MessageExtension;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
+use function PHPUnit\Framework\any;
 
 class GpApiMapping
 {
@@ -70,6 +76,8 @@ class GpApiMapping
     const MERCHANT_EDIT_INITIATED = 'MERCHANT_EDIT_INITIATED';
     const ADDRESS_LOOKUP = 'ADDRESS_LIST';
     const TRANSFER = 'TRANSFER';
+    const FUNDS = 'FUNDS';
+    const DOCUMENT_UPLOAD = 'DOCUMENT_UPLOAD';
 
     /**
      * Map a response to a Transaction object for further chaining
@@ -163,9 +171,8 @@ class GpApiMapping
     {
         $transfers = new TransferFundsAccountCollection();
         foreach ($transfersResponse as $transferResponse) {
-            $transfer = new TransferFundsAccountDetails();
+            $transfer = new FundsAccountDetails();
             $transfer->id = $transferResponse->id;
-            $transfer->status = $transferResponse->status ?? null;
             $transfer->timeCreated = !empty($transferResponse->timeCreated) ?
                 new \DateTime($transferResponse->timeCreated) : '';
             $transfer->amount = !empty($transferResponse->amount) ?
@@ -1068,13 +1075,34 @@ class GpApiMapping
         return $merchantInfo;
     }
 
-    public static function mapMerchantsEndpointResponse($response): User
+    /**
+     * @param $response
+     * @param UserReference $userReference
+     * @return User
+     * @throws UnsupportedTransactionException
+     */
+    public static function mapMerchantsEndpointResponse($response,?UserReference $userReference): User
     {
         if (empty($response->action->type)) {
             throw new UnsupportedTransactionException(sprintf("Empty action type response!"));
         }
 
         switch ($response->action->type) {
+            case self::DOCUMENT_UPLOAD:
+                $user = new User();
+                $user->userId = $response->merchant_id ?? null;
+                $user->userType = UserType::MERCHANT;
+                $user->name = $response->merchant_name ?? null;
+                $doc = new Document();
+                $doc->name = $response->name;
+                $doc->id = $response->id;
+                $doc->status = $response->status;
+                $doc->timeCreated = $response->time_created;
+                $doc->format = $response->format;
+                $doc->category = $response->function;
+                $user->document = $doc;
+                $user->responseCode = $response->action->result_code ?? null;
+                return $user;
             case self::MERCHANT_CREATE:
             case self::MERCHANT_EDIT:
             case self::MERCHANT_EDIT_INITIATED:
@@ -1111,6 +1139,24 @@ class GpApiMapping
                 if (!empty($response->payment_methods)) {
                     self::mapMerchantPaymentMethods($response->payment_methods,$user);
                 }
+                return $user;
+            case self::FUNDS:
+                $user = new User();
+                $user->userId = $response->merchant_id;
+                $user->name = $response->merchant_name;
+                $funds = new FundsAccountDetails();
+                $funds->id = $response->id;
+                $funds->timeCreated = $response->time_created;
+                $funds->timeLastUpdated = $response->time_last_updated ?? null;
+                $funds->paymentMethodType = $response->type ?? null;
+                $funds->paymentMethodName = $response->payment_method ?? null;
+                $funds->status = $response->status;
+                $funds->amount = StringUtils::toAmount($response->amount);
+                $funds->currency = $response->currency ?? null;
+                $funds->account = new UserAccount($response->account_id, $response->account_name);
+                $user->fundsAccountDetails = $funds;
+                $user->responseCode = $response->action->result_code;
+
                 return $user;
             default:
                 throw new UnsupportedTransactionException(sprintf("Unknown action type %s", $response->action->type));

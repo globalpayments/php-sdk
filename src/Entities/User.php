@@ -8,7 +8,6 @@ use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Enums\UserStatus;
 use GlobalPayments\Api\Entities\Enums\UserType;
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
-use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\PayFac\UserReference;
 
 /**
@@ -22,10 +21,8 @@ class User
 {
     /**
      * This is a label to identify the user
-     *
-     * @var string
     */
-    public $name;
+    public ?string $name;
 
     /**
      * Global Payments time indicating when the object was created in ISO-8601 format.
@@ -76,6 +73,10 @@ class User
 
     /** @var  PaymentMethodList */
     public $paymentMethodList;
+
+    public FundsAccountDetails $fundsAccountDetails;
+
+    public Document $document;
 
     public function __set($name, $value)
     {

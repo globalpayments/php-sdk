@@ -173,7 +173,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         }
         $response = $this->executeProcess($builder);
 
-        return GpApiMapping::mapMerchantsEndpointResponse($response);
+        return GpApiMapping::mapMerchantsEndpointResponse($response, $builder->userReference);
     }
 
     public function processPayFac(PayFacBuilder $builder)

@@ -18,6 +18,11 @@ use GlobalPayments\Api\Entities\Reporting\SearchCriteriaBuilder;
 class TransactionReportBuilder extends ReportBuilder
 {
     /**
+     * @var string
+     */
+    public $clientTransactionId;
+    
+    /**
      * @internal
      * @var string
      */
@@ -34,12 +39,6 @@ class TransactionReportBuilder extends ReportBuilder
      * @var \DateTime
      */
     public $startDate;
-
-    /**
-     * @internal
-     * @var string
-     */
-    public $clientTransactionId;
 
     /**
      * @internal

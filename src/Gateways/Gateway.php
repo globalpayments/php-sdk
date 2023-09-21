@@ -195,7 +195,7 @@ abstract class Gateway
         return $xml;
     }
 
-    private function prepareHeaders($data)
+    private function prepareHeaders(?string $data) : array
     {
         $mandatoryHeaders = [
             'Content-Type' => sprintf('%s', $this->contentType),

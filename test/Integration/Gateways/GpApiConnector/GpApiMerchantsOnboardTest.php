@@ -1,21 +1,25 @@
 <?php
 
-namespace Gateways\GpApiConnector;
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector;
 
 use DateTime;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\AccountType;
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\DocumentCategory;
+use GlobalPayments\Api\Entities\Enums\FileType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodFunction;
 use GlobalPayments\Api\Entities\Enums\PersonFunctions;
 use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 use GlobalPayments\Api\Entities\Enums\StatusChangeReason;
 use GlobalPayments\Api\Entities\Enums\UserStatus;
 use GlobalPayments\Api\Entities\Enums\UserType;
+use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\PayFac\BankAccountData;
+use GlobalPayments\Api\Entities\PayFac\UploadDocumentData;
 use GlobalPayments\Api\Entities\PayFac\UserPersonalData;
 use GlobalPayments\Api\Entities\PaymentStatistics;
 use GlobalPayments\Api\Entities\Person;
@@ -32,6 +36,7 @@ use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Tests\Integration\Gateways\ProPay\TestData\TestAccountData;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 class GpApiMerchantsOnboardTest extends TestCase
 {
@@ -488,6 +493,186 @@ class GpApiMerchantsOnboardTest extends TestCase
             $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields : email', $e->getMessage());
         } finally {
             $this->assertTrue($errorFound);
+        }
+    }
+
+    public function testUploadMerchantDocs()
+    {
+        $documentDetails = new UploadDocumentData();
+        $documentDetails->b64_content = 'VGVzdGluZw==';
+        $documentDetails->documentFormat = FileType::TIF;
+        $documentDetails->documentCategory = DocumentCategory::UNDERWRITING;
+        $merchant = User::fromId('MER_5096d6b88b0b49019c870392bd98ddac', UserType::MERCHANT);
+        /** @var User $response */
+        $response = PayFacService::uploadDocument()
+            ->withUserReference($merchant->userReference)
+            ->withUploadDocumentData($documentDetails)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertNotNull($response->document);
+        $this->assertNotNull($response->document->id);
+        $this->assertEquals(FileType::TIF, $response->document->format);
+        $this->assertEquals(DocumentCategory::UNDERWRITING, $response->document->category);
+    }
+
+    public function testUploadMerchantDocs_WithIdempotencyKey()
+    {
+        $idempotency = GenerationUtils::getGuid();
+        $documentDetails = new UploadDocumentData();
+        $documentDetails->b64_content = 'VGVzdGluZw==';
+        $documentDetails->documentFormat = FileType::TIF;
+        $documentDetails->documentCategory = DocumentCategory::UNDERWRITING;
+        $merchant = User::fromId('MER_5096d6b88b0b49019c870392bd98ddac', UserType::MERCHANT);
+        /** @var User $response */
+        $response = PayFacService::uploadDocument()
+            ->withUserReference($merchant->userReference)
+            ->withUploadDocumentData($documentDetails)
+            ->withIdempotencyKey($idempotency)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertNotNull($response->document);
+        $this->assertNotNull($response->document->id);
+        $this->assertEquals(FileType::TIF, $response->document->format);
+        $this->assertEquals(DocumentCategory::UNDERWRITING, $response->document->category);
+
+        $exceptionCaught = false;
+        try {
+            PayFacService::uploadDocument()
+                ->withUserReference($merchant->userReference)
+                ->withUploadDocumentData($documentDetails)
+                ->withIdempotencyKey($idempotency)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('40039', $e->responseCode);
+            $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testUploadMerchantDocs_AllDocumentCategories()
+    {
+        $documentDetails = new UploadDocumentData();
+        $documentDetails->b64_content = 'VGVzdGluZw==';
+        $documentDetails->documentFormat = FileType::TIF;
+        $merchants = ReportingService::findMerchants(1, 10)->execute();
+        if ($merchants->totalRecordCount > 0) {
+            $merchant = User::fromId('MER_5096d6b88b0b49019c870392bd98ddac', UserType::MERCHANT);
+
+            $documentCategory = new DocumentCategory();
+            $reflectionClass = new ReflectionClass($documentCategory);
+            foreach ($reflectionClass->getConstants() as $value) {
+                $documentDetails->documentCategory = $value;
+                $response = PayFacService::uploadDocument()
+                    ->withUserReference($merchant->userReference)
+                    ->withUploadDocumentData($documentDetails)
+                    ->execute();
+
+                $this->assertNotNull($response);
+                $this->assertEquals('SUCCESS', $response->responseCode);
+                $this->assertNotNull($response->document);
+                $this->assertNotNull($response->document->id);
+                $this->assertEquals(FileType::TIF, $response->document->format);
+                $this->assertEquals($value, $response->document->category);
+            }
+        }
+    }
+
+    public function testUploadMerchantDocs_AllDocumentFormats()
+    {
+        $documentDetails = new UploadDocumentData();
+        $documentDetails->b64_content = 'VGVzdGluZw==';
+        $documentDetails->documentCategory = DocumentCategory::UNDERWRITING;
+        $merchants = ReportingService::findMerchants(1, 10)->execute();
+        if ($merchants->totalRecordCount > 0) {
+            $merchant = User::fromId('MER_5096d6b88b0b49019c870392bd98ddac', UserType::MERCHANT);
+
+            $fileType = new FileType();
+            $reflectionClass = new ReflectionClass($fileType);
+            foreach ($reflectionClass->getConstants() as $value) {
+                $documentDetails->documentFormat = $value;
+                $response = PayFacService::uploadDocument()
+                    ->withUserReference($merchant->userReference)
+                    ->withUploadDocumentData($documentDetails)
+                    ->execute();
+
+                $this->assertNotNull($response);
+                $this->assertEquals('SUCCESS', $response->responseCode);
+                $this->assertNotNull($response->document);
+                $this->assertNotNull($response->document->id);
+                $this->assertEquals($value, $response->document->format);
+                $this->assertEquals(DocumentCategory::UNDERWRITING, $response->document->category);
+            }
+        }
+    }
+
+    public function testUploadMerchantDocs_MissingDocFormat()
+    {
+        $documentDetails = new UploadDocumentData();
+        $documentDetails->b64_content = 'VGVzdGluZw==';
+        $documentDetails->documentCategory = DocumentCategory::UNDERWRITING;
+        $merchant = User::fromId('MER_5096d6b88b0b49019c870392bd98ddac', UserType::MERCHANT);
+
+        $exceptionCaught = false;
+        try {
+            PayFacService::uploadDocument()
+                ->withUserReference($merchant->userReference)
+                ->withUploadDocumentData($documentDetails)
+                ->execute();
+        } catch (ApiException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING -  Request expects the following fields: format', $e->getMessage());
+            $this->assertEquals('40251', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testUploadMerchantDocs_MissingDocCategory()
+    {
+        $documentDetails = new UploadDocumentData();
+        $documentDetails->b64_content = 'VGVzdGluZw==';
+        $documentDetails->documentFormat = FileType::TIF;
+        $merchant = User::fromId('MER_5096d6b88b0b49019c870392bd98ddac', UserType::MERCHANT);
+
+        $exceptionCaught = false;
+        try {
+            PayFacService::uploadDocument()
+                ->withUserReference($merchant->userReference)
+                ->withUploadDocumentData($documentDetails)
+                ->execute();
+        } catch (ApiException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING -  Request expects the following fields: function', $e->getMessage());
+            $this->assertEquals('40251', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testUploadMerchantDocs_MissingDocBaseContent()
+    {
+        $documentDetails = new UploadDocumentData();
+        $documentDetails->documentFormat = FileType::TIF;
+        $documentDetails->documentCategory = DocumentCategory::UNDERWRITING;
+        $merchant = User::fromId('MER_5096d6b88b0b49019c870392bd98ddac', UserType::MERCHANT);
+
+        $exceptionCaught = false;
+        try {
+            PayFacService::uploadDocument()
+                ->withUserReference($merchant->userReference)
+                ->withUploadDocumentData($documentDetails)
+                ->execute();
+        } catch (ApiException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('File not found!', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
         }
     }
 

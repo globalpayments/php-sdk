@@ -7,7 +7,6 @@ use GlobalPayments\Api\Terminals\TerminalResponse;
 
 class TerminalReportBuilder
 {
-
     /**
      * @internal
      * @var ReportType
@@ -15,11 +14,19 @@ class TerminalReportBuilder
     public $reportType;
 
     /**
+     * 
+     * @var TerminalSearchBuilder
+     */
+    public $searchBuilder;
+
+    /**
      * @internal
      * @var TimeZoneConversion
      */
     public $timeZoneConversion;
-    public $searchBuilder;
+    
+    /** @var string */
+    public $transactionId;
 
     /**
      * @param ReportType $reportType

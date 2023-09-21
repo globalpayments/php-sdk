@@ -126,14 +126,6 @@ class AuthorizationBuilder extends TransactionBuilder
     public $cashBackAmount;
 
     /**
-     * Request client transaction id
-     *
-     * @internal
-     * @var string
-     */
-    public $clientTransactionId;
-
-    /**
      * Request commercial data
      *
      * @internal

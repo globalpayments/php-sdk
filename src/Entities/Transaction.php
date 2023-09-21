@@ -20,7 +20,7 @@ use GlobalPayments\Api\PaymentMethods\TransactionReference;
  * @property string $transactionId The transaction ID.
  * @property AlternativePaymentResponse $alternativePaymentResponse The APM response
  * @property BNPLResponse $bnplResponse The BNP response
- * @property TransferFundsAccountDetails $transfersFundsAccount Transfer details after funds movement
+ * @property FundsAccountDetails $transfersFundsAccount Transfer details after funds movement
  */
 class Transaction
 {

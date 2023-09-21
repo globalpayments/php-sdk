@@ -6,6 +6,12 @@
 
 ## Latest Version
 #### Enhancements:
+- [Verifone] P400: added initial Meet-In-The-Cloud connectivity support for this device
+- [GP-API]: Upload Merchant Documentation - https://developer.globalpay.com/api/merchants
+- [GP-API]: Credit Or Debit a Funds Management Account (FMA) - https://developer.globalpay.com/api/funds
+ 
+## v10.0.3 (09/13/2023)
+#### Enhancements:
 - [GP-API]: Update onboarding merchant requests
 - Security vulnerabilities fixes
 

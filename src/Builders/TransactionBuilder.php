@@ -11,6 +11,11 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 abstract class TransactionBuilder extends BaseBuilder
 {
     /**
+     * @var string
+     */
+    public $clientTransactionId;
+
+    /**
      * Request transaction type
      *
      * @internal

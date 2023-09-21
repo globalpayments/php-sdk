@@ -4,11 +4,14 @@ namespace GlobalPayments\Api\Gateways;
 
 use DOMDocument;
 use DOMElement;
-use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\TransactionBuilder;
 use GlobalPayments\Api\Entities\{BatchSummary, Transaction};
-use GlobalPayments\Api\Entities\Enums\{PaymentMethodType, TransactionModifier, TransactionType};
-use GlobalPayments\Api\Entities\Exceptions\{GatewayException, UnsupportedTransactionException};
+use GlobalPayments\Api\Entities\Enums\{
+    PaymentMethodType, TransactionModifier, TransactionType
+};
+use GlobalPayments\Api\Entities\Exceptions\{
+    ApiException, GatewayException, UnsupportedTransactionException
+};
 use GlobalPayments\Api\PaymentMethods\{CreditCardData, CreditTrackData};
 
 class GeniusConnector extends XmlGateway implements IPaymentGateway
@@ -317,7 +320,7 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
             }
         }
 
-        throw new Exception('XML from gateway could not be parsed');
+        throw new ApiException('XML from gateway could not be parsed');
     }
 
     public function processReport($builder)

@@ -16,6 +16,7 @@ use GlobalPayments\Api\Terminals\Enums\Parity;
 use GlobalPayments\Api\Terminals\Enums\StopBits;
 use GlobalPayments\Api\Terminals\HPA\HpaController;
 use GlobalPayments\Api\Terminals\Abstractions\IRequestIdProvider;
+use GlobalPayments\Api\Terminals\Genius\GeniusController;
 use GlobalPayments\Api\Terminals\PAX\PaxController;
 use GlobalPayments\Api\Terminals\UPA\UpaController;
 
@@ -46,6 +47,13 @@ class ConnectionConfig extends Configuration implements ITerminalConfiguration
     public $port;
     
     public $timeout;
+
+    /**
+     * Used only for Genius devices that connect via "Meet In The Cloud"
+     * 
+     * @var Genius\ServiceConfigs\MitcConfig
+     */
+    public $meetInTheCloudConfig;
     
     /*
      * Implementation of IRequestIdProvider to generate request id for each transaction
@@ -91,6 +99,8 @@ class ConnectionConfig extends Configuration implements ITerminalConfiguration
             case DeviceType::UPA_SATURN_1000:
             case DeviceType::UPA_VERIFONE_T650P:
                 $services->setDeviceController(new UpaController($this));
+            case DeviceType::GENIUS_VERIFONE_P400:
+                $services->setDeviceController(new GeniusController($this));            
             default:
                 break;
         }
@@ -98,6 +108,16 @@ class ConnectionConfig extends Configuration implements ITerminalConfiguration
 
     public function validate()
     {
+        if ($this->connectionMode === ConnectionModes::MEET_IN_THE_CLOUD) {
+            if (empty($this->meetInTheCloudConfig)) {
+                throw new ConfigurationException(
+                    "meetInTheCloudConfig object is required for this connection method"
+                );
+            }
+
+            return;
+        }
+
         if ($this->connectionMode == ConnectionModes::HTTP ||
                 $this->connectionMode == ConnectionModes::TCP_IP) {
             if (empty($this->ipAddress)) {

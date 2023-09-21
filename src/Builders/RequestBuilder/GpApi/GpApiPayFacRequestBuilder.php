@@ -9,10 +9,13 @@ use GlobalPayments\Api\Builders\RequestBuilder\RequestBuilder;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Enums\UserType;
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Entities\PayFac\BankAccountData;
@@ -23,7 +26,9 @@ use GlobalPayments\Api\Mapping\EnumMapping;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Utils\CountryUtils;
+use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\Logging\ProtectSensitiveData;
+use GlobalPayments\Api\Utils\StringUtils;
 
 class GpApiPayFacRequestBuilder implements IRequestBuilder
 {
@@ -60,6 +65,7 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
         $this->builder = $builder;
         $this->config = $config;
         $requestData = $queryParams = null;
+        $this->validate($builder->transactionType, $builder);
         switch ($builder->transactionType) {
             case TransactionType::CREATE:
                 if ($builder->transactionModifier == TransactionModifier::MERCHANT) {
@@ -100,6 +106,29 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
                             $this->mapAddress($this->builder->addresses->get(AddressType::BILLING), 'alpha2') : null
                     ];
                 }
+            case TransactionType::ADD_FUNDS:
+                $verb = 'POST';
+                $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $builder->userReference->userId . '/settlement/funds';
+                $requestData = [
+                    'account_id' => $builder->accountNumber,
+                    'type' => !empty($builder->paymentMethodType) ?
+                        PaymentMethodType::getKey($builder->paymentMethodType) : null,
+                    'amount' => StringUtils::toNumeric($builder->amount),
+                    'currency' => $builder->currency ?? null,
+                    'payment_method' => !empty($builder->paymentMethodName) ?
+                        PaymentMethodName::getKey($builder->paymentMethodName) : null,
+                    'reference' => $builder->clientTransactionId ?? GenerationUtils::getGuid(),
+                    ];
+                break;
+            case TransactionType::UPLOAD_DOCUMENT:
+                $verb = 'POST';
+                $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $builder->userReference->userId .'/documents';
+                $requestData = [
+                    'function' => $builder->uploadDocumentData->documentCategory ?? null,
+                    'b64_content' => $builder->uploadDocumentData->b64_content ?? null,
+                    'format' => $builder->uploadDocumentData->documentFormat ?? null
+                ];
+                break;
             default:
                 break;
         }
@@ -360,5 +389,24 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
     public function buildRequestFromJson($jsonRequest, $config)
     {
         // TODO: Implement buildRequestFromJson() method.
+    }
+
+    public function validate($transactionType, PayFacBuilder $builder)
+    {
+        $errorMsg = "";
+        switch ($transactionType)
+        {
+            case TransactionType::ADD_FUNDS:
+                if (empty($this->config->merchantId) && empty($builder->userReference->userId)) {
+                    $errorMsg = "property userId or config merchantId cannot be null for this transactionType";
+                }
+                break;
+            default:
+                break;
+        }
+
+        if (!empty($errorMsg)) {
+            throw new GatewayException($errorMsg);
+        }
     }
 }

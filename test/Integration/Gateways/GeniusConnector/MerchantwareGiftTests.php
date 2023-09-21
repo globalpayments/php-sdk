@@ -2,14 +2,13 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GeniusConnector;
 
-use GlobalPayments\Api\Entities\Enums\GatewayProvider;
-use GlobalPayments\Api\ServicesConfig;
-use GlobalPayments\Api\ServicesContainer;
-use PHPUnit\Framework\TestCase;
+use GlobalPayments\Api\Entities\Enums\{
+    PaymentMethodType, Environment, GatewayProvider
+};
 use GlobalPayments\Api\PaymentMethods\GiftCard;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GeniusConfig;
+use PHPUnit\Framework\TestCase;
 
 class MerchantwareGiftTests extends TestCase
 {

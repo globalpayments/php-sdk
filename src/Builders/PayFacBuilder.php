@@ -6,7 +6,10 @@ use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\AddressCollection;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodFunction;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\StatusChangeReason;
+use GlobalPayments\Api\Entities\PayFac\UploadDocumentData;
 use GlobalPayments\Api\Entities\PayFac\UserReference;
 use GlobalPayments\Api\Entities\PaymentStatistics;
 use GlobalPayments\Api\Entities\PersonList;
@@ -48,6 +51,7 @@ class PayFacBuilder extends BaseBuilder
     public $accountPermissions;
     public $negativeLimit;
     public $renewalAccountData;
+    /** @var UploadDocumentData */
     public $uploadDocumentData;
     public $singleSignOnData;
     public $amount;
@@ -129,6 +133,16 @@ class PayFacBuilder extends BaseBuilder
      * @var string
      */
     public $timezone;
+
+    /** @var PaymentMethodName */
+    public string $paymentMethodName;
+
+    /** @var PaymentMethodType */
+    public string $paymentMethodType;
+
+    public string $currency;
+
+    public string $clientTransactionId;
 
     const UPLOAD_FILE_TYPES = [
         'tif', 'tiff', 'bmp', 'jpg', 'jpeg', 'gif', 'png', 'doc', 'docx'
@@ -439,27 +453,30 @@ class PayFacBuilder extends BaseBuilder
         $this->renewalAccountData = $renewalAccountData;
         return $this;
     }
-    
-       
-    /*
+
+
+    /**
+     * /*
      * Document details
-     *
-     * var GlobalPayments\Api\Entities\PayFac\UploadDocumentData
+     * @param UploadDocumentData  $uploadDocumentData
+     * @return $this
+     * @throws BuilderException
      */
     public function withUploadDocumentData($uploadDocumentData)
     {
         //file validations
-        if (!file_exists($uploadDocumentData->documentLocation)) {
-            throw new BuilderException('File not found!');
-        } elseif (filesize($uploadDocumentData->documentLocation) > 5000000) {
-            throw new BuilderException('Max file size 5MB exceeded');
+        if (empty($uploadDocumentData->b64_content)) {
+            if (!file_exists($uploadDocumentData->documentLocation)) {
+                throw new BuilderException('File not found!');
+            } elseif (filesize($uploadDocumentData->documentLocation) > 5000000) {
+                throw new BuilderException('Max file size 5MB exceeded');
+            }
+
+            $fileType = pathinfo($uploadDocumentData->documentLocation, PATHINFO_EXTENSION);
+            if (!in_array($fileType, self::UPLOAD_FILE_TYPES)) {
+                throw new BuilderException('File type is not supported.');
+            }
         }
-        
-        $fileType = pathinfo($uploadDocumentData->documentLocation, PATHINFO_EXTENSION);
-        if (!in_array($fileType, self::UPLOAD_FILE_TYPES)) {
-            throw new BuilderException('File type is not supported.');
-        }
-        
         $this->uploadDocumentData = $uploadDocumentData;
         return $this;
     }
@@ -650,6 +667,38 @@ class PayFacBuilder extends BaseBuilder
     public function withTimeZone($timezone)
     {
         $this->timezone = $timezone;
+        return $this;
+    }
+
+    /**
+     * @param PaymentMethodType $paymentMethodType
+     * @return $this
+     */
+    public function withPaymentMethodType(string $paymentMethodType)
+    {
+        $this->paymentMethodType = $paymentMethodType;
+        return $this;
+    }
+
+    /**
+     * @param PaymentMethodName $paymentMethodName
+     * @return $this
+     */
+    public function withPaymentMethodName(string $paymentMethodName)
+    {
+        $this->paymentMethodName = $paymentMethodName;
+        return $this;
+    }
+
+    public function withCurrency(string $currency)
+    {
+        $this->currency = $currency;
+        return $this;
+    }
+
+    public function withClientTransactionId($value)
+    {
+        $this->clientTransactionId = $value;
         return $this;
     }
 }

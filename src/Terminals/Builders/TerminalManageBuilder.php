@@ -2,10 +2,9 @@
 
 namespace GlobalPayments\Api\Terminals\Builders;
 
-use GlobalPayments\Api\Entities\Enums\TransactionModifier;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Entities\Enums\{TransactionModifier, TransactionType};
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
+use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Terminals\TerminalResponse;
 
 class TerminalManageBuilder extends TerminalBuilder
@@ -103,6 +102,17 @@ class TerminalManageBuilder extends TerminalBuilder
     public function withTerminalRefNumber($terminalRefNumber)
     {
         $this->terminalRefNumber = $terminalRefNumber;
+        return $this;
+    }
+
+    /**
+     * 
+     * @param string $value 
+     * @return TerminalManageBuilder 
+     */
+    public function withClientTransactionId(string $value) : TerminalManageBuilder
+    {
+        $this->clientTransactionId = $value;
         return $this;
     }
 }
