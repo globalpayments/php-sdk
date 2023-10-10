@@ -2,6 +2,7 @@
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector\Hpp;
 
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
+use GlobalPayments\Api\Entities\BlockedCardType;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 use GlobalPayments\Api\Entities\Enums\HostedPaymentMethods;
 use GlobalPayments\Api\Entities\Enums\ShaHashType;
@@ -167,6 +168,16 @@ class GpEcomHppClient
 
             //handle fraud management
             $this->addFraudManagementInfo($gatewayRequest, $orderId);
+            if (!empty($this->getValue('BLOCK_CARD_TYPE'))) {
+                $cardTypes = explode("|", $this->getValue('BLOCK_CARD_TYPE'));
+                $cardTypesBlocking = new BlockedCardType();
+                foreach ($cardTypes as $cardType) {
+                    if (property_exists($cardTypesBlocking, $cardType)) {
+                        $cardTypesBlocking->{$cardType} = true;
+                    }
+                }
+                $gatewayRequest->withBlockedCardType($cardTypesBlocking);
+            }
 
             if ($card instanceof BankPayment) {
                 $this->addRemittanceRef($gatewayRequest);

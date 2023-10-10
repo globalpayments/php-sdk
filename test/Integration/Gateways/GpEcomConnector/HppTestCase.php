@@ -151,7 +151,7 @@ class HppTestCase extends TestCase
 
         // TODO: grab the response JSON from the client-side for example:
         //sample response JSON:
-        $responseJson = array("MERCHANT_ID" => "MerchantId", "ACCOUNT" => "internet", "ORDER_ID" => "GTI5Yxb0SumL_TkDMCAxQA", "AMOUNT" => "1999", "TIMESTAMP" => "20170725154824", "SHA1HASH" => "843680654f377bfa845387fdbace35acc9d95778", "RESULT" => "00", "AUTHCODE" => "12345", "CARD_PAYMENT_BUTTON" => "Place Order", "AVSADDRESSRESULT" => "M", "AVSPOSTCODERESULT" => "M", "BATCHID" => "445196", "MESSAGE" => "[ test system ] Authorised", "PASREF" => "15011597872195765", "CVNRESULT" => "M", "HPP_FRAUDFILTER_RESULT" => "PASS", "HPP_CHOSEN_PMT_REF" => "099efeb4-eda2-4fd7-a04d-29647bb6c51d", "HPP_EDITED_PMT_REF" => "037bd26a-c76b-4ee4-8063-376d8858f23d", "HPP_DELETED_PMT_REF" => "3db4c72c-cd95-4743-8070-f17e2b56b642");
+        $responseJson = array("MERCHANT_ID" => "MerchantId", "ACCOUNT" => "internet", "MERCHANT_RESPONSE_URL" => "http://requestb.in/10q2bjb1" ,"ORDER_ID" => "GTI5Yxb0SumL_TkDMCAxQA", "AMOUNT" => "1999", "TIMESTAMP" => "20170725154824", "SHA1HASH" => "843680654f377bfa845387fdbace35acc9d95778", "RESULT" => "00", "AUTHCODE" => "12345", "CARD_PAYMENT_BUTTON" => "Place Order", "AVSADDRESSRESULT" => "M", "AVSPOSTCODERESULT" => "M", "BATCHID" => "445196", "MESSAGE" => "[ test system ] Authorised", "PASREF" => "15011597872195765", "CVNRESULT" => "M", "HPP_FRAUDFILTER_RESULT" => "PASS", "HPP_CHOSEN_PMT_REF" => "099efeb4-eda2-4fd7-a04d-29647bb6c51d", "HPP_EDITED_PMT_REF" => "037bd26a-c76b-4ee4-8063-376d8858f23d", "HPP_DELETED_PMT_REF" => "3db4c72c-cd95-4743-8070-f17e2b56b642");
 
         $parsedResponse = $service->parseResponse(json_encode($responseJson));
         $responseCode = $parsedResponse->responseCode; // 00
@@ -183,7 +183,7 @@ class HppTestCase extends TestCase
 
         // TODO: grab the response JSON from the client-side for example:
         //sample response JSON:
-        $responseJson = array("MERCHANT_ID" => "MerchantId", "ACCOUNT" => "internet", "ORDER_ID" => "GTI5Yxb0SumL_TkDMCAxQA", "AMOUNT" => "1999", "TIMESTAMP" => "20170725154824", "SHA1HASH" => "843680654f377bfa845387fdbace35acc9d95778", "RESULT" => "00", "AUTHCODE" => "12345", "CARD_PAYMENT_BUTTON" => "Place Order", "AVSADDRESSRESULT" => "M", "AVSPOSTCODERESULT" => "M", "BATCHID" => "445196", "MESSAGE" => "[ test system ] Authorised", "PASREF" => "15011597872195765", "CVNRESULT" => "M", "HPP_FRAUDFILTER_RESULT" => "HOLD", "HPP_FRAUDFILTER_RULE_56257838-4590-4227-b946-11e061fb15fe" => "HOLD", "HPP_FRAUDFILTER_RULE_cf609cf9-9e5a-4700-ac69-8aa09c119305" => "PASS");
+        $responseJson = array("MERCHANT_ID" => "MerchantId", "ACCOUNT" => "internet","MERCHANT_RESPONSE_URL" => "http://requestb.in/10q2bjb1",  "ORDER_ID" => "GTI5Yxb0SumL_TkDMCAxQA", "AMOUNT" => "1999", "TIMESTAMP" => "20170725154824", "SHA1HASH" => "843680654f377bfa845387fdbace35acc9d95778", "RESULT" => "00", "AUTHCODE" => "12345", "CARD_PAYMENT_BUTTON" => "Place Order", "AVSADDRESSRESULT" => "M", "AVSPOSTCODERESULT" => "M", "BATCHID" => "445196", "MESSAGE" => "[ test system ] Authorised", "PASREF" => "15011597872195765", "CVNRESULT" => "M", "HPP_FRAUDFILTER_RESULT" => "HOLD", "HPP_FRAUDFILTER_RULE_56257838-4590-4227-b946-11e061fb15fe" => "HOLD", "HPP_FRAUDFILTER_RULE_cf609cf9-9e5a-4700-ac69-8aa09c119305" => "PASS");
 
         $parsedResponse = $service->parseResponse(json_encode($responseJson));
         $responseCode = $parsedResponse->responseCode; // 00

@@ -875,7 +875,14 @@ class GpApiMapping
         $paymentMethodApm = $response->payment_method->apm;
         $apm->redirectUrl = !empty($response->payment_method->redirect_url) ?
             $response->payment_method->redirect_url : ($paymentMethodApm->redirect_url ?? null);
-        $apm->providerName = $paymentMethodApm->provider;
+        if (is_string($paymentMethodApm->provider)) {
+            $apm->providerName = $paymentMethodApm->provider;
+        } elseif (is_object($paymentMethodApm->provider)) {
+            $apm->providerName = strtolower($paymentMethodApm->provider->name) ?? null;
+            $apm->providerReference = $paymentMethodApm->provider->merchant_identifier ?? null;
+            $apm->timeCreatedReference = $paymentMethodApm->provider->time_created_reference ?? null;
+        }
+
         $apm->accountHolderName = $paymentMethodApm->provider_payer_name ?? null;
         $apm->ack = $paymentMethodApm->ack ?? null;
         $apm->sessionToken = !empty($paymentMethodApm->session_token) ? $paymentMethodApm->session_token : null;

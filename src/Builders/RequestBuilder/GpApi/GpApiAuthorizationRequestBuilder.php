@@ -251,6 +251,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $requestBody['convenience_amount'] = StringUtils::toNumeric($builder->convenienceAmount);
         $requestBody['cashback_amount'] = StringUtils::toNumeric($builder->cashBackAmount);
         $requestBody['ip_address'] = $builder->customerIpAddress;
+        $requestBody['merchant_category'] = $builder->merchantCategory ?? null;
         $requestBody['payment_method'] = $this->createPaymentMethodParam($builder, $config);
         $requestBody['risk_assessment'] = !empty($builder->fraudFilter) ? [$this->mapFraudManagement()] : null;
         if (!empty($builder->paymentLinkId)) {

@@ -222,6 +222,7 @@ class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         if ($builder->amount !== null) {
             $this->setSerializeData('AMOUNT', $amount);
         }
+
         $this->setSerializeData('CURRENCY', $builder->currency);
         $this->setSerializeData('TIMESTAMP', $timestamp);
 
@@ -301,9 +302,12 @@ class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringS
                 $this->setSerializeData('HPP_TX_STATUS_URL', $hostedPaymentData->transactionStatusUrl);
             }
             if (!empty($hostedPaymentData->presetPaymentMethods)) {
-                $this->setSerializeData('PM_METHODS', implode( '|', $hostedPaymentData->presetPaymentMethods));
+                $this->setSerializeData('PM_METHODS', implode('|', $hostedPaymentData->presetPaymentMethods));
             }
             // end APMs Fields
+            if (!empty($hostedPaymentData->blockCardTypes)) {
+                $this->setSerializeData('BLOCK_CARD_TYPE', implode('|', $hostedPaymentData->blockCardTypes));
+            }
         } elseif (isset($builder->customerId)) {
             $this->setSerializeData('CUST_NUM', $builder->customerId);
         }

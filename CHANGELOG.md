@@ -4,7 +4,14 @@
 
 # Changelog
 
-## Latest Version
+## Latest Version - v10.1.1 (10/10/2023)
+#### Enhancements:
+- [GP-API] Add a new alternative payment method, ALIPAY
+- [GP-ECOM] Limit what card types to accept for payment or storage (HPP & API)
+    * https://developer.globalpay.com/hpp/card-blocking
+    * https://developer.globalpay.com/api/card-blocking
+
+## v10.1.0 (09/21/2023)
 #### Enhancements:
 - [Verifone] P400: added initial Meet-In-The-Cloud connectivity support for this device
 - [GP-API]: Upload Merchant Documentation - https://developer.globalpay.com/api/merchants

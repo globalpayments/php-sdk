@@ -3,8 +3,8 @@
 namespace GlobalPayments\Api\Builders;
 
 use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\Entities\{
-    Address,
+use GlobalPayments\Api\Entities\{Address,
+    BlockedCardType,
     Customer,
     AutoSubstantiation,
     EcommerceInfo,
@@ -16,25 +16,24 @@ use GlobalPayments\Api\Entities\{
     DccRateData,
     DecisionManager,
     Transaction};
-use GlobalPayments\Api\Entities\Enums\{
-    AddressType,
+use GlobalPayments\Api\Entities\Enums\{AddressType,
     AliasAction,
     BNPLShippingMethod,
     EmvFallbackCondition,
     EmvLastChipRead,
     InquiryType,
     FraudFilterMode,
+    MerchantCategory,
     PaymentMethodUsageMode,
     PhoneNumberType,
     RemittanceReferenceType,
     RecurringSequence,
     RecurringType,
     TransactionModifier,
-    TransactionType
-};
+    TransactionType};
 use GlobalPayments\Api\PaymentMethods\{BankPayment, BNPL, EBTCardData, GiftCard, TransactionReference};
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
-use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
+use GlobalPayments\Api\Entities\Exceptions\{ArgumentException,BuilderException};
 
 class AuthorizationBuilder extends TransactionBuilder
 {
@@ -505,6 +504,11 @@ class AuthorizationBuilder extends TransactionBuilder
 
     /** @var boolean */
     public $maskedDataResponse;
+
+    public BlockedCardType $cardTypesBlocking;
+
+    /** @var MerchantCategory */
+    public string $merchantCategory;
 
     /**
      * {@inheritdoc}
@@ -1510,6 +1514,27 @@ class AuthorizationBuilder extends TransactionBuilder
     {
         $this->maskedDataResponse = $value;
 
+        return $this;
+    }
+
+    public function withBlockedCardType(BlockedCardType $cardTypesBlocking) : AuthorizationBuilder
+    {
+        $vars = get_object_vars($cardTypesBlocking);
+        if (empty(array_filter($vars))) {
+            $array = explode('\\', get_class($cardTypesBlocking));
+            throw new BuilderException(sprintf('No properties set on the %s object', end($array)));
+        }
+        $this->cardTypesBlocking = $cardTypesBlocking;
+
+        return $this;
+    }
+
+    /**
+     * @param MerchantCategory $merchantCategory
+     */
+    public function withMerchantCategory($merchantCategory) : AuthorizationBuilder
+    {
+        $this->merchantCategory = $merchantCategory;
         return $this;
     }
 }

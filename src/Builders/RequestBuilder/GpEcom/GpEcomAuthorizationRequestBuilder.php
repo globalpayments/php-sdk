@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Builders\RequestBuilder\GpEcom;
 use DOMDocument;
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\BaseBuilder;
+use GlobalPayments\Api\Entities\BlockedCardType;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 use GlobalPayments\Api\Entities\Enums\CvnPresenceIndicator;
 use GlobalPayments\Api\Entities\Enums\DccProcessor;
@@ -247,6 +248,23 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder implements 
                     $this->maskedValues = ProtectSensitiveData::hideValue('card.cvn.number', $card->cvn ?? '');
                 }
                 $request->appendChild($cardElement);
+                if (!empty($builder->cardTypesBlocking)) {
+                    $cardTypes = $builder->cardTypesBlocking;
+                    $cardTypeBlock = $xml->createElement("blockcard");
+                    if (isset($cardTypes->commercialcredit)) {
+                        $cardTypeBlock->appendChild($xml->createElement("commercialcredit", $cardTypes->commercialcredit));
+                    }
+                    if (isset($cardTypes->commercialdebit)) {
+                        $cardTypeBlock->appendChild($xml->createElement("commercialdebit", $cardTypes->commercialdebit));
+                    }
+                    if (isset($cardTypes->consumercredit)) {
+                        $cardTypeBlock->appendChild($xml->createElement("consumercredit", $cardTypes->consumercredit));
+                    }
+                    if (isset($cardTypes->consumerdebit)) {
+                        $cardTypeBlock->appendChild($xml->createElement("consumerdebit", $cardTypes->consumerdebit));
+                    }
+                    $request->appendChild($cardTypeBlock);
+                }
             }
             // issueno
             $hash = '';

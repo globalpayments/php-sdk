@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Entities;
 
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
+use GlobalPayments\Api\Entities\Enums\BlockCardType;
 use GlobalPayments\Api\PaymentMethods\BankPayment;
 
 /**
@@ -128,6 +129,9 @@ class HostedPaymentData
     /** @var boolean */
     public $enableExemptionOptimization;
 
+    /** @var array<BlockCardType> */
+    public array $blockCardTypes;
+
     /**
      * Instantiates a new `HostedPaymentData` object.
      *
@@ -136,5 +140,6 @@ class HostedPaymentData
     public function __construct()
     {
         $this->supplementaryData = [];
+        $this->blockCardTypes = [];
     }
 }

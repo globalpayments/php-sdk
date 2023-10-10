@@ -8,9 +8,12 @@ use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\MerchantCategory;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\OrderDetails;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
@@ -372,5 +375,152 @@ class GpApiApmTest extends TestCase
         $this->assertEquals(TransactionStatus::INITIATED, $response->responseMessage);
         $this->assertNotNull($response->alternativePaymentResponse->redirectUrl);
         $this->assertEquals(AlternativePaymentType::TEST_PAY, $response->alternativePaymentResponse->providerName);
+    }
+
+    public function testAlipay()
+    {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::ALIPAY);
+        $paymentMethod->returnUrl = 'https://example.com/returnUrl';
+        $paymentMethod->statusUpdateUrl = 'https://example.com/statusUrl';
+        $paymentMethod->country = 'US';
+        $paymentMethod->accountHolderName = 'Jane Doe';
+
+        $response = $paymentMethod->charge(19.99)
+            ->withCurrency('HKD')
+            ->withMerchantCategory(MerchantCategory::OTHER)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::INITIATED, $response->responseMessage);
+        $this->assertNotNull($response->alternativePaymentResponse->redirectUrl);
+        $this->assertEquals(AlternativePaymentType::ALIPAY, $response->alternativePaymentResponse->providerName);
+    }
+
+    public function testAlipay_MissingReturnUrl()
+    {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::ALIPAY);
+        $paymentMethod->statusUpdateUrl = 'https://example.com/statusUrl';
+        $paymentMethod->country = 'US';
+        $paymentMethod->accountHolderName = 'Jane Doe';
+
+        $exceptionCaught = false;
+        try {
+            $paymentMethod->charge(19.99)
+                ->withCurrency('HKD')
+                ->withMerchantCategory(MerchantCategory::OTHER)
+                ->execute();
+        } catch (BuilderException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('returnUrl cannot be null for this transaction type.', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testAlipay_MissingStatusUrl()
+    {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::ALIPAY);
+        $paymentMethod->returnUrl = 'https://example.com/returnUrl';
+        $paymentMethod->country = 'US';
+        $paymentMethod->accountHolderName = 'Jane Doe';
+
+        $exceptionCaught = false;
+        try {
+            $paymentMethod->charge(19.99)
+                ->withCurrency('HKD')
+                ->withMerchantCategory(MerchantCategory::OTHER)
+                ->execute();
+        } catch (BuilderException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('statusUpdateUrl cannot be null for this transaction type.', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testAlipay_MissingCountry()
+    {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::ALIPAY);
+        $paymentMethod->returnUrl = 'https://example.com/returnUrl';
+        $paymentMethod->statusUpdateUrl = 'https://example.com/statusUrl';
+        $paymentMethod->accountHolderName = 'Jane Doe';
+
+        $exceptionCaught = false;
+        try {
+            $paymentMethod->charge(19.99)
+                ->withCurrency('HKD')
+                ->withMerchantCategory(MerchantCategory::OTHER)
+                ->execute();
+        } catch (BuilderException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('country cannot be null for this transaction type.', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testAlipay_MissingAccountHolderName()
+    {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::ALIPAY);
+        $paymentMethod->returnUrl = 'https://example.com/returnUrl';
+        $paymentMethod->statusUpdateUrl = 'https://example.com/statusUrl';
+        $paymentMethod->country = 'US';
+
+        $exceptionCaught = false;
+        try {
+            $paymentMethod->charge(19.99)
+                ->withCurrency('HKD')
+                ->withMerchantCategory(MerchantCategory::OTHER)
+                ->execute();
+        } catch (BuilderException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('accountHolderName cannot be null for this transaction type.', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testAlipay_MissingCurrency()
+    {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::ALIPAY);
+        $paymentMethod->returnUrl = 'https://example.com/returnUrl';
+        $paymentMethod->statusUpdateUrl = 'https://example.com/statusUrl';
+        $paymentMethod->country = 'US';
+        $paymentMethod->accountHolderName = 'Jane Doe';
+
+        $exceptionCaught = false;
+        try {
+            $paymentMethod->charge(19.99)
+                ->withMerchantCategory(MerchantCategory::OTHER)
+                ->execute();
+        } catch (BuilderException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('currency cannot be null for this transaction type.', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testAlipay_MissingMerchantCategory()
+    {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::ALIPAY);
+        $paymentMethod->returnUrl = 'https://example.com/returnUrl';
+        $paymentMethod->statusUpdateUrl = 'https://example.com/statusUrl';
+        $paymentMethod->country = 'US';
+        $paymentMethod->accountHolderName = 'Jane Doe';
+
+        $exceptionCaught = false;
+        try {
+            $paymentMethod->charge(19.99)
+                ->withCurrency('HKD')
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields merchant_category', $e->getMessage());
+            $this->assertEquals('40005', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
     }
 }

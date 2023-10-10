@@ -3,27 +3,29 @@
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
 use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 use GlobalPayments\Api\Entities\Enums\BankPaymentStatus;
+use GlobalPayments\Api\Entities\Enums\BlockCardType;
+use GlobalPayments\Api\Entities\Enums\ChallengeRequestIndicator;
+use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
+use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\HostedPaymentMethods;
-use GlobalPayments\Api\Entities\Enums\ShaHashType;
-use GlobalPayments\Api\Entities\Enums\TransactionStatus;
-use GlobalPayments\Api\Entities\Exceptions\BuilderException;
-use GlobalPayments\Api\Entities\FraudRuleCollection;
-use GlobalPayments\Api\PaymentMethods\BankPayment;
-use GlobalPayments\Api\Services\HostedService;
-use GlobalPayments\Api\HostedPaymentConfig;
-use GlobalPayments\Api\Entities\HostedPaymentData;
 use GlobalPayments\Api\Entities\Enums\HppVersion;
 use GlobalPayments\Api\Entities\Enums\RecurringSequence;
 use GlobalPayments\Api\Entities\Enums\RecurringType;
-use GlobalPayments\Api\Entities\Enums\AddressType;
-use GlobalPayments\Api\Entities\Enums\FraudFilterMode;
-use GlobalPayments\Api\Entities\Enums\GatewayProvider;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
-use GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector\Hpp\GpEcomHppClient;
 use GlobalPayments\Api\Entities\Enums\RemittanceReferenceType;
-use GlobalPayments\Api\Entities\Enums\ChallengeRequestIndicator;
+use GlobalPayments\Api\Entities\Enums\ShaHashType;
+use GlobalPayments\Api\Entities\Enums\TransactionStatus;
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\FraudRuleCollection;
+use GlobalPayments\Api\Entities\HostedPaymentData;
+use GlobalPayments\Api\HostedPaymentConfig;
+use GlobalPayments\Api\PaymentMethods\BankPayment;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
+use GlobalPayments\Api\Services\HostedService;
+use GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector\Hpp\GpEcomHppClient;
 use PHPUnit\Framework\TestCase;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
@@ -40,7 +42,7 @@ class HppTest extends TestCase
         ''
     ];
 
-    public function setup() : void
+    public function setup(): void
     {
         // billing address
         $this->billingAddress = new Address();
@@ -94,11 +96,11 @@ class HppTest extends TestCase
             $service = new HostedService($config);
 
             $json = $service->authorize(1)
-                    ->withCurrency("EUR")
-                    ->withCustomerId("123456")
-                    ->withAddress($address)
-                    ->serialize();
-            
+                ->withCurrency("EUR")
+                ->withCustomerId("123456")
+                ->withAddress($address)
+                ->serialize();
+
             $this->assertNotNull($json);
 
             $response = $client->sendRequest($json, $hppVersion);
@@ -132,10 +134,10 @@ class HppTest extends TestCase
             $service = new HostedService($config);
 
             $json = $service->charge(1)
-                    ->withCurrency("EUR")
-                    ->withCustomerId("123456")
-                    ->withAddress($address)
-                    ->serialize();
+                ->withCurrency("EUR")
+                ->withCustomerId("123456")
+                ->withAddress($address)
+                ->serialize();
             $this->assertNotNull($json);
 
             $response = $client->sendRequest($json, $hppVersion);
@@ -173,10 +175,10 @@ class HppTest extends TestCase
             $service = new HostedService($config);
 
             $json = $service->verify()
-                    ->withCurrency("EUR")
-                    ->withCustomerId("123456")
-                    ->withAddress($address)
-                    ->serialize();
+                ->withCurrency("EUR")
+                ->withCustomerId("123456")
+                ->withAddress($address)
+                ->serialize();
             $this->assertNotNull($json);
 
             $response = $client->sendRequest($json, $hppVersion);
@@ -256,9 +258,9 @@ class HppTest extends TestCase
             $service = new HostedService($config);
 
             $json = $service->charge(15)
-                    ->withCurrency("EUR")
-                    ->withHostedPaymentData($hostedPaymentData)
-                    ->serialize();
+                ->withCurrency("EUR")
+                ->withHostedPaymentData($hostedPaymentData)
+                ->serialize();
 
             $this->assertNotNull($json);
 
@@ -299,9 +301,9 @@ class HppTest extends TestCase
             $service = new HostedService($config);
 
             $json = $service->charge(15)
-                    ->withCurrency("EUR")
-                    ->withHostedPaymentData($hostedPaymentData)
-                    ->serialize();
+                ->withCurrency("EUR")
+                ->withHostedPaymentData($hostedPaymentData)
+                ->serialize();
 
             $this->assertNotNull($json);
 
@@ -336,9 +338,9 @@ class HppTest extends TestCase
             $service = new HostedService($config);
 
             $json = $service->charge(15)
-                    ->withCurrency("EUR")
-                    ->withRecurringInfo(RecurringType::FIXED, RecurringSequence::FIRST)
-                    ->serialize();
+                ->withCurrency("EUR")
+                ->withRecurringInfo(RecurringType::FIXED, RecurringSequence::FIRST)
+                ->serialize();
 
             $this->assertNotNull($json);
 
@@ -374,15 +376,15 @@ class HppTest extends TestCase
 
         //serialize the request
         $json = $service->Charge(19)
-                ->withCurrency("EUR")
-                ->withTimestamp("20170725154824")
-                ->withOrderId('GTI5Yxb0SumL_TkDMCAxQA')
-                ->serialize();
-        
+            ->withCurrency("EUR")
+            ->withTimestamp("20170725154824")
+            ->withOrderId('GTI5Yxb0SumL_TkDMCAxQA')
+            ->serialize();
+
         $this->assertNotNull($json);
         $this->assertEquals('{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1900","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","DCC_ENABLE":"1","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","HPP_VERSION":"2","SHA1HASH":"448d742db89b05ce97152beb55157c904f3839cc"}', $json);
     }
-    
+
     public function testDisableDynamicCurrencyConversionRequest()
     {
         //set config for DCC
@@ -404,13 +406,13 @@ class HppTest extends TestCase
 
         //serialize the request
         $json = $service->Charge(19)
-                ->withCurrency("EUR")
-                ->withTimestamp("20170725154824")
-                ->withOrderId('GTI5Yxb0SumL_TkDMCAxQA')
-                ->serialize();
-        
+            ->withCurrency("EUR")
+            ->withTimestamp("20170725154824")
+            ->withOrderId('GTI5Yxb0SumL_TkDMCAxQA')
+            ->serialize();
+
         $this->assertNotNull($json);
-        $this->assertEquals($json,  '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1900","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","DCC_ENABLE":"0","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","HPP_VERSION":"2","SHA1HASH":"448d742db89b05ce97152beb55157c904f3839cc"}');
+        $this->assertEquals($json, '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1900","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","DCC_ENABLE":"0","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"http:\/\/requestb.in\/10q2bjb1","HPP_VERSION":"2","SHA1HASH":"448d742db89b05ce97152beb55157c904f3839cc"}');
     }
 
     /* 11. FraudManagementRequest */
@@ -431,7 +433,7 @@ class HppTest extends TestCase
 
         $service = new HostedService($config);
         $client = new GpEcomHppClient("secret");
-        
+
         // data to be passed to the HPP along with transaction level settings
         $hostedPaymentData = new HostedPaymentData();
         $hostedPaymentData->customerNumber = "E8953893489"; // display the save card tick box
@@ -439,13 +441,13 @@ class HppTest extends TestCase
 
         //serialize the request
         $json = $service->charge(19)
-                ->withCurrency("EUR")
-                ->withAddress($this->billingAddress, AddressType::BILLING)
-                ->withAddress($this->shippingAddress, AddressType::SHIPPING)
-                ->withClientTransactionId("Car Part HV") // varref
-                ->withCustomerIpAddress("123.123.123.123")
-                ->withHostedPaymentData($hostedPaymentData)
-                ->serialize();
+            ->withCurrency("EUR")
+            ->withAddress($this->billingAddress, AddressType::BILLING)
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->withClientTransactionId("Car Part HV") // varref
+            ->withCustomerIpAddress("123.123.123.123")
+            ->withHostedPaymentData($hostedPaymentData)
+            ->serialize();
 
         $this->assertNotNull($json);
 
@@ -535,10 +537,10 @@ class HppTest extends TestCase
         $client = new GpEcomHppClient("secret");
 
         $json = $service->authorize(19.99)
-                ->withCurrency("EUR")
-                ->withTimeStamp("20170725154824")
-                ->WithOrderId("GTI5Yxb0SumL_TkDMCAxQA")
-                ->serialize();
+            ->withCurrency("EUR")
+            ->withTimeStamp("20170725154824")
+            ->WithOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+            ->serialize();
 
         $expectedJson = '{"MERCHANT_ID":"TWVyY2hhbnRJZA==","ACCOUNT":"aW50ZXJuZXQ=","ORDER_ID":"R1RJNVl4YjBTdW1MX1RrRE1DQXhRQQ==","AMOUNT":"MTk5OQ==","CURRENCY":"RVVS","TIMESTAMP":"MjAxNzA3MjUxNTQ4MjQ=","AUTO_SETTLE_FLAG":"MA==","HPP_LANG":"R0I=","MERCHANT_RESPONSE_URL":"aHR0cHM6Ly93d3cuZXhhbXBsZS5jb20vcmVzcG9uc2U=","HPP_VERSION":"MQ==","HPP_POST_DIMENSIONS":"aHR0cHM6Ly93d3cuZXhhbXBsZS5jb20=","HPP_POST_RESPONSE":"aHR0cHM6Ly93d3cuZXhhbXBsZS5jb20=","SHA1HASH":"MDYxNjA5Zjg1YThlMDE5MWRjN2Y0ODdmODI3OGU3MTg5OGEyZWUyZA=="}';
         $this->assertEquals($json, $expectedJson);
@@ -561,10 +563,10 @@ class HppTest extends TestCase
         $client = new GpEcomHppClient("secret");
 
         $json = $service->authorize(19.99)
-                ->withCurrency("EUR")
-                ->withTimeStamp("20170725154824")
-                ->WithOrderId("GTI5Yxb0SumL_TkDMCAxQA")
-                ->serialize();
+            ->withCurrency("EUR")
+            ->withTimeStamp("20170725154824")
+            ->WithOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+            ->serialize();
 
         $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"0","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","HPP_VERSION":"2","SHA1HASH":"061609f85a8e0191dc7f487f8278e71898a2ee2d"}';
         $this->assertEquals($json, $expectedJson);
@@ -587,10 +589,10 @@ class HppTest extends TestCase
         $client = new GpEcomHppClient("secret");
 
         $json = $service->charge(19.99)
-                ->withCurrency("EUR")
-                ->withTimeStamp("20170725154824")
-                ->WithOrderId("GTI5Yxb0SumL_TkDMCAxQA")
-                ->serialize();
+            ->withCurrency("EUR")
+            ->withTimeStamp("20170725154824")
+            ->WithOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+            ->serialize();
 
         $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","HPP_VERSION":"2","SHA1HASH":"061609f85a8e0191dc7f487f8278e71898a2ee2d"}';
         $this->assertEquals($json, $expectedJson);
@@ -619,13 +621,13 @@ class HppTest extends TestCase
         $hostedPaymentData->productId = 'a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f';
 
         $json = $service->charge(19.99)
-                ->withCurrency("EUR")
-                ->withTimeStamp("20170725154824")
-                ->WithOrderId("GTI5Yxb0SumL_TkDMCAxQA")
-                ->WithHostedPaymentData($hostedPaymentData)
-                ->WithDescription("Mobile Channel")
-                ->WithClientTransactionId("My Legal Entity")
-                ->serialize();
+            ->withCurrency("EUR")
+            ->withTimeStamp("20170725154824")
+            ->WithOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+            ->WithHostedPaymentData($hostedPaymentData)
+            ->WithDescription("Mobile Channel")
+            ->WithClientTransactionId("My Legal Entity")
+            ->serialize();
 
         $expectedJson = '{"MERCHANT_ID":"TWVyY2hhbnRJZA==","ACCOUNT":"aW50ZXJuZXQ=","ORDER_ID":"R1RJNVl4YjBTdW1MX1RrRE1DQXhRQQ==","AMOUNT":"MTk5OQ==","CURRENCY":"RVVS","TIMESTAMP":"MjAxNzA3MjUxNTQ4MjQ=","AUTO_SETTLE_FLAG":"MQ==","COMMENT1":"TW9iaWxlIENoYW5uZWw=","CUST_NUM":"YTAyODc3NGYtYmVmZi00N2JjLWJkNmUtZWQ3ZTA0ZjVkNzU4YTAyODc3NGYtYnRlZmE=","OFFER_SAVE_CARD":"MQ==","PAYER_EXIST":"MA==","PROD_ID":"YTBiMzhkZjUtYjIzYy00ZDgyLTg4ZmUtMmU5YzQ3NDM4OTcyLWIyM2MtNGQ4Mi04OGY=","VAR_REF":"TXkgTGVnYWwgRW50aXR5","HPP_LANG":"R0I=","MERCHANT_RESPONSE_URL":"aHR0cHM6Ly93d3cuZXhhbXBsZS5jb20vcmVzcG9uc2U=","HPP_VERSION":"MQ==","SHA1HASH":"NzExNmM0OTgyNjM2N2M2NTEzZWZkYzBjYzgxZTI0M2I4MDk1ZDc4Zg=="}';
         $this->assertEquals($json, $expectedJson);
@@ -654,13 +656,13 @@ class HppTest extends TestCase
         $hostedPaymentData->productId = 'a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f';
 
         $json = $service->charge(19.99)
-                ->withCurrency("EUR")
-                ->withTimeStamp("20170725154824")
-                ->WithOrderId("GTI5Yxb0SumL_TkDMCAxQA")
-                ->WithHostedPaymentData($hostedPaymentData)
-                ->WithDescription("Mobile Channel")
-                ->WithClientTransactionId("My Legal Entity")
-                ->serialize();
+            ->withCurrency("EUR")
+            ->withTimeStamp("20170725154824")
+            ->WithOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+            ->WithHostedPaymentData($hostedPaymentData)
+            ->WithDescription("Mobile Channel")
+            ->WithClientTransactionId("My Legal Entity")
+            ->serialize();
 
         $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","COMMENT1":"Mobile Channel","CUST_NUM":"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa","OFFER_SAVE_CARD":"1","PAYER_EXIST":"0","PROD_ID":"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f","VAR_REF":"My Legal Entity","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","HPP_VERSION":"2","SHA1HASH":"7116c49826367c6513efdc0cc81e243b8095d78f"}';
         $this->assertEquals($json, $expectedJson);
@@ -689,11 +691,11 @@ class HppTest extends TestCase
             $service = new HostedService($config);
 
             $json = $service->authorize(1)
-                    ->withCurrency("EUR")
-                    ->withCustomerId("123456")
-                    ->withAddress($address)
-                    ->serialize();
-            
+                ->withCurrency("EUR")
+                ->withCustomerId("123456")
+                ->withAddress($address)
+                ->serialize();
+
             $this->assertNotNull($json);
 
             $response = $client->sendRequest($json, $hppVersion);
@@ -714,7 +716,7 @@ class HppTest extends TestCase
         }
     }
 
-    public function testHostedPaymentDataSupplementaryDataSerialize() 
+    public function testHostedPaymentDataSupplementaryDataSerialize()
     {
         $config = new GpEcomConfig();
         $config->merchantId = "MerchantId";
@@ -750,7 +752,8 @@ class HppTest extends TestCase
         $this->assertEquals($json, $expectedJson);
     }
 
-    public function testSupplementaryDataWithOneValueSerialized() {
+    public function testSupplementaryDataWithOneValueSerialized()
+    {
         $config = new GpEcomConfig();
         $config->merchantId = "MerchantId";
         $config->accountId = "internet";
@@ -785,7 +788,7 @@ class HppTest extends TestCase
         $this->assertEquals($json, $expectedJson);
     }
 
-    public function testSupplementaryDataWithTwoValuesSerialized() 
+    public function testSupplementaryDataWithTwoValuesSerialized()
     {
         $config = new GpEcomConfig();
         $config->merchantId = "MerchantId";
@@ -850,6 +853,84 @@ class HppTest extends TestCase
         $response = json_decode($json, true);
         $this->assertEquals('AN', $response['BILLING_CO']);
         $this->assertEquals('530', $response['HPP_BILLING_COUNTRY']);
+    }
+
+    public function testCardBlockingPayment()
+    {
+        $config = new GpEcomConfig();
+        $config->merchantId = "heartlandgpsandbox";
+        $config->accountId = "hpp";
+        $config->sharedSecret = "secret";
+        $config->serviceUrl = "https://pay.sandbox.realexpayments.com/pay";
+
+        $config->hostedPaymentConfig = new HostedPaymentConfig();
+        $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
+
+        $service = new HostedService($config);
+
+        $hostedPaymentData = new HostedPaymentData();
+        $hostedPaymentData->customerCountry = 'DE';
+        $hostedPaymentData->customerFirstName = 'James';
+        $hostedPaymentData->customerLastName = 'Mason';
+        $hostedPaymentData->merchantResponseUrl = 'https://www.example.com/returnUrl';
+        $hostedPaymentData->transactionStatusUrl = 'https://www.example.com/statusUrl';
+        $blockCardTypes = [BlockCardType::COMMERCIAL_CREDIT, BlockCardType::COMMERCIAL_DEBIT];
+        $hostedPaymentData->blockCardTypes = $blockCardTypes;
+
+        $json = $service->charge(10.01)
+            ->withCurrency("EUR")
+            ->withHostedPaymentData($hostedPaymentData)
+            ->serialize();
+        $response = json_decode($json, true);
+        $this->assertEquals(implode('|', $blockCardTypes), $response['BLOCK_CARD_TYPE']);
+
+        $client = new GpEcomHppClient("secret");
+        $response = $client->sendRequest($json, $config->hostedPaymentConfig->version);
+        $parsedResponse = $service->parseResponse($response);
+
+        $this->assertEquals("00", $parsedResponse->responseCode);
+    }
+
+    public function testCardBlockingPayment_AllCardTypes()
+    {
+        $config = new GpEcomConfig();
+        $config->merchantId = "heartlandgpsandbox";
+        $config->accountId = "hpp";
+        $config->sharedSecret = "secret";
+        $config->serviceUrl = "https://pay.sandbox.realexpayments.com/pay";
+
+        $config->hostedPaymentConfig = new HostedPaymentConfig();
+        $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
+
+        $service = new HostedService($config);
+
+        $hostedPaymentData = new HostedPaymentData();
+        $hostedPaymentData->customerCountry = 'DE';
+        $hostedPaymentData->customerFirstName = 'James';
+        $hostedPaymentData->customerLastName = 'Mason';
+        $hostedPaymentData->merchantResponseUrl = 'https://www.example.com/returnUrl';
+        $hostedPaymentData->transactionStatusUrl = 'https://www.example.com/statusUrl';
+        $blockCardTypes = [BlockCardType::CONSUMER_CREDIT, BlockCardType::CONSUMER_DEBIT, BlockCardType::COMMERCIAL_CREDIT, BlockCardType::COMMERCIAL_DEBIT];
+        $hostedPaymentData->blockCardTypes = $blockCardTypes;
+
+        $json = $service->charge(10.01)
+            ->withCurrency("EUR")
+            ->withHostedPaymentData($hostedPaymentData)
+            ->serialize();
+        $response = json_decode($json, true);
+        $this->assertEquals(implode('|', $blockCardTypes), $response['BLOCK_CARD_TYPE']);
+
+        $client = new GpEcomHppClient("secret");
+
+        $exceptionCaught = false;
+        try {
+            $client->sendRequest($json, $config->hostedPaymentConfig->version);
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Unexpected Gateway Response: 561 - All card types are blocked, invalid request', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
     }
 
     /**

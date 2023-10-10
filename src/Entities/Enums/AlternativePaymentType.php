@@ -143,4 +143,5 @@ class AlternativePaymentType extends Enum
     const TEST_PAY = 'testpay';
     const PAYPAL = 'paypal';
     const PAYBYBANKAPP = 'paybybankapp';
+    const ALIPAY = 'alipay';
 }

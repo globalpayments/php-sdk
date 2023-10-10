@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
+use GlobalPayments\Api\Entities\BlockedCardType;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\Services\CreditService;
@@ -312,5 +313,20 @@ class CreditTest extends TestCase
 
         $this->assertNotNull($capture);
         $this->assertEquals('00', $capture->responseCode, $capture->responseMessage);
+    }
+
+    public function testCardBlockingPaymentRequest()
+    {
+        $cardTypesBlocked = new BlockedCardType();
+        $cardTypesBlocked->commercialdebit = true;
+        $cardTypesBlocked->consumerdebit = true;
+
+        $authorization = $this->card->authorize(14)
+            ->withCurrency('USD')
+            ->withBlockedCardType($cardTypesBlocked)
+            ->execute();
+
+        $this->assertNotNull($authorization);
+        $this->assertEquals('00', $authorization->responseCode);
     }
 }
