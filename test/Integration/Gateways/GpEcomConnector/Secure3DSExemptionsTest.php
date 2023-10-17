@@ -1,23 +1,25 @@
 <?php
 
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
+
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\BrowserData;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\ChallengeRequestIndicator;
 use GlobalPayments\Api\Entities\Enums\ChallengeWindowSize;
 use GlobalPayments\Api\Entities\Enums\ColorDepth;
+use GlobalPayments\Api\Entities\Enums\ExemptionReason;
+use GlobalPayments\Api\Entities\Enums\ExemptStatus;
 use GlobalPayments\Api\Entities\Enums\MerchantInitiatedRequestType;
 use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
-use GlobalPayments\Api\Entities\Enums\ExemptStatus;
-use GlobalPayments\Api\Entities\Enums\ExemptionReason;
-use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 
 class Secure3DSExemptionsTest extends TestCase
 {
@@ -26,7 +28,7 @@ class Secure3DSExemptionsTest extends TestCase
     private Address $billingAddress;
     private BrowserData $browserData;
 
-    public function setup() : void
+    public function setup(): void
     {
         $config = $this->getConfig();
         ServicesContainer::configureService($config);
@@ -261,7 +263,7 @@ class Secure3DSExemptionsTest extends TestCase
                 ->withEnableExemptionOptimization(true)
                 ->execute();
         } catch (GatewayException $exception) {
-            $this->assertStringContainsString('Status Code: 202 - Blocked by Transaction Risk Analysis' , $exception->getMessage());
+            $this->assertStringContainsString('Status Code: 202 - Blocked by Transaction Risk Analysis', $exception->getMessage());
         }
     }
 }

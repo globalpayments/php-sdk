@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Tests\Integration\Gateways\PorticoConnector\Certifi
 
 use GlobalPayments\Api\Entities\{
     Address,
+    Customer,
     EncryptionData,
     EcommerceInfo,
     Transaction,
@@ -34,7 +35,7 @@ use GlobalPayments\Api\PaymentMethods\{
 use GlobalPayments\Api\ServicesContainer;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
-use GlobalPayments\Api\Services\BatchService;
+use GlobalPayments\Api\Services\{BatchService, ReportingService};
 
 class TestCards
 {
@@ -305,8 +306,6 @@ class TestCards
     }
 }
 
-
-
 class EcommerceTest extends TestCase
 {
     const NO_TRANS_IN_BATCH = 'Batch close was rejected because no transactions are associated with the currently open batch.';
@@ -371,6 +370,8 @@ class EcommerceTest extends TestCase
             }
         }
     }
+
+   
 
     /// CARD VERIFY
 
@@ -2117,6 +2118,33 @@ class EcommerceTest extends TestCase
 
         $this->assertEquals(true, $response != null);
         $this->assertEquals('00', $response->responseCode);
+    }
+
+    public function testCardHolderEmail()
+    {
+        $customerEmail = "john.Doe@test.com";
+        $customerData =  new Customer();
+        $customerData->email = $customerEmail;
+                
+        $address = new Address();
+        $address->streetAddress1 = '6860 Dallas Pkwy';
+        $address->postalCode = '75024';
+      
+        $card = TestCards::visaManual();
+
+        $response = $card->charge()
+            ->withCurrency('USD')
+            ->withCustomerData($customerData)
+            ->withAddress($address)
+            ->withAmount(15.01)
+            ->execute();
+
+        $this->assertEquals(true, $response != null);
+        $this->assertEquals('00', $response->responseCode);
+
+        $transactionSummary = ReportingService::transactionDetail($response->transactionId)->execute(); 
+        $this->assertNotNull($transactionSummary);
+        $this->assertEquals($customerEmail, $transactionSummary->email);
     }
 
     /**

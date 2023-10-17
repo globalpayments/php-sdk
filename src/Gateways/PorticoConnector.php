@@ -252,13 +252,14 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $isCheck
             || $builder->billingAddress !== null
             || isset($builder->paymentMethod->{$propertyName})
+            || $builder->customerData->email !== null
         ) {
             if ($builder->transactionType !== TransactionType::REVERSAL) {
-                $address = $this->hydrateHolder($xml, $builder, $isCheck);
+                $holder = $this->hydrateHolder($xml, $builder, $isCheck);
             }
-            if (!empty($address)) {
-                $block1->appendChild($address);
-            }
+            if (!empty($holder)) {
+                $block1->appendChild($holder);
+            }          
         }
         list($hasToken, $tokenValue) = $this->hasToken($builder->paymentMethod);
 
@@ -1514,6 +1515,12 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             if (isset($item->CardHolderData->CardHolderZip)) {
                 $summary->cardHolderZip = (string)$item->CardHolderData->CardHolderZip;
             }
+            if (isset($item->CardHolderData->EmailAddress)) {
+                $summary->email = (string)$item->CardHolderData->EmailAddress;
+            }
+            if (isset($item->CardHolderData->CardHolderEmail)) {
+                $summary->email = (string)$item->CardHolderData->CardHolderEmail;
+            }
         } else {
             if (isset($item->CardHolderFirstName)) {
                 $summary->cardHolderFirstName = (string)$item->CardHolderFirstName;
@@ -1532,6 +1539,12 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             }
             if (isset($item->CardHolderZip)) {
                 $summary->cardHolderZip = (string)$item->CardHolderZip;
+            }
+            if (isset($item->EmailAddress)) {
+                $summary->email = (string)$item->EmailAddress;
+            }
+            if (isset($item->CardHolderEmail)) {
+                $summary->email = (string)$item->CardHolderEmail;
             }
         }
 
@@ -2073,6 +2086,11 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $holder->appendChild(
                 $xml->createElement($isCheck ? 'Zip' : 'CardHolderZip', $address->checkZipCode($builder->billingAddress->postalCode))
             );
+        }
+
+        if ($builder->customerData->email !== null) {
+            $holder->appendChild(
+                $xml->createElement($isCheck ? 'EmailAddress' : 'CardHolderEmail',$builder->customerData->email));
         }
 
         $propertyName = $isCheck ? 'checkHolderName' : 'cardHolderName';

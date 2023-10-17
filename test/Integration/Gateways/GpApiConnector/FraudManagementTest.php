@@ -181,7 +181,7 @@ class FraudManagementTest extends TestCase
         }
     }
 
-    public function testFraudManagementDataSubmissionFullCycleX()
+    public function testFraudManagementDataSubmissionFullCycle()
     {
         $trn = $this->card->authorize(15.10)
             ->withCurrency($this->currency)

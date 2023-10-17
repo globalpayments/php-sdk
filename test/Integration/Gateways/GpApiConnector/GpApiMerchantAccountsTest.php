@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector;
+namespace Gateways\GpApiConnector;
 
 use DateTime;
 use GlobalPayments\Api\Entities\Address;

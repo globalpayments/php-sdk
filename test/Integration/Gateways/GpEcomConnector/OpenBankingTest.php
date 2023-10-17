@@ -1,5 +1,7 @@
 <?php
 
+namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
+
 use GlobalPayments\Api\Entities\Enums\{BankPaymentStatus, BankPaymentType, RemittanceReferenceType, ShaHashType};
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;

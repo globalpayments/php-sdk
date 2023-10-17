@@ -94,7 +94,6 @@ class AuthorizationBuilder extends TransactionBuilder
 
     /**
      * Balance inquiry type
-     *
      * @internal
      * @var InquiryType
      */

@@ -1,6 +1,6 @@
 <?php
 
-namespace GlobalPayments\Api\Tests\Integration\Gateways\GpApiConnector;
+namespace Gateways\GpApiConnector;
 
 use DateTime;
 use GlobalPayments\Api\Entities\Address;
@@ -199,10 +199,10 @@ class GpApiMerchantsOnboardTest extends TestCase
         $this->assertInstanceOf(User::class, $merchant);
         $this->assertNotNull($merchant->paymentMethodList);
         $paymentMethodList = $merchant->paymentMethodList->getIterator();
-        if($paymentMethodList->valid()) {
+        if ($paymentMethodList->valid()) {
             $paymentMethodList->seek(1);
             $this->assertInstanceOf(IPaymentMethod::class,
-                $paymentMethodList->current()['payment_method'] );
+                $paymentMethodList->current()['payment_method']);
         }
     }
 

@@ -4,7 +4,11 @@
 
 # Changelog
 
-## Latest Version - v10.1.1 (10/10/2023)
+## Latest Version - v10.1.2 (10/17/2023)
+### Enhancements:
+- [Portico] Added cardholder email support. 
+
+## v10.1.1 (10/10/2023)
 #### Enhancements:
 - [GP-API] Add a new alternative payment method, ALIPAY
 - [GP-ECOM] Limit what card types to accept for payment or storage (HPP & API)

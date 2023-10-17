@@ -2,6 +2,7 @@
 
 namespace Gateways\GpApiConnector;
 
+use DateTime;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Customer;
@@ -16,12 +17,12 @@ use GlobalPayments\Api\Entities\Enums\StoredCredentialType;
 use GlobalPayments\Api\Entities\Enums\StoredPaymentMethodSortProperty;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -146,13 +147,9 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertEquals('SUCCESS', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
 
-        try {
-            $capture = $transaction->capture(30)
-                ->withGratuity(12)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail("Transaction capture failed");
-        }
+        $capture = $transaction->capture(30)
+            ->withGratuity(12)
+            ->execute();
 
         $this->assertNotNull($capture);
         $this->assertEquals('SUCCESS', $capture->responseCode);
@@ -177,13 +174,9 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertNotNull($transaction->fingerprint);
         $this->assertNotNull($transaction->fingerprintIndicator);
 
-        try {
-            $capture = $transaction->capture(30)
-                ->withGratuity(12)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail("Transaction capture failed");
-        }
+        $capture = $transaction->capture(30)
+            ->withGratuity(12)
+            ->execute();
 
         $this->assertNotNull($capture);
         $this->assertEquals('SUCCESS', $capture->responseCode);
@@ -215,15 +208,11 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testCreditRefund()
     {
-        try {
-            // process an auto-capture authorization
-            $response = $this->card->refund(16)
-                ->withCurrency($this->currency)
-                ->withAllowDuplicates(true)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Credit Card Refund failed ' . $e->getMessage());
-        }
+        // process an auto-capture authorization
+        $response = $this->card->refund(16)
+            ->withCurrency($this->currency)
+            ->withAllowDuplicates(true)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
@@ -235,16 +224,12 @@ class CreditCardNotPresentTest extends TestCase
         $customer = new Customer();
         $customer->deviceFingerPrint = "ALWAYS";
 
-        try {
-            // process an auto-capture authorization
-            $response = $this->card->refund(16)
-                ->withCurrency($this->currency)
-                ->withAllowDuplicates(true)
-                ->withCustomerData($customer)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Credit Card Refund failed ' . $e->getMessage());
-        }
+        // process an auto-capture authorization
+        $response = $this->card->refund(16)
+            ->withCurrency($this->currency)
+            ->withAllowDuplicates(true)
+            ->withCustomerData($customer)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
@@ -255,27 +240,19 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testCreditDefaultRefund()
     {
-        try {
-            $transaction = $this->card->charge(50)
-                ->withCurrency($this->currency)
-                ->withAllowDuplicates(true)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail("Card not present with ECOM transaction failed");
-        }
+        $transaction = $this->card->charge(50)
+            ->withCurrency($this->currency)
+            ->withAllowDuplicates(true)
+            ->execute();
 
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
-        try {
-            $response = $transaction->refund()
-                ->withCurrency($this->currency)
-                ->withAllowDuplicates(true)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Credit Card Refund failed ' . $e->getMessage());
-        }
+        $response = $transaction->refund()
+            ->withCurrency($this->currency)
+            ->withAllowDuplicates(true)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
@@ -285,15 +262,11 @@ class CreditCardNotPresentTest extends TestCase
     public function testCreditRefund_WithIdempotencyKey()
     {
         $idempotencyKey = GenerationUtils::getGuid();
-        try {
-            $transaction = $this->card->charge(50)
-                ->withCurrency($this->currency)
-                ->withIdempotencyKey($idempotencyKey)
-                ->withAllowDuplicates(true)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail("Card not present with ECOM transaction failed");
-        }
+        $transaction = $this->card->charge(50)
+            ->withCurrency($this->currency)
+            ->withIdempotencyKey($idempotencyKey)
+            ->withAllowDuplicates(true)
+            ->execute();
 
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
@@ -324,10 +297,10 @@ class CreditCardNotPresentTest extends TestCase
                 ->withCurrency($this->currency)
                 ->withAllowDuplicates(true)
                 ->execute();
-        } catch (ApiException $e) {
+        } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('40212', $e->responseCode);
             $this->assertEquals('Status Code: ACTION_NOT_AUTHORIZED - Permission not enabled to execute action', $e->getMessage());
+            $this->assertEquals('40212', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -335,14 +308,10 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testTransactionThenRefund()
     {
-        try {
-            $transaction = $this->card->charge(50)
-                ->withCurrency($this->currency)
-                ->withAllowDuplicates(true)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail("Card not present with ECOM transaction failed");
-        }
+        $transaction = $this->card->charge(50)
+            ->withCurrency($this->currency)
+            ->withAllowDuplicates(true)
+            ->execute();
 
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
@@ -370,24 +339,17 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testTransactionThenReversal()
     {
-        try {
-            $transaction = $this->card->charge(20)
-                ->withCurrency("EUR")
-                ->withAllowDuplicates(true)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail("Card not present with ECOM transaction failed");
-        }
+        $transaction = $this->card->charge(20)
+            ->withCurrency("EUR")
+            ->withAllowDuplicates(true)
+            ->execute();
 
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
-        try {
-            $reverse = $transaction->reverse(20)->execute();
-        } catch (ApiException $e) {
-            $this->fail("Card not present managed reversal failed");
-        }
+        $reverse = $transaction->reverse(20)
+            ->execute();
 
         $this->assertNotNull($reverse);
         $this->assertEquals('SUCCESS', $reverse->responseCode);
@@ -396,24 +358,17 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testTransactionThenDefaultReversal()
     {
-        try {
-            $transaction = $this->card->charge(20)
-                ->withCurrency("EUR")
-                ->withAllowDuplicates(true)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail("Card not present with ECOM transaction failed");
-        }
+        $transaction = $this->card->charge(20)
+            ->withCurrency("EUR")
+            ->withAllowDuplicates(true)
+            ->execute();
 
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
-        try {
-            $defaultReversal = $transaction->reverse()->execute();
-        } catch (ApiException $e) {
-            $this->fail("Card not present managed reversal failed");
-        }
+        $defaultReversal = $transaction->reverse()
+            ->execute();
 
         $this->assertNotNull($defaultReversal);
         $this->assertEquals('SUCCESS', $defaultReversal->responseCode);
@@ -444,14 +399,10 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testTransactionThenPartialReversal()
     {
-        try {
-            $transaction = $this->card->charge(16)
-                ->withCurrency("EUR")
-                ->withAllowDuplicates(true)
-                ->execute();
-        } catch (GatewayException $e) {
-            $this->fail("Card not present with ECOM transaction failed");
-        }
+        $transaction = $this->card->charge(16)
+            ->withCurrency("EUR")
+            ->withAllowDuplicates(true)
+            ->execute();
 
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
@@ -467,15 +418,11 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testCreditAuthorizationForMultiCapture()
     {
-        try {
-            $transaction = $this->card->authorize(42)
-                ->withCurrency('EUR')
-                ->withMultiCapture(true)
-                ->withAllowDuplicates(true)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail("Card Authorization Failed");
-        }
+        $transaction = $this->card->authorize(42)
+            ->withCurrency('EUR')
+            ->withMultiCapture(true)
+            ->withAllowDuplicates(true)
+            ->execute();
 
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
@@ -534,12 +481,9 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testCardTokenization()
     {
-        try {
-            // process an auto-capture authorization
-            $response = $this->card->tokenize()->execute();
-        } catch (ApiException $e) {
-            $this->fail('Credit Card Tokenization failed ' . $e->getMessage());
-        }
+        // process an auto-capture authorization
+        $response = $this->card->tokenize()
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
@@ -548,9 +492,13 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testCardTokenizationThenPayingWithToken_SingleToMultiUse()
     {
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $config->permissions = ['PMT_POST_Create_Single'];
+        ServicesContainer::configureService($config, "singleUseToken");
+
         // process an auto-capture authorization
         $response = $this->card->tokenize(true, PaymentMethodUsageMode::SINGLE)
-            ->execute();
+            ->execute("singleUseToken");
         $tokenId = $response->token;
 
         $tokenizedCard = new CreditCardData();
@@ -580,11 +528,16 @@ class CreditCardNotPresentTest extends TestCase
     {
         $card = new CreditCardData();
 
+        $exceptionCaught = false;
         try {
-            $card->tokenize()->execute();
-        } catch (ApiException $e) {
-            $this->assertEquals('40005', $e->responseCode);
+            $card->tokenize()
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
             $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields : number', $e->getMessage());
+            $this->assertEquals('40005', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
         }
     }
 
@@ -630,24 +583,20 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testVerifyTokenizedPaymentMethod()
     {
-        try {
-            // process an auto-capture authorization
-            $response = $this->card->tokenize()
-                ->execute();
+        // process an auto-capture authorization
+        $tokenizeResponse = $this->card->tokenize()
+            ->execute();
 
-        } catch (ApiException $e) {
-            $this->fail('Credit Card Tokenization failed ' . $e->getMessage());
-        }
+        $this->assertNotNull($tokenizeResponse);
+        $this->assertEquals('SUCCESS', $tokenizeResponse->responseCode);
+        $this->assertEquals('ACTIVE', $tokenizeResponse->responseMessage);
 
         $tokenizedCard = new CreditCardData();
-        $tokenizedCard->token = $response->token;
-        try {
-            $response = $tokenizedCard->verify()
-                ->withCurrency($this->currency)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Credit Card token retrieval failed ' . $e->getMessage());
-        }
+        $tokenizedCard->token = $tokenizeResponse->token;
+
+        $response = $tokenizedCard->verify()
+            ->withCurrency($this->currency)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
@@ -656,25 +605,21 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testVerifyTokenizedPaymentMethodWithIdempotencyKey()
     {
-        try {
-            // process an auto-capture authorization
-            $response = $this->card->tokenize()
-                ->execute();
+        // process an auto-capture authorization
+        $tokenizeResponse = $this->card->tokenize()
+            ->execute();
 
-        } catch (ApiException $e) {
-            $this->fail('Credit Card Tokenization failed ' . $e->getMessage());
-        }
+        $this->assertNotNull($tokenizeResponse);
+        $this->assertEquals('SUCCESS', $tokenizeResponse->responseCode);
+        $this->assertEquals('ACTIVE', $tokenizeResponse->responseMessage);
+
         $tokenizedCard = new CreditCardData();
-        $tokenizedCard->token = $response->token;
+        $tokenizedCard->token = $tokenizeResponse->token;
 
-        try {
-            $response = $tokenizedCard->verify()
-                ->withCurrency($this->currency)
-                ->withIdempotencyKey($this->idempotencyKey)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail('Credit Card token retrieval failed ' . $e->getMessage());
-        }
+        $response = $tokenizedCard->verify()
+            ->withCurrency($this->currency)
+            ->withIdempotencyKey($this->idempotencyKey)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
@@ -695,7 +640,7 @@ class CreditCardNotPresentTest extends TestCase
 
         try {
             $tokenizedCard->verify()->withCurrency($this->currency)->execute();
-        } catch (ApiException $e) {
+        } catch (GatewayException $e) {
             $this->assertEquals('40116', $e->responseCode);
             $this->assertEquals('Status Code: RESOURCE_NOT_FOUND - payment_method ' . $tokenizedCard->token . ' not found at this location.', $e->getMessage());
         }
@@ -713,10 +658,10 @@ class CreditCardNotPresentTest extends TestCase
         $tokenizedCard->token = $tokenId;
 
         $response = $tokenizedCard->deleteToken();
-        $this->assertEquals(true, $response);
+        $this->assertTrue($response);
 
         $response = $tokenizedCard->deleteToken();
-        $this->assertEquals(false, $response);
+        $this->assertFalse($response);
     }
 
     public function testCardTokenizationThenDeletion_WithIdempotencyKey()
@@ -756,7 +701,7 @@ class CreditCardNotPresentTest extends TestCase
 
         try {
             $tokenizedCard->deleteToken();
-        } catch (ApiException $e) {
+        } catch (GatewayException $e) {
             $this->assertEquals('40116', $e->responseCode);
             $this->assertStringContainsString(sprintf('Status Code: RESOURCE_NOT_FOUND - payment_method %s not found at this location', $tokenizedCard->token), $e->getMessage());
         }
@@ -764,12 +709,9 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testCardTokenizationThenUpdate()
     {
-        try {
-            // process an auto-capture authorization
-            $response = $this->card->tokenize()->execute();
-        } catch (ApiException $e) {
-            $this->fail('Credit Card Tokenization failed ' . $e->getMessage());
-        }
+        // process an auto-capture authorization
+        $response = $this->card->tokenize()
+            ->execute();
         $this->assertNotNull($response);
 
         $tokenizedCard = new CreditCardData();
@@ -777,13 +719,9 @@ class CreditCardNotPresentTest extends TestCase
         $tokenizedCard->expYear = date('Y', strtotime('+1 year'));
         $tokenizedCard->expMonth = date('m');
 
-        try {
-            $response = $tokenizedCard->updateTokenExpiry();
-        } catch (ApiException $e) {
-            $this->fail('Credit Card token update failed ' . $e->getMessage());
-        }
+        $response = $tokenizedCard->updateTokenExpiry();
 
-        $this->assertEquals(true, $response);
+        $this->assertTrue($response);
     }
 
     public function testCardUpdate_WrongId()
@@ -795,7 +733,7 @@ class CreditCardNotPresentTest extends TestCase
 
         try {
             $tokenizedCard->updateTokenExpiry();
-        } catch (ApiException $e) {
+        } catch (GatewayException $e) {
             $this->assertEquals('40116', $e->responseCode);
             $this->assertStringContainsString(sprintf('Status Code: RESOURCE_NOT_FOUND - payment_method %s not found at this location', $tokenizedCard->token), $e->getMessage());
         }
@@ -803,12 +741,8 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testCardTokenizationThenUpdateWithIdempotencyKey()
     {
-        try {
-            // process an auto-capture authorization
-            $response = $this->card->tokenize()->execute();
-        } catch (ApiException $e) {
-            $this->fail('Credit Card Tokenization failed ' . $e->getMessage());
-        }
+        // process an auto-capture authorization
+        $response = $this->card->tokenize()->execute();
         $this->assertNotNull($response);
 
         $tokenizedCard = new CreditCardData();
@@ -829,7 +763,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->withPaymentMethod($tokenizedCard)
                 ->withIdempotencyKey($this->idempotencyKey)
                 ->execute();
-        } catch (ApiException $e) {
+        } catch (GatewayException $e) {
             $this->assertEquals('40039', $e->responseCode);
             $this->assertStringContainsString('Idempotency Key seen before', $e->getMessage());
         }
@@ -1051,14 +985,10 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testCaptureHigherAmount()
     {
-        try {
-            $transaction = $this->card->authorize(55)
-                ->withCurrency($this->currency)
-                ->withAllowDuplicates(true)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail("Card Authorization Failed");
-        }
+        $transaction = $this->card->authorize(55)
+            ->withCurrency($this->currency)
+            ->withAllowDuplicates(true)
+            ->execute();
 
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
@@ -1091,13 +1021,9 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testCaptureLowerAmount()
     {
-        try {
-            $transaction = $this->card->authorize('55')
-                ->withCurrency($this->currency)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail("Card Authorization Failed");
-        }
+        $transaction = $this->card->authorize('55')
+            ->withCurrency($this->currency)
+            ->execute();
 
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
@@ -1113,14 +1039,10 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testChargeThenRefundHigherAmount()
     {
-        try {
-            $transaction = $this->card->charge(50)
-                ->withCurrency($this->currency)
-                ->withAllowDuplicates(true)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail("Card not present with ECOM transaction failed");
-        }
+        $transaction = $this->card->charge(50)
+            ->withCurrency($this->currency)
+            ->withAllowDuplicates(true)
+            ->execute();
 
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
@@ -1166,8 +1088,8 @@ class CreditCardNotPresentTest extends TestCase
 
         if (!empty($response)) {
             $this->assertNotNull($response);
-            $this->assertEquals('SUCCESS', $capture->responseCode);
-            $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
+            $this->assertEquals('SUCCESS', $response->responseCode);
+            $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         }
     }
 
@@ -1196,7 +1118,7 @@ class CreditCardNotPresentTest extends TestCase
             $this->card->charge(1)
                 ->withCurrency($this->currency)
                 ->execute();
-        } catch (ApiException $e) {
+        } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40085', $e->responseCode);
             $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Expiry date invalid', $e->getMessage());
@@ -1303,8 +1225,8 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testUpdatePaymentToken()
     {
-        $startDate = (new \DateTime())->modify('-30 days')->setTime(0, 0, 0);
-        $endDate = (new \DateTime())->modify('-1 days')->setTime(0, 0, 0);
+        $startDate = (new DateTime())->modify('-30 days')->setTime(0, 0, 0);
+        $endDate = (new DateTime())->modify('-1 days')->setTime(0, 0, 0);
 
         $response = ReportingService::findStoredPaymentMethodsPaged(1, 1)
             ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::DESC)
@@ -1335,9 +1257,13 @@ class CreditCardNotPresentTest extends TestCase
 
     public function testCardTokenizationThenUpdateAndThenCharge()
     {
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $config->permissions = ['PMT_POST_Create_Single'];
+        ServicesContainer::configureService($config, "singleUseToken");
+
         $response = $this->card->tokenize()
             ->withPaymentMethodUsageMode(PaymentMethodUsageMode::SINGLE)
-            ->execute();
+            ->execute("singleUseToken");
         $tokenId = $response->token;
 
         $tokenizedCard = new CreditCardData();
@@ -1370,7 +1296,7 @@ class CreditCardNotPresentTest extends TestCase
             $tokenizedCard->updateToken()
                 ->withPaymentMethodUsageMode(PaymentMethodUsageMode::SINGLE)
                 ->execute();
-        } catch (ApiException $e) {
+        } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('50020', $e->responseCode);
             $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Tokentype can only be MULTI', $e->getMessage());
@@ -1388,7 +1314,7 @@ class CreditCardNotPresentTest extends TestCase
         try {
             $tokenizedCard->updateToken()
                 ->execute();
-        } catch (ApiException $e) {
+        } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('50021', $e->responseCode);
             $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Mandatory Fields missing [card expdate] See Developers Guide', $e->getMessage());
@@ -1401,7 +1327,7 @@ class CreditCardNotPresentTest extends TestCase
      * AVS test cards
      *
      */
-    public function AvsCardTests()
+    public function AvsCardTests(): array
     {
         return [
             [GpApiAvsCheckTestCards::AVS_MASTERCARD_1, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED, "M", "U", "U"],
@@ -1435,7 +1361,7 @@ class CreditCardNotPresentTest extends TestCase
         ];
     }
 
-    public function setUpConfig()
+    public function setUpConfig(): GpApiConfig
     {
         $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
         //DO NO DELETE - usage example for some settings

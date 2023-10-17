@@ -201,6 +201,11 @@ class TransactionSummary extends BaseSummary
     /**
      * @var string
      */
+    public $email;
+
+    /**
+     * @var string
+     */
     public $fraudRuleInfo;
 
     /**

@@ -24,7 +24,7 @@ class ApmTest extends TestCase
         $config->refundPassword = 'refund';
         $config->sharedSecret = "secret";
         $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
-//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
+        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
 
         return $config;
     }
@@ -114,7 +114,7 @@ class ApmTest extends TestCase
                 ->execute();
     }
 
-    public function testApmWithoutstatusUpdateUrl()
+    public function testApmWithoutStatusUpdateUrl()
     {
         $this->expectException(\GlobalPayments\Api\Entities\Exceptions\BuilderException::class);
         $this->expectExceptionMessage("statusUpdateUrl cannot be null for this transaction type");
@@ -129,6 +129,40 @@ class ApmTest extends TestCase
                 ->withCurrency("EUR")
                 ->withDescription('New APM')
                 ->execute();
+    }
+
+    public function testApmWithoutCountry()
+    {
+        $this->expectException(\GlobalPayments\Api\Entities\Exceptions\BuilderException::class);
+        $this->expectExceptionMessage("country cannot be null for this transaction type");
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::SOFORTUBERWEISUNG);
+
+        $paymentMethod->returnUrl = 'https://www.example.com/returnUrl';
+        $paymentMethod->statusUpdateUrl = 'https://www.example.com/returnUrl';
+        $paymentMethod->descriptor = 'Test Transaction';
+        $paymentMethod->accountHolderName = 'James Mason';
+
+        $response = $paymentMethod->charge(1001)
+            ->withCurrency("EUR")
+            ->withDescription('New APM')
+            ->execute();
+    }
+
+    public function testApmWithoutAccountHolderName()
+    {
+        $this->expectException(\GlobalPayments\Api\Entities\Exceptions\BuilderException::class);
+        $this->expectExceptionMessage("accountHolderName cannot be null for this transaction type");
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::SOFORTUBERWEISUNG);
+
+        $paymentMethod->returnUrl = 'https://www.example.com/returnUrl';
+        $paymentMethod->statusUpdateUrl = 'https://www.example.com/returnUrl';
+        $paymentMethod->descriptor = 'Test Transaction';
+        $paymentMethod->country = 'DE';
+
+        $response = $paymentMethod->charge(1001)
+            ->withCurrency("EUR")
+            ->withDescription('New APM')
+            ->execute();
     }
 
     public function testAPMRefundPendingTransaction()
