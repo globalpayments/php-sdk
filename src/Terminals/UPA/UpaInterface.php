@@ -11,6 +11,7 @@ use GlobalPayments\Api\Entities\Exceptions\{
 use GlobalPayments\Api\Terminals\{
     DeviceInterface, TerminalUtils, DeviceResponse
 };
+use GlobalPayments\Api\Terminals\Abstractions\IBatchCloseResponse;
 use GlobalPayments\Api\Terminals\Builders\{
     TerminalAuthBuilder, TerminalManageBuilder
 };
@@ -24,20 +25,17 @@ use GlobalPayments\Api\Terminals\UPA\Responses\{
  */
 class UpaInterface extends DeviceInterface
 {
-    /*
-     * UpaController object
-     */
-
-    public $upaController;
+    public UpaController $upaController;
 
     public function __construct(UpaController $deviceController)
     {
         $this->upaController = $deviceController;
+        parent::__construct($deviceController);
     }
 
     #region Admin Messages
 
-    public function batchClose()
+    public function batchClose() : IBatchCloseResponse
     {
         $message = TerminalUtils::buildUPAMessage(
             UpaMessageId::EOD,
@@ -45,6 +43,7 @@ class UpaInterface extends DeviceInterface
         );
                 
         $rawResponse = $this->upaController->send($message, UpaMessageId::EOD);
+
         return new TransactionResponse($rawResponse, UpaMessageId::EOD);
     }
 

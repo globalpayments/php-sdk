@@ -9,6 +9,7 @@ use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
 use GlobalPayments\Api\ServiceConfigs\ServicesConfig;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
 
 class ServicesContainer
 {
@@ -103,7 +104,7 @@ class ServicesContainer
         }
     }
 
-    public function getDeviceInterface($configName)
+    public function getDeviceInterface($configName) : IDeviceInterface
     {
         if (array_key_exists($configName, static::$configurations)) {
             return static::$configurations[$configName]->deviceInterface;

@@ -3,9 +3,11 @@
 namespace GlobalPayments\Api\Terminals\UPA;
 
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Exceptions\NotImplementedException;
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceCommInterface;
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceMessage;
+use GlobalPayments\Api\Terminals\Abstractions\ITerminalReport;
 use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
@@ -34,10 +36,8 @@ use GlobalPayments\Api\Terminals\TerminalResponse;
 
 class UpaController extends DeviceController
 {
-    /** @var UpaInterface  */
-    public $device;
-
-    public $deviceConfig;
+    public UpaInterface $device;
+    public ConnectionConfig $deviceConfig;
 
     /*
      * Create interface based on connection mode TCP / HTTP
@@ -45,31 +45,16 @@ class UpaController extends DeviceController
     public function __construct(ConnectionConfig $config)
     {
         parent::__construct($config);
-        $this->device = new UpaInterface($this);
         $this->requestIdProvider = $config->requestIdProvider;
-        $this->deviceConfig = $config;
-
-        switch ($config->connectionMode) {
-            case ConnectionModes::TCP_IP:
-            case ConnectionModes::SSL_TCP:
-                $this->deviceInterface = new UpaTcpInterface($config);
-                break;
-            case ConnectionModes::MIC:
-                $this->deviceInterface = new UpaMicInterface($config);
-                break;
-            default:
-                throw new ConfigurationException('Unsupported connection mode.');
-        }
-
     }
 
     public function configureInterface() : IDeviceInterface
     {
-        if (empty($this->device)) {
-            $this->device = new UpaInterface($this);
+        if (empty($this->deviceInterface)) {
+            $this->deviceInterface = new UpaInterface($this);
         }
 
-        return $this->device;
+        return $this->deviceInterface;
     }
 
     public function manageTransaction(TerminalManageBuilder $builder) : TerminalResponse
@@ -179,20 +164,21 @@ class UpaController extends DeviceController
                 );
         }
     }
+
     private function doTransaction(IDeviceMessage $request)
     {
         $request->awaitResponse = true;
         $response = $this->connector->send($request);
         if (empty($response)) {
-            return null;
+            throw new GatewayException('No gateway response!');
         }
 
         return new TransactionResponse($response);
     }
 
-    public function processReport(TerminalReportBuilder $builder) : TerminalResponse
+    public function processReport(TerminalReportBuilder $builder) : ITerminalReport
     {
-        return false;
+        throw new NotImplementedException();
     }
 
     public function configureConnector(): IDeviceCommInterface

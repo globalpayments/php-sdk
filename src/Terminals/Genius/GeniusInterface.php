@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Terminals\Genius;
 
 use Exception;
+use GlobalPayments\Api\Terminals\Abstractions\IBatchCloseResponse;
 use GlobalPayments\Api\Entities\Enums\{PaymentMethodType, ReportType, TransactionType};
 use GlobalPayments\Api\Entities\Exceptions\{ApiException, NotImplementedException};
 use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
@@ -95,7 +96,7 @@ class GeniusInterface extends DeviceInterface
         return new NotImplementedException();
     }
 
-    public function batchClose()
+    public function batchClose() : IBatchCloseResponse
     {
         return new NotImplementedException();
     }

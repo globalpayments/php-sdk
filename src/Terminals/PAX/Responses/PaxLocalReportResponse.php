@@ -2,10 +2,10 @@
 
 namespace GlobalPayments\Api\Terminals\PAX\Responses;
 
-use GlobalPayments\Api\Terminals\PAX\Responses\PaxTerminalResponse;
+use GlobalPayments\Api\Terminals\Abstractions\ITerminalReport;
 use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxMessageId;
 
-class PaxLocalReportResponse extends PaxTerminalResponse
+class PaxLocalReportResponse extends PaxTerminalResponse implements ITerminalReport
 {
 
     public $totalReportRecords;

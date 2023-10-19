@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Terminals;
 
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceCommInterface;
 use GlobalPayments\Api\Terminals\Abstractions\ITerminalConfiguration;
+use GlobalPayments\Api\Terminals\Abstractions\ITerminalReport;
 use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
@@ -12,17 +13,10 @@ use GlobalPayments\Api\Terminals\Abstractions\IRequestIdProvider;
 
 abstract class DeviceController
 {
-    /** @var IDeviceInterface */
-    public $deviceInterface;
-
-    /** @var IRequestIdProvider */
-    public $requestIdProvider;
-
-    /** @var IDeviceCommInterface */
-    public $connector;
-
-    /** @var ITerminalConfiguration */
-    public $settings;
+    public IDeviceInterface $deviceInterface;
+    public IRequestIdProvider $requestIdProvider;
+    public IDeviceCommInterface $connector;
+    public ITerminalConfiguration $settings;
 
     public function __construct(ITerminalConfiguration $settings)
     {
@@ -42,7 +36,7 @@ abstract class DeviceController
 
     abstract public function manageTransaction(TerminalManageBuilder $builder) : TerminalResponse;
 
-    abstract public function processReport(TerminalReportBuilder $builder) : TerminalResponse;
+    abstract public function processReport(TerminalReportBuilder $builder) : ITerminalReport;
 
     abstract public function configureInterface() : IDeviceInterface;
 

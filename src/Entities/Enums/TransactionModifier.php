@@ -25,4 +25,5 @@ class TransactionModifier extends Enum
     const BANK_PAYMENT = 15;
     const MERCHANT = 16;
     const BAY_NOW_PAY_LATER = 17;
+    const DELETE_PRE_AUTH = 18;
 }

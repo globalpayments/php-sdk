@@ -3,6 +3,8 @@
 namespace GlobalPayments\Api\Terminals\HPA;
 
 use GlobalPayments\Api\Entities\Exceptions\NotImplementedException;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceCommInterface;
+use GlobalPayments\Api\Terminals\Abstractions\ITerminalReport;
 use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
@@ -15,8 +17,6 @@ use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
-use GlobalPayments\Api\Terminals\HPA\HpaInterface;
-use GlobalPayments\Api\Terminals\HPA\HpaTcpInterface;
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
 use GlobalPayments\Api\Terminals\HPA\Entities\Enums\HpaMessageId;
 use GlobalPayments\Api\Terminals\HPA\Requests\HpaSendFileRequest;
@@ -40,15 +40,8 @@ class HpaController extends DeviceController
 
     public function __construct(ConnectionConfig $config)
     {
-        $this->device = new HpaInterface($this);
+        parent::__construct($config);
         $this->requestIdProvider = $config->requestIdProvider;
-        $this->deviceConfig = $config;
-
-        switch ($config->connectionMode) {
-            case ConnectionModes::TCP_IP:
-                $this->deviceInterface = new HpaTcpInterface($config);
-                break;
-        }
     }
 
     public function configureInterface() : IDeviceInterface
@@ -60,7 +53,7 @@ class HpaController extends DeviceController
         return $this->device;
     }
 
-    public function processReport(TerminalReportBuilder $builder) : TerminalResponse
+    public function processReport(TerminalReportBuilder $builder) : ITerminalReport
     {
         throw new NotImplementedException();
     }
@@ -153,12 +146,13 @@ class HpaController extends DeviceController
             $message = sprintf($message, $requestId);
         }
         //send messaege to gateway
-        $this->deviceInterface->send(trim($message), $requestType);
+        $this->connector->send(trim($message), $requestType);
         
         //check response code
         $acceptedCodes = ["0"];
-        $this->checkResponse($this->deviceInterface->deviceResponse, $acceptedCodes);
-        return $this->deviceInterface->deviceResponse;
+        $this->checkResponse($this->connector->deviceResponse, $acceptedCodes);
+
+        return $this->connector->deviceResponse;
     }
 
     /*
@@ -290,5 +284,15 @@ class HpaController extends DeviceController
     {
         $this->device->reset();
         $this->device->closeLane();
+    }
+
+    public function configureConnector(): IDeviceCommInterface
+    {
+        switch ($this->settings->getConnectionMode()) {
+            case ConnectionModes::TCP_IP:
+                return new HpaTcpInterface($this->settings);
+            default:
+                throw new NotImplementedException();
+        }
     }
 }

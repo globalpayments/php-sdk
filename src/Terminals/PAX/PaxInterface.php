@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Terminals\PAX;
 
+use GlobalPayments\Api\Terminals\Abstractions\IBatchCloseResponse;
 use GlobalPayments\Api\Terminals\DeviceInterface;
 use GlobalPayments\Api\Terminals\DeviceResponse;
 use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxMessageId;
@@ -50,7 +51,7 @@ class PaxInterface extends DeviceInterface
         return new InitializeResponse($rawResponse, PaxMessageId::A00_INITIALIZE);
     }
 
-    public function batchClose()
+    public function batchClose() : IBatchCloseResponse
     {
         $message = TerminalUtils::buildAdminMessage(PaxMessageId::B00_BATCH_CLOSE, [date("YMDhms")]);
         $rawResponse = $this->paxController->send($message);

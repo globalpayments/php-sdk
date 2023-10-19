@@ -31,6 +31,8 @@ class ServiceEndpoints extends Enum
     const OPEN_BANKING_PRODUCTION = 'https://api.globalpay-ecommerce.com/openbanking';
     const TRANSACTION_API_TEST = "https://api.pit.paygateway.com/transactions/";
     const TRANSACTION_API_PROD = "https://api.paygateway.com/transactions";
+    const DIAMOND_CLOUD_TEST = "https://qr-cert.simpletabcloud.com/tomcat/command";
+    const DIAMOND_CLOUD_PROD = "";
     const MEET_IN_THE_CLOUD_PROD = "https://api.paygateway.com";
     const MEET_IN_THE_CLOUD_TEST = "https://api.pit.paygateway.com";
 }

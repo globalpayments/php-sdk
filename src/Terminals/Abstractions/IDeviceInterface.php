@@ -9,49 +9,11 @@ use GlobalPayments\Api\Terminals\DeviceResponse;
 
 interface IDeviceInterface
 {
-    // Admin Calls
-    public function lineItem(
-        string $leftText,
-        string $rightText = null,
-        string $runningLeftText = null,
-        string $runningRightText = null
-    ) : DeviceResponse;
-
-    public function cancel($cancelParams = null);
-
-    public function reboot() : DeviceResponse;
-
     public function sale($amount = null) : TerminalAuthBuilder;
-
-    public function capture($amount = null) : TerminalManageBuilder;
 
     public function verify() : TerminalAuthBuilder;
 
     public function authorize($amount = null) : TerminalAuthBuilder;
-
-    public function void() : TerminalManageBuilder;
-
-    public function closeLane() : DeviceResponse;
-
-    public function disableHostResponseBeep() : DeviceResponse;
-
-    public function getSignatureFile();
-
-    public function initialize();
-
-    public function openLane() : DeviceResponse;
-
-    public function promptForSignature(string $transactionId = null);
-
-    public function reset() : DeviceResponse;
-
-    public function startCard(PaymentMethodType $paymentMethodType) : DeviceResponse;
-
-    public function sendSaf($safIndicator = null) : DeviceResponse;
-
-    public function batchClose();
-
-    public function endOfDay();
 
     public function addValue($amount = null) : TerminalAuthBuilder;
 
@@ -61,11 +23,57 @@ interface IDeviceInterface
 
     public function withdrawal($amount = null): TerminalAuthBuilder;
 
-    public function tipAdjust($amount = null) : TerminalManageBuilder;
-
     public function tokenize() : TerminalAuthBuilder;
 
-    /**********************************************************/
+    /********************************************************************************/
+
+    public function void() : TerminalManageBuilder;
+
+    public function capture($amount = null) : TerminalManageBuilder;
+
+    public function tipAdjust($amount = null) : TerminalManageBuilder;
+
+    public function deletePreAuth() : TerminalManageBuilder;
+
+    public function increasePreAuth($amount) : TerminalManageBuilder;
+
+    /********************************************************************************/
+    public function lineItem(
+        string $leftText,
+        string $rightText = null,
+        string $runningLeftText = null,
+        string $runningRightText = null
+    ) : DeviceResponse;
+
+    public function reboot() : DeviceResponse;
+
+    public function closeLane() : DeviceResponse;
+
+    public function disableHostResponseBeep() : DeviceResponse;
+
+    public function openLane() : DeviceResponse;
+
+    public function reset() : DeviceResponse;
+
+    public function startCard(PaymentMethodType $paymentMethodType) : DeviceResponse;
+
+    public function sendSaf($safIndicator = null) : DeviceResponse;
+
+    /********************************************************************************/
+
+    public function cancel($cancelParams = null);
+
+    public function getSignatureFile();
+
+    public function initialize();
+
+    public function promptForSignature(string $transactionId = null);
+
+    public function batchClose() : IBatchCloseResponse;
+
+    public function endOfDay();
+
+    /********************************************************************************/
 
     //EBT Calls
 

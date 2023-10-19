@@ -4,7 +4,12 @@
 
 # Changelog
 
-## Latest Version - v10.1.2 (10/17/2023)
+## Latest Version - v11.0.0 (10/19/2023)
+### Enhancements:
+- [DiamondCloud] Add support for Diamond Cloud provider payment terminals.
+- [Breaking] Terminals: Architecture update
+
+## v10.1.2 (10/17/2023)
 ### Enhancements:
 - [Portico] Added cardholder email support. 
 

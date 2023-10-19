@@ -2,9 +2,11 @@
 
 namespace GlobalPayments\Api\Terminals;
 
+use GlobalPayments\Api\Terminals\Abstractions\IBatchCloseResponse;
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceResponse;
+use GlobalPayments\Api\Terminals\Abstractions\ITerminalReport;
 
-abstract class DeviceResponse implements IDeviceResponse
+abstract class DeviceResponse implements IDeviceResponse, IBatchCloseResponse, ITerminalReport
 {
     /** @var string */
     public $status;

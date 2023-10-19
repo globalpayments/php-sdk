@@ -14,4 +14,5 @@ class Region extends Enum
     const AU = 'AU';
     const NZ = 'NZ';
     const UK = 'UK';
+    const EU = 'EU';
 }

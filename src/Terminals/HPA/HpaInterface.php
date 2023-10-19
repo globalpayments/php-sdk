@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Terminals\HPA;
 
+use GlobalPayments\Api\Terminals\Abstractions\IBatchCloseResponse;
 use GlobalPayments\Api\Terminals\DeviceInterface;
 use GlobalPayments\Api\Terminals\HPA\Entities\Enums\HpaMessageId;
 use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
@@ -181,15 +182,15 @@ class HpaInterface extends DeviceInterface
     
     #credit
 
-    public function batchClose()
+    public function batchClose() : IBatchCloseResponse
     {
         return $this->hpaController->send(
             "<SIP>"
-                . "<Version>1.0</Version>"
-                . "<ECRId>1004</ECRId>"
-                . "<Request>EOD</Request>"
-                . "<RequestId>%s</RequestId>"
-                . "</SIP>",
+            . "<Version>1.0</Version>"
+            . "<ECRId>1004</ECRId>"
+            . "<Request>EOD</Request>"
+            . "<RequestId>%s</RequestId>"
+            . "</SIP>",
             HpaMessageId::EOD
         );
     }

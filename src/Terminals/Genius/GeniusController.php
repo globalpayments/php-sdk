@@ -12,7 +12,7 @@ use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\NotImplementedException;
 use GlobalPayments\Api\Gateways\GatewayResponse;
 use GlobalPayments\Api\Terminals\{ConnectionConfig, DeviceController, TerminalResponse};
-use GlobalPayments\Api\Terminals\Abstractions\IDeviceCommInterface;
+use GlobalPayments\Api\Terminals\Abstractions\{IDeviceCommInterface, ITerminalReport};
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
 use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
 use GlobalPayments\Api\Terminals\Genius\Entities\Enums\{
@@ -296,7 +296,7 @@ class GeniusController extends DeviceController
      */
     public function processReport(
         TerminalReportBuilder $builder
-    ) : TerminalResponse
+    ) : ITerminalReport
     {
         if ($builder->searchBuilder->transactionType == TransactionType::SALE) {
             if ($builder->searchBuilder->transactionIdType == TransactionIdType::CLIENT_TRANSACTION_ID) {

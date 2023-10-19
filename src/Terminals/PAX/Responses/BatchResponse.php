@@ -2,13 +2,13 @@
 
 namespace GlobalPayments\Api\Terminals\PAX\Responses;
 
+use GlobalPayments\Api\Terminals\Abstractions\IBatchCloseResponse;
 use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxMessageId;
 use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 use GlobalPayments\Api\Terminals\PAX\SubGroups\HostResponse;
 
-class BatchResponse extends PaxTerminalResponse
+class BatchResponse extends PaxTerminalResponse implements IBatchCloseResponse
 {
-
     public $totalCount;
     public $totalAmount;
     public $timeStamp;

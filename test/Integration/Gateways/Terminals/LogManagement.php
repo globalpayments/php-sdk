@@ -7,7 +7,12 @@ use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
 class LogManagement implements ILogManagement
 {
 
-    public $logLocation = 'logmanagement.log';
+    public string $logLocation;
+
+    public function __construct()
+    {
+        $this->logLocation = 'logmanagement_'. date('Y-m-d') . '.log';
+    }
 
     public function setLog($message, $backTrace = '')
     {

@@ -95,9 +95,10 @@ class StringUtils
         return pack("H*" , strtolower($hexString));
     }
 
-    public static function isJson($string)
+    public static function isJson($string) : bool
     {
         json_decode($string);
+
         return (json_last_error() == JSON_ERROR_NONE);
     }
 

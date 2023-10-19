@@ -3,8 +3,9 @@
 namespace GlobalPayments\Api\Terminals\UPA\Responses;
 
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\Api\Terminals\Abstractions\IBatchCloseResponse;
 
-class TransactionResponse extends UpaResponseHandler
+class TransactionResponse extends UpaResponseHandler implements IBatchCloseResponse
 {
     public function __construct($jsonResponse)
     {

@@ -109,7 +109,7 @@ class PaxTerminalResponse extends PaxBaseResponse implements IDeviceResponseHand
     }
 
 
-    public function mapResponse($messageReader = null)
+    public function mapResponse($messageReader)
     {
 
         $hostResponse = new HostResponse($messageReader);

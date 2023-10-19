@@ -61,8 +61,7 @@ class TerminalAuthBuilder extends TerminalBuilder
     
     public $autoSubstantiation;
 
-    /** @var string */
-    public $terminalRefNumber;
+    public ?string $terminalRefNumber;
 
     /**
      * 
@@ -196,11 +195,11 @@ class TerminalAuthBuilder extends TerminalBuilder
 
     /**
      * Previous request's transaction ID
-     * 
-     * @param mixed $transactionId 
-     * @return $this 
+     *
+     * @param string $transactionId
+     * @return $this
      */
-    public function withTransactionId($transactionId)
+    public function withTransactionId(string $transactionId)
     {
         if ($this->paymentMethod == null || !$this->paymentMethod instanceof TransactionReference) {
             $this->paymentMethod = new TransactionReference();

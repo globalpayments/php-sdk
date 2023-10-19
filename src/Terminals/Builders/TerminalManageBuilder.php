@@ -83,6 +83,23 @@ class TerminalManageBuilder extends TerminalBuilder
         return $this;
     }
 
+    public function withTerminalRefNumber($terminalRefNumber)
+    {
+        $this->terminalRefNumber = $terminalRefNumber;
+        return $this;
+    }
+
+    /**
+     *
+     * @param string $value
+     * @return TerminalManageBuilder
+     */
+    public function withClientTransactionId(string $value) : TerminalManageBuilder
+    {
+        $this->clientTransactionId = $value;
+        return $this;
+    }
+
     protected function setupValidations()
     {
         $this->validations->of(
@@ -97,22 +114,16 @@ class TerminalManageBuilder extends TerminalBuilder
         )
                 ->with(TransactionModifier::NONE)
                 ->check('transactionId')->isNotNull();
-    }
-    
-    public function withTerminalRefNumber($terminalRefNumber)
-    {
-        $this->terminalRefNumber = $terminalRefNumber;
-        return $this;
-    }
 
-    /**
-     * 
-     * @param string $value 
-     * @return TerminalManageBuilder 
-     */
-    public function withClientTransactionId(string $value) : TerminalManageBuilder
-    {
-        $this->clientTransactionId = $value;
-        return $this;
+        $this->validations->of(
+            TransactionType::REFUND
+        )
+            ->check('transactionId')->isNotNull();
+
+        $this->validations->of(
+            TransactionType::AUTH
+        )
+            ->with(TransactionModifier::INCREMENTAL)
+            ->check('transactionId')->isNotNull();
     }
 }

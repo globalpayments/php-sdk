@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Terminals\PAX;
 
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceCommInterface;
+use GlobalPayments\Api\Terminals\Abstractions\ITerminalReport;
 use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
@@ -47,7 +48,6 @@ use GlobalPayments\Api\Terminals\PAX\Responses\EBTResponse;
 
 class PaxController extends DeviceController
 {
-
     public $device;
     public $deviceConfig;
 
@@ -57,20 +57,8 @@ class PaxController extends DeviceController
 
     public function __construct(ConnectionConfig $config)
     {
-        $this->device = new PaxInterface($this);
+        parent::__construct($config);
         $this->requestIdProvider = $config->requestIdProvider;
-        $this->deviceConfig = $config;
-
-        switch ($config->connectionMode) {
-            case ConnectionModes::TCP_IP:
-            case ConnectionModes::SSL_TCP:
-                $this->deviceInterface = new PaxTcpInterface($config);
-                break;
-            case ConnectionModes::HTTP:
-            case ConnectionModes::HTTPS:
-                $this->deviceInterface = new PaxHttpInterface($config);
-                break;
-        }
     }
 
     public function configureInterface() : IDeviceInterface
@@ -93,7 +81,7 @@ class PaxController extends DeviceController
     public function send($message, $requestType = null)
     {
         //send message to gateway
-        return $this->deviceInterface->send(trim($message), $requestType);
+        return $this->connector->send(trim($message), $requestType);
     }
 
     public function manageTransaction(TerminalManageBuilder $builder) : TerminalResponse
@@ -373,7 +361,7 @@ class PaxController extends DeviceController
         return new GiftResponse($response);
     }
     
-    public function processReport(TerminalReportBuilder $builder) : TerminalResponse
+    public function processReport(TerminalReportBuilder $builder) : ITerminalReport
     {
         $response = $this->buildReportTransaction($builder);
         return new PaxLocalReportResponse($response);
@@ -444,6 +432,13 @@ class PaxController extends DeviceController
 
     public function configureConnector(): IDeviceCommInterface
     {
-        // TODO: Implement configureConnector() method.
+        switch ($this->settings->getConnectionMode()) {
+            case ConnectionModes::TCP_IP:
+            case ConnectionModes::SSL_TCP:
+                return new PaxTcpInterface($this->settings);
+            case ConnectionModes::HTTP:
+            case ConnectionModes::HTTPS:
+                return new PaxHttpInterface($this->settings);
+        }
     }
 }

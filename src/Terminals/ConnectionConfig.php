@@ -8,15 +8,16 @@ use GlobalPayments\Api\ServiceConfigs\Configuration;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GatewayConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Terminals\Abstractions\ITerminalConfiguration;
+use GlobalPayments\Api\Terminals\Diamond\DiamondController;
 use GlobalPayments\Api\Terminals\Enums\BaudRate;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DataBits;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
 use GlobalPayments\Api\Terminals\Enums\Parity;
 use GlobalPayments\Api\Terminals\Enums\StopBits;
+use GlobalPayments\Api\Terminals\Genius\GeniusController;
 use GlobalPayments\Api\Terminals\HPA\HpaController;
 use GlobalPayments\Api\Terminals\Abstractions\IRequestIdProvider;
-use GlobalPayments\Api\Terminals\Genius\GeniusController;
 use GlobalPayments\Api\Terminals\PAX\PaxController;
 use GlobalPayments\Api\Terminals\UPA\UpaController;
 
@@ -99,8 +100,18 @@ class ConnectionConfig extends Configuration implements ITerminalConfiguration
             case DeviceType::UPA_SATURN_1000:
             case DeviceType::UPA_VERIFONE_T650P:
                 $services->setDeviceController(new UpaController($this));
+                break;
+            case DeviceType::PAX_ARIES8:
+            case DeviceType::PAX_A80:
+            case DeviceType::PAX_A35:
+            case DeviceType::PAX_A920:
+            case DeviceType::PAX_A77:
+            case DeviceType::NEXGO_N5:
+                $services->setDeviceController(new DiamondController($this));
+                break;
             case DeviceType::GENIUS_VERIFONE_P400:
-                $services->setDeviceController(new GeniusController($this));            
+                $services->setDeviceController(new GeniusController($this));
+                break;
             default:
                 break;
         }
@@ -146,6 +157,12 @@ class ConnectionConfig extends Configuration implements ITerminalConfiguration
                 throw new ConfigurationException('Gateway config is required for the Meet In the Cloud Service');
             }
         }
+
+        if ($this->connectionMode == ConnectionModes::DIAMOND_CLOUD) {
+            if (empty($this->isvID) || empty($this->secretKey)) {
+                throw new ConfigurationException('ISV ID and secretKey is required for ' . ConnectionModes::DIAMOND_CLOUD);
+            }
+        }
     }
 
     public function getConnectionMode()
@@ -170,7 +187,7 @@ class ConnectionConfig extends Configuration implements ITerminalConfiguration
 
     public function getRequestIdProvider(): IRequestIdProvider
     {
-        // TODO: Implement getRequestIdProvider() method.
+        return $this->requestIdProvider;
     }
 
     public function setRequestIdProvider(IRequestIdProvider $requestIdProvider): void

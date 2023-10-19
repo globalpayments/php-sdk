@@ -1,12 +1,12 @@
 <?php
 
-
 namespace GlobalPayments\Api\Terminals;
 
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\NotImplementedException;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
+use GlobalPayments\Api\Terminals\Abstractions\IBatchCloseResponse;
 use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
 use GlobalPayments\Api\Terminals\Enums\CurrencyType;
@@ -16,7 +16,7 @@ use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 abstract class DeviceInterface implements IDeviceInterface
 {
     /** @var DeviceController */
-    public $controller;
+    public DeviceController $controller;
 
     /** @var RequestIdProvider */
     public $requestIdProvider;
@@ -98,12 +98,12 @@ abstract class DeviceInterface implements IDeviceInterface
 
     /**********START Batching ************/
 
-    public function batchClose()
+    public function endOfDay()
     {
         throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
     }
 
-    public function endOfDay()
+    public function batchClose(): IBatchCloseResponse
     {
         throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
     }
@@ -136,8 +136,6 @@ abstract class DeviceInterface implements IDeviceInterface
 
     public function capture($amount = null) : TerminalManageBuilder
     {
-        // echo 'intra aici';
-        // exit;
         return (new TerminalManageBuilder(TransactionType::CAPTURE, PaymentMethodType::CREDIT))
             ->withAmount($amount);
     }
@@ -183,7 +181,29 @@ abstract class DeviceInterface implements IDeviceInterface
             "This method is not supported by the currently configured device."
         );
     }
-    /*************END************/
+
+    public function deletePreAuth() : TerminalManageBuilder
+    {
+        throw new UnsupportedTransactionException(
+            "This method is not supported by the currently configured device."
+        );
+    }
+
+    public function increasePreAuth($amount) : TerminalManageBuilder
+    {
+        throw new UnsupportedTransactionException(
+            "This method is not supported by the currently configured device."
+        );
+    }
+
+    public function refundById(string $transactionId): TerminalManageBuilder
+    {
+        throw new UnsupportedTransactionException(
+            "This method is not supported by the currently configured device."
+        );
+    }
+
+    /****************************************END*************************************/
 
     public function safDelete($safIndicator)
     {
