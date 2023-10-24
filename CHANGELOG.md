@@ -4,7 +4,16 @@
 
 # Changelog
 
-## Latest Version - v11.0.0 (10/19/2023)
+## Latest Version - v11.0.1 (10/24/2023)
+### Enhancements:
+- [GP-API] Add stored credentials to verify request
+- [GP-API & GP-ECOM] Enhancements on unit tests
+- [MEET-IN-THE-CLOUD][GP-API] Remove QA endpoint
+
+#### Bug Fixes:
+-[GP-API]: Fix 3DS example
+
+## v11.0.0 (10/19/2023)
 ### Enhancements:
 - [DiamondCloud] Add support for Diamond Cloud provider payment terminals.
 - [Breaking] Terminals: Architecture update

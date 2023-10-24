@@ -466,7 +466,10 @@ class PayFacBuilder extends BaseBuilder
     {
         //file validations
         if (empty($uploadDocumentData->b64_content)) {
-            if (!file_exists($uploadDocumentData->documentLocation)) {
+            if (
+                empty($uploadDocumentData->documentLocation) ||
+                !file_exists($uploadDocumentData->documentLocation)
+            ) {
                 throw new BuilderException('File not found!');
             } elseif (filesize($uploadDocumentData->documentLocation) > 5000000) {
                 throw new BuilderException('Max file size 5MB exceeded');

@@ -1205,7 +1205,7 @@ class GpApiMerchantAccountsTest extends TestCase
     private function getAccountByType($merchantId, $type)
     {
         $response = ReportingService::findAccounts(1, 10)
-            ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::DESC)
             ->where(DataServiceCriteria::MERCHANT_ID, $merchantId)
             ->andWith(SearchCriteria::START_DATE, $this->startDate)
             ->andWith(SearchCriteria::END_DATE, $this->endDate)
@@ -1221,7 +1221,7 @@ class GpApiMerchantAccountsTest extends TestCase
     private function getMerchants()
     {
         return ReportingService::findMerchants(1, 10)
-            ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::DESC)
             ->where(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
             ->execute();
     }

@@ -29,7 +29,7 @@ class UpaMicInterface implements IDeviceCommInterface
     public function connect()
     {
         $this->connector = ServicesContainer::instance()->getClient($this->config->getConfigName());
-        if (empty($this->gatewayConfig->accessTokenInfo)) {
+        if (empty($this->gatewayConfig->accessTokenInfo->accessToken)) {
             $this->connector->signIn();
         }
     }

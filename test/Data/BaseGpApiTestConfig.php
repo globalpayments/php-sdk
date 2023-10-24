@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Tests\Data;
 
 use GlobalPayments\Api\Entities\CustomWebProxy;
 use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Utils\Logging\Logger;
@@ -20,9 +21,6 @@ class BaseGpApiTestConfig
     public static string $appId = self::APP_ID;
     public static string $appKey = self::APP_KEY; #gitleaks:allow
 
-    const UPA_MIC_DEVICE_APP_ID = '83cdNQ0YBmzxzkLpFHpDGn2ir0WKTW0N';
-    const UPA_MIC_DEVICE_APP_KEY = '1ASrcQZb0AEqR6ZT';
-
     private static bool $logEnabled = true;
     private static bool $dynamicHeaderEnabled = false;
     private static bool $permissionsEnabled = false;
@@ -36,6 +34,8 @@ class BaseGpApiTestConfig
         $config->environment = Environment::TEST;
         $config->channel = $channel;
         $config->country = 'US';
+        $config->accessTokenInfo = new AccessTokenInfo();
+        $config->accessTokenInfo->transactionProcessingAccountName = 'transaction_processing';
 
         $config->challengeNotificationUrl = "https://ensi808o85za.x.pipedream.net/";
         $config->methodNotificationUrl = "https://ensi808o85za.x.pipedream.net/";

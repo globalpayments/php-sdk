@@ -106,6 +106,7 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
                             $this->mapAddress($this->builder->addresses->get(AddressType::BILLING), 'alpha2') : null
                     ];
                 }
+                break;
             case TransactionType::ADD_FUNDS:
                 $verb = 'POST';
                 $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $builder->userReference->userId . '/settlement/funds';

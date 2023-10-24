@@ -193,7 +193,7 @@ class ReportingActionsTest extends TestCase
 
     public function testFindActions_FilterBy_ResourceId()
     {
-        $resourceId = $this->actionSummary->resourceId ?? 'TRN_cf4e1008-c921-4096-bec9-2372cb9476d8';
+        $resourceId = $this->actionSummary->resourceId ?? 'TRN_xrMGGiLzU8hmuj55ZfnnxVBetKS2EX';
         $response = ReportingService::findActionsPaged(1, 10)
             ->where(SearchCriteria::RESOURCE_ID, $resourceId)
             ->execute();

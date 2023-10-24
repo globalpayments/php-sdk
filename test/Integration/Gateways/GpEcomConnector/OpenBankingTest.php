@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
+use DateTime;
 use GlobalPayments\Api\Entities\Enums\{BankPaymentStatus, BankPaymentType, RemittanceReferenceType, ShaHashType};
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
@@ -340,9 +341,9 @@ class OpenBankingTest extends TestCase
         $bankPayment = $this->fasterPaymentsConfig();
 
         $trn = $bankPayment->charge($this->amount)
-                ->withCurrency($this->currency)
-                ->withRemittanceReference(null, $this->remittanceReferenceValue)
-                ->execute();
+            ->withCurrency($this->currency)
+            ->withRemittanceReference(null, $this->remittanceReferenceValue)
+            ->execute();
 
         $this->assertOpenBankingResponse($trn);
     }

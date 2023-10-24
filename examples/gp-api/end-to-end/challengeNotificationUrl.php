@@ -16,7 +16,7 @@ $cres = $_REQUEST['cres'];
 try {
    $decodedString = base64_decode($cres);
    if (!empty($decodedString)) {
-      $convertedObject = json_decode(htmlspecialchars($decodedString), true);
+      $convertedObject = json_decode(htmlspecialchars($decodedString, ENT_NOQUOTES), true);
    }
 
    date_default_timezone_set('Europe/Dublin');
@@ -27,11 +27,10 @@ try {
    fwrite($file, "\n**************************\n\n");
    fclose($file);
 
-   $serverTransID = htmlspecialchars($convertedObject['threeDSServerTransID']);
-   $acsTransID = $convertedObject['acsTransID'];
-   $messageType = $convertedObject['messageType'];
-   $messageVersion = $convertedObject['messageVersion'];
-   $challengeCompletionInd = $convertedObject['challengeCompletionInd'];
+   $serverTransID = htmlspecialchars($convertedObject['threeDSServerTransID'], ENT_NOQUOTES);
+   $acsTransID = $convertedObject['acsTransID'] ?? null;
+   $messageType = $convertedObject['messageType'] ?? null;
+   $messageVersion = $convertedObject['messageVersion'] ?? null;
    $transStatus = $convertedObject['transStatus'];
 
    // TODO: notify client-side that the Challenge step is complete, see below
@@ -42,6 +41,6 @@ try {
 <script src="globalpayments-3ds.js"></script>
 <script>
    GlobalPayments.ThreeDSecure.handleChallengeNotification({
-            "threeDSServerTransID": <?php echo '"' . isset($serverTransID) ? htmlspecialchars($serverTransID) : "" . '"'; ?>,
-            "transStatus": <?php echo '"' . $transStatus ? htmlspecialchars($transStatus) : "" . '"}'; ?>);
+            "threeDSServerTransID": <?php echo '"' . (isset($serverTransID) ? htmlspecialchars($serverTransID, ENT_NOQUOTES) : "") . '"'; ?>,
+            "transStatus": <?php echo '"' . ($transStatus ? htmlspecialchars($transStatus, ENT_NOQUOTES) : "") . '"}'; ?>);
 </script>

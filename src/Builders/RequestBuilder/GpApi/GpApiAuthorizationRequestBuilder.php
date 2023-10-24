@@ -31,6 +31,7 @@ use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Entities\PayByLinkData;
 use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Entities\Product;
+use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Gateways\OpenBankingProvider;
 use GlobalPayments\Api\Mapping\EnumMapping;
 use GlobalPayments\Api\PaymentMethods\BankPayment;
@@ -216,7 +217,9 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $requestBody['currency'] = $builder->currency;
         $requestBody['country'] = $config->country;
         $requestBody['payment_method'] = $this->createPaymentMethodParam($builder, $config);
-
+        if (!empty($builder->storedCredential)) {
+            $this->setRequestStoredCredentials($builder->storedCredential, $requestBody);
+        }
         return $requestBody;
     }
 
@@ -277,13 +280,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             $this->setNotificationUrls($requestBody);
         }
         if (!empty($builder->storedCredential)) {
-            $initiator = EnumMapping::mapStoredCredentialInitiator(GatewayProvider::GP_API, $builder->storedCredential->initiator);
-            $requestBody['initiator'] = !empty($initiator) ? $initiator : null;
-            $requestBody['stored_credential'] = [
-                'model' => strtoupper($builder->storedCredential->type),
-                'reason' => strtoupper($builder->storedCredential->reason),
-                'sequence' => strtoupper($builder->storedCredential->sequence)
-            ];
+            $this->setRequestStoredCredentials($builder->storedCredential, $requestBody);
         }
 
         if (!empty($builder->dccRateData)) {
@@ -293,6 +290,17 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         }
 
         return $requestBody;
+    }
+
+    private function setRequestStoredCredentials(StoredCredential $storedCredential, &$request)
+    {
+        $request['initiator'] = !empty($storedCredential->initiator) ?
+            EnumMapping::mapStoredCredentialInitiator(GatewayProvider::GP_API, $storedCredential->initiator) : null;
+        $request['stored_credential'] = [
+            'model' => !empty($storedCredential->type) ? strtoupper($storedCredential->type) : null,
+            'reason' => !empty($storedCredential->reason) ? strtoupper($storedCredential->reason) : null,
+            'sequence' => !empty($storedCredential->sequence) ? strtoupper($storedCredential->sequence) : null
+        ];
     }
 
     /**

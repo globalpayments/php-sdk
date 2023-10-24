@@ -31,13 +31,13 @@ class ReportingTest extends TestCase
 
     public function testGetTransactionDetail()
     {
-        $transactionId = "rMuOHxP5SCyCzOYE8mKCsA";
+        $transactionId = "MTMzMmE3MjgtODA3ZmU2Mw";
 
         /** @var TransactionSummary $response */
         $response = ReportingService::transactionDetail($transactionId)->execute();
         $this->assertNotNull($response);
         $this->assertEquals($transactionId, $response->orderId);
-        $this->assertEquals('5CoDxmuV5efGltP9', $response->schemeReferenceData);
+        $this->assertEquals('VVe8uPnxNDDt1LYw', $response->schemeReferenceData);
         $this->assertEquals('U', $response->avsResponseCode);
         $this->assertEquals('M', $response->cvnResponseCode);
         $this->assertEquals('00', $response->gatewayResponseCode);

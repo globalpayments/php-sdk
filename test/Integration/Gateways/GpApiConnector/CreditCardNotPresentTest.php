@@ -897,6 +897,24 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertEquals("VERIFIED", $response->responseMessage);
     }
 
+    public function testCreditVerificationWithStoredCredentials()
+    {
+        $storeCredentials = new StoredCredential();
+        $storeCredentials->initiator = StoredCredentialInitiator::MERCHANT;
+        $storeCredentials->type = StoredCredentialType::INSTALLMENT;
+        $storeCredentials->sequence = StoredCredentialSequence::SUBSEQUENT;
+        $storeCredentials->reason = StoredCredentialReason::INCREMENTAL;
+
+        $response = $this->card->verify()
+            ->withCurrency($this->currency)
+            ->withStoredCredential($storeCredentials)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals("VERIFIED", $response->responseMessage);
+    }
+
     public function testCreditVerification_withIdempotencyKey()
     {
         $idempotencyKey = GenerationUtils::getGuid();
