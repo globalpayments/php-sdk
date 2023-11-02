@@ -120,9 +120,9 @@ class ConnectionConfig extends Configuration implements ITerminalConfiguration
     public function validate()
     {
         if ($this->connectionMode === ConnectionModes::MEET_IN_THE_CLOUD) {
-            if (empty($this->meetInTheCloudConfig)) {
+            if (empty($this->meetInTheCloudConfig) && empty($this->gatewayConfig)) {
                 throw new ConfigurationException(
-                    "meetInTheCloudConfig object is required for this connection method"
+                    "meetInTheCloudConfig or gatewayConfig object is required for this connection method"
                 );
             }
 
@@ -150,12 +150,6 @@ class ConnectionConfig extends Configuration implements ITerminalConfiguration
             throw new ConfigurationException(
                 "Request id is mandatory for this transaction. IRequestIdProvider is not implemented"
             );
-        }
-
-        if ($this->connectionMode == ConnectionModes::MIC) {
-            if (empty($this->gatewayConfig)) {
-                throw new ConfigurationException('Gateway config is required for the Meet In the Cloud Service');
-            }
         }
 
         if ($this->connectionMode == ConnectionModes::DIAMOND_CLOUD) {

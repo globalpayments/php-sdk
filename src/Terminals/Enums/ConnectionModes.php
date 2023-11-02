@@ -12,6 +12,5 @@ class ConnectionModes extends Enum
     const HTTP = 'HTTP';
     const HTTPS = 'HTTPS';
     const MEET_IN_THE_CLOUD = 'MEET_IN_THE_CLOUD';
-    const MIC = 'MIC';
     const DIAMOND_CLOUD = 'DIAMOND_CLOUD';
 }

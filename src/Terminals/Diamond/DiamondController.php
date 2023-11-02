@@ -102,13 +102,11 @@ class DiamondController extends DeviceController
 
     public function configureConnector(): IDeviceCommInterface
     {
-        switch ($this->settings->getConnectionMode())
-        {
-            case ConnectionModes::DIAMOND_CLOUD:
-                return new DiamondHttpInterface($this->settings);
-            default:
-                throw  new NotImplementedException();
+        if ($this->settings->getConnectionMode() !== ConnectionModes::DIAMOND_CLOUD) {
+            throw  new NotImplementedException();
         }
+
+        return new DiamondHttpInterface($this->settings);
     }
 
     private function doTransaction(IDeviceMessage $request)

@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Terminals\UPA;
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Exceptions\NotImplementedException;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceCommInterface;
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceMessage;
 use GlobalPayments\Api\Terminals\Abstractions\ITerminalReport;
@@ -190,8 +191,10 @@ class UpaController extends DeviceController
             case ConnectionModes::HTTP:
             case ConnectionModes::SERIAL:
             case ConnectionModes::SSL_TCP:
-            case ConnectionModes::MIC:
-                return new UpaMicInterface($this->settings);
+            case ConnectionModes::MEET_IN_THE_CLOUD:
+                if ($this->settings->getGatewayConfig() instanceof GpApiConfig) {
+                    return new UpaMicInterface($this->settings);
+                }
             default:
                 throw  new NotImplementedException();
         }

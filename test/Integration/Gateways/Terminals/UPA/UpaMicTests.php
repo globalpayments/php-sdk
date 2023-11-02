@@ -39,7 +39,7 @@ class UpaMicTests extends TestCase
     {
         $config = new ConnectionConfig();
         $config->deviceType = DeviceType::UPA_DEVICE;
-        $config->connectionMode = ConnectionModes::MIC;
+        $config->connectionMode = ConnectionModes::MEET_IN_THE_CLOUD;
         BaseGpApiTestConfig::$appId = BaseGpApiTestConfig::APP_ID; #gitleaks:allow
         BaseGpApiTestConfig::$appKey = BaseGpApiTestConfig::APP_KEY; #gitleaks:allow
         $gpApiConfig = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
@@ -149,7 +149,16 @@ class UpaMicTests extends TestCase
 
     public function testCreditVoid()
     {
+        $response = $this->device->sale(10)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('INITIATED', $response->deviceResponseText);
+        $this->assertNotNull($response->transactionId);
+
         $response = $this->device->void()
+            ->withTransactionId($response->transactionId)
             ->execute();
 
         $this->assertNotNull($response);
