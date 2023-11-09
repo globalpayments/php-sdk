@@ -16,7 +16,7 @@ use GlobalPayments\Api\Terminals\DiamondCloudConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
 use GlobalPayments\Api\Terminals\TerminalResponse;
-use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\LogManagement;
+use GlobalPayments\Api\Utils\Logging\TerminalLogManagement;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -43,7 +43,7 @@ class DiamondCloudTests extends TestCase
         $config->deviceType = DeviceType::PAX_A920;
         $config->connectionMode = ConnectionModes::DIAMOND_CLOUD;
         $config->requestIdProvider = new RequestIdProvider();
-        $config->logManagementProvider = new LogManagement();
+        $config->logManagementProvider = new TerminalLogManagement();
         $config->timeout = 15;
         $config->isvID = '154F070E3E474AB98B00D73ED81AAA93';
         $config->secretKey = '8003672638';

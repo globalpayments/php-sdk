@@ -10,8 +10,8 @@ use GlobalPayments\Api\Terminals\TerminalResponse;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
-use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\LogManagement;
 use GlobalPayments\Api\Entities\AutoSubstantiation;
+use GlobalPayments\Api\Utils\Logging\TerminalLogManagement;
 
 class UpaVerificationTests extends TestCase
 {
@@ -38,7 +38,7 @@ class UpaVerificationTests extends TestCase
         $this->config->connectionMode = ConnectionModes::TCP_IP;
         $this->config->timeout = 60;
         $this->config->requestIdProvider = new RequestIdProvider();
-        $this->config->logManagementProvider = new LogManagement();
+        $this->config->logManagementProvider = new TerminalLogManagement();
         $this->config->logManagementProvider->logLocation = 'upavrf.log';
         
         return $this->config;

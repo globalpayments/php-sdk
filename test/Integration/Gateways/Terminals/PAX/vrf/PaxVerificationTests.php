@@ -11,12 +11,12 @@ use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\LogManagement;
 use GlobalPayments\Api\Terminals\Enums\CurrencyType;
 use GlobalPayments\Api\Terminals\Enums\SafMode;
 use GlobalPayments\Api\Terminals\Enums\SafUpload;
 use GlobalPayments\Api\Entities\Enums\TaxType;
 use GlobalPayments\Api\Terminals\Enums\SafDelete;
+use GlobalPayments\Api\Utils\Logging\TerminalLogManagement;
 
 class PaxVerificationTests extends TestCase
 {
@@ -56,7 +56,7 @@ class PaxVerificationTests extends TestCase
         $this->config->connectionMode = ConnectionModes::TCP_IP;
         $this->config->timeout = 30;
         $this->config->requestIdProvider = new RequestIdProvider();
-        $this->config->logManagementProvider = new LogManagement();
+        $this->config->logManagementProvider = new TerminalLogManagement();
 
         return $this->config;
     }

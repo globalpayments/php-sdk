@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 use GlobalPayments\Api\Terminals\UPA\Entities\LineItem;
 use GlobalPayments\Api\Terminals\UPA\Entities\CancelParameters;
-use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\LogManagement;
+use GlobalPayments\Api\Utils\Logging\TerminalLogManagement;
 
 class UpaAdminTests extends TestCase
 {
@@ -37,7 +37,7 @@ class UpaAdminTests extends TestCase
         $config->connectionMode = ConnectionModes::TCP_IP;
         $config->timeout = 10;
         $config->requestIdProvider = new RequestIdProvider();
-        $config->logManagementProvider = new LogManagement();
+        $config->logManagementProvider = new TerminalLogManagement();
 
         return $config;
     }

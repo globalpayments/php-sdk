@@ -9,6 +9,9 @@ use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\{ConnectionModes, DeviceType};
 use GlobalPayments\Api\Tests\Data\TestCards;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
+use GlobalPayments\Api\Utils\Logging\Logger;
+use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
+use GlobalPayments\Api\Utils\Logging\TerminalLogManagement;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
 use SebastianBergmann\RecursionContext\InvalidArgumentException;
@@ -49,6 +52,7 @@ class PaxCreditTests extends TestCase
         $config->connectionMode = ConnectionModes::TCP_IP;
         $config->timeout = 10;
         $config->requestIdProvider = new RequestIdProvider();
+        $config->logManagementProvider = new TerminalLogManagement();
 
         return $config;
     }

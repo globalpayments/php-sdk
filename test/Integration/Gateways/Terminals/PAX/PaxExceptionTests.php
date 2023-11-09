@@ -7,8 +7,8 @@ use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Terminals\Enums\{ConnectionModes, DeviceType};
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
-use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\LogManagement;
 use GlobalPayments\Api\Terminals\Enums\CurrencyType;
+use GlobalPayments\Api\Utils\Logging\TerminalLogManagement;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
 use SebastianBergmann\RecursionContext\InvalidArgumentException;
@@ -35,7 +35,7 @@ class PaxExceptionTests extends TestCase {
         $config->connectionMode = ConnectionModes::TCP_IP;
         $config->timeout = 10;
         $config->requestIdProvider = new RequestIdProvider();
-        $config->logManagementProvider = new LogManagement();
+        $config->logManagementProvider = new TerminalLogManagement();
 
         return $config;
     }

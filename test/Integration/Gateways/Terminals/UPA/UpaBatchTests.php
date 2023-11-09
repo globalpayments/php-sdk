@@ -8,7 +8,7 @@ use GlobalPayments\Api\Terminals\Enums\DeviceType;
 use GlobalPayments\Api\Services\DeviceService;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
-use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\LogManagement;
+use GlobalPayments\Api\Utils\Logging\TerminalLogManagement;
 
 class UpaBatchTests extends TestCase
 {
@@ -34,7 +34,7 @@ class UpaBatchTests extends TestCase
         $config->connectionMode = ConnectionModes::TCP_IP;
         $config->timeout = 30;
         $config->requestIdProvider = new RequestIdProvider();
-        $config->logManagementProvider = new LogManagement();
+        $config->logManagementProvider = new TerminalLogManagement();
 
         return $config;
     }

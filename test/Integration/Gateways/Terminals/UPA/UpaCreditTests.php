@@ -9,9 +9,9 @@ use GlobalPayments\Api\Services\DeviceService;
 use GlobalPayments\Api\Terminals\TerminalResponse;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
-use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\LogManagement;
 use GlobalPayments\Api\Entities\AutoSubstantiation;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
+use GlobalPayments\Api\Utils\Logging\TerminalLogManagement;
 
 class UpaCreditTests extends TestCase
 {
@@ -37,7 +37,7 @@ class UpaCreditTests extends TestCase
         $config->connectionMode = ConnectionModes::TCP_IP;
         $config->timeout = 30;
         $config->requestIdProvider = new RequestIdProvider();
-        $config->logManagementProvider = new LogManagement();
+        $config->logManagementProvider = new TerminalLogManagement();
 
         return $config;
     }

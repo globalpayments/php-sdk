@@ -1,17 +1,21 @@
 <?php
-namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals;
+namespace GlobalPayments\Api\Utils\Logging;
 
 use GlobalPayments\Api\Terminals\Abstractions\ILogManagement;
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
 
-class LogManagement implements ILogManagement
+class TerminalLogManagement implements ILogManagement
 {
 
     public string $logLocation;
 
-    public function __construct()
+    public function __construct(string $targetFile = null)
     {
-        $this->logLocation = 'logmanagement_'. date('Y-m-d') . '.log';
+        if (!empty($targetFile)) {
+            $this->logLocation = $targetFile;
+        } else {
+            $this->logLocation = 'logmanagement_'. date('Y-m-d') . '.log';
+        }
     }
 
     public function setLog($message, $backTrace = '')

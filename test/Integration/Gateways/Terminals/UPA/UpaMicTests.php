@@ -12,9 +12,9 @@ use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
-use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\LogManagement;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Utils\Logging\TerminalLogManagement;
 use PHPUnit\Framework\TestCase;
 
 class UpaMicTests extends TestCase
@@ -50,7 +50,7 @@ class UpaMicTests extends TestCase
         $gpApiConfig->accessTokenInfo = $accessTokenInfo;
         $config->gatewayConfig = $gpApiConfig;
         $config->requestIdProvider = new RequestIdProvider();
-        $config->logManagementProvider = new LogManagement();
+        $config->logManagementProvider = new TerminalLogManagement();
 
         return $config;
     }
