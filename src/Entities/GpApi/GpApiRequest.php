@@ -24,4 +24,5 @@ class GpApiRequest extends Request
     const ACCOUNTS_ENDPOINT = '/accounts';
     const TRANSFER_ENDPOINT = '/transfers';
     const DEVICE_ENDPOINT = '/devices';
+    const FILE_PROCESSING = '/files';
 }

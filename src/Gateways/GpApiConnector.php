@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Gateways;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Builders\BaseBuilder;
+use GlobalPayments\Api\Builders\FileProcessingBuilder;
 use GlobalPayments\Api\Builders\FraudBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Builders\PayFacBuilder;
@@ -16,6 +17,7 @@ use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
+use GlobalPayments\Api\Entities\FileProcessor;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\GpApi\GpApiTokenResponse;
@@ -30,14 +32,13 @@ use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\User;
 use GlobalPayments\Api\Gateways\Interfaces\IDeviceCloudService;
+use GlobalPayments\Api\Gateways\Interfaces\IFileProcessingService;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Mapping\GpApiMapping;
 use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
-use GlobalPayments\Api\Terminals\Abstractions\IDeviceMessage;
-use GlobalPayments\Api\Utils\GenerationUtils;
 
-class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dProvider, IPayFacProvider, IFraudCheckService, IDeviceCloudService
+class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dProvider, IPayFacProvider, IFraudCheckService, IDeviceCloudService, IFileProcessingService
 {
     const GP_API_VERSION = '2021-03-22';
     const IDEMPOTENCY_HEADER = 'x-gp-idempotency';
@@ -213,6 +214,16 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         );
     }
 
+    public function processFileUpload(FileProcessingBuilder $builder) : FileProcessor
+    {
+        if (empty($this->accessToken)) {
+            $this->signIn();
+        }
+        $response = $this->executeProcess($builder);
+
+        return GpApiMapping::mapFileProcessingResponse($response);
+    }
+
     private function executeProcess(BaseBuilder $builder)
     {
         $processFactory = new RequestBuilderFactory();
@@ -371,6 +382,14 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         ) {
             $accessTokenInfo->merchantManagementAccountID = $response->getMerchantManagementAccountID();
         }
+
+        if (
+            empty($accessTokenInfo->fileProcessingAccountID) &&
+            empty($accessTokenInfo->fileProcessingAccountName)
+        ) {
+            $accessTokenInfo->fileProcessingAccountID = $response->getFileProcessingAccountID();
+        }
+
         $this->gpApiConfig->accessTokenInfo = $accessTokenInfo;
     }
 

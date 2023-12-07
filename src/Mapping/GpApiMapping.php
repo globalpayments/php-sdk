@@ -27,13 +27,15 @@ use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Enums\UserType;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\FileList;
+use GlobalPayments\Api\Entities\FileProcessor;
+use GlobalPayments\Api\Entities\FileUploaded;
 use GlobalPayments\Api\Entities\FraudManagementResponse;
 use GlobalPayments\Api\Entities\FraudRule;
 use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\PayerDetails;
 use GlobalPayments\Api\Entities\PayByLinkResponse;
-use GlobalPayments\Api\Entities\PayFac\UploadDocumentData;
 use GlobalPayments\Api\Entities\PayFac\UserReference;
 use GlobalPayments\Api\Entities\PaymentMethodList;
 use GlobalPayments\Api\Entities\Person;
@@ -78,6 +80,8 @@ class GpApiMapping
     const TRANSFER = 'TRANSFER';
     const FUNDS = 'FUNDS';
     const DOCUMENT_UPLOAD = 'DOCUMENT_UPLOAD';
+    const FILE_CREATE = 'FILE_CREATE';
+    const FILE_SINGLE = 'FILE_SINGLE';
 
     /**
      * Map a response to a Transaction object for further chaining
@@ -875,6 +879,7 @@ class GpApiMapping
         $paymentMethodApm = $response->payment_method->apm;
         $apm->redirectUrl = !empty($response->payment_method->redirect_url) ?
             $response->payment_method->redirect_url : ($paymentMethodApm->redirect_url ?? null);
+        $apm->qrCodeImage = $response->payment_method->qr_code ?? null;
         if (is_string($paymentMethodApm->provider)) {
             $apm->providerName = $paymentMethodApm->provider;
         } elseif (is_object($paymentMethodApm->provider)) {
@@ -926,7 +931,8 @@ class GpApiMapping
                 $authorization->protection_eligibilty_type : null;
             $apm->authReference = !empty($authorization->reference) ? $authorization->reference : null;
         }
-
+        $apm->nextAction = $paymentMethodApm->next_action ?? null;
+        $apm->secondsToExpire = $paymentMethodApm->seconds_to_expire ?? null;
         $transaction->alternativePaymentResponse = $apm;
 
         return $transaction;
@@ -1170,6 +1176,46 @@ class GpApiMapping
         }
     }
 
+    public static function mapFileProcessingResponse($response)
+    {
+        $fp = new FileProcessor();
+        switch ($response->action->type) {
+            case self::FILE_CREATE:
+                self::mapGeneralFileProcessingResponse($response, $fp);
+                $fp->createdDate = $response->time_created;
+                $fp->uploadUrl = $response->url;
+                $fp->expirationDate = $response->expiration_date;
+                break;
+            case self::FILE_SINGLE:
+                self::mapGeneralFileProcessingResponse($response, $fp);
+                $fp->totalRecordCount = $response->total_record_count ?? null;
+                if (!empty($response->response_files)) {
+                    $fp->files = new FileList();
+                    foreach ($response->response_files as $file) {
+                        $f = new FileUploaded();
+                        $f->url = $file->url;
+                        $f->timeCreated = $file->time_created;
+                        $f->expirationDate = $file->expiration_date;
+                        $f->fileName = $file->name;
+                        $f->fileId = $file->response_file_id;
+                        $fp->files->add($f);
+                    }
+                }
+                break;
+            default:
+                throw new UnsupportedTransactionException(sprintf("Unknown action type %s", $response->action->type));
+        }
+
+        return $fp;
+    }
+
+    private static function mapGeneralFileProcessingResponse($response, &$fp)
+    {
+        $fp->resourceId = $response->id;
+        $fp->status = $fp->responseMessage = $response->status;
+        $fp->responseCode = $response->action->result_code;
+    }
+
     /**
      * @param $paymentMethods
      * @param User $user
@@ -1286,7 +1332,7 @@ class GpApiMapping
      * @param TransactionSummary|DepositSummary $summary
      * @param $system
      */
-    private static function mapSystemResponse(&$summary, $system)
+    private static function mapSystemResponse(TransactionSummary|DepositSummary &$summary, $system)
     {
         if (!isset($system)) {
             return;

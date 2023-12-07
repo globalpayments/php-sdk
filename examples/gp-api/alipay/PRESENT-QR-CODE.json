@@ -1,0 +1,44 @@
+{
+    "id": "TRN_TkrpUT1M83f20231017125212740",
+    "time_created": "2023-10-17T12:52:13.968Z",
+    "type": "SALE",
+    "status": "INITIATED",
+    "channel": "CNP",
+    "capture_mode": "AUTO",
+    "amount": "102",
+    "currency": "MOP",
+    "country": "MO",
+    "merchant_id": "MER_fba638a644644c7ab1fb8c148289452d",
+    "merchant_name": "product_production_test",
+    "account_id": "TRA_2642234293e34e9b9a4c01b44deaeab7",
+    "account_name": "apm_ap",
+    "reference": "92293801",
+    "payment_method": {
+        "result": "S0000",
+        "message": "Waiting for user to make payment",
+        "entry_mode": "ECOM",
+        "apm": {
+            "provider": {
+                "result": "SUCCESS",
+                "message": "Success",
+                "brand": "WECHAT",
+                "action": "PAYMENT",
+                "time_created_reference": "2023-10-17T20:52:13Z",
+                "name": "WeChat_Pay",
+                "merchant_identifier": "141928866"
+            },
+            "category": "E_WALLET",
+            "seconds_to_expire": "900",
+            "next_action": "PRESENT_QR_CODE"
+        },
+        "qr_code": "weixin://wxpay/bizpayurl?pr=0gWQb9Zzz"
+    },
+    "action": {
+        "id": "ACT_GWvKXqwDEzT4XfVYzzPYv03TYHzgOF",
+        "type": "INITIATE",
+        "time_created": "2023-10-17T12:52:13.968Z",
+        "result_code": "SUCCESS",
+        "app_id": "pwgpvp0ictNp99MEZebNLy2wSHgKZ1Hd",
+        "app_name": "product_production_ap_apm"
+    }
+}

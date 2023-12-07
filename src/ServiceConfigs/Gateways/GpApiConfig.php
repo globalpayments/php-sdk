@@ -82,6 +82,12 @@ class GpApiConfig extends GatewayConfig
      */
     public $deviceCurrency;
 
+    /**
+     * The endpoint where the merchant will receive a notification from the API for a specific action/resource (webhook)
+     * @var string
+     */
+    public string $statusUrl;
+
     public function __construct()
     {
         $this->gatewayProvider = GatewayProvider::GP_API;
@@ -103,6 +109,7 @@ class GpApiConfig extends GatewayConfig
         $services->gatewayConnector = $gateway;
         $services->reportingService = $gateway;
         $services->fraudService = $gateway;
+        $services->fileProcessingService = $gateway;
 
         $services->setOpenBankingProvider($gateway);
         $services->setPayFacProvider($gateway);

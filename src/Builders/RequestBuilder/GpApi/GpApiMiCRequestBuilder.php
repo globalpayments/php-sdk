@@ -30,7 +30,7 @@ class GpApiMiCRequestBuilder implements IRequestBuilder
      */
     public static function canProcess($builder = null)
     {
-        return true;
+        // TODO: Implement buildRequest() method.
     }
 
     /**

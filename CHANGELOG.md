@@ -4,7 +4,17 @@
 
 # Changelog
 
-## Latest Version - v11.0.2 (11/01/23)
+## Latest Version - v11.0.4 (12/07/23)
+### Enhancements:
+- [GP-API] Add QR code payment example with Alipay
+- [GP-API] File Processing
+- Security vulnerability fixes
+
+## v11.0.3 (11/07/23)
+### Enhancements:
+- [Terminals/Devices] Pulled LogManagement.php into src as TerminalLogManagement.php 
+
+## v11.0.2 (11/01/23)
 ### Enhancements:
 - [PAX Devices] Improvements to decline-response handling
 - [DiamondCloud] Add production endpoints

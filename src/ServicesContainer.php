@@ -214,6 +214,15 @@ class ServicesContainer
         throw new ApiException("The specified configuration has not been configured for fraud check.");
     }
 
+    public function getFileProcessingClient($configName)
+    {
+        if (array_key_exists($configName, static::$configurations)) {
+            return static::$configurations[$configName]->fileProcessingService;
+        }
+
+        throw new ApiException("The specified configuration has not been set for file processing!");
+    }
+
     public static function removeConfiguration($configName = 'default')
     {
         if (array_key_exists($configName, static::$configurations)) {

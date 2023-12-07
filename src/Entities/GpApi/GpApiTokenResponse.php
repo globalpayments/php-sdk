@@ -27,6 +27,7 @@ class GpApiTokenResponse
     const TRANSACTION_PROCESSING_ACCOUNT_NAME_PREFIX = 'TRA_';
     const RIKS_ASSESSMENT_ACCOUNT_NAME_PREFIX = 'RAA_';
     const MERCHANT_MANAGEMENT_ACCOUNT_PREFIX = 'MMA_';
+    const FILE_PROCESSING_ACCOUNT_PREFIX = 'FPA_';
 
     public function __construct($response)
     {
@@ -129,6 +130,16 @@ class GpApiTokenResponse
     public function getMerchantManagementAccountID()
     {
         return $this->getAccountID(self::MERCHANT_MANAGEMENT_ACCOUNT_PREFIX);
+    }
+
+    public function getFileProcessingAccountName()
+    {
+        return $this->getAccountName(self::FILE_PROCESSING_ACCOUNT_PREFIX);
+    }
+
+    public function getFileProcessingAccountID()
+    {
+        return $this->getAccountID(self::FILE_PROCESSING_ACCOUNT_PREFIX);
     }
 
     public function getToken()

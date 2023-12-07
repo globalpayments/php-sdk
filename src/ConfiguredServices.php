@@ -2,9 +2,9 @@
 
 namespace GlobalPayments\Api;
 
+use GlobalPayments\Api\Gateways\Interfaces\IFileProcessingService;
 use GlobalPayments\Api\Gateways\IPaymentGateway;
 use GlobalPayments\Api\Gateways\IRecurringService;
-use GlobalPayments\Api\Gateways\ISecure3dProvider;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Gateways\OpenBankingProvider;
 use GlobalPayments\Api\Services\FraudService;
@@ -46,6 +46,8 @@ class ConfiguredServices
 
     /** @var FraudService */
     public $fraudService;
+
+    public IFileProcessingService $fileProcessingService;
 
     public function __construct()
     {

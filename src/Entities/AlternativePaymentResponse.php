@@ -96,4 +96,10 @@ class AlternativePaymentResponse
     public $authProtectionEligibiltyType;
     public $authReference;
     public $feeAmount;
+
+    /* start region Alipay */
+    public ?string $nextAction;
+    public ?string $secondsToExpire;
+    public ?string $qrCodeImage;
+    /* end region*/
 }

@@ -56,4 +56,8 @@ class AccessTokenInfo
 
     /** @var string */
     public $merchantManagementAccountID;
+
+    public ?string $fileProcessingAccountID;
+
+    public ?string $fileProcessingAccountName;
 }

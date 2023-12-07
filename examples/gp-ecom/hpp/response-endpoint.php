@@ -53,7 +53,8 @@ try {
     echo "\n Response Message : " . !empty($responseMessage) ? htmlspecialchars($responseMessage) : "";
     echo "\n Response Values : ";
     if (!empty($responseValues))
-        print_r($responseValues);
+       print_r(array_map("htmlspecialchars", $responseValues));
+
 } catch (ApiException $e) {
     print_r($e);
     // For example if the SHA1HASH doesn't match what is expected
