@@ -4,7 +4,12 @@
 
 # Changelog
 
-## Latest Version - v11.0.4 (12/07/23)
+## Latest Version - v11.0.5 (01/09/24)
+#### Bug Fixes:
+- [Portico] Fixed null CustomerData exception
+- [A35_PAX] Fixed long transaction processing times
+
+## v11.0.4 (12/07/23)
 ### Enhancements:
 - [GP-API] Add QR code payment example with Alipay
 - [GP-API] File Processing

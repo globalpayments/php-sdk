@@ -53,6 +53,7 @@ class PaxTerminalResponse extends PaxBaseResponse implements IDeviceResponseHand
     public $taxExemptId;
     public $ticketNumber;
     public $paymentType;
+    public $transactionNumber;
 
     // EMV
     /*

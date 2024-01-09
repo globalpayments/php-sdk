@@ -252,7 +252,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $isCheck
             || $builder->billingAddress !== null
             || isset($builder->paymentMethod->{$propertyName})
-            || $builder->customerData->email !== null
+            || ($builder->customerData !== null && $builder->customerData->email !== null)
         ) {
             if ($builder->transactionType !== TransactionType::REVERSAL) {
                 $holder = $this->hydrateHolder($xml, $builder, $isCheck);
@@ -2059,12 +2059,12 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
      * Serializes builder information into XML
      *
      * @param DOMDocument $xml XML instance
-     * @param BaseBuilder $builder Request builder
+     * @param AuthorizationBuilder $builder Request builder
      * @param bool $isCheck If payment method is ACH
      *
      * @return DOMElement
      */
-    protected function hydrateHolder(DOMDocument $xml, BaseBuilder $builder, $isCheck = false)
+    protected function hydrateHolder(DOMDocument $xml, AuthorizationBuilder $builder, $isCheck = false)
     {
         $address = new Address();
         $holder = $xml->createElement($isCheck ? 'ConsumerInfo' : 'CardHolderData');
@@ -2088,7 +2088,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             );
         }
 
-        if ($builder->customerData->email !== null) {
+        if ($builder->customerData !== null && $builder->customerData->email !== null) {
             $holder->appendChild(
                 $xml->createElement($isCheck ? 'EmailAddress' : 'CardHolderEmail',$builder->customerData->email));
         }

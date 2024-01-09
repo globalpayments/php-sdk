@@ -195,18 +195,38 @@ class PaxTcpInterface implements IDeviceCommInterface
         }
     }
     
-    private function awaitResponse($readString = false)
+    /**
+     * 
+     * @param bool $readString 
+     * @return string 
+     * @throws GatewayException 
+     */
+    private function awaitResponse(bool $readString = false) : string
     {
         $startTime = time();
+        
         do {
-            $part = ($readString === true) ? fgets($this->tcpConnection) : fgetc($this->tcpConnection);
-            if (!empty($part)) {
-                if ($readString) {
-                    return substr($part, 0, strpos($part, chr(0x03)) + 2);
-                }
-                return $part;
+            if ($readString) {
+                $buffer = '';
+
+                do {
+                    $buffer = $buffer . fgetc($this->tcpConnection);
+                    
+                    if (
+                        strpos($buffer, chr(0x03))
+                        && strlen($buffer) === strpos($buffer, chr(0x03)) + 2
+                    )
+                        break;
+                } while (true);
+            } else {
+                $buffer = fgetc($this->tcpConnection);
             }
+
+            if (!empty($buffer))
+                return $buffer;
+
             $timeDiff = time() - $startTime;
+
             if ($timeDiff >= $this->deviceDetails->timeout) {
                 break;
             }

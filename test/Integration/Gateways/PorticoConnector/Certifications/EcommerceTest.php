@@ -36,6 +36,8 @@ use GlobalPayments\Api\ServicesContainer;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\Services\{BatchService, ReportingService};
+use SebastianBergmann\RecursionContext\InvalidArgumentException;
+use PHPUnit\Framework\ExpectationFailedException;
 
 class TestCards
 {
@@ -2134,7 +2136,42 @@ class EcommerceTest extends TestCase
 
         $response = $card->charge()
             ->withCurrency('USD')
+            ->withAllowDuplicates(true)
             ->withCustomerData($customerData)
+            ->withAddress($address)
+            ->withAmount(15.01)
+            ->execute();
+
+        $this->assertEquals(true, $response != null);
+        $this->assertEquals('00', $response->responseCode);
+
+        $transactionSummary = ReportingService::transactionDetail($response->transactionId)->execute(); 
+        $this->assertNotNull($transactionSummary);
+        $this->assertEquals($customerEmail, $transactionSummary->email);
+    }
+
+    /**
+     * 
+     * @return void 
+     * @throws ApiException 
+     * @throws InvalidArgumentException 
+     * @throws ExpectationFailedException 
+     * 
+     * This will verify an empty string can be returned
+     * for email property in TransactionSummary object
+     */
+    public function testCardHolderEmailWithoutEmail()
+    {
+        $customerEmail = '';    
+        $address = new Address();
+        $address->streetAddress1 = '6860 Dallas Pkwy';
+        $address->postalCode = '75024';
+      
+        $card = TestCards::visaManual();
+
+        $response = $card->charge()
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
             ->withAddress($address)
             ->withAmount(15.01)
             ->execute();
