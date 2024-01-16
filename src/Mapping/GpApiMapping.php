@@ -883,7 +883,7 @@ class GpApiMapping
         if (is_string($paymentMethodApm->provider)) {
             $apm->providerName = $paymentMethodApm->provider;
         } elseif (is_object($paymentMethodApm->provider)) {
-            $apm->providerName = strtolower($paymentMethodApm->provider->name) ?? null;
+            $apm->providerName = $paymentMethodApm->provider->name ?? null;
             $apm->providerReference = $paymentMethodApm->provider->merchant_identifier ?? null;
             $apm->timeCreatedReference = $paymentMethodApm->provider->time_created_reference ?? null;
         }

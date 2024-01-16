@@ -8,9 +8,9 @@ use GlobalPayments\Api\Services\GpApiService;
 
 class GenerateToken
 {
-    const APP_ID = 'QzFNaCAVCSH4tELLYz5iReERAJ3mqHu7';
-    const APP_KEY = '0QCyAwox3nRufZhX';
-    const ACCOUNT_ID = 'TRA_c7fdc03bc9354fd3b674dddb22583553';
+    const APP_ID = 'bvKLJsu6vYC9zxX2BpOgNK95kbboP3Uw';
+    const APP_KEY = '7aH9QlA3yVFwpESQ';
+    const ACCOUNT_ID = 'TRA_1366cd0db8c14fffb130ab49be84d944';
 
     private static $instance = null;
     private string $accessToken;

@@ -4,7 +4,14 @@
 
 # Changelog
 
-## Latest Version - v11.0.5 (01/09/24)
+## Latest Version - v11.0.6 (01/16/24)
+### Enhancements:
+- [GP-API] Update QR code payment example for WeChat
+
+#### Bug Fixes:
+[GP-ECOM] Fix parseResponse on HostedService when TIMESTAMP is not returned from API
+
+## v11.0.5 (01/09/24)
 #### Bug Fixes:
 - [Portico] Fixed null CustomerData exception
 - [A35_PAX] Fixed long transaction processing times

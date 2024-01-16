@@ -18,6 +18,7 @@ GlobalPayments.configure({
 const cardForm = GlobalPayments.creditCard.form(
     '#credit-card',
     {
+        amount: "20",
         style: "gp-default",
         apms: [
             GlobalPayments.enums.Apm.QRCodePayments,
@@ -39,6 +40,7 @@ cardForm.on(GlobalPayments.enums.QRCodePaymentsMerchantInteractionEvents.Payment
         });
         window.dispatchEvent(merchantCustomEventProvideDetails);
     }
-    xmlhttp.open("GET", "initiatePayment.php?q=" + provider);
+
+    xmlhttp.open("GET", "initiatePayment.php?provider=" + provider);
     xmlhttp.send();
 });

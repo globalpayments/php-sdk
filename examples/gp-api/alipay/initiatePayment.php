@@ -4,7 +4,6 @@ require_once('../../../autoload_standalone.php');
 require_once('GenerateToken.php');
 
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
-use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\MerchantCategory;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
@@ -15,24 +14,29 @@ use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 
-$decodedData = json_decode(file_get_contents('php://input'));
-$provider = $decodedData->provider;
+$provider = $_GET['provider'] ?? '';
+
+if ($provider === 'WeChat') {
+    $provider = AlternativePaymentType::WECHAT_PAY;
+} else {
+    $provider = strtolower($provider);
+}
 
 // configure client & request settings
 $config = new GpApiConfig();
 $config->appId = GenerateToken::APP_ID;
 $config->appKey = GenerateToken::APP_KEY;
-$config->environment = Environment::TEST;
 $config->channel = Channel::CardNotPresent;
+$config->country = 'HK';
 $config->accessTokenInfo = new AccessTokenInfo();
 $config->accessTokenInfo->transactionProcessingAccountID = GenerateToken::ACCOUNT_ID;
 $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
 ServicesContainer::configureService($config);
 
-$paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::ALIPAY);
+$paymentMethod = new AlternativePaymentMethod($provider);
 $paymentMethod->returnUrl = $_SERVER['HTTP_ORIGIN'] . '/examples/gp-api/alipay/returnUrl';
 $paymentMethod->statusUpdateUrl = $_SERVER['HTTP_ORIGIN'] . '/examples/gp-api/alipay/returnUrl';
-$paymentMethod->country = 'US';
+$paymentMethod->country = 'HK';
 $paymentMethod->accountHolderName = 'Jane Doe';
 
 try {
@@ -48,10 +52,10 @@ try {
 // simple example of how to prepare the JSON string for JavaScript Library
 $responseJson = array(
     "seconds_to_expire" => $response->alternativePaymentResponse->secondsToExpire ?? '120',
-    "next_action" => $response->alternativePaymentResponse->nextAction,
-    "redirect_url" => $response->alternativePaymentResponse->redirectUrl,
-    "qr_code" => $response->alternativePaymentResponse->qrCodeImage,
-    "provider" => $response->alternativePaymentResponse->providerName
+    "next_action" => $response->alternativePaymentResponse->nextAction ?? '',
+    "redirect_url" => $response->alternativePaymentResponse->redirectUrl ?? '',
+    "qr_code" => $response->alternativePaymentResponse->qrCodeImage ?? '',
+    "provider" => $response->alternativePaymentResponse->providerName ?? ''
 );
 
 echo json_encode($responseJson);
