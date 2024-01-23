@@ -172,6 +172,8 @@ class TerminalUtils
         array_push($buffer, chr(ControlCodes::ETX));
         array_push($buffer, chr(ControlCodes::LF));
 
-        return new DeviceMessage($buffer);
+        $deviceMessage = new DeviceMessage($buffer);
+        $deviceMessage->setJsonRequest($requestMessage);
+        return $deviceMessage;
     }
 }

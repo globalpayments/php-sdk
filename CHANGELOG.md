@@ -4,7 +4,14 @@
 
 # Changelog
 
-## Latest Version - v11.0.6 (01/16/24)
+## Latest Version - v11.0.7 (01/22/24)
+### Enhancements:
+- [GP-ECOM] Update parseResponse for HostedService
+
+#### Bug Fixes:
+- [MEET-IN-THE-CLOUD][UPA] - Fix endOfDay
+
+## v11.0.6 (01/16/24)
 ### Enhancements:
 - [GP-API] Update QR code payment example for WeChat
 

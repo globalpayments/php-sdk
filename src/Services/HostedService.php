@@ -136,8 +136,8 @@ class HostedService
 
             $response = $iterator->getArrayCopy();
         }
-
-        if (!isset($response['MERCHANT_RESPONSE_URL'])) {
+        $isApm = isset($response['paymentmethod']) || isset($response['PAYMENTMETHOD']);
+        if (isset($response['fundsstatus'])) {
             $response = $this->mapTransactionStatusResponse($response);
         }
 
@@ -164,7 +164,7 @@ class HostedService
                 $result,
                 $message,
                 $transactionId,
-                !isset($response['MERCHANT_RESPONSE_URL']) ? $paymentMethod :$authCode
+                isset($response['TRANSACTION_STATUS']) ? $paymentMethod : $authCode
             ]),
             $this->shaHashType
         );
@@ -176,7 +176,7 @@ class HostedService
         $ref = new TransactionReference();
         $ref->authCode = $authCode;
         $ref->orderId = $orderId;
-        $ref->paymentMethodType = !empty($response['PAYMENTMETHOD']) ? PaymentMethodType::APM : PaymentMethodType::CREDIT;
+        $ref->paymentMethodType = $isApm ? PaymentMethodType::APM : PaymentMethodType::CREDIT;
         $ref->transactionId = $transactionId;
 
         $trans = new Transaction();

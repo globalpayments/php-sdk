@@ -21,14 +21,15 @@ use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 
 // configure client, request and HPP settings
 $config = new GpEcomConfig();
-/* Credentials for OpenBanking HPP
-$config->merchantId = "openbankingsandbox";
-$config->accountId = "internet";
-$config->sharedSecret = "sharedsecret";
-*/
+/* Credentials for OpenBanking HPP*/
+//$config->merchantId = "openbankingsandbox";
+//$config->accountId = "internet";
+//$config->sharedSecret = "sharedsecret";
+
 $config->merchantId = "heartlandgpsandbox";
 $config->accountId = "hpp";
 $config->sharedSecret = "secret";
+
 $config->serviceUrl = "https://pay.sandbox.realexpayments.com/pay";
 $config->enableBankPayment = true;
 $config->hostedPaymentConfig = new HostedPaymentConfig();
@@ -51,7 +52,7 @@ if (isset($_REQUEST['notReturnAddress'])) {
 $hostedPaymentData->customerCountry = 'DE';
 $hostedPaymentData->customerFirstName = 'James';
 $hostedPaymentData->customerLastName = 'Mason';
-$baseUrl = 'https://ff6e-2a02-2f0e-5615-3300-b580-5acb-6bf-4b11.ngrok-free.app';
+$baseUrl = 'https://516b-2a02-2f0e-5e11-1500-3944-7324-2f8a-fbfd.ngrok-free.app';
 $hostedPaymentData->transactionStatusUrl = "$baseUrl/examples/gp-ecom/hpp/status-endpoint.php";
 $hostedPaymentData->merchantResponseUrl =  "$baseUrl/examples/gp-ecom/hpp/response-endpoint.php";
 $hostedPaymentData->presetPaymentMethods = [HostedPaymentMethods::CARDS, HostedPaymentMethods::OB, AlternativePaymentType::SOFORTUBERWEISUNG];
@@ -81,6 +82,13 @@ $bankPayment->accountName = 'AccountName';
 $hostedPaymentData->bankPayment = $bankPayment;
 
 try {
+    /* in case you want to test also a verify request you can use the example below
+    $hppJson = $service->verify()
+        ->withCurrency('EUR')
+        ->withHostedPaymentData($hostedPaymentData)
+        ->withAddress($billingAddress, AddressType::BILLING)
+        ->serialize();
+    */
     $hppJson = $service->charge(19.99)
         ->withCurrency("EUR")
         ->withHostedPaymentData($hostedPaymentData)

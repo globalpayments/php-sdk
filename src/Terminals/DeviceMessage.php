@@ -44,6 +44,9 @@ class DeviceMessage implements IDeviceMessage
 
     public function getRequestField($key)
     {
+        if (!is_array($this->jsonRequest)) {
+            return;
+        }
         $value = null;
         array_walk_recursive($this->jsonRequest, function ($item, $k) use ($key, &$value) {
             if ($k === $key) {

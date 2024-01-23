@@ -221,4 +221,13 @@ class UpaMicTests extends TestCase
             $this->assertTrue($exceptionCaught);
         }
     }
+
+    public function testEndOfDay()
+    {
+        $response = $this->device->endOfDay();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('INITIATED', $response->deviceResponseText);
+    }
 }
