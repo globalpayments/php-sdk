@@ -15,6 +15,7 @@ use GlobalPayments\Api\Tests\Data\TestCards;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use PHPUnit\Framework\TestCase;
 
+
 final class RecurringTest extends TestCase
 {
     /** @var string */
@@ -312,6 +313,8 @@ final class RecurringTest extends TestCase
             $this->getIdentifier('CheckPpd'),
             $check
         )->create();
+
+        $this->assertNotNull($check);
     }
 
     // Recurring Billing using PayPlan - Managed Schedule
@@ -371,23 +374,23 @@ final class RecurringTest extends TestCase
     public function test010AddScheduleCheckPPD()
     {
         if (static::$paymentMethodCheckPpd == null) {
-            $this->markTestIncomplete();
-        }
+    $this->markTestIncomplete();
+    }
 
-        $schedule = static::$paymentMethodCheckPpd->addSchedule(
-            $this->getIdentifier('CheckPPD')
-        )
+    $schedule = static::$paymentMethodCheckPpd->addSchedule(
+    $this->getIdentifier('CheckPPD')
+    )
             ->withStatus('Active')
-            ->withAmount(30.03)
-            ->withCurrency('USD')
-            ->withStartDate(\DateTime::createFromFormat('Y-m-d', '2027-02-01'))
-            ->withFrequency(ScheduleFrequency::MONTHLY)
-            ->withReprocessingCount(1)
-            ->withnumberOfPaymentsRemaining(2)
-            ->create();
-        $this->assertNotNull($schedule);
-        $this->assertNotNull($schedule->key);
-        static::$scheduleCheckPpd = $schedule;
+    ->withAmount(30.03)
+    ->withCurrency('USD')
+    ->withStartDate(\DateTime::createFromFormat('Y-m-d', '2027-02-01'))
+    ->withFrequency(ScheduleFrequency::MONTHLY)
+    ->withReprocessingCount(1)
+    ->withnumberOfPaymentsRemaining(2)
+    ->create();
+    $this->assertNotNull($schedule);
+    $this->assertNotNull($schedule->key);
+    static::$scheduleCheckPpd = $schedule;
     }
 
     public function test011AddScheduleCheckCCD()
@@ -430,6 +433,8 @@ final class RecurringTest extends TestCase
             ->withReprocessingCount(1)
             ->withStatus('Active')
             ->create();
+
+            $this->assertNotNull($schedule);
     }
 
     /**
@@ -452,6 +457,8 @@ final class RecurringTest extends TestCase
             ->withReprocessingCount(1)
             ->withnumberOfPaymentsRemaining(2)
             ->create();
+
+            $this->assertNotNull($schedule);
     }
 
     // Recurring Billing using PayPlan - Managed Schedule
@@ -596,6 +603,22 @@ final class RecurringTest extends TestCase
             ->execute();
         $this->assertNotNull($response);
         $this->assertEquals('1', $response->responseCode);
+    }
+
+    public function test023bValidateAccountLast4InResponse():void
+    {
+        $card = new CreditCardData();
+        $card->number = '4012002000060016';
+        $card->expMonth = '12';
+        $card->expYear = TestCards::validCardExpYear();
+
+        $paymentMethod = static::$customerPerson->addPaymentMethod(
+            $this->getIdentifier('CreditV'),
+            $card
+        )->create();
+
+        $this->assertNotNull($paymentMethod);
+        $this->assertEquals("0016",$paymentMethod->accountNumberLast4);
     }
 
     public function test024RecurringBillingVisaWithCOF()

@@ -36,6 +36,7 @@ class BaseGpApiTestConfig
         $config->country = 'US';
         $config->accessTokenInfo = new AccessTokenInfo();
         $config->accessTokenInfo->transactionProcessingAccountName = 'transaction_processing';
+        $config->accessTokenInfo->riskAssessmentAccountName = 'EOS_RiskAssessment';
 
         $config->challengeNotificationUrl = "https://ensi808o85za.x.pipedream.net/";
         $config->methodNotificationUrl = "https://ensi808o85za.x.pipedream.net/";

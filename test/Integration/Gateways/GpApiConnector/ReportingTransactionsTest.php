@@ -89,7 +89,7 @@ class ReportingTransactionsTest extends TestCase
 
     public function testReportFindTransactionsById()
     {
-        $transactionId = 'TRN_s7T1HzZAnEMcsxRsp2mMyx5v3FNEBr_795095a9e0cf';
+        $transactionId = 'TRN_C7vphPAKEn3eYwo9QJiCYeqnFanF6U_c7c2fffd2836';
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->withTransactionId($transactionId)

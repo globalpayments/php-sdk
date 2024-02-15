@@ -67,6 +67,13 @@ class RecurringPaymentMethod extends RecurringEntity implements
     public $nameOnAccount;
 
     /**
+     * The last four(4) digits of the Credit Card.
+     *
+     * @var string
+     */
+    public $accountNumberLast4;
+
+    /**
      * @var IPaymentMethod
      */
     private $paymentMethod;

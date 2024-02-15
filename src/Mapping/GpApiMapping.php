@@ -297,9 +297,9 @@ class GpApiMapping
                 return FraudFilterResult::BLOCK;
             case 'NOT_EXECUTED':
                 return FraudFilterResult::NOT_EXECUTED;
-            case 'RELEASE_SUCCESSFULL':
+            case 'RELEASE_SUCCESSFUL':
                 return FraudFilterResult::RELEASE_SUCCESSFUL;
-            case 'HOLD_SUCCESSFULL':
+            case 'HOLD_SUCCESSFUL':
                 return FraudFilterResult::HOLD_SUCCESSFUL;
             default:
                 return 'UNKNOWN';

@@ -30,9 +30,9 @@ class GpApiDigitalWalletTest extends TestCase
         $this->card->cardHolderName = "James Mason";
         $this->clickToPayToken = '8144735251653223601';
         $this->googlePayToken = '{
-          "signature": "MEUCIQDfPIw2HJESkx+b0HzNK1hi0O9sTh53YI8qrakH7TDhvQIgaqjMtjK3u3z3ebO1yN5XdemDPsMb9SyxiybevScdvu4=",
+          "signature": "MEQCICeHhPSrVhVghzBUwtQcBZq9ed1+oe8wcInjOG5TciXeAiBmw35LvnI0POMW5p+oxisD2ImtZ9HmyKcYIYUX4kINtw==",
           "protocolVersion": "ECv1",
-          "signedMessage": "{\"encryptedMessage\":\"Q8iPUJbx6BAIk0h36AzVv7e0GCZaNMDXGEl00VQg8zfHW8X9Qjcz0k48tQp0fxB0Q4bkcapTf1Nm3ANcHsffKCuPMZgROFwNwyvOfgylAVwskJx05OBGlxTzm3s1bn7BQNE7P0UM1q+oIO+lsRtW/tIGNsEvTOZC46QGET2hsTp8l0GylWHu2L0Gw/yYFYzuq8HB0i/xrkox89eWc0dEgYg6FNhD8t1yYitCk9949HquUeXZ9Bp1fBIqBIfiQtrz/I+4EH3fu4rDrSBzmxJaZK8p/XiMjhuYkt8nwQ7j4bX5xKUwpt1IpcU1kPmt5oPLvHIMO3+RFpivWRbwMjtMB1uOyNVVFoaWM3na94xj4IBTTvloUukOXpP/AZHa2uW2YHdlTRe9DCLEcnz2W15R5xnkOQGZNRRnrY7FvzSOAHuFPQ3xvvssENfVyI9TBdNysK4z\",\"ephemeralPublicKey\":\"BGpWSSPHmkBGiPi/jdUIRsCU5DoeJSP4MKlvvoWfM7JE8iOx5QLP3uuJdMrwAJ0q162XUyw67jb3vDiuZ7nt6C8\\u003d\",\"tag\":\"RZaAl8H0eUIQTGuK7l/aTQLoFJ+nzgcuSJnpotK3oAQ\\u003d\"}"
+          "signedMessage": "{\"encryptedMessage\":\"E+gmqwjr4RZUMA0iQKJJS69k+kQirnRQGf4F0OglGXNcXnBCHDAmgKyjFxTS8l0pRkgG6f6qvgrTDPL6m+XxOIAQ9mh6yM2MerybNYaPUuVZl2MGBe1eckVg3oYYsuIOLkF6Qrq/+fpZhcXZPQbsAgx0dt1IDOE3XL245aIrxHED01gFLZQE2eizQIXVtbU4eJahysBjzDu9nUMhHKE3eAHW+ltuyFtB4jGTUKRJHM5x2YsXgyy5hzY9zjiPYc7uNNSCWQUUSYdVY0dzT9DUO5jvl0YhsZVvjHgSCRKEsBisDbbhs3pkUvCQnPZYSqflTl/EendCyUDq8PgtVSNYdyH+ByAe67kOMbiQ2LTXu8Nry0/UUvTdc8RdRR3aC1LpKf2KlEFiYdbYTi1IiGiK16cJHqrbOyjXXzqWp878jn2hSO3/ONAdshacHGrFWw58BHH9\",\"ephemeralPublicKey\":\"BJlb3xtHbQ/7thj/4D+eXls+fbjewUw1EWEc6diZOvkeIBPvUbbTCzHo448t6sEuffCZ9u+rqVWnA2p6djT+1h8\\u003d\",\"tag\":\"CSB0z2fhjaY5KjRnh1k0G5X2HiTxLTdXUYTiflKm7So\\u003d\"}"
         }';
     }
 

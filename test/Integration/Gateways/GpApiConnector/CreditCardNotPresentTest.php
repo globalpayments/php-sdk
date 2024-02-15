@@ -1244,12 +1244,10 @@ class CreditCardNotPresentTest extends TestCase
     public function testUpdatePaymentToken()
     {
         $startDate = (new DateTime())->modify('-30 days')->setTime(0, 0, 0);
-        $endDate = (new DateTime())->modify('-1 days')->setTime(0, 0, 0);
 
         $response = ReportingService::findStoredPaymentMethodsPaged(1, 1)
             ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::DESC)
             ->where(SearchCriteria::START_DATE, $startDate)
-            ->andWith(SearchCriteria::END_DATE, $endDate)
             ->execute();
 
         $this->assertCount(1, $response->result);

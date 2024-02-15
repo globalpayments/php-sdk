@@ -164,25 +164,25 @@ class DiamondCloudTests extends TestCase
     public function testCancelAuth()
     {
         $transactionId = 'DJKK7BY4MWV';
-        $captureResponse = $this->device->deletePreAuth()
+        $cancelAuthResponse = $this->device->deletePreAuth()
             ->withTransactionId($transactionId)
             ->execute();
 
-        $this->assertNotNull($captureResponse);
-        $this->assertEquals('00', $captureResponse->deviceResponseCode);
-        $this->assertNotNull($captureResponse->transactionId);
+        $this->assertNotNull($cancelAuthResponse);
+        $this->assertEquals('00', $cancelAuthResponse->deviceResponseCode);
+        $this->assertNotNull($cancelAuthResponse->transactionId);
     }
 
     public function testAuthIncreasing()
     {
         $transactionId = 'DJKK7BY4MWV';
-        $captureResponse = $this->device->increasePreAuth(3)
+        $authIncreasingResponse = $this->device->increasePreAuth(3)
             ->withTransactionId($transactionId)
             ->execute();
 
-        $this->assertNotNull($captureResponse);
-        $this->assertEquals('00', $captureResponse->deviceResponseCode);
-        $this->assertNotNull($captureResponse->transactionId);
+        $this->assertNotNull($authIncreasingResponse);
+        $this->assertEquals('00', $authIncreasingResponse->deviceResponseCode);
+        $this->assertNotNull($authIncreasingResponse->transactionId);
     }
 
     public function testEbtPurchase()

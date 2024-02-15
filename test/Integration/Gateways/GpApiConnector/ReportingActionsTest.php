@@ -193,7 +193,7 @@ class ReportingActionsTest extends TestCase
 
     public function testFindActions_FilterBy_ResourceId()
     {
-        $resourceId = $this->actionSummary->resourceId ?? 'TRN_xrMGGiLzU8hmuj55ZfnnxVBetKS2EX';
+        $resourceId = $this->actionSummary->resourceId ?? 'TRN_UG1RHqhOa2rayOD9t9diEHBRbFrz93_ded605ba6b28';
         $response = ReportingService::findActionsPaged(1, 10)
             ->where(SearchCriteria::RESOURCE_ID, $resourceId)
             ->execute();
@@ -257,10 +257,10 @@ class ReportingActionsTest extends TestCase
 
     public function testFindActions_FilterBy_AccountName()
     {
-//        $accountName = 'Transaction_Processing';
-        $accountName = 'Tokenization';
-//        $accountName = 'Settlement Reporting';
-//        $accountName = 'Dispute Management';
+//        $accountName = 'transaction_processing';
+        $accountName = 'tokenization';
+//        $accountName = 'settlement_reporting';
+//        $accountName = 'dispute_management';
         $response = ReportingService::findActionsPaged(1, 10)
             ->where(SearchCriteria::ACCOUNT_NAME, $accountName)
             ->execute();
@@ -294,7 +294,7 @@ class ReportingActionsTest extends TestCase
 
     public function testFindActions_FilterBy_Version()
     {
-        $version = '2020-04-10';
+        $version = '2021-03-22';
         $response = ReportingService::findActionsPaged(1, 10)
             ->where(SearchCriteria::VERSION, $version)
             ->execute();

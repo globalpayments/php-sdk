@@ -359,16 +359,19 @@ class GpApiPayByLinkTest extends TestCase
 
         fwrite(STDERR, print_r($response->payByLinkResponse->url, TRUE));
 
-        ServicesContainer::configureService($this->setupTransactionConfig(), "createTransaction");
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $config->permissions = ['PMT_POST_Create_Single'];
+        ServicesContainer::configureService($config, "singleUseToken");
 
         $tokenResponse = $this->card->tokenize(true, PaymentMethodUsageMode::SINGLE)
-            ->execute("createTransaction");
+            ->execute("singleUseToken");
         $tokenId = $tokenResponse->token;
 
         $tokenizedCard = new CreditCardData();
         $tokenizedCard->token = $tokenId;
         $tokenizedCard->cardHolderName = "James Mason";
 
+        ServicesContainer::configureService($this->setupTransactionConfig(), "createTransaction");
         $transaction = $tokenizedCard->charge($this->amount)
             ->withCurrency('GBP')
             ->withPaymentLinkId($response->payByLinkResponse->id)

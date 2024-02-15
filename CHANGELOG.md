@@ -4,7 +4,12 @@
 
 # Changelog
 
-## Latest Version - v11.0.7 (01/22/24)
+## Latest Version - v11.0.8 (02/15/24)
+### Enhancements:
+- [GP-API] Unit tests enhancements
+- [PayPlan] Add AccountNumberLast4 in recurring payment method response 
+
+## v11.0.7 (01/22/24)
 ### Enhancements:
 - [GP-ECOM] Update parseResponse for HostedService
 

@@ -581,6 +581,7 @@ class PayPlanConnector extends RestGateway implements IRecurringService
         $paymentMethod->id = isset($response->paymentMethodIdentifier) ? $response->paymentMethodIdentifier : null;
         $paymentMethod->customerKey = isset($response->customerKey) ? $response->customerKey : null;
         $paymentMethod->nameOnAccount = isset($response->nameOnAccount) ? $response->nameOnAccount : null;
+        $paymentMethod->accountNumberLast4 = isset($response->accountNumberLast4) ? $response->accountNumberLast4 : null;
         $paymentMethod->commercialIndicator = isset($response->cpcInd) ? $response->cpcInd : null;
         $paymentMethod->taxType = isset($response->cpcTaxType) ? $response->cpcTaxType : null;
         $paymentMethod->expirationDate = isset($response->expirationDate) ? $response->expirationDate : null;

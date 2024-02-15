@@ -257,8 +257,8 @@ class GpApiOpenBankingTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $errorFound = true;
-            $this->assertEquals('Status Code: SYSTEM_ERROR_DOWNSTREAM - Unable to process your request due to an error with a system down stream.', $e->getMessage());
-            $this->assertEquals('50046', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - return_url value is invalid. Please check the format and data provided is correct.', $e->getMessage());
+            $this->assertEquals('40090', $e->responseCode);
         } finally {
             $this->assertTrue($errorFound);
         }
@@ -277,8 +277,8 @@ class GpApiOpenBankingTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $errorFound = true;
-            $this->assertEquals('Status Code: SYSTEM_ERROR_DOWNSTREAM - Unable to process your request due to an error with a system down stream.', $e->getMessage());
-            $this->assertEquals('50046', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - status_url value is invalid. Please check the format and data provided is correct.', $e->getMessage());
+            $this->assertEquals('40090', $e->responseCode);
         } finally {
             $this->assertTrue($errorFound);
         }
@@ -337,8 +337,8 @@ class GpApiOpenBankingTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $errorFound = true;
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields payment_method.bank_transfer.bank.name', $e->getMessage());
-            $this->assertEquals('40005', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - payment_method.bank_transfer.bank.name value is invalid. Please check the format and data provided is correct.', $e->getMessage());
+            $this->assertEquals('40090', $e->responseCode);
         } finally {
             $this->assertTrue($errorFound);
         }
@@ -396,8 +396,8 @@ class GpApiOpenBankingTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $errorFound = true;
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields payment_method.bank_transfer.bank.name', $e->getMessage());
-            $this->assertEquals('40005', $e->responseCode);
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - payment_method.bank_transfer.bank.name value is invalid. Please check the format and data provided is correct.', $e->getMessage());
+            $this->assertEquals('40090', $e->responseCode);
         } finally {
             $this->assertTrue($errorFound);
         }

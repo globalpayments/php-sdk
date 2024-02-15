@@ -1133,8 +1133,8 @@ class GpApi3DS2Test extends TestCase
         $mobileData = new MobileData();
         $mobileData->encodedData = 'ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K';
         $mobileData->applicationReference = 'f283b3ec-27da-42a1-acea-f3f70e75bbdc';
-        $mobileData->sdkInterface = SdkInterface::BROWSER;
-        $mobileData->sdkUiTypes = [SdkUiType::HTML_OTHER];
+        $mobileData->sdkInterface = SdkInterface::BOTH;
+        $mobileData->sdkUiTypes = [SdkUiType::OOB];
         $mobileData->ephemeralPublicKey = '{
             "kty": "EC",
             "crv": "P-256",
@@ -1156,8 +1156,13 @@ class GpApi3DS2Test extends TestCase
             ->execute();
 
         $this->assertInitiate3DSV2($initAuth);
-        $this->assertEquals('HTML', $initAuth->acsInterface);
-        $this->assertEquals(SdkUiType::HTML_OTHER, $initAuth->acsUiTemplate);
+        $this->assertNotNull($initAuth->payerAuthenticationRequest);
+        $this->assertNotNull($initAuth->acsInterface);
+        $this->assertNotNull($initAuth->acsUiTemplate);
+        $this->assertNotNull($initAuth->acsReferenceNumber);
+        $this->assertNotNull($initAuth->providerServerTransRef);
+        $this->assertEquals('NATIVE', $initAuth->acsInterface);
+        $this->assertEquals("OUT_OF_BAND", $initAuth->acsUiTemplate);
     }
 
     public function testChallengeRequired_v2_Initiate_MobileDataAndBrowserData()

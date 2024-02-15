@@ -11,6 +11,6 @@ class FraudFilterResult extends Enum
     const BLOCK = 'BLOCK';
     const NOT_EXECUTED = 'NOT_EXECUTED';
     const ERROR = 'ERROR';
-    const RELEASE_SUCCESSFUL = 'RELEASE_SUCCESSFULL';
-    const HOLD_SUCCESSFUL = 'HOLD_SUCCESSFULL';
+    const RELEASE_SUCCESSFUL = 'RELEASE_SUCCESSFUL';
+    const HOLD_SUCCESSFUL = 'HOLD_SUCCESSFUL';
 }
