@@ -1,10 +1,13 @@
 <a href="https://github.com/globalpayments" target="_blank">
-    <img src="https://developer.globalpay.com/static/media/logo.dab7811d.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
+    <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
 # Changelog
+## Latest Version - v11.0.9 (02/27/24)
+### Enhancements:
+- [GP-API] End-to-end 3DS example update
 
-## Latest Version - v11.0.8 (02/15/24)
+## v11.0.8 (02/15/24)
 ### Enhancements:
 - [GP-API] Unit tests enhancements
 - [PayPlan] Add AccountNumberLast4 in recurring payment method response 

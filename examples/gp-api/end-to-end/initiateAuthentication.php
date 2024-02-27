@@ -114,8 +114,5 @@ if ($status !== "CHALLENGE_REQUIRED") {
     $response['challenge']['encodedChallengeRequest'] = $threeDSecureData->payerAuthenticationRequest;
     $response['challenge']['messageType'] = $threeDSecureData->messageType;
 }
-$response = json_encode($response);
 
-if (!empty($response)) {
-    echo $response;
-}
+echo htmlspecialchars(json_encode($response), ENT_NOQUOTES);
