@@ -2,7 +2,6 @@
 
 namespace GlobalPayments\Api\Terminals\UPA;
 
-use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Exceptions\NotImplementedException;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
@@ -19,8 +18,6 @@ use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
 use GlobalPayments\Api\Terminals\UPA\Interfaces\UpaMicInterface;
 use GlobalPayments\Api\Terminals\UPA\Interfaces\UpaTcpInterface;
-use GlobalPayments\Api\Terminals\UPA\Responses\UpaMitcResponse;
-use GlobalPayments\Api\Terminals\UPA\Responses\UpaTransactionResponse;
 use GlobalPayments\Api\Terminals\UPA\SubGroups\RequestParamFields;
 use GlobalPayments\Api\Terminals\TerminalUtils;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
@@ -92,7 +89,7 @@ class UpaController extends DeviceController
             'data' => [
                 'command' => $requestType,
                 'requestId' => $requestId,
-                'EcrId' => $builder->ecrId ?? 13,
+                'EcrId' => $builder->ecrId ?? ($this->deviceInterface->ecrId ?? '1'),
                 'data' => [
                     'transaction' => $transactionFields ?? null
                 ]
@@ -128,7 +125,7 @@ class UpaController extends DeviceController
             'data' => [
                 'command' => $requestType,
                 'requestId' => $requestId,
-                'EcrId' => $builder->ecrId ?? 13,
+                'EcrId' => $builder->ecrId ?? ($this->deviceInterface->ecrId ?? '1'),
             ]
         ];
         if (!empty($data)) {

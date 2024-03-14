@@ -21,7 +21,7 @@ abstract class DeviceInterface implements IDeviceInterface
     /** @var RequestIdProvider */
     public $requestIdProvider;
 
-    public $ecrId;
+    public ?string $ecrId = null;
 
     public function __construct(DeviceController $controller)
     {

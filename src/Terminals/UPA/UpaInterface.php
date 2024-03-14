@@ -5,9 +5,7 @@ namespace GlobalPayments\Api\Terminals\UPA;
 use GlobalPayments\Api\Entities\Enums\{
     PaymentMethodType, TransactionType
 };
-use GlobalPayments\Api\Entities\Exceptions\{
-    ApiException, UnsupportedTransactionException
-};
+use GlobalPayments\Api\Entities\Exceptions\{ApiException, ArgumentException, UnsupportedTransactionException};
 use GlobalPayments\Api\Terminals\{
     DeviceInterface, TerminalUtils, DeviceResponse
 };
@@ -39,12 +37,13 @@ class UpaInterface extends DeviceInterface
     {
         $message = TerminalUtils::buildUPAMessage(
             UpaMessageId::EOD,
-            $this->upaController->requestIdProvider->getRequestId()
+            $this->upaController->requestIdProvider->getRequestId(),
+            $this->ecrId
         );
                 
         $rawResponse = $this->upaController->send($message, UpaMessageId::EOD);
 
-        return new TransactionResponse($rawResponse, UpaMessageId::EOD);
+        return new TransactionResponse($rawResponse);
     }
 
     public function cancel($cancelParams = null)
@@ -57,6 +56,7 @@ class UpaInterface extends DeviceInterface
         $message = TerminalUtils::buildUPAMessage(
             UpaMessageId::CANCEL,
             $this->upaController->requestIdProvider->getRequestId(),
+            $this->ecrId,
             $data
         );
         
@@ -140,7 +140,7 @@ class UpaInterface extends DeviceInterface
             'data' => [
                 'command' => UpaMessageId::LINEITEM,
                 'requestId' => $requestId,
-                'EcrId' => $builder->ecrId ?? 12,
+                'EcrId' => $this->ecrId ?? '1',
                 'data' => [
                     'params' => $data['params'] ?? null,
                 ]
@@ -150,14 +150,15 @@ class UpaInterface extends DeviceInterface
         $message =  TerminalUtils::buildUpaRequest($requestMessage);
         $rawResponse = $this->upaController->send($message, UpaMessageId::LINEITEM);
 
-        return new TransactionResponse($rawResponse, UpaMessageId::LINEITEM);
+        return new TransactionResponse($rawResponse);
     }
 
     public function reboot() : DeviceResponse
     {
         $message = TerminalUtils::buildUPAMessage(
             UpaMessageId::REBOOT,
-            $this->upaController->requestIdProvider->getRequestId()
+            $this->upaController->requestIdProvider->getRequestId(),
+            $this->ecrId
         );
 
         $rawResponse = $this->upaController->send($message);
@@ -213,6 +214,7 @@ class UpaInterface extends DeviceInterface
         $message = TerminalUtils::buildUPAMessage(
             UpaMessageId::GET_BATCH_REPORT,
             $this->upaController->requestIdProvider->getRequestId(),
+            $this->ecrId,
             $data
         );
         
@@ -224,13 +226,13 @@ class UpaInterface extends DeviceInterface
     {
         $message = TerminalUtils::buildUPAMessage(
             UpaMessageId::GET_OPEN_TAB_DETAILS,
-            $this->upaController->requestIdProvider->getRequestId()
+            $this->upaController->requestIdProvider->getRequestId(),
+            $this->ecrId
         );
         
         $rawResponse = $this->upaController->send($message, UpaMessageId::GET_OPEN_TAB_DETAILS);
         return new UpaReportHandler($rawResponse, UpaMessageId::GET_OPEN_TAB_DETAILS);
     }
-    
     
     #endregion
 }

@@ -58,6 +58,7 @@ class UpaMicTests extends TestCase
     public function testCreditSale()
     {
         $response = $this->device->sale(10)
+            ->withEcrId('13')
             ->execute();
 
         $this->assertNotNull($response);
@@ -69,6 +70,7 @@ class UpaMicTests extends TestCase
     {
         $response = $this->device->sale(10)
             ->withTerminalRefNumber(GenerationUtils::getGuid())
+            ->withEcrId('13')
             ->execute();
 
         $this->assertNotNull($response);
@@ -78,6 +80,7 @@ class UpaMicTests extends TestCase
 
     public function testLineItem()
     {
+        $this->device->ecrId = '12';
         $response = $this->device->lineItem("Line Item #1", "10.00");
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
@@ -87,7 +90,7 @@ class UpaMicTests extends TestCase
     public function testCreditAuth()
     {
         $response = $this->device->authorize(10)
-            ->withEcrId(13)
+            ->withEcrId("10")
             ->withTerminalRefNumber('1234')
             ->execute();
 
@@ -99,7 +102,7 @@ class UpaMicTests extends TestCase
     public function testCreditAuthAndCapture()
     {
         $response = $this->device->authorize(10)
-            ->withEcrId(13)
+            ->withEcrId("13")
             ->withTerminalRefNumber('1234')
             ->execute();
 
@@ -108,6 +111,7 @@ class UpaMicTests extends TestCase
         $this->assertEquals('INITIATED', $response->deviceResponseText);
 
         $response = $this->device->capture(10)
+            ->withEcrId("12")
             ->withTransactionId($response->transactionId)
             ->execute();
 
@@ -119,6 +123,7 @@ class UpaMicTests extends TestCase
     public function testCreditCapture_RandomId()
     {
         $response = $this->device->capture(10)
+            ->withEcrId('13')
             ->withTransactionId(GenerationUtils::getGuid())
             ->execute();
 
@@ -130,6 +135,7 @@ class UpaMicTests extends TestCase
     public function testCreditRefund()
     {
         $response = $this->device->refund(10)
+            ->withEcrId('13')
             ->execute();
 
         $this->assertNotNull($response);
@@ -140,6 +146,7 @@ class UpaMicTests extends TestCase
     public function testCreditVerify()
     {
         $response = $this->device->verify()
+            ->withEcrId('13')
             ->execute();
 
         $this->assertNotNull($response);
@@ -150,6 +157,7 @@ class UpaMicTests extends TestCase
     public function testCreditVoid()
     {
         $response = $this->device->sale(10)
+            ->withEcrId('13')
             ->execute();
 
         $this->assertNotNull($response);
@@ -158,6 +166,7 @@ class UpaMicTests extends TestCase
         $this->assertNotNull($response->transactionId);
 
         $response = $this->device->void()
+            ->withEcrId('13')
             ->withTransactionId($response->transactionId)
             ->execute();
 
@@ -171,6 +180,7 @@ class UpaMicTests extends TestCase
         $exceptionCaught = false;
         try {
             $this->device->sale()
+                ->withEcrId('13')
                 ->execute();
         } catch (BuilderException $e) {
             $exceptionCaught = true;
@@ -185,6 +195,7 @@ class UpaMicTests extends TestCase
         $exceptionCaught = false;
         try {
             $this->device->authorize()
+                ->withEcrId('13')
                 ->execute();
         } catch (BuilderException $e) {
             $exceptionCaught = true;
@@ -199,6 +210,7 @@ class UpaMicTests extends TestCase
         $exceptionCaught = false;
         try {
             $this->device->capture(10)
+                ->withEcrId('13')
                 ->execute();
         } catch (BuilderException $e) {
             $exceptionCaught = true;
@@ -213,6 +225,7 @@ class UpaMicTests extends TestCase
         $exceptionCaught = false;
         try {
             $this->device->refund()
+                ->withEcrId('13')
                 ->execute();
         } catch (BuilderException $e) {
             $exceptionCaught = true;
@@ -224,6 +237,7 @@ class UpaMicTests extends TestCase
 
     public function testEndOfDay()
     {
+        $this->device->ecrId = '13';
         $response = $this->device->endOfDay();
 
         $this->assertNotNull($response);

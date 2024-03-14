@@ -217,7 +217,7 @@ class TerminalAuthBuilder extends TerminalBuilder
         return $this;
     }
   
-    public function withEcrId(int $ecrId)
+    public function withEcrId(string $ecrId)
     {
         $this->ecrId = $ecrId;
         return $this;

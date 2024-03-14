@@ -3,7 +3,11 @@
 </a>
 
 # Changelog
-## Latest Version - v11.0.9 (02/27/24)
+## Latest Version - v12.0.0 (03/14/24)
+### Enhancements:
+- [UPA] Change "ecrId" type from int to string
+
+## v11.0.9 (02/27/24)
 ### Enhancements:
 - [GP-API] End-to-end 3DS example update
 

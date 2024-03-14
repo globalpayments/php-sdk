@@ -65,8 +65,8 @@ class UpaBatchTests extends TestCase
         
         foreach ($response->reportRecords as $transaction) {
             $captureResponse = $this->device->capture($transaction['authorizedAmount'])
-            ->withTransactionId($transaction['referenceNumber'])
-            ->execute();
+                ->withTransactionId($transaction['referenceNumber'])
+                ->execute();
             
             $this->assertNotNull($captureResponse);
             $this->assertEquals('00', $captureResponse->deviceResponseCode);

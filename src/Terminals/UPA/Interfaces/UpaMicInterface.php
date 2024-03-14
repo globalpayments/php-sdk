@@ -3,12 +3,15 @@
 namespace GlobalPayments\Api\Terminals\UPA\Interfaces;
 
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Gateways\GpApiConnector;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceCommInterface;
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceMessage;
 use GlobalPayments\Api\Terminals\Abstractions\ITerminalConfiguration;
+use GlobalPayments\Api\Terminals\TerminalUtils;
+use GlobalPayments\Api\Utils\ArrayUtils;
 use GlobalPayments\Api\Utils\GenerationUtils;
 
 class UpaMicInterface implements IDeviceCommInterface
@@ -64,6 +67,11 @@ class UpaMicInterface implements IDeviceCommInterface
             ];
             $out = $this->connector->processPassThrough($requestData);
 
+            if (!is_null($this->config->logManagementProvider)) {
+                TerminalUtils::manageLog($this->config->logManagementProvider, GpApiRequest::DEVICE_ENDPOINT);
+                TerminalUtils::manageLog($this->config->logManagementProvider, 'Request body:' . json_encode(ArrayUtils::array_remove_empty($requestData), JSON_UNESCAPED_SLASHES));
+                TerminalUtils::manageLog($this->config->logManagementProvider, 'Response:' . json_encode($out));
+            }
             return $this->parseResponse($out);
         }  catch (\Exception $e) {
             throw new GatewayException(

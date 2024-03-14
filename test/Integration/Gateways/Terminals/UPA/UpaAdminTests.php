@@ -20,7 +20,6 @@ class UpaAdminTests extends TestCase
     public function setup() : void
     {
         $this->device = DeviceService::create($this->getConfig());
-
     }
     
     public function tearDown() : void

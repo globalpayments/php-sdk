@@ -45,8 +45,7 @@ abstract class TerminalBuilder extends TransactionBuilder
      */
     public $cardBrandTransId;
 
-    /** @var int */
-    public $ecrId;
+    public ?string $ecrId = null;
 
     public function __construct($type, $paymentMethodType)
     {

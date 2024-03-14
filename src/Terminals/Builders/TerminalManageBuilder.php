@@ -100,6 +100,12 @@ class TerminalManageBuilder extends TerminalBuilder
         return $this;
     }
 
+    public function withEcrId(string $ecrId)
+    {
+        $this->ecrId = $ecrId;
+        return $this;
+    }
+
     protected function setupValidations()
     {
         $this->validations->of(

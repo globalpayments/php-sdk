@@ -144,14 +144,14 @@ class TerminalUtils
         return $deviceMessage;
     }
 
-    public static function buildUPAMessage($messageType, $requestId, $otherData = null) : DeviceMessage
+    public static function buildUPAMessage($messageType, $requestId, $ecrId, $otherData = null) : DeviceMessage
     {
         $requestMessage = [
             'message' => UpaMessageType::MSG,
             'data' => [
                 'command' => $messageType,
                 'requestId' => $requestId,
-                'EcrId' => 13
+                'EcrId' => $ecrId ?? "1"
             ]
         ];
         
