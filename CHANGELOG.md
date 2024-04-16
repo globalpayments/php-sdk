@@ -3,7 +3,15 @@
 </a>
 
 # Changelog
-## Latest Version - v12.0.0 (03/14/24)
+## Latest Version - v12.0.1 (04/16/24)
+### Enhancements:
+[GP-API] Unit tests enhancements
+
+#### Bug Fixes:
+- [GP-API] Fix mapping for "authCode"
+- [GP-API] Fix merchant_id in the request on "/device" endpoint for partner mode 
+
+## v12.0.0 (03/14/24)
 ### Enhancements:
 - [UPA] Change "ecrId" type from int to string
 

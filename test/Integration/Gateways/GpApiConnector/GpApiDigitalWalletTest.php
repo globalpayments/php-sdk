@@ -180,7 +180,7 @@ class GpApiDigitalWalletTest extends TestCase
                 ->execute();
 
             $this->assertTransactionResponse($response, TransactionStatus::CAPTURED);
-            $this->assertNotEmpty($response->authorizationCode);
+            $this->assertEquals('SUCCESS', $response->responseCode);
         }
     }
 
@@ -271,5 +271,4 @@ class GpApiDigitalWalletTest extends TestCase
         $this->assertNotNull($response->payerDetails->firstName);
         $this->assertNotNull($response->payerDetails->lastName);
     }
-
 }

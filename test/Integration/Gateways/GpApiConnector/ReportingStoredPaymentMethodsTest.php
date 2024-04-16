@@ -93,7 +93,7 @@ class ReportingStoredPaymentMethodsTest extends TestCase
 
     public function testFindStoredPaymentMethod_By_Id()
     {
-        $paymentMethodId = 'PMT_3ad13ea3-6b43-4d1c-8075-aca4f61182ed';
+        $paymentMethodId = 'PMT_e76e8d26-ae61-4261-a8c7-dc31d8afaa51';
         $response = ReportingService::findStoredPaymentMethodsPaged(1, 10)
             ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::STORED_PAYMENT_METHOD_ID, $paymentMethodId)
@@ -101,6 +101,7 @@ class ReportingStoredPaymentMethodsTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));
+        $this->assertCount(1, $response->result);
 
         /** @var StoredPaymentMethodSummary $rs */
         foreach ($response->result as $rs) {

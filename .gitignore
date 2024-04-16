@@ -9,3 +9,4 @@ composer
 /docs-cache/
 
 .idea
+/.vscode

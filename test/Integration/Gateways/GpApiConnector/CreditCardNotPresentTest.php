@@ -76,6 +76,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
+        $this->assertNotNull($response->authorizationCode);
         $this->assertEquals('SUCCESS', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         $this->assertNull($response->payerDetails);

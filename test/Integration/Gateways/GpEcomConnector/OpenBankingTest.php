@@ -417,7 +417,7 @@ class OpenBankingTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('Status Code: 400 - Invalid Payment Scheme required fields ', $e->getMessage());
+            $this->assertStringContainsString('Status Code: 400 - Invalid Payment Scheme required fields', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -436,7 +436,7 @@ class OpenBankingTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('Status Code: 400 - Invalid Payment Scheme required fields ', $e->getMessage());
+            $this->assertStringContainsString('Status Code: 400 - Invalid Payment Scheme required fields', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -473,7 +473,7 @@ class OpenBankingTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('Status Code: 400 - Invalid Payment Scheme required fields ', $e->getMessage());
+            $this->assertStringContainsString('Status Code: 400 - Invalid Payment Scheme required fields', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -492,7 +492,7 @@ class OpenBankingTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('Status Code: 400 - Invalid Payment Scheme required fields ', $e->getMessage());
+            $this->assertStringContainsString('Status Code: 400 - Invalid Payment Scheme required fields', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -529,7 +529,7 @@ class OpenBankingTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('Status Code: 400 - Invalid Payment Scheme required fields ', $e->getMessage());
+            $this->assertStringContainsString('Status Code: 400 - Invalid Payment Scheme required fields', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -547,7 +547,7 @@ class OpenBankingTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertStringContainsString('Invalid Payment Scheme required fields', $e->getMessage());
+            $this->assertStringContainsString('Status Code: 400 - Invalid Payment Currency required fields', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
         }

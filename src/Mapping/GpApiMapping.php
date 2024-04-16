@@ -188,9 +188,10 @@ class GpApiMapping
         $transaction->transfersFundsAccount = $transfers;
     }
 
-    private static function mapPaymentMethodTransactionDetails(&$transaction, $paymentMethodResponse)
+    private static function mapPaymentMethodTransactionDetails(Transaction &$transaction, $paymentMethodResponse)
     {
-        $transaction->authorizationCode = $paymentMethodResponse->result ?? null;
+        $cardIssuerResponse = new CardIssuerResponse();
+        $cardIssuerResponse->result = $paymentMethodResponse->result ?? null;
         if (!empty($paymentMethodResponse->id)) {
             $transaction->token = $paymentMethodResponse->id;
         }
@@ -216,10 +217,12 @@ class GpApiMapping
                 $card->avs_postal_code_result : null;
             $transaction->avsAddressResponse = !empty($card->avs_address_result) ? $card->avs_address_result : null;
             $transaction->avsResponseMessage = !empty($card->avs_action) ? $card->avs_action : null;
+            $transaction->authorizationCode = $card->authcode ?? null;
             if (!empty($card->provider)) {
-                self::mapCardIssuerResponse($transaction, $card->provider);
+                self::mapCardIssuerResponse($cardIssuerResponse, $card->provider);
             }
         }
+        $transaction->cardIssuerResponse = $cardIssuerResponse;
         if (!empty($paymentMethodResponse->apm) &&
             $paymentMethodResponse->apm->provider == strtolower(PaymentProvider::OPEN_BANKING)
         ) {
@@ -1315,17 +1318,16 @@ class GpApiMapping
     /**
      * Map the result codes directly from the card issuer.
      *
-     * @param Transaction $transaction
+     * @param CardIssuerResponse $cardIssuer
      * @param $cardIssuerResponse
      */
-    private static function mapCardIssuerResponse(Transaction &$transaction, $cardIssuerResponse)
+    private static function mapCardIssuerResponse(CardIssuerResponse &$cardIssuer, $cardIssuerResponse)
     {
-        $transaction->cardIssuerResponse = new CardIssuerResponse();
-        $transaction->cardIssuerResponse->result = $cardIssuerResponse->result ?? null;
-        $transaction->cardIssuerResponse->avsResult = $cardIssuerResponse->avs_result ?? null;
-        $transaction->cardIssuerResponse->cvvResult = $cardIssuerResponse->cvv_result ?? null;
-        $transaction->cardIssuerResponse->avsAddressResult = $cardIssuerResponse->avs_address_result ?? null;
-        $transaction->cardIssuerResponse->avsPostalCodeResult = $cardIssuerResponse->avs_postal_code_result ?? null;
+        $cardIssuer->result = $cardIssuerResponse->result ?? null;
+        $cardIssuer->avsResult = $cardIssuerResponse->avs_result ?? null;
+        $cardIssuer->cvvResult = $cardIssuerResponse->cvv_result ?? null;
+        $cardIssuer->avsAddressResult = $cardIssuerResponse->avs_address_result ?? null;
+        $cardIssuer->avsPostalCodeResult = $cardIssuerResponse->avs_postal_code_result ?? null;
     }
 
     /**

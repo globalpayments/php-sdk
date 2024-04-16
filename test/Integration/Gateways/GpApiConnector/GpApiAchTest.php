@@ -200,7 +200,6 @@ class GpApiAchTest extends TestCase
         $this->assertNotNull($refund);
         $this->assertEquals('SUCCESS', $refund->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $refund->responseMessage);
-        $this->assertEquals('A0000', $refund->authorizationCode);
+        $this->assertEquals('A0000', $refund->cardIssuerResponse->result);
     }
-
 }

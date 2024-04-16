@@ -28,7 +28,7 @@ class MappingTest extends TestCase
 
          if (!empty($doc->payment_method)) {
              $paymentMethod = $doc->payment_method;
-             $this->assertEquals($paymentMethod->result, $transaction->authorizationCode);
+             $this->assertEquals($paymentMethod->result, $transaction->cardIssuerResponse->result);
              $this->assertEquals($paymentMethod->card->brand, $transaction->cardType);
              $this->assertEquals($paymentMethod->card->masked_number_last4, $transaction->cardLast4);
          }
@@ -39,6 +39,7 @@ class MappingTest extends TestCase
             $this->assertEquals($card->brand, $transaction->cardType);
             $this->assertEquals($card->expiry_month, $transaction->cardExpMonth);
             $this->assertEquals($card->expiry_year, $transaction->cardExpYear);
+            $this->assertEquals($card->authcode, $transaction->authorizationCode);
         }
      }
 
