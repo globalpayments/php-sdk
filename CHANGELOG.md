@@ -3,9 +3,17 @@
 </a>
 
 # Changelog
-## Latest Version - v12.0.1 (04/16/24)
+
+## Latest Version - v12.0.2 (05/09/24)
 ### Enhancements:
-[GP-API] Unit tests enhancements
+- [Portico] Added support for 'TokenParameters' element
+- [Portico] Added support for 'CategoryInd' element
+- [Portico] Added support for 'DebitReversal' by transactionId using 'fromId' method. 
+- [Pax Devices] Added ability to send 'CardBrandTransactionId' element
+
+## v12.0.1 (04/16/24)
+### Enhancements:
+- [GP-API] Unit tests enhancements
 
 #### Bug Fixes:
 - [GP-API] Fix mapping for "authCode"

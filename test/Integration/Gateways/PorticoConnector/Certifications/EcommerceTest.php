@@ -342,7 +342,7 @@ class EcommerceTest extends TestCase
     private function config()
     {
         $config = new PorticoConfig();
-        $config->secretApiKey = 'skapi_cert_MY5OAAAQrmIF_IZDKbr1ecycRr7n1Q1SxNkVgzDhwg';
+        $config->secretApiKey = 'skapi_cert_MakSAgAB518A1HzUXBNfUeC6qBM57U7VueB4hAv8Tg';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
             'https://cert.api2-c.heartlandportico.com/' :
             'https://cert.api2.heartlandportico.com';
@@ -2182,6 +2182,43 @@ class EcommerceTest extends TestCase
         $transactionSummary = ReportingService::transactionDetail($response->transactionId)->execute(); 
         $this->assertNotNull($transactionSummary);
         $this->assertEquals($customerEmail, $transactionSummary->email);
+    }
+
+    /**
+     * This test demonstrates and tests behavior around requesting unique
+     * Multi-Use Tokens
+     * 
+     * @return void 
+     * @throws ApiException 
+     * @throws InvalidArgumentException 
+     * @throws ExpectationFailedException 
+     */
+    public function testUniqueTokenRequest() : void
+    {
+        $card = TestCards::visaManual();
+
+        $response1 = $card->verify()
+            ->withRequestMultiUseToken(true)
+            ->execute();
+
+        $this->assertNotNull($response1);
+        $this->assertNotNull($response1->token);
+
+        $response2 = $card->verify()
+            ->withRequestMultiUseToken(true)
+            ->execute();
+
+        $this->assertNotNull($response2);
+        $this->assertNotNull($response2->token);
+        $this->assertEquals($response1->token, $response2->token);
+
+        $response3 = $card->verify()
+            ->withRequestMultiUseToken(true, true)
+            ->execute();
+
+        $this->assertNotNull($response3);
+        $this->assertNotNull($response2->token);
+        $this->assertNotEquals($response1->token, $response3->token);
     }
 
     /**

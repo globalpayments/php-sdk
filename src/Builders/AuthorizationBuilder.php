@@ -340,6 +340,15 @@ class AuthorizationBuilder extends TransactionBuilder
     public $requestMultiUseToken;
 
     /**
+     * Used in conjunction with $requestMultiUseToken to request a unique token
+     * For use with Portico Gateway only
+     * 
+     * @internal
+     * @var bool
+     */
+    public bool $requestUniqueToken;
+
+    /**
      * To attach registration most recent change date value
      * For use w/Discover cards on TransIT gateway
      *
@@ -444,6 +453,13 @@ class AuthorizationBuilder extends TransactionBuilder
      *
      */
     public $transactionInitiator;
+
+    /**
+     * Used with some stored-credential transactions
+     * 
+     * @var string $categoryIndicator
+     */
+    public string $categoryIndicator;
 
     /**
      * @var string $tagData
@@ -1054,13 +1070,16 @@ class AuthorizationBuilder extends TransactionBuilder
     /**
      * Set the request to request multi-use token
      *
-     * @param bool $requestMultiUseToken Request to request multi-use token
+     * @param bool $requestMultiUseToken Request multi-use token in gateway response
+     * @param bool $requestUniqueToken Portico-specific parameter to make gateway create
+     * a unique MUT regardless of PAN that is tokenized
      *
      * @return AuthorizationBuilder
      */
-    public function withRequestMultiUseToken($requestMultiUseToken)
+    public function withRequestMultiUseToken(bool $requestMultiUseToken, bool $requestUniqueToken = false): AuthorizationBuilder
     {
         $this->requestMultiUseToken = $requestMultiUseToken;
+        $this->requestUniqueToken = $requestUniqueToken;
         return $this;
     }
 
@@ -1296,17 +1315,23 @@ class AuthorizationBuilder extends TransactionBuilder
     }
 
     /**
-     * Set the Card on File storage
+     * Used to send 'Card On File Data'
      *
      * @param string $transactionInitiator
-     * @param string $value
+     * @param string $cardBrandTransactionId
+     * @param string $categoryIndicator https://cert.api2.heartlandportico.com/Gateway/PorticoSOAPSchema/build/Default/webframe.html#PosGateway_xsd~c-CardOnFileDataType~e-CategoryInd.html
      *
      * @return AuthorizationBuilder
      */
-    public function withCardBrandStorage($transactionInitiator, $value = '')
+    public function withCardBrandStorage(
+        string $transactionInitiator,
+        string $cardBrandTransactionId = '',
+        string $categoryIndicator = ''
+    ) : AuthorizationBuilder
     {
         $this->transactionInitiator = $transactionInitiator;
-        $this->cardBrandTransactionId = $value;
+        $this->cardBrandTransactionId = $cardBrandTransactionId;
+        $this->categoryIndicator = $categoryIndicator;
         return $this;
     }
 

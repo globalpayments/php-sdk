@@ -103,6 +103,7 @@ class PaxTerminalResponse extends PaxBaseResponse implements IDeviceResponseHand
     public $purchaseOrder;
     public $customerCode;
     public $merchantTaxId;
+    public $cardBrandTransactionId;
 
     public function __construct($rawResponse, $messageId)
     {
@@ -184,6 +185,7 @@ class PaxTerminalResponse extends PaxBaseResponse implements IDeviceResponseHand
             $this->approvalCode = $hostResponse->authCode;
             $this->hostReferenceNumber = $hostResponse->hostReferenceNumber;
             $this->authorizationCode = $hostResponse->authCode;
+            $this->cardBrandTransactionId = $hostResponse->cardBrandTransactionId;
         }
     }
 

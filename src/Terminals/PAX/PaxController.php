@@ -176,6 +176,8 @@ class PaxController extends DeviceController
         if (!empty($builder->clientTransactionId)) {
             $trace->clientTransactionId = $builder->clientTransactionId;
         }
+        if (!empty($builder->cardBrandTransId))
+            $trace->cardBrandTransactionId = $builder->cardBrandTransId;
         
         if ($builder->paymentMethod != null) {
             if ($builder->paymentMethod instanceof CreditCardData) {

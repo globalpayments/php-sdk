@@ -276,6 +276,11 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 if (!empty($builder->cardBrandTransactionId)) {
                     $cardOnFileData->appendChild($xml->createElement('CardBrandTxnId', $builder->cardBrandTransactionId));
                 }
+
+                if (!empty($builder->categoryIndicator)) {
+                    $cardOnFileData->appendChild($xml->createElement('CategoryInd', $builder->categoryIndicator));
+                }
+
                 $block1->appendChild($cardOnFileData);
             }
 
@@ -480,12 +485,18 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         }
 
         if ($builder->paymentMethod instanceof ITokenizable) {
-            $cardData->appendChild(
-                $xml->createElement(
-                    'TokenRequest',
-                    $builder->requestMultiUseToken ? 'Y' : 'N'
-                )
-            );
+            if ($builder->requestMultiUseToken) {
+                $cardData->appendChild(
+                    $xml->createElement('TokenRequest', 'Y')
+                );
+
+                if ($builder->requestUniqueToken) {
+                    $tokenMappingBlock = $xml->createElement('Mapping', 'UNIQUE');
+                    $tokenParametersBlock = $xml->createElement('TokenParameters');
+                    $tokenParametersBlock->appendChild($tokenMappingBlock);
+                    $cardData->appendChild($tokenParametersBlock);
+                }
+            }
         }
 
         if ($cardData->childNodes->length > 0 && $builder->aliasAction !== AliasAction::CREATE) {

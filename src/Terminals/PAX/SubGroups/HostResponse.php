@@ -19,6 +19,8 @@ class HostResponse implements IResponseSubGroup
 
     public $batchNumber;
 
+    public $cardBrandTransactionId;
+
     public function __construct($messageReader)
     {
         $responseString = $messageReader->readToCode(ControlCodes::FS);
@@ -31,7 +33,8 @@ class HostResponse implements IResponseSubGroup
                 'authCode' => 2,
                 'hostReferenceNumber' => 3,
                 'traceNumber' => 4,
-                'batchNumber' => 5
+                'batchNumber' => 5,
+                'cardBrandTransactionId' => 6,
             ];
 
             foreach ($responseIndexMapping as $property => $index) {

@@ -2,11 +2,17 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\PorticoConnector;
 
+use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
+use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Terminals\Genius\Entities\Enums\TransactionIdType;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
+
+use function PHPUnit\Framework\assertEquals;
 
 class DebitTest extends TestCase
 {
@@ -52,14 +58,21 @@ class DebitTest extends TestCase
         $this->assertEquals('00', $response->responseCode);
     }
 
-    public function testDebitReverse()
+    public function testDebitReverseUsingFromId()
     {
-        $response = $this->track->reverse(17.01)
+        $response = $this->track->charge(17.01)
             ->withCurrency('USD')
             ->withAllowDuplicates(true)
             ->execute();
-        $this->assertNotNull($response);
-        $this->assertEquals('00', $response->responseCode);
+        
+        $reversalResponse = Transaction::fromId($response->transactionId, PaymentMethodType::DEBIT)
+                    ->reverse(17.01)
+                    ->execute();
+
+        $this->assertNotNull($reversalResponse );
+        $this->assertEquals('00',  $reversalResponse->responseCode);
+        $this->assertEquals("APPROVAL", $reversalResponse->responseMessage);
+
     }
 
     protected function getConfig()

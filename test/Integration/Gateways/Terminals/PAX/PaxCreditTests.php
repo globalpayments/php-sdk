@@ -9,15 +9,16 @@ use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\{ConnectionModes, DeviceType};
 use GlobalPayments\Api\Tests\Data\TestCards;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use GlobalPayments\Api\Utils\Logging\TerminalLogManagement;
-use PHPUnit\Framework\ExpectationFailedException;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\{ExpectationFailedException, TestCase};
 use SebastianBergmann\RecursionContext\InvalidArgumentException;
 
 class PaxCreditTests extends TestCase
 {
+    /**
+     * 
+     * @var PaxInterface
+     */
     private $device;
     protected $card;
     protected $address;
@@ -46,9 +47,9 @@ class PaxCreditTests extends TestCase
     protected function getConfig()
     {
         $config = new ConnectionConfig();
-        $config->ipAddress = '192.168.0.130';
+        $config->ipAddress = '192.168.0.5';
         $config->port = '10009';
-        $config->deviceType = DeviceType::PAX_S300;
+        $config->deviceType = DeviceType::PAX_DEVICE;
         $config->connectionMode = ConnectionModes::TCP_IP;
         $config->timeout = 10;
         $config->requestIdProvider = new RequestIdProvider();
@@ -366,5 +367,38 @@ class PaxCreditTests extends TestCase
         $this->assertNotNull($tipAdjustResponse);
         $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(12.50, $tipAdjustResponse->transactionAmount);
+    }
+
+    /**
+     * This test confirms the SDK's ability to send Card-On-File info in
+     * transaction requests and consume/relay that info in the transaction response
+     * 
+     * NOTE: PAX S300 device was EOL before this update and is incompatible with CoF fields like this
+     * 
+     * @return void 
+     * @throws InvalidArgumentException 
+     * @throws ExpectationFailedException 
+     */
+    public function testCardBrandStorageInfo() : void
+    {
+        $initialSaleResponse = $this->device->sale(10)
+            ->withAddress($this->address)
+            ->withRequestMultiUseToken(true)
+            ->withAllowDuplicates(1)
+            ->execute();
+
+        $this->assertNotNull($initialSaleResponse);
+        $this->assertNotNull($initialSaleResponse->token);
+        $this->assertEquals('00', $initialSaleResponse->responseCode);
+        $this->assertNotNull($initialSaleResponse->cardBrandTransactionId);
+
+        $cofSaleResponse = $this->device->sale(10)
+            ->withToken($initialSaleResponse->token)
+            ->withCardBrandStorage(cardBrandTransactionId: $initialSaleResponse->cardBrandTransactionId)
+            ->withAllowDuplicates(1)
+            ->execute();
+
+        $this->assertNotNull($cofSaleResponse);
+        $this->assertEquals('00', $cofSaleResponse->responseCode);
     }
 }

@@ -284,7 +284,7 @@ class CreditTest extends TestCase
     protected function getConfig()
     {
         $config = new PorticoConfig();
-        $config->secretApiKey = 'skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w';
+        $config->secretApiKey = 'skapi_cert_MY5OAAAQrmIF_IZDKbr1ecycRr7n1Q1SxNkVgzDhwg';
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':
                               'https://cert.api2.heartlandportico.com';
@@ -293,21 +293,35 @@ class CreditTest extends TestCase
 
     public function testCreditSaleWithCOF()
     {
-        $response = $this->card->charge(15)
+        $tempConfig = new PorticoConfig();
+        $tempConfig->secretApiKey = 'skapi_cert_MakSAgAB518A1HzUXBNfUeC6qBM57U7VueB4hAv8Tg';
+        ServicesContainer::configureService($tempConfig, 'justusingthishere');
+
+        $card = new CreditCardData();
+        $card->number = '5454545454545454';
+        $card->expMonth = '12';
+        $card->expYear = '2025';
+        $card->cvn = '123';
+
+        $response = $card->charge(15)
             ->withCurrency('USD')
             ->withAllowDuplicates(true)
+            ->withRequestMultiUseToken(true)
             ->withCardBrandStorage(StoredCredentialInitiator::CARDHOLDER)
-            ->execute();
+            ->execute('justusingthishere');
 
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->responseCode);
         $this->assertNotNull($response->cardBrandTransactionId);
 
-        $nextResponse = $this->card->charge(15)
+        $newlyStoredCard = new CreditCardData();
+        $newlyStoredCard->token = $response->token;
+
+        $nextResponse = $newlyStoredCard->charge(15)
             ->withCurrency('USD')
             ->withAllowDuplicates(true)
-            ->withCardBrandStorage(StoredCredentialInitiator::MERCHANT, $response->cardBrandTransactionId)
-            ->execute();
+            ->withCardBrandStorage(StoredCredentialInitiator::MERCHANT, $response->cardBrandTransactionId, '07')
+            ->execute('justusingthishere');
 
         $this->assertNotNull($nextResponse);
         $this->assertEquals('00', $nextResponse->responseCode);

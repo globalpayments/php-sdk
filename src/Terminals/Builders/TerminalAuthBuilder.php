@@ -209,10 +209,18 @@ class TerminalAuthBuilder extends TerminalBuilder
         return $this;
     }
 
+    /**
+     * 
+     * @param null|StoredCredentialInitiator|string $transactionInitiator 
+     * @param string|null $cardBrandTransactionId 
+     * @return TerminalAuthBuilder 
+     */
     public function withCardBrandStorage(
-        $transactionInitiator
+        StoredCredentialInitiator|string $transactionInitiator = null,
+        string $cardBrandTransactionId = null
     )
     {
+        $this->cardBrandTransId = $cardBrandTransactionId;
         $this->transactionInitiator = $transactionInitiator;
         return $this;
     }

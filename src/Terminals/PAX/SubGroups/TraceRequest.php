@@ -15,11 +15,16 @@ class TraceRequest implements IRequestSubGroup
     public $timeStamp;
     public $ecrTransactionId;
     public $clientTransactionId;
+    public $ps2000;
+    public $originalAuthResponse;
+    public $originalTraceNumber;
+    public $cardBrandTransactionId;
     
     public function getElementString()
     {
         $requestParams = ['referenceNumber', 'invoiceNumber', 'authCode',
-            'transactionNumber', 'timeStamp', 'ecrTransactionId', 'clientTransactionId'];
+            'transactionNumber', 'timeStamp', 'ecrTransactionId', 'clientTransactionId',
+            'ps2000', 'originalAuthResponse', 'originalTraceNumber', 'cardBrandTransactionId'];
         $message = '';
         foreach ($requestParams as $val) {
             if (is_null($this->{$val}) === false) {
