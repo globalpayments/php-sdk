@@ -5,6 +5,7 @@ namespace Gateways\GpApiConnector;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\BrowserData;
 use GlobalPayments\Api\Entities\Enums\AddressType;
+use GlobalPayments\Api\Entities\Enums\AgeIndicator;
 use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
 use GlobalPayments\Api\Entities\Enums\ChallengeWindowSize;
 use GlobalPayments\Api\Entities\Enums\Channel;
@@ -14,6 +15,7 @@ use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
 use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
 use GlobalPayments\Api\Entities\Enums\OrderTransactionType;
+use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 use GlobalPayments\Api\Entities\Enums\SdkInterface;
 use GlobalPayments\Api\Entities\Enums\SdkUiType;
 use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
@@ -22,6 +24,7 @@ use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialReason;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialSequence;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialType;
+use GlobalPayments\Api\Entities\Enums\SuspiciousAccountActivity;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\MobileData;
@@ -164,6 +167,7 @@ class GpApi3DSecureTest extends TestCase
             ->withAddress($this->shippingAddress, AddressType::SHIPPING)
             ->withOrderTransactionType(OrderTransactionType::GOODS_SERVICE_PURCHASE)
             ->withBrowserData($this->browserData)
+            ->withCustomerEmail('jason@globalpay.com')
             ->execute();
         $this->assertNotNull($initAuth);
         $this->assertEquals($status, $initAuth->status);
@@ -374,6 +378,7 @@ class GpApi3DSecureTest extends TestCase
             ->withOrderCreateDate(date('Y-m-d H:i:s'))
             ->withAddress($this->shippingAddress, AddressType::SHIPPING)
             ->withBrowserData($this->browserData)
+            ->withCustomerEmail('james@globalpay.com')
             ->execute();
 
         $this->assertNotNull($initAuth);
@@ -706,6 +711,69 @@ class GpApi3DSecureTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+    }
+
+    public function testFullCycle_WithPayerInformation()
+    {
+        $this->card->number = GpApi3DSTestCards::CARD_AUTH_SUCCESSFUL_V2_1;
+
+        $response = $this->card->tokenize()->execute();
+        $tokenId = $response->token;
+
+        $tokenizedCard = new CreditCardData();
+        $tokenizedCard->token = $tokenId;
+        $tokenizedCard->cardHolderName = "James Mason";
+
+        $secureEcom = Secure3dService::checkEnrollment($tokenizedCard)
+            ->withCurrency($this->currency)
+            ->withAmount($this->amount)
+            ->execute();
+
+        $this->assertNotNull($secureEcom);
+        $this->assertEquals(Secure3dStatus::ENROLLED, $secureEcom->enrolled);
+        $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
+        $this->assertEquals(Secure3dStatus::AVAILABLE, $secureEcom->status);
+
+        $initAuth = Secure3dService::initiateAuthentication($tokenizedCard, $secureEcom)
+            ->withAmount($this->amount)
+            ->withCurrency($this->currency)
+            ->withAuthenticationSource(AuthenticationSource::BROWSER)
+            ->withMethodUrlCompletion(MethodUrlCompletion::YES)
+            ->withOrderCreateDate(date('Y-m-d H:i:s'))
+            ->withAddress($this->shippingAddress, AddressType::SHIPPING)
+            ->withBrowserData($this->browserData)
+            // Payer information
+            ->withCustomerAccountId('6dcb24f5-74a0-4da3-98da-4f0aa0e88db3')
+            ->withAccountAgeIndicator(AgeIndicator::LESS_THAN_THIRTY_DAYS)
+            ->withAccountCreateDate(date('Y-m-d H:i:s', strtotime("-2 years")))
+            ->withAccountChangeDate(date('Y-m-d H:i:s', strtotime("-2 years")))
+            ->withAccountChangeIndicator(AgeIndicator::THIS_TRANSACTION)
+            ->withPasswordChangeDate(date('Y-m-d H:i:s'))
+            ->withPasswordChangeIndicator(AgeIndicator::LESS_THAN_THIRTY_DAYS)
+            ->withPhoneNumber('44', '123456798', PhoneNumberType::HOME)
+            ->withPhoneNumber('44', '1801555888', PhoneNumberType::WORK)
+            ->withPhoneNumber('44', '7975556677', PhoneNumberType::MOBILE)
+            ->withPaymentAccountCreateDate(date('Y-m-d H:i:s'))
+            ->withPaymentAccountAgeIndicator(AgeIndicator::LESS_THAN_THIRTY_DAYS)
+            ->withSuspiciousAccountActivity(SuspiciousAccountActivity::SUSPICIOUS_ACTIVITY)
+            ->withNumberOfPurchasesInLastSixMonths(3)
+            ->withNumberOfTransactionsInLast24Hours(1)
+            ->withNumberOfTransactionsInLastYear(5)
+            ->withNumberOfAddCardAttemptsInLast24Hours(1)
+            ->withShippingAddressCreateDate(date('Y-m-d', strtotime("-2 years")))
+            ->withShippingAddressUsageIndicator(AgeIndicator::THIS_TRANSACTION)
+            ->withCustomerEmail('james@globalpay.com')
+            ->execute();
+
+        $this->assertNotNull($initAuth);
+        $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $secureEcom->status);
+        $this->assertEquals('YES', $secureEcom->liabilityShift);
+
+        $secureEcom = Secure3dService::getAuthenticationData()
+            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->execute();
+        $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $secureEcom->status);
+        $this->assertEquals('YES', $secureEcom->liabilityShift);
     }
 
     public function testChargeTransaction_WithRandom3DSValues()

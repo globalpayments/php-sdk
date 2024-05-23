@@ -33,8 +33,6 @@ class Secure3dBuilder extends SecureBuilder
     public $authenticationRequestType;
     /** @var ChallengeRequestIndicator */
     public $challengeRequestIndicator;
-    /** @var string */
-    public $customerEmail;
     /** @var DecoupledFlowRequest */
     public $decoupledFlowRequest;
     /** @var integer */
@@ -118,12 +116,6 @@ class Secure3dBuilder extends SecureBuilder
     public function getChallengeRequestIndicator()
     {
         return $this->challengeRequestIndicator;
-    }
-
-    /** @return string */
-    public function getCustomerEmail()
-    {
-        return $this->customerEmail;
     }
 
     /** @return string */
@@ -329,13 +321,6 @@ class Secure3dBuilder extends SecureBuilder
     public function withChallengeRequestIndicator($challengeRequestIndicator)
     {
         $this->challengeRequestIndicator = $challengeRequestIndicator;
-        return $this;
-    }
-
-    /** @return Secure3dBuilder */
-    public function withCustomerEmail($value)
-    {
-        $this->customerEmail = $value;
         return $this;
     }
 

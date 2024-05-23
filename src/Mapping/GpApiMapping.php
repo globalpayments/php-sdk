@@ -177,12 +177,13 @@ class GpApiMapping
         foreach ($transfersResponse as $transferResponse) {
             $transfer = new FundsAccountDetails();
             $transfer->id = $transferResponse->id;
-            $transfer->timeCreated = !empty($transferResponse->timeCreated) ?
-                new \DateTime($transferResponse->timeCreated) : '';
+            $transfer->timeCreated = !empty($transferResponse->time_created) ?
+                new \DateTime($transferResponse->time_created) : '';
             $transfer->amount = !empty($transferResponse->amount) ?
                 StringUtils::toAmount($transferResponse->amount) : null;
             $transfer->reference = $transferResponse->reference ?? null;
             $transfer->description = $transferResponse->description ?? null;
+            $transfer->status = $transferResponse->status ?? null;
             $transfers->add($transfer, $transferResponse->id);
         }
         $transaction->transfersFundsAccount = $transfers;

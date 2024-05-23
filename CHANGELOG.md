@@ -4,7 +4,13 @@
 
 # Changelog
 
-## Latest Version - v12.0.2 (05/09/24)
+## Latest Version - v12.0.3 (05/23/24)
+### Enhancements:
+- [GP-API] Add "payer->email" property on 3DS "/initiate" request
+- [GP-API] Improvements on access token request
+- [GP-API] Unit tests enhancements
+
+## v12.0.2 (05/09/24)
 ### Enhancements:
 - [Portico] Added support for 'TokenParameters' element
 - [Portico] Added support for 'CategoryInd' element

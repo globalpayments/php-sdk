@@ -402,7 +402,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
     {
         $this->accessToken = null;
 
-        $request = GpApiSessionInfo::signIn(
+        $request = $this->gpApiConfig->accessTokenProvider->signIn(
             $this->gpApiConfig->appId,
             $this->gpApiConfig->appKey,
             $this->gpApiConfig->secondsToExpire,

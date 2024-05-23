@@ -15,6 +15,7 @@ use GlobalPayments\Api\Entities\Enums\PreOrderIndicator;
 use GlobalPayments\Api\Entities\Enums\PriorAuthenticationMethod;
 use GlobalPayments\Api\Entities\Enums\ReorderIndicator;
 use GlobalPayments\Api\Entities\Enums\ShippingMethod;
+use GlobalPayments\Api\Entities\Enums\SuspiciousAccountActivity;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
@@ -83,6 +84,7 @@ abstract class SecureBuilder extends BaseBuilder
 
     /** @var string */
     private $customerAccountId;
+    public ?string $customerEmail = null;
 
     /** @var AgeIndicator */
     private $accountAgeIndicator;
@@ -131,6 +133,9 @@ abstract class SecureBuilder extends BaseBuilder
 
     /** @var bool */
     private $previousSuspiciousActivity;
+
+    /** @var string|SuspiciousAccountActivity */
+    public $suspiciousAccountActivity;
 
     /** @var int */
     private $numberOfPurchasesInLastSixMonths;
@@ -328,6 +333,12 @@ abstract class SecureBuilder extends BaseBuilder
     public function getCustomerAccountId()
     {
         return $this->customerAccountId;
+    }
+
+    /** @return string */
+    public function getCustomerEmail()
+    {
+        return $this->customerEmail;
     }
 
     /** @return AgeIndicator */
@@ -839,7 +850,7 @@ abstract class SecureBuilder extends BaseBuilder
     public function withPhoneNumber($phoneCountryCode, $number, $type)
     {
         $phoneNumber = new PhoneNumber($phoneCountryCode, $number, $type);
-        $this->phoneList[$type] = $phoneNumber;
+        $this->phoneList["$type"] = $phoneNumber;
         switch ($phoneNumber->type) {
             case PhoneNumberType::HOME:
                 $this->homeNumber = $number;
@@ -930,6 +941,16 @@ abstract class SecureBuilder extends BaseBuilder
     public function withPreviousSuspiciousActivity($previousSuspiciousActivity)
     {
         $this->previousSuspiciousActivity = $previousSuspiciousActivity;
+        return $this;
+    }
+
+    /**
+     * @param $value
+     * @return $this
+     */
+    public function withSuspiciousAccountActivity($value)
+    {
+        $this->suspiciousAccountActivity = $value;
         return $this;
     }
 
@@ -1091,6 +1112,16 @@ abstract class SecureBuilder extends BaseBuilder
     {
         $this->idempotencyKey = $value;
 
+        return $this;
+    }
+
+    /**
+     * @param string $value
+     * @return $this
+     */
+    public function withCustomerEmail(string $value)
+    {
+        $this->customerEmail = $value;
         return $this;
     }
 }

@@ -14,9 +14,11 @@ class BaseGpApiTestConfig
 {
     const APP_ID = '4gPqnGBkppGYvoE5UX9EWQlotTxGUDbs';
     const APP_KEY = 'FQyJA5VuEQfcji2M';
-
     const PARTNER_SOLUTION_APP_ID = 'A1feRdMmEB6m0Y1aQ65H0bDi9ZeAEB2t';
     const PARTNER_SOLUTION_APP_KEY = '5jPt1OpB6LLitgi7';
+
+    const MITC_UPA_APP_ID = 'aCgePu6PqA8sDdkjLYgmrHs89JAXvbvO';
+    const MITC_UPA_APP_KEY = 'DY0ZeWiUCHACK7dz';
 
     public static string $appId = self::APP_ID;
     public static string $appKey = self::APP_KEY; #gitleaks:allow
@@ -35,7 +37,6 @@ class BaseGpApiTestConfig
         $config->channel = $channel;
         $config->country = 'US';
         $config->accessTokenInfo = new AccessTokenInfo();
-        $config->accessTokenInfo->transactionProcessingAccountName = 'transaction_processing';
         $config->accessTokenInfo->riskAssessmentAccountName = 'EOS_RiskAssessment';
 
         $config->challengeNotificationUrl = "https://ensi808o85za.x.pipedream.net/";

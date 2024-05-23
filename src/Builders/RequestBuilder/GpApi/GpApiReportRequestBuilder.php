@@ -245,6 +245,8 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $queryParams['status'] = $builder->searchBuilder->accountStatus ?? null;
                 $queryParams['order'] = $builder->order ?? null;
                 $queryParams['order_by'] = $builder->accountOrderBy ?? null;
+                $queryParams['from_time_created'] = !empty($builder->searchBuilder->startDate) ?
+                    $builder->searchBuilder->startDate->format('Y-m-d') : null;
                 break;
             case ReportType::FIND_ACCOUNTS_PAGED:
                 $endpoint = GpApiRequest::ACCOUNTS_ENDPOINT;

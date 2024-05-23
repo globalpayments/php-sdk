@@ -2,7 +2,9 @@
 
 namespace GlobalPayments\Api\Entities\GpApi;
 
-class GpApiSessionInfo
+use GlobalPayments\Api\Gateways\IAccessTokenProvider;
+
+class GpApiSessionInfo implements IAccessTokenProvider
 {
     private static function generateSecret($nonce, $appKey)
     {
@@ -15,7 +17,7 @@ class GpApiSessionInfo
         return $base->format(\DateTime::RFC3339);
     }
 
-    public static function signIn($appId, $appKey, $secondsToExpire = null, $intervalToExpire = null, $permissions = [])
+    public function signIn($appId, $appKey, $secondsToExpire = null, $intervalToExpire = null, $permissions = []) : GpApiRequest
     {
         $nonce = self::generateNonce();
 
@@ -30,5 +32,10 @@ class GpApiSessionInfo
         );
 
         return new GpApiRequest(GpApiRequest::ACCESS_TOKEN_ENDPOINT, 'POST', $requestBody);
+    }
+
+    public function singOut(): GpApiRequest
+    {
+        // TODO: Implement singOut() method.
     }
 }

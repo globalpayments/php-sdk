@@ -61,6 +61,8 @@ class PartnershipModeTest extends TestCase
 
     private string $merchantId;
 
+    private \DateTime $startDate;
+
     public function setup(): void
     {
         $this->baseConfig = $this->setUpConfig();
@@ -71,8 +73,10 @@ class PartnershipModeTest extends TestCase
         $this->card->expMonth = date('m');
         $this->card->expYear = date('Y', strtotime('+1 year'));
         $this->card->cardHolderName = "James Mason";
-        $this->currency = 'EUR';
+        $this->currency = 'USD';
         $this->amount = '10.01';
+
+        $this->startDate = (new \DateTime())->modify('-3 year');
 
         $this->shippingAddress = new Address();
         $this->shippingAddress->streetAddress1 = "Apartment 852";
@@ -99,10 +103,15 @@ class PartnershipModeTest extends TestCase
         $merchants = ReportingService::findMerchants(1, 10)
             ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
+            ->andWith(SearchCriteria::START_DATE, $this->startDate)
             ->execute();
+
         if (count($merchants->result) > 0) {
             $this->merchantId = reset($merchants->result)->id;
             $this->setUpConfigMerchant();
+        } else {
+            $this->tearDownAfterClass();
+            $this->markTestSkipped("Merchant ID not found!");
         }
     }
 
@@ -118,6 +127,7 @@ class PartnershipModeTest extends TestCase
             ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(DataServiceCriteria::MERCHANT_ID, $this->merchantId)
             ->andWith(SearchCriteria::ACCOUNT_STATUS, MerchantAccountStatus::ACTIVE)
+            ->andWith(SearchCriteria::START_DATE, $this->startDate)
             ->execute();
 
         $transactionAccounts = array_filter(
@@ -131,7 +141,7 @@ class PartnershipModeTest extends TestCase
         );
 
         $config->accessTokenInfo->transactionProcessingAccountID =
-            (count($transactionAccounts) > 0 ? end($transactionAccounts)->id : null);
+            (count($transactionAccounts) > 0 ? reset($transactionAccounts)->id : null);
 
         $configName = 'config_' . $this->merchantId;
         ServicesContainer::configureService($config, $configName);
@@ -340,6 +350,7 @@ class PartnershipModeTest extends TestCase
 
     public function testVerifyTokenizedPaymentMethodWithPartnerMode()
     {
+        $this->markTestSkipped('Missing TKA_ account from the merchant');
         $response = $this->card->tokenize()->execute('config_' . $this->merchantId);
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
@@ -397,7 +408,9 @@ class PartnershipModeTest extends TestCase
         } catch (GatewayException $e) {
             $exceptionCaught = true;
             $this->assertEquals('40041', $e->responseCode);
-            $this->assertStringContainsString('Merchant configuration does not exist for the following combination', $e->getMessage());
+            $this->assertStringContainsString(
+                'Merchant configuration does not exist for the following combination', $e->getMessage()
+            );
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -486,7 +499,7 @@ class PartnershipModeTest extends TestCase
         $this->assertNotNull($split->transfersFundsAccount);
         /** @var FundsAccountDetails $transfer */
         $transfer = $split->transfersFundsAccount->getIterator()->current();
-        $this->assertEquals('00', $transfer->status);
+        $this->assertEquals('SUCCESS', $transfer->status);
         $this->assertEquals($transferAmount, $transfer->amount);
         $this->assertEquals($transferReference, $transfer->reference);
         $this->assertEquals($transferDescription, $transfer->description);

@@ -44,6 +44,7 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
         if (!$builder instanceof SecureBuilder) {
             throw new BuilderException("Builder must me an instance of SecureBuilder!");
         }
+
         $this->builder = $builder;
         $requestData = null;
         switch ($builder->transactionType)
@@ -287,6 +288,8 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
 
     private function setPayerParam()
     {
+        $dateFormat = ($this->builder->transactionType === TransactionType::RISK_ASSESS ? 'Y-m-d\TH:i:s': 'Y-m-d');
+
         return[
             'reference' => $this->builder->getCustomerAccountId(),
             'account_age' => (string) $this->builder->getAccountAgeIndicator(),
@@ -313,7 +316,7 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
             'payment_account_creation_date' => !empty($this->builder->getPaymentAccountCreateDate()) ?
                 (new \DateTime($this->builder->getPaymentAccountCreateDate()))->format('Y-m-d') : null,
             'payment_account_age_indicator' => (string) $this->builder->getPaymentAgeIndicator(),
-            'suspicious_account_activity' => StringUtils::boolToString($this->builder->getPreviousSuspiciousActivity()),
+            'suspicious_account_activity' => $this->builder->suspiciousAccountActivity ?? null,
             'purchases_last_6months_count' => !empty($this->builder->getNumberOfPurchasesInLastSixMonths()) ?
                 str_pad(
                     $this->builder->getNumberOfPurchasesInLastSixMonths(),
@@ -343,8 +346,9 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
                     STR_PAD_LEFT
                 ) : null,
             'shipping_address_time_created_reference' => !empty($this->builder->getShippingAddressCreateDate()) ?
-                (new \DateTime($this->builder->getShippingAddressCreateDate()))->format('Y-m-d\TH:i:s') : null,
-            'shipping_address_creation_indicator' => (string) $this->builder->getShippingAddressUsageIndicator()
+                (new \DateTime($this->builder->getShippingAddressCreateDate()))->format($dateFormat) : null,
+            'shipping_address_creation_indicator' => (string) $this->builder->getShippingAddressUsageIndicator(),
+            'email' => $this->builder->getCustomerEmail()
         ];
     }
 

@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Services;
 
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\Enums\ServiceEndpoints;
+use GlobalPayments\Api\Entities\GpApi\GpApiSessionInfo;
 use GlobalPayments\Api\Gateways\GpApiConnector;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
@@ -13,6 +14,9 @@ class GpApiService
 {
     public static function generateTransactionKey(GpApiConfig $config)
     {
+        if (!isset($config->accessTokenProvider)) {
+            $config->accessTokenProvider = new GpApiSessionInfo();
+        }
         $gateway = new GpApiConnector($config);
         if (empty($gateway->serviceUrl)) {
             $gateway->serviceUrl = ($config->environment == Environment::PRODUCTION) ?

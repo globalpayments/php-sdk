@@ -55,7 +55,7 @@ class UpaMicInterface implements IDeviceCommInterface
             $requestData = [
                 'merchant_id' => $this->gatewayConfig->merchantId ?? $this->gatewayConfig->accessTokenInfo->merchantId,
                 'account_id' => $this->gatewayConfig->accessTokenInfo->transactionProcessingAccountID,
-                'account_name' => $this->gatewayConfig->accessTokenInfo->transactionProcessingAccountName,
+                'account_name' => $this->gatewayConfig->accessTokenInfo->transactionProcessingAccountName ?? '',
                 'channel' => $this->gatewayConfig->channel,
                 'country' => $this->gatewayConfig->country,
                 'currency' => $this->gatewayConfig->deviceCurrency,

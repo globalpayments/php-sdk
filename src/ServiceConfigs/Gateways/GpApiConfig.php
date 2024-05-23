@@ -10,8 +10,10 @@ use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\ServiceEndpoints;
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
+use GlobalPayments\Api\Entities\GpApi\GpApiSessionInfo;
 use GlobalPayments\Api\Gateways\GpApiConnector;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
+use GlobalPayments\Api\Gateways\IAccessTokenProvider;
 
 class GpApiConfig extends GatewayConfig
 {
@@ -88,6 +90,8 @@ class GpApiConfig extends GatewayConfig
      */
     public string $statusUrl;
 
+    public IAccessTokenProvider $accessTokenProvider;
+
     public function __construct()
     {
         $this->gatewayProvider = GatewayProvider::GP_API;
@@ -99,6 +103,10 @@ class GpApiConfig extends GatewayConfig
             $this->serviceUrl = ($this->environment == Environment::PRODUCTION) ?
                 ServiceEndpoints::GP_API_PRODUCTION : ServiceEndpoints::GP_API_TEST;
         }
+        if (!isset($accessTokenProvider)) {
+            $this->accessTokenProvider = new GpApiSessionInfo();
+        }
+
         $gateway = new GpApiConnector($this);
         $gateway->serviceUrl = $this->serviceUrl;
         $gateway->requestLogger = $this->requestLogger;
