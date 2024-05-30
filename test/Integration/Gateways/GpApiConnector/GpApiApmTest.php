@@ -339,7 +339,7 @@ class GpApiApmTest extends TestCase
             ->withCurrency($this->currency)
             ->withDescription('New APM Uplift')
             ->withAddress($this->shippingAddress, AddressType::SHIPPING)
-            ->withCustomerId('REF123456789')
+            ->withCustomerId('PYR_b2d3b367fcf141dcbd03cd9ccfa60519')
             ->withProductData($products)
             ->withPhoneNumber('44', '124 445 556', PhoneNumberType::WORK)
             ->withPhoneNumber('44', '124 444 333', PhoneNumberType::HOME)

@@ -4,7 +4,13 @@
 
 # Changelog
 
-## Latest Version - v12.0.3 (05/23/24)
+## Latest Version - v12.0.4 (05/30/24)
+### Enhancements:
+- [GP-ECOM] Added additional fee to a card transaction (surchargeamount).
+- [GP-API] Add mapping for "message_received " and "message_sent " on get a Single Action response
+- [GP-API] Add "Payers" feature
+
+## v12.0.3 (05/23/24)
 ### Enhancements:
 - [GP-API] Add "payer->email" property on 3DS "/initiate" request
 - [GP-API] Improvements on access token request

@@ -100,9 +100,9 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $requestData = [];
                     $requestData['account_name'] = $config->accessTokenInfo->tokenizationAccountName;
                     $requestData['account_id'] = $config->accessTokenInfo->tokenizationAccountID;
-                    $requestData['name'] = $builder->description ? $builder->description : "";
-                    $requestData['reference'] = $builder->clientTransactionId ?
-                        $builder->clientTransactionId : GenerationUtils::generateOrderId();
+                    $requestData['name'] = $builder->description ?: "";
+                    $requestData['payer'] = ['id' => $builder->customerId ?: ""];
+                    $requestData['reference'] = $builder->clientTransactionId ?: GenerationUtils::generateOrderId();
                     $requestData['usage_mode'] = $builder->paymentMethodUsageMode;
                     $requestData['fingerprint_mode'] =
                         (!empty($builder->customerData) & !empty($builder->customerData->deviceFingerPrint) ?
@@ -311,8 +311,9 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
      */
     private function setPayerInformation($builder)
     {
-        $payer['reference'] = !empty($builder->customerId) ?
+        $payer['id'] = !empty($builder->customerId) ?
             $builder->customerId : (!empty($builder->customerData) ? $builder->customerData->id : null);
+        $payer['reference'] = !empty($builder->customerData) ? $builder->customerData->key : null;
         switch (get_class($builder->paymentMethod)) {
             case AlternativePaymentMethod::class:
                 $payer['home_phone'] = [

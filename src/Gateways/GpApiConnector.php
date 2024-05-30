@@ -8,6 +8,7 @@ use GlobalPayments\Api\Builders\FileProcessingBuilder;
 use GlobalPayments\Api\Builders\FraudBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Builders\PayFacBuilder;
+use GlobalPayments\Api\Builders\RecurringBuilder;
 use GlobalPayments\Api\Builders\ReportBuilder;
 use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiMiCRequestBuilder;
 use GlobalPayments\Api\Builders\RequestBuilder\RequestBuilderFactory;
@@ -222,6 +223,16 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         $response = $this->executeProcess($builder);
 
         return GpApiMapping::mapFileProcessingResponse($response);
+    }
+
+    public function processRecurring(RecurringBuilder $builder)
+    {
+        if (empty($this->accessToken)) {
+            $this->signIn();
+        }
+        $response = $this->executeProcess($builder);
+
+        return GpApiMapping::mapRecurringEntity($response, $builder->entity);
     }
 
     private function executeProcess(BaseBuilder $builder)

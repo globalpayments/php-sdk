@@ -75,4 +75,7 @@ class ActionSummary
      * @var string
      */
     public $accountId;
+
+    public ?string $rawRequest = null;
+    public ?string $rawResponse = null;
 }

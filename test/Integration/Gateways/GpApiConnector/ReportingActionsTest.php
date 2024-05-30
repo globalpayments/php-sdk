@@ -61,6 +61,8 @@ class ReportingActionsTest extends TestCase
         $this->assertNotNull($response);
         $this->assertInstanceOf(ActionSummary::class, $response);
         $this->assertEquals($actionId, $response->id);
+        $this->assertNotEmpty($response->rawRequest);
+        $this->assertNotEmpty($response->rawResponse);
     }
 
     public function testReportActionDetail_RandomId()

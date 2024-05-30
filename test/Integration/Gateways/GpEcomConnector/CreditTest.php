@@ -3,24 +3,25 @@
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
 use GlobalPayments\Api\Entities\BlockedCardType;
+use GlobalPayments\Api\Entities\Enums\CreditDebitIndicator;
+use GlobalPayments\Api\Entities\Enums\DccProcessor;
+use GlobalPayments\Api\Entities\Enums\DccRateType;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Services\CreditService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
+use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
-use GlobalPayments\Api\Entities\Enums\DccProcessor;
-use GlobalPayments\Api\Entities\Enums\DccRateType;
-use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
-use GlobalPayments\Api\Utils\GenerationUtils;
 
 class CreditTest extends TestCase
 {
     protected CreditCardData $card;
 
-    public function setup() : void
+    public function setup(): void
     {
         $card = new CreditCardData();
         $card->number = '4111111111111111';
@@ -87,6 +88,7 @@ class CreditTest extends TestCase
         $response = $this->card->refund(16)
             ->withCurrency('USD')
             ->withAllowDuplicates(true)
+            ->withSurchargeAmount(0.64, CreditDebitIndicator::CREDIT)
             ->execute();
 
         $this->assertNotNull($response);
@@ -145,7 +147,7 @@ class CreditTest extends TestCase
         $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
         return $config;
     }
-    
+
     protected function dccSetup(): void
     {
         $config = new GpEcomConfig();
@@ -154,36 +156,36 @@ class CreditTest extends TestCase
         $config->refundPassword = "refund";
         $config->sharedSecret = "secret";
         $config->serviceUrl = "https://api.sandbox.realexpayments.com/epage-remote.cgi";
-        
+
         ServicesContainer::configureService($config);
     }
-    
+
     public function testCreditGetDccInfo()
     {
         $this->dccSetup();
-        
+
         $this->card->number = '4002933640008365';
         $orderId = GenerationUtils::generateOrderId();
-        
+
         $dccDetails = $this->card->getDccRate(DccRateType::SALE, DccProcessor::FEXCO)
-                    ->withAmount(10)
-                    ->withCurrency('USD')
-                    ->withOrderId($orderId)
-                    ->execute();
-       
+            ->withAmount(10)
+            ->withCurrency('USD')
+            ->withOrderId($orderId)
+            ->execute();
+
         $this->assertNotNull($dccDetails);
         $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
     }
-    
+
     public function testCreditDccRateAuthorize()
     {
         $this->dccSetup();
-        
+
         $this->card->number = '4006097467207025';
         $orderId = GenerationUtils::generateOrderId();
-        
-        $dccDetails = $this->card->getDccRate(DccRateType::SALE,DccProcessor::FEXCO)
+
+        $dccDetails = $this->card->getDccRate(DccRateType::SALE, DccProcessor::FEXCO)
             ->withAmount(1001)
             ->withCurrency('EUR')
             ->withOrderId($orderId)
@@ -192,25 +194,25 @@ class CreditTest extends TestCase
         $this->assertNotNull($dccDetails);
         $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
-      
+
         $response = $this->card->authorize(1001)
             ->withCurrency('EUR')
             ->withAllowDuplicates(true)
             ->withDccRateData($dccDetails->dccRateData)
             ->withOrderId($orderId)
             ->execute();
-        
+
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->responseCode, $response->responseMessage);
     }
-    
+
     public function testCreditDccRateCharge()
     {
         $this->dccSetup();
-        
+
         $this->card->number = '4006097467207025';
         $orderId = GenerationUtils::generateOrderId();
-        
+
         $dccDetails = $this->card->getDccRate(DccRateType::SALE, DccProcessor::FEXCO)
             ->withAmount(1001)
             ->withCurrency('EUR')
@@ -219,14 +221,14 @@ class CreditTest extends TestCase
         $this->assertNotNull($dccDetails);
         $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
-        
+
         $response = $this->card->charge(1001)
             ->withCurrency('EUR')
             ->withAllowDuplicates(true)
             ->withDccRateData($dccDetails->dccRateData)
             ->withOrderId($orderId)
             ->execute();
-        
+
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->responseCode, $response->responseMessage);
     }
@@ -236,10 +238,10 @@ class CreditTest extends TestCase
         $this->expectException(GatewayException::class);
         $this->expectExceptionMessage("Unexpected Gateway Response: 105 - Cannot find DCC information for that card");
         $this->dccSetup();
-        
+
         $this->card->number = '4002933640008365';
         $orderId = GenerationUtils::generateOrderId();
-        
+
         $dccDetails = $this->card->getDccRate(DccRateType::SALE, DccProcessor::FEXCO)
             ->withAmount(10)
             ->withCurrency('EUR')
@@ -252,20 +254,20 @@ class CreditTest extends TestCase
         $this->expectException(GatewayException::class);
         $this->expectExceptionMessage("Unexpected Gateway Response: 508 - Incorrect DCC information - doesn't correspond to dccrate request");
         $this->dccSetup();
-        
+
         $this->card->number = '4006097467207025';
         $orderId = GenerationUtils::generateOrderId();
-        
-        $dccDetails = $this->card->getDccRate(DccRateType::SALE,DccProcessor::FEXCO)
+
+        $dccDetails = $this->card->getDccRate(DccRateType::SALE, DccProcessor::FEXCO)
             ->withAmount(10)
             ->withCurrency('EUR')
             ->withOrderId($orderId)
             ->execute();
-        
+
         $this->assertNotNull($dccDetails);
         $this->assertEquals('00', $dccDetails->responseCode, $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
-        
+
         $response = $this->card->authorize(100)
             ->withCurrency('EUR')
             ->withAllowDuplicates(true)
@@ -299,7 +301,7 @@ class CreditTest extends TestCase
         $authorize = $this->card->authorize(10)
             ->withCurrency('EUR')
             ->withSupplementaryData(["taxInfo" => ["VATREF", "763637283332"]])
-            ->withSupplementaryData(["indentityInfo"=> ["Passport", "PPS736353"]])
+            ->withSupplementaryData(["indentityInfo" => ["Passport", "PPS736353"]])
             ->withSupplementaryData(["RANDOM_KEY1" => "VALUE_1", "RANDOM_KEY2" => "VALUE_2"])
             ->withSupplementaryData('RANDOM_KEY3', 'ACTIVE')
             ->execute();
@@ -328,5 +330,52 @@ class CreditTest extends TestCase
 
         $this->assertNotNull($authorization);
         $this->assertEquals('00', $authorization->responseCode);
+    }
+
+    public function testCreditChargeWithSurchargeAmount()
+    {
+        $authorize = $this->card->charge(10)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->withSurchargeAmount(0.4, CreditDebitIndicator::DEBIT)
+            ->execute();
+
+        $this->assertNotNull($authorize);
+        $this->assertEquals('00', $authorize->responseCode, $authorize->responseMessage);
+    }
+
+    public function testCreditCaptureWithSurchargeAmount()
+    {
+        $authorize = $this->card->authorize(10)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $this->assertNotNull($authorize);
+        $this->assertEquals('00', $authorize->responseCode, $authorize->responseMessage);
+
+        $capture = $authorize->capture(5)
+            ->withSurchargeAmount(0.2, CreditDebitIndicator::DEBIT)
+            ->execute();
+
+        $this->assertNotNull($capture);
+        $this->assertEquals('00', $capture->responseCode, $capture->responseMessage);
+    }
+
+    public function testCreditChargeWithExceededSurchargeAmount()
+    {
+        $exceptionCaught = false;
+        try {
+            $this->card->charge(10)
+                ->withCurrency('USD')
+                ->withSurchargeAmount(48, CreditDebitIndicator::DEBIT)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Unexpected Gateway Response: 508 - The surcharge amount is greater than 5% of the transaction amount', $e->getMessage());
+            $this->assertEquals('508', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
     }
 }

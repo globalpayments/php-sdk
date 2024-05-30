@@ -144,6 +144,8 @@ class Customer extends RecurringEntity
     /** @var array<CustomerDocument> */
     public $documents = [];
 
+    public array $paymentMethods = [];
+
     /**
      * Adds a payment method to the customer
      *
@@ -166,6 +168,7 @@ class Customer extends RecurringEntity
         $payment->id = $paymentId;
         $payment->nameOnAccount = $nameOnAccount;
         $payment->storedCredential = $storedCredential;
+        $this->paymentMethods[$paymentId] = $paymentMethod;
         return $payment;
     }
 }

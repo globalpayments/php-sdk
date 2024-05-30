@@ -95,7 +95,13 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder implements 
         }
 
         $request->appendChild($xml->createElement("orderid", $orderId));
-
+        if (isset($builder->surchargeAmount)) {
+            $surchargeAmount = $xml->createElement("surchargeamount",  preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->surchargeAmount)));
+            if (!empty($builder->creditDebitIndicator)) {
+                $surchargeAmount->setAttribute("type", strtolower($builder->creditDebitIndicator));
+            }
+            $request->appendChild($surchargeAmount);
+        }
         // For Fraud Decision Manager
         if (!empty($builder->customerData)) {
             $customerValue = $builder->customerData;

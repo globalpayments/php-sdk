@@ -10,6 +10,7 @@ use GlobalPayments\Api\Entities\BatchSummary;
 use GlobalPayments\Api\Entities\BNPLResponse;
 use GlobalPayments\Api\Entities\Card;
 use GlobalPayments\Api\Entities\CardIssuerResponse;
+use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\DisputeDocument;
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Document;
@@ -41,6 +42,7 @@ use GlobalPayments\Api\Entities\PaymentMethodList;
 use GlobalPayments\Api\Entities\Person;
 use GlobalPayments\Api\Entities\PersonList;
 use GlobalPayments\Api\Entities\PhoneNumber;
+use GlobalPayments\Api\Entities\RecurringEntity;
 use GlobalPayments\Api\Entities\Reporting\ActionSummary;
 use GlobalPayments\Api\Entities\Reporting\DepositSummary;
 use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
@@ -700,7 +702,8 @@ class GpApiMapping
         $summary->merchantName = !empty($response->merchant_name) ? $response->merchant_name : null;
         $summary->accountName = !empty($response->account_name) ? $response->account_name : null;
         $summary->accountId = !empty($response->account_id) ? $response->account_id : null;
-
+        $summary->rawRequest = $response->message_received ?? null;
+        $summary->rawResponse = $response->message_sent ?? null;
         return $summary;
     }
 
@@ -1345,5 +1348,23 @@ class GpApiMapping
         $summary->merchantHierarchy = $system->hierarchy ?? null;
         $summary->merchantName = $system->name ?? null;
         $summary->merchantDbaName = $system->dba ?? null;
+    }
+
+    public static function mapRecurringEntity($response,RecurringEntity $recurringEntity) : RecurringEntity
+    {
+        switch (get_class($recurringEntity)) {
+            case Customer::class:
+                $payer = $recurringEntity;
+                $payer->id = $response->id;
+                if (!empty($response->payment_methods)) {
+                    $payer->paymentMethods = [];
+                    foreach ($response->payment_methods as $paymentMethod) {
+                        $payer->paymentMethods[] = $paymentMethod;
+                    }
+                }
+                return $payer;
+            default:
+                break;
+        }
     }
 }

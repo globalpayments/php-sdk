@@ -7,6 +7,7 @@ use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\CreditDebitIndicator;
 use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
@@ -122,6 +123,37 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         $this->assertNotNull($response->fingerprint);
         $this->assertNotNull($response->fingerprintIndicator);
+    }
+
+    public function testCreditSale_WithSurcharge()
+    {
+        $response = $this->card->charge(69)
+            ->withCurrency($this->currency)
+            ->withSurchargeAmount(3, CreditDebitIndicator::DEBIT)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertNotNull($response->authorizationCode);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+        $this->assertNull($response->payerDetails);
+    }
+
+    public function testCreditSale_WithExceededSurcharge()
+    {
+        $exceptionCaught = false;
+        try {
+            $this->card->charge(69)
+                ->withCurrency($this->currency)
+                ->withSurchargeAmount(5, CreditDebitIndicator::DEBIT)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - The surcharge amount is greater than 5% of the transaction amount', $e->getMessage());
+            $this->assertEquals('50020', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
     }
 
     public function testCreditAuthorization()

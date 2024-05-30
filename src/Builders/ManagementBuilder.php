@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Builders;
 use GlobalPayments\Api\Entities\{DccRateData, FundsData, LodgingData, Transaction};
 use GlobalPayments\Api\Entities\Enums\{
     CommercialIndicator,
+    CreditDebitIndicator,
     PaymentMethodType,
     PaymentMethodUsageMode,
     TaxType,
@@ -210,6 +211,11 @@ class ManagementBuilder extends TransactionBuilder
 
     /** @var FundsData */
     public $fundsData;
+
+    public float $surchargeAmount;
+
+    /** @var string|CreditDebitIndicator */
+    public string $creditDebitIndicator;
 
     /**
      * {@inheritdoc}
@@ -752,6 +758,20 @@ class ManagementBuilder extends TransactionBuilder
     public function withFundsData(FundsData $fundsData)
     {
         $this->fundsData = $fundsData;
+
+        return $this;
+    }
+
+    /**
+     * @param float $value
+     * @param string|CreditDebitIndicator $creditDebitIndicator
+     *
+     * @return ManagementBuilder
+     */
+    public function withSurchargeAmount($value, $creditDebitIndicator = null)
+    {
+        $this->surchargeAmount = $value;
+        $this->creditDebitIndicator = $creditDebitIndicator;
 
         return $this;
     }

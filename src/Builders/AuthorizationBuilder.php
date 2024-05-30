@@ -19,6 +19,7 @@ use GlobalPayments\Api\Entities\{Address,
 use GlobalPayments\Api\Entities\Enums\{AddressType,
     AliasAction,
     BNPLShippingMethod,
+    CreditDebitIndicator,
     EmvFallbackCondition,
     EmvLastChipRead,
     InquiryType,
@@ -524,6 +525,9 @@ class AuthorizationBuilder extends TransactionBuilder
 
     /** @var MerchantCategory */
     public string $merchantCategory;
+
+    /** @var string|CreditDebitIndicator */
+    public string $creditDebitIndicator;
 
     /**
      * {@inheritdoc}
@@ -1446,12 +1450,14 @@ class AuthorizationBuilder extends TransactionBuilder
 
     /**
      * @param float $value
+     * @param string|CreditDebitIndicator $creditDebitIndicator
      *
      * @return AuthorizationBuilder
      */
-    public function withSurchargeAmount($value)
+    public function withSurchargeAmount($value, $creditDebitIndicator = null)
     {
         $this->surchargeAmount = $value;
+        $this->creditDebitIndicator = $creditDebitIndicator;
 
         return $this;
     }
