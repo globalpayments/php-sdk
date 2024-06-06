@@ -301,7 +301,7 @@ class ReportingTransactionsTest extends TestCase
     public function testReportFindTransactionsByCardBrandAndAuthCode()
     {
         $cardBrand = 'VISA';
-        $authCode = '12345';
+        $authCode = '123456';
         try {
             $response = ReportingService::findTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)

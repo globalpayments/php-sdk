@@ -385,6 +385,9 @@ class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             if (isset($hostedPaymentData->notReturnAddress)) {
                 $this->setSerializeData('HPP_DO_NOT_RETURN_ADDRESS', $hostedPaymentData->notReturnAddress == true);
             }
+            if (isset($hostedPaymentData->removeShipping)) {
+                $this->setSerializeData('HPP_REMOVE_SHIPPING', $hostedPaymentData->removeShipping === true);
+            }
         }
         if (isset($this->hostedPaymentConfig->cardStorageEnabled)) {
             $this->setSerializeData('CARD_STORAGE_ENABLE', $this->hostedPaymentConfig->cardStorageEnabled ? '1' : '0');

@@ -5,6 +5,10 @@
         <label for="capture_address">Enable Capture billing and shipping capability</label>
     </div>
     <div>
+        <input type="checkbox" id="remove_shipping" name="remove_shipping">
+        <label for="remove_shipping">Show only the billing address and payment forms.</label>
+    </div>
+    <div>
         <input type="checkbox" id="not_return_address" name="not_return_address">
         <label for="not_return_address">Do not return address information in HPP response</label>
     </div>
@@ -19,7 +23,8 @@
         $("#payButtonId").click(function() {
             const data = {
                 captureAddress: document.getElementById("capture_address").checked,
-                notReturnAddress: document.getElementById("not_return_address").checked
+                notReturnAddress: document.getElementById("not_return_address").checked,
+                removeShipping: document.getElementById("remove_shipping").checked
             };
             console.log(data);
             $.getJSON("get-json.php", data, function (jsonFromRequestEndpoint) {

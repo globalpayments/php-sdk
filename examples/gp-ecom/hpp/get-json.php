@@ -48,6 +48,9 @@ if (isset($_REQUEST['captureAddress'])) {
 if (isset($_REQUEST['notReturnAddress'])) {
     $hostedPaymentData->notReturnAddress = filter_var($_REQUEST['notReturnAddress'], FILTER_VALIDATE_BOOLEAN);
 }
+if (isset($_REQUEST['removeShipping'])) {
+    $hostedPaymentData->removeShipping = filter_var($_REQUEST['removeShipping'], FILTER_VALIDATE_BOOLEAN);
+}
 
 $hostedPaymentData->customerCountry = 'DE';
 $hostedPaymentData->customerFirstName = 'James';

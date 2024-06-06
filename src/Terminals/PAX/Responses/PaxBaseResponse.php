@@ -39,7 +39,7 @@ class PaxBaseResponse extends TerminalResponse
     public function checkResponse($acceptedCodes = null)
     {
         if ($acceptedCodes === null) {
-            $acceptedCodes = ["000000", "000100"];
+            $acceptedCodes = ["000000", "000100", "000002"];
         }
 
         if (!empty($this->deviceResponseText)) {

@@ -867,6 +867,7 @@ class HppTest extends TestCase
         $hostedPaymentData = new HostedPaymentData();
         $hostedPaymentData->addressCapture = true;
         $hostedPaymentData->notReturnAddress = false;
+        $hostedPaymentData->removeShipping = true;
 
         $json = $service->charge(19)
             ->withCurrency($this->currency)
@@ -877,6 +878,7 @@ class HppTest extends TestCase
         $response = json_decode($json, true);
         $this->assertTrue($response['HPP_CAPTURE_ADDRESS']);
         $this->assertFalse($response['HPP_DO_NOT_RETURN_ADDRESS']);
+        $this->assertTrue($response['HPP_REMOVE_SHIPPING']);
     }
 
     public function testOpenBankingInitiate()

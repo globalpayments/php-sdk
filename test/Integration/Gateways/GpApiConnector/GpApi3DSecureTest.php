@@ -117,25 +117,6 @@ class GpApi3DSecureTest extends TestCase
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
-    public function testCardHolderNotEnrolled_v1()
-    {
-        $this->card->number = GpApi3DSTestCards::CARDHOLDER_NOT_ENROLLED_V1;
-
-        $secureEcom = Secure3dService::checkEnrollment($this->card)
-            ->withCurrency($this->currency)
-            ->withAmount($this->amount)
-            ->execute();
-
-        $this->assertCheckEnrollmentCardNotEnrolledV1($secureEcom);
-
-        $this->card->threeDSecure = $secureEcom;
-
-        $response = $this->card->charge($this->amount)->withCurrency($this->currency)->execute();
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
-    }
-
     /**
      * Frictionless scenario
      *

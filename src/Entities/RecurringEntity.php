@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Entities;
 
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
@@ -92,6 +93,8 @@ abstract class RecurringEntity implements IRecurringEntity
     {
         try {
             return RecurringService::edit($this);
+        } catch (GatewayException $exception) {
+            throw $exception;
         } catch (ApiException $exc) {
             throw new ApiException('Update failed, see inner exception for more details', $exc);
         }

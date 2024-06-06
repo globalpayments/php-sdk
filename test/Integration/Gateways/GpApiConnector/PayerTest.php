@@ -8,6 +8,7 @@ use GlobalPayments\Api\Entities\Enums\BNPLType;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Entities\Product;
 use GlobalPayments\Api\PaymentMethods\BNPL;
@@ -18,12 +19,13 @@ use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use PHPUnit\Framework\TestCase;
 
-class PayerTest  extends TestCase
+class PayerTest extends TestCase
 {
     private Customer $newCustomer;
     private CreditCardData $card;
     private Address $billingAddress;
     private Address $shippingAddress;
+
     public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
@@ -67,7 +69,7 @@ class PayerTest  extends TestCase
 
     public function setUpConfig(): GpApiConfig
     {
-       return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 
     public function testCreatePayer()
@@ -109,6 +111,53 @@ class PayerTest  extends TestCase
         }
     }
 
+    public function testCreatePayer_WithoutPaymentMethods()
+    {
+        /** @var \GlobalPayments\Api\Entities\Customer $payer */
+        $payer = $this->newCustomer->create();
+
+        $this->assertNotNull($payer->id);
+        $this->assertEquals($this->newCustomer->firstName, $payer->firstName);
+        $this->assertEquals($this->newCustomer->lastName, $payer->lastName);
+        $this->assertEmpty($payer->paymentMethods);
+    }
+
+    public function testCreatePayer_WithoutFirstName()
+    {
+        $this->newCustomer = new Customer();
+        $this->newCustomer->key = GenerationUtils::getGuid();
+        $this->newCustomer->lastName = "Mason";
+
+        $exceptionCaught = false;
+        try {
+            $this->newCustomer->create();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields: first_name', $e->getMessage());
+            $this->assertEquals('40005', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testCreatePayer_WithoutLastName()
+    {
+        $this->newCustomer = new Customer();
+        $this->newCustomer->key = GenerationUtils::getGuid();
+        $this->newCustomer->firstName = "James";
+
+        $exceptionCaught = false;
+        try {
+            $this->newCustomer->create();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields: last_name', $e->getMessage());
+            $this->assertEquals('40005', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
     public function testEditPayer()
     {
         $this->newCustomer->key = 'payer-123';
@@ -129,6 +178,38 @@ class PayerTest  extends TestCase
 
         $this->assertNotEmpty($payer->paymentMethods);
         $this->assertEquals($this->card->token, reset($payer->paymentMethods)->id);
+    }
+
+    public function testEditPayer_WithoutCustomerId()
+    {
+        $this->newCustomer->key = 'payer-123';
+
+        $exceptionCaught = false;
+        try {
+            $this->newCustomer->saveChanges();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Status Code: SYSTEM_ERROR_DOWNSTREAM - Unable to process your request due to an error with a system down stream.', $e->getMessage());
+            $this->assertEquals('50046', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testEditPayer_RandomCustomerId()
+    {
+        $this->newCustomer->id = 'PYR_' . GenerationUtils::getGuid();
+
+        $exceptionCaught = false;
+        try {
+            $this->newCustomer->saveChanges();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertEquals('Status Code: RESOURCE_NOT_FOUND - Payer ' . $this->newCustomer->id . ' not found at this location', $e->getMessage());
+            $this->assertEquals('40008', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
     }
 
     public function testCardTokenization()

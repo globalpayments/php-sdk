@@ -34,6 +34,8 @@ class HostedPaymentData
      */
     public $notReturnAddress;
 
+    public ?bool $removeShipping = null;
+
     /**
      * Determines the challenge request preference for 3DS 2.0.
      *

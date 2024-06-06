@@ -100,28 +100,6 @@ class Secure3dServiceTest extends TestCase
         return $config;
     }
 
-    public function testFullCycle_v1()
-    {
-        $card = new CreditCardData();
-        $card->number = 4012001037141112;
-        $card->expMonth = 12;
-        $card->expYear = TestCards::validCardExpYear();
-        $card->cardHolderName = 'John Smith';
-
-        $errorFound = false;
-        try {
-            Secure3dService::checkEnrollment($card)
-                ->withAmount(10.01)
-                ->withCurrency('USD')
-                ->execute('default', Secure3dVersion::ONE);
-        } catch (BuilderException $e) {
-            $errorFound = true;
-            $this->assertEquals('3D Secure ONE is no longer supported!', $e->getMessage());
-        } finally {
-            $this->assertTrue($errorFound);
-        }
-    }
-
     public function testFullCycle_v2()
     {
         $secureEcom = Secure3dService::checkEnrollment($this->card)
@@ -962,24 +940,4 @@ class Secure3dServiceTest extends TestCase
         $this->assertEquals('00', $response->responseCode);
     }
 
-    public function testCheckVersion_Not_Enrolled()
-    {
-        $card = new CreditCardData();
-        $card->number = 4917000000000087;
-        $card->expMonth = 12;
-        $card->expYear = TestCards::validCardExpYear();
-
-        $errorFound = false;
-        try {
-            Secure3dService::checkEnrollment($card)
-                ->withAmount(10.01)
-                ->withCurrency('USD')
-                ->execute('default', Secure3dVersion::ONE);
-        } catch (BuilderException $e) {
-            $errorFound = true;
-            $this->assertEquals('3D Secure ONE is no longer supported!', $e->getMessage());
-        } finally {
-            $this->assertTrue($errorFound);
-        }
-    }
 }

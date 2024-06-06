@@ -401,4 +401,30 @@ class PaxCreditTests extends TestCase
         $this->assertNotNull($cofSaleResponse);
         $this->assertEquals('00', $cofSaleResponse->responseCode);
     }
+
+    /**
+     * This test demonstrates SDK can correctly parse a "partial auth" response
+     * 
+     * @return void 
+     * @throws InvalidArgumentException 
+     * @throws ExpectationFailedException 
+     */
+    public function testPartialAuthHandling() : void
+    {
+        /**
+         * The gateway's partial auth trans amount is $155.00, but there's
+         * currently a $5.24 surcharge configured on my test device
+         */
+        $partialAuthAmount = 149.76;
+
+        $response = $this->device->sale($partialAuthAmount)
+            ->withAllowDuplicates(1)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals("PARTIAL APPROVAL", $response->responseText);
+        $this->assertEquals("10", $response->responseCode);
+        $this->assertEquals(55, $response->amountDue);
+        $this->assertEquals(100, $response->transactionAmount);
+    }
 }

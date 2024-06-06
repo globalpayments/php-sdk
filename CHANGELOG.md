@@ -4,7 +4,13 @@
 
 # Changelog
 
-## Latest Version - v12.0.4 (05/30/24)
+## Latest Version - v12.0.5 (06/07/24)
+### Bug Fixes:
+- [PAX] Corrected "partial auth" response handling
+- [GP-ECOM] Add HPP additional field "HPP_REMOVE_SHIPPING"
+- [GP-API] Unit tests enhancements
+
+## v12.0.4 (05/30/24)
 ### Enhancements:
 - [GP-ECOM] Added additional fee to a card transaction (surchargeamount).
 - [GP-API] Add mapping for "message_received " and "message_sent " on get a Single Action response
