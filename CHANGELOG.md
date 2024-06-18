@@ -4,7 +4,11 @@
 
 # Changelog
 
-## Latest Version - v12.0.5 (06/07/24)
+## Latest Version - v12.0.5 (06/18/24)
+### Enhancements:
+- [GP-ECOM] Add Multi-Capture
+
+## v12.0.5 (06/07/24)
 ### Bug Fixes:
 - [PAX] Corrected "partial auth" response handling
 - [GP-ECOM] Add HPP additional field "HPP_REMOVE_SHIPPING"

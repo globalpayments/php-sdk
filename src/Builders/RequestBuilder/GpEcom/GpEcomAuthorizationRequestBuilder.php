@@ -88,10 +88,16 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder implements 
 
         // This needs to be figured out based on txn type and set to 0, 1 or MULTI
         if ($builder->transactionType === TransactionType::SALE || $builder->transactionType == TransactionType::AUTH) {
-            $autoSettle = $builder->transactionType === TransactionType::SALE ? "1" : "0";
+            $autoSettle = $builder->transactionType === TransactionType::SALE ? "1" : ($builder->multiCapture === true ? "MULTI" :"0");
             $element = $xml->createElement("autosettle");
             $element->setAttribute("flag", $autoSettle);
             $request->appendChild($element);
+        }
+        if (
+            $builder->transactionType == TransactionType::AUTH &&
+            !empty($builder->multiCapturePaymentCount)
+        ) {
+            $request->appendChild($xml->createElement("estnumtxn", $builder->multiCapturePaymentCount));
         }
 
         $request->appendChild($xml->createElement("orderid", $orderId));

@@ -6,6 +6,7 @@ use DOMDocument;
 use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\ManagementBuilder;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
+use GlobalPayments\Api\Entities\Enums\RecurringSequence;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\IRequestBuilder;
@@ -58,7 +59,9 @@ class GpEcomManagementRequestBuilder extends GpEcomRequestBuilder implements IRe
 
         if ($builder->amount !== null) {
             $amount = $xml->createElement("amount", preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->amount)));
-            $amount->setAttribute("currency", $builder->currency ?? '');
+            if (!empty($builder->currency)) {
+                $amount->setAttribute("currency", $builder->currency);
+            }
             $request->appendChild($amount);
         } elseif ($builder->transactionType === TransactionType::CAPTURE) {
             throw new BuilderException("Amount cannot be null for capture.");
@@ -74,10 +77,19 @@ class GpEcomManagementRequestBuilder extends GpEcomRequestBuilder implements IRe
         }
         $request->appendChild($xml->createElement("pasref", $builder->transactionId ?? ''));
 
-        // rebate hash
-        if ($builder->transactionType === TransactionType::REFUND &&
-            is_null($builder->alternativePaymentType)) {
+        if (
+            ($builder->transactionType === TransactionType::REFUND && is_null($builder->alternativePaymentType)) ||
+            ($builder->multiCapture === true)) {
             $request->appendChild($xml->createElement("authcode", $builder->paymentMethod->authCode ?? ''));
+        }
+
+        if ($builder->multiCapture === true) {
+            $isFinal = ($builder->multiCaptureSequence == RecurringSequence::LAST ? 1 : 0);
+            $txnseq = $xml->createElement("txnseq");
+            $final = $xml->createElement("final");
+            $final->setAttribute('flag', $isFinal);
+            $txnseq->appendChild($final);
+            $request->appendChild($txnseq);
         }
 
         // reason code

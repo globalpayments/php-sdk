@@ -1360,9 +1360,12 @@ class AuthorizationBuilder extends TransactionBuilder
      *
      * @return $this
      */
-    public function withMultiCapture($multiCapture = false)
+    public function withMultiCapture(bool $multiCapture = false, int $paymentCount = 1) : AuthorizationBuilder
     {
         $this->multiCapture = $multiCapture;
+        if ($multiCapture === true) {
+            $this->multiCapturePaymentCount = $paymentCount;
+        }
         return $this;
     }
 

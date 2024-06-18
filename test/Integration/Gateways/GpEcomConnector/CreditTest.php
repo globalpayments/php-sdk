@@ -6,6 +6,7 @@ use GlobalPayments\Api\Entities\BlockedCardType;
 use GlobalPayments\Api\Entities\Enums\CreditDebitIndicator;
 use GlobalPayments\Api\Entities\Enums\DccProcessor;
 use GlobalPayments\Api\Entities\Enums\DccRateType;
+use GlobalPayments\Api\Entities\Enums\RecurringSequence;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
@@ -377,5 +378,36 @@ class CreditTest extends TestCase
         } finally {
             $this->assertTrue($exceptionCaught);
         }
+    }
+    public function testMultiCapture()
+    {
+        $transaction = $this->card->authorize(30)
+            ->withCurrency('EUR')
+            ->withMultiCapture(true, 3)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('00', $transaction->responseCode);
+
+        $capture1 = $transaction->capture(10)
+            ->withMultiCapture(RecurringSequence::FIRST)
+            ->execute();
+
+        $this->assertNotNull($capture1);
+        $this->assertEquals('00', $capture1->responseCode);
+
+        $capture2 = $transaction->capture(10)
+            ->withMultiCapture(RecurringSequence::SUBSEQUENT)
+            ->execute();
+
+        $this->assertNotNull($capture2);
+        $this->assertEquals('00', $capture2->responseCode);
+
+        $capture3 = $transaction->capture(10)
+            ->withMultiCapture(RecurringSequence::LAST)
+            ->execute();
+
+        $this->assertNotNull($capture3);
+        $this->assertEquals('00', $capture3->responseCode);
     }
 }

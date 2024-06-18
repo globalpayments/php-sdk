@@ -341,6 +341,9 @@ class GpEcomMapping
     {
         switch ($builder->transactionType) {
             case TransactionType::CAPTURE:
+                if ($builder->multiCapture === true) {
+                    return 'multisettle';
+                }
                 return 'settle';
             case TransactionType::HOLD:
                 return 'hold';
