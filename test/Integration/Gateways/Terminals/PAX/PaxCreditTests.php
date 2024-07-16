@@ -427,4 +427,47 @@ class PaxCreditTests extends TestCase
         $this->assertEquals(55, $response->amountDue);
         $this->assertEquals(100, $response->transactionAmount);
     }
+
+    /**
+     * This test should demonstrates that the device IS prompting for a tip
+     * when a gratuity amount isn't provided to the builder. This assumes that
+     * the device has been configured for gratuity, which is something that is
+     * set at the terminal file level.
+     * 
+     *   **Requires end-user confirmation**
+     * 
+     * @return void 
+     * @throws InvalidArgumentException 
+     * @throws ExpectationFailedException 
+     */
+    public function testTipPropmpt() : void
+    {
+        $response = $this->device->sale("12.34")
+            ->execute();
+
+            $this->assertNotNull($response);
+            $this->assertEquals("00", $response->responseCode);
+    }
+
+    /**
+     * This test should demonstrate that a the device is NOT prompting for a
+     * tip when a gratuity amount IS provided to the builder. This assumes that
+     * the device is configured for gratuity which is something that is set at
+     * the terminal file level.
+     * 
+     *   **Requires end-user confirmation**
+     * 
+     * @return void 
+     * @throws InvalidArgumentException 
+     * @throws ExpectationFailedException 
+     */
+    public function testTipNoPropmpt() : void
+    {
+        $response = $this->device->sale("15.34")
+            ->withGratuity("3.00") // this makes for an $18.34 sale on device
+            ->execute();
+
+            $this->assertNotNull($response);
+            $this->assertEquals("00", $response->responseCode);
+    }
 }

@@ -226,6 +226,10 @@ class PaxController extends DeviceController
         if ($builder->signatureCapture !== null) {
             $extData->details[PaxExtData::SIGNATURE_CAPTURE] = $builder->signatureCapture;
         }
+
+        if (empty($builder->gratuity)) {
+            $extData->details[PaxExtData::TIP_REQUEST] = 1;
+        }
         
         $transactionType = $this->mapTransactionType($builder->transactionType, $builder->requestMultiUseToken);
         switch ($builder->paymentMethodType) {

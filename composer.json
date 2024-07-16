@@ -22,7 +22,6 @@
   },
   "require-dev": {
     "phpunit/phpunit": "^7.5 || ^8.5 || ~9.4",
-    "brianium/paratest": "4.0.0 || ^v6.6",
     "squizlabs/php_codesniffer": "2.*",
     "phpstan/phpstan": "^0.12"
   },
@@ -39,7 +38,6 @@
   "scripts": {
     "docs": "@php sami.phar update docs-config.php",
     "pretest": "@composer test:lint",
-    "test": "@composer pretest && paratest --coverage-html=coverage.html --colors -f --stop-on-failure",
     "test:lint": "phpcs"
   },
   "config": {

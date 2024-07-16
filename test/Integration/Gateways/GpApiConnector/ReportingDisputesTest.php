@@ -51,11 +51,14 @@ class ReportingDisputesTest extends TestCase
     public function testReportDisputeDetail()
     {
         $disputeId = 'DIS_SAND_abcd1234';
+        /** @var DisputeSummary $response */
         $response = ReportingService::disputeDetail($disputeId)
             ->execute();
         $this->assertNotNull($response);
         $this->assertInstanceOf(DisputeSummary::class, $response);
         $this->assertEquals($disputeId, $response->caseId);
+        $this->assertNotNull($response->transactionBrandReference);
+        $this->assertNotNull($response->disputeStageTime);
         $this->arn = $response->transactionARN;
     }
 
@@ -648,8 +651,9 @@ class ReportingDisputesTest extends TestCase
 
         $this->assertNotNull($summary);
         $this->assertInstanceOf(PagedResult::class, $summary);
+        /** @var DisputeSummary $dispute */
         foreach ($summary->result as $dispute) {
-            $this->assertTrue($dispute->caseTime <= $this->endDate);
+            $this->assertTrue($dispute->caseIdTime <= $this->endDate);
         }
     }
 

@@ -597,10 +597,11 @@ class GpApiMapping
     {
         $summary = new DisputeSummary();
         $summary->caseId = $response->id;
-        $summary->caseIdTime = !empty($response->time_created) ? new \DateTime($response->time_created) :
-            (!empty($response->stage_time_created) ? new \DateTime($response->stage_time_created) : '');
+        $summary->caseIdTime = !empty($response->time_created) ? new \DateTime($response->time_created) : null;
         $summary->caseStatus = $response->status;
         $summary->caseStage = $response->stage;
+        $summary->disputeStageTime =
+            (!empty($response->stage_time_created) ? new \DateTime($response->stage_time_created) : null);
         $summary->caseAmount = StringUtils::toAmount($response->amount);
         $summary->caseCurrency = $response->currency;
         if (isset($response->system)) {
@@ -610,14 +611,11 @@ class GpApiMapping
             $summary->merchantName = !empty($system->name) ? $system->name : null;
         }
 
-        if (
-            isset($response->payment_method) &&
-            isset($response->payment_method->card)
-        ) {
+        if (!empty($response->payment_method->card)) {
             $card = $response->payment_method->card;
-            $summary->transactionMaskedCardNumber = $card->number;
+            $summary->transactionMaskedCardNumber = $card->number ?? null;
         }
-        if (isset($response->transaction)) {
+        if (!empty($response->transaction)) {
             $summary->transactionTime = $response->transaction->time_created;
             $summary->transactionType = $response->transaction->type;
             $summary->transactionAmount = StringUtils::toAmount($response->transaction->amount);
@@ -625,9 +623,9 @@ class GpApiMapping
             $summary->transactionReferenceNumber = $response->transaction->reference;
             if (isset($response->transaction->payment_method->card)) {
                 $card = $response->transaction->payment_method->card;
-                $summary->transactionMaskedCardNumber = !empty($card->masked_number_first6last4) ?
-                    $card->masked_number_first6last4 : '';
+                $summary->transactionMaskedCardNumber = $card->masked_number_first6last4 ?? null;
                 $summary->transactionAuthCode = $card->authcode;
+                $summary->transactionBrandReference = $card->brand_reference ?? null;
             }
         }
         if (!empty($response->documents)) {
@@ -654,6 +652,19 @@ class GpApiMapping
         $summary->lastAdjustmentFunding = $response->last_adjustment_funding;
         $summary->depositDate = !empty($response->deposit_time_created) ? $response->deposit_time_created : null;
         $summary->depositReference = !empty($response->deposit_id) ? $response->deposit_id : null;
+        $summary->disputeCustomerAmount = !empty($response->payer_amount) ?
+            StringUtils::toAmount($response->payer_amount) : null;
+        $summary->disputeCustomerCurrency = $response->payer_currency ?? null;
+        if (!empty($response->payment_method_provider)) {
+            foreach ($response->payment_method_provider as $providerPaymentMethod) {
+                if (!empty($providerPaymentMethod->comment)) {
+                    $summary->issuerComment[] = $providerPaymentMethod->comment;
+                }
+                if (!empty($providerPaymentMethod->reference)) {
+                    $summary->issuerCaseNumber[] = $providerPaymentMethod->reference;
+                }
+            }
+        }
 
         return $summary;
     }

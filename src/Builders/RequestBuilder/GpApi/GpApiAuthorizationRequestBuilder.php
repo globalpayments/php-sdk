@@ -576,7 +576,6 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             /* digital wallet */
             switch ($builder->transactionModifier) {
                 case TransactionModifier::ENCRYPTED_MOBILE:
-                    $paymentToken = null;
                     switch ($paymentMethodContainer->mobileType){
                         case EncyptedMobileType::CLICK_TO_PAY:
                             $paymentToken = ['data' => $paymentMethodContainer->token];
@@ -601,6 +600,10 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $digitalWallet['cryptogram'] = $paymentMethodContainer->cryptogram;
                     $digitalWallet['eci'] = !empty($paymentMethodContainer->eci) ?
                         $paymentMethodContainer->eci : $this->getEciCode($paymentMethodContainer);
+                    $digitalWallet['avs_address'] =
+                        (!empty($builder->billingAddress) ? $builder->billingAddress->streetAddress1 : '');
+                    $digitalWallet['avs_postal_code'] =
+                        (!empty($builder->billingAddress) ? $builder->billingAddress->postalCode : '');
                     break;
                 default:
                     break;

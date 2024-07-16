@@ -315,7 +315,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
             );
         } catch (GatewayException $exception) {
             if (
-                strpos($exception->getMessage(), 'NOT_AUTHENTICATED') !== false &&
+                in_array($exception->responseCode, ['NOT_AUTHENTICATED', '401']) &&
                 !empty($this->gpApiConfig->appKey) &&
                 !empty($this->gpApiConfig->appKey)
             ) {

@@ -14,22 +14,9 @@ class DisputeSummary
      * @var string
      */
     public $merchantHierarchy;
-    /**
-     * @var string
-     */
-    public $merchantName;
-    /**
-     * @var string
-     */
-    public $merchantDbaName;
-    /**
-     * @var string
-     */
-    public $merchantNumber;
-    /**
-     * @var string
-     */
-    public $merchantCategory;
+
+    public ?string $merchantName;
+
     /**
      * @var \DateTime
      */
@@ -38,14 +25,7 @@ class DisputeSummary
      * @var string
      */
     public $depositReference;
-    /**
-     * @var string
-     */
-    public $depositType;
-    /**
-     * @var string
-     */
-    public $type;
+
     /**
      * @var integer
      */
@@ -54,26 +34,16 @@ class DisputeSummary
      * @var string
      */
     public $caseCurrency;
-    /**
-     * @var string
-     */
-    public $caseStage;
+
+    /** This field indicates the distinct step a dispute is at, within the dispute lifecycle. */
+    public ?string $caseStage;
+
+    /** Time the current Dispute stage was created.  */
+    public ?\DateTime $disputeStageTime;
     /**
      * @var string
      */
     public $caseStatus;
-    /**
-     * @var string
-     */
-    public $caseDescription;
-    /**
-     * @var string
-     */
-    public $transactionOrderId;
-    /**
-     * @var \DateTime
-     */
-    public $transactionLocalTime;
     /**
      * @var \DateTime
      */
@@ -90,18 +60,9 @@ class DisputeSummary
      * @var string
      */
     public $transactionCurrency;
-    /**
-     * @var string
-     */
-    public $caseNumber;
-    /**
-     * @var \DateTime
-     */
-    public $caseTime;
-    /**
-     * @var string
-     */
-    public $caseId;
+
+    /** Unique identifier for the Dispute on the Global Payments system. */
+    public string $caseId;
     /**
      * @var \DateTime
      */
@@ -110,10 +71,7 @@ class DisputeSummary
      * @var string
      */
     public $caseMerchantId;
-    /**
-     * @var string
-     */
-    public $caseTerminalId;
+
     /**
      * @var string
      */
@@ -122,10 +80,7 @@ class DisputeSummary
      * @var string
      */
     public $transactionReferenceNumber;
-    /**
-     * @var string
-     */
-    public $transactionSRD;
+
     /**
      * @var string
      */
@@ -150,38 +105,20 @@ class DisputeSummary
      * @var string
      */
     public $result;
-    /**
-     * @var string
-     */
-    public $issuerComment;
-    /**
-     * @var string
-     */
-    public $issuerCaseNumber;
-    /**
-     * @var integer
-     */
-    public $disputeAmount;
-    /**
-     * @var string
-     */
-    public $disputeCurrency;
+    public array $issuerComment = [];
+    public array $issuerCaseNumber = [];
+
     /**
      * @var integer
      */
     public $disputeCustomerAmount;
-    /**
-     * @var string
-     */
-    public $disputeCustomerCurrency;
+
+    public ?string $disputeCustomerCurrency;
     /**
      * @var \DateTime
      */
     public $respondByDate;
-    /**
-     * @var string
-     */
-    public $caseOriginalReference;
+
     /**
      * @var integer
      */
@@ -197,6 +134,8 @@ class DisputeSummary
 
     /** @var array<DisputeDocument> */
     public $documents;
+
+    public ?string $transactionBrandReference;
 
     /**
      * @return ManagementBuilder

@@ -2,6 +2,8 @@
 
 namespace Gateways\GpApiConnector;
 
+use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
@@ -167,6 +169,10 @@ class GpApiDigitalWalletTest extends TestCase
     public function testPayWithDecryptedFlow()
     {
         $encryptedProviders = [EncyptedMobileType::GOOGLE_PAY, EncyptedMobileType::APPLE_PAY];
+        $address = new Address();
+        $address->streetAddress1 = "123 Main St.";
+        $address->postalCode = "12345";
+
         foreach ($encryptedProviders as $encryptedProvider) {
             $this->card->token = '5167300431085507';
             $this->card->mobileType = $encryptedProvider;
@@ -177,6 +183,7 @@ class GpApiDigitalWalletTest extends TestCase
             $response = $this->card->charge($this->amount)
                 ->withCurrency($this->currency)
                 ->withModifier(TransactionModifier::DECRYPTED_MOBILE)
+                ->withAddress($address)
                 ->execute();
 
             $this->assertTransactionResponse($response, TransactionStatus::CAPTURED);

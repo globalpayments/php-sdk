@@ -4,7 +4,15 @@
 
 # Changelog
 
-## Latest Version - v12.0.5 (06/18/24)
+## Latest Version - v12.0.7 (07/16/24)
+### Enhancements:
+- [GP-API] Adds avs data to "/transaction" request for digital wallet
+- [GP-API] Adds brand reference and stage time to the DisputeSummary
+
+### Bug Fixes:
+- [PAX] Correction to tip/gratuity handling in the request to device
+
+## Latest Version - v12.0.6 (06/18/24)
 ### Enhancements:
 - [GP-ECOM] Add Multi-Capture
 
