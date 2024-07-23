@@ -21,9 +21,16 @@ class AccessTokenTest extends TestCase
      */
     private GpApiConfig $config;
 
+    private CreditCardData $card;
+
     public function setUp(): void
     {
         $this->setUpConfig();
+        $this->card = new CreditCardData();
+        $this->card->number = "4263970000005262";
+        $this->card->expMonth = "05";
+        $this->card->expYear = "2025";
+        $this->card->cvn = "852";
     }
 
     public static function tearDownAfterClass(): void
@@ -216,6 +223,21 @@ class AccessTokenTest extends TestCase
             ->withCurrency('EUR')
             ->execute("configName");
 
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('VERIFIED', $response->responseMessage);
+    }
+
+    public function testShouldReSignInAfterTokenExpiration()
+    {
+        $this->config->secondsToExpire = 60;
+        $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
+        $this->assertAccessTokenResponse($accessTokenInfo);
+
+        $this->config->accessTokenInfo = $accessTokenInfo;
+        ServicesContainer::configureService($this->config);
+        sleep(61);
+        $response = $this->card->verify()->withCurrency('USD')->execute();
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
         $this->assertEquals('VERIFIED', $response->responseMessage);
