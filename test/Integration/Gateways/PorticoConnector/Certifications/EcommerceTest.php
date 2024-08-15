@@ -1475,6 +1475,8 @@ class EcommerceTest extends TestCase
 
     /// BALANCE INQUIRY
 
+
+
     public function test037BalanceInquiryGsb()
     {
         if (false === $this->usePrepaid) {

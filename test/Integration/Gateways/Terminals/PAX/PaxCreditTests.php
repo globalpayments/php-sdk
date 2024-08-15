@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals\PAX;
 
 use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\AutoSubstantiation;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\Services\DeviceService;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
@@ -15,10 +16,6 @@ use SebastianBergmann\RecursionContext\InvalidArgumentException;
 
 class PaxCreditTests extends TestCase
 {
-    /**
-     * 
-     * @var PaxInterface
-     */
     private $device;
     protected $card;
     protected $address;
@@ -469,5 +466,41 @@ class PaxCreditTests extends TestCase
 
             $this->assertNotNull($response);
             $this->assertEquals("00", $response->responseCode);
+    }
+
+    /**
+     * 
+     * @return void 
+     * @throws InvalidArgumentException 
+     * @throws ExpectationFailedException 
+     */
+    public function testAutoSubstantiation(): void
+    {
+       // Test card: 4393-4212-3456-1236
+       // Exp Date: 12-29
+
+       $address = new Address();
+       $address->streetAddress1 = '123 Main St.';
+       $address->postalCode = '12345';
+
+        $card = new CreditCardData();
+        $card->number = "4393421234561236";
+        $card->expMonth = "12";
+        $card->expYear = "29";
+        $card->cvn = 123;
+
+        $autosubstantiation = new AutoSubstantiation();
+        $autosubstantiation->setDentalSubTotal(50);
+        $autosubstantiation->setVisionSubTotal(10.75);
+
+        $response = $this->device->sale(60.75)
+            ->withPaymentMethod($card)
+            ->withAddress($address)
+            ->withAutoSubstantiation($autosubstantiation)
+            ->withAllowDuplicates(true)            
+            ->execute();
+        
+            $this->assertNotNull($response);
+            $this->assertEquals("60.75", $response->transactionAmount);
     }
 }

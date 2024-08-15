@@ -173,6 +173,7 @@ class PaxController extends DeviceController
         
         $trace->referenceNumber = $requestId;
         $trace->invoiceNumber = $builder->invoiceNumber;
+
         if (!empty($builder->clientTransactionId)) {
             $trace->clientTransactionId = $builder->clientTransactionId;
         }
@@ -214,6 +215,7 @@ class PaxController extends DeviceController
             $avs->address = $builder->address->streetAddress1;
             $avs->zipCode = $builder->address->postalCode;
         }
+
         $commercial->customerCode = $builder->customerCode;
         $commercial->poNumber = $builder->poNumber;
         $commercial->taxExempt = $builder->taxExempt;
@@ -230,6 +232,9 @@ class PaxController extends DeviceController
         if (empty($builder->gratuity)) {
             $extData->details[PaxExtData::TIP_REQUEST] = 1;
         }
+
+        if (!empty($builder->autoSubstantiation)) 
+            $extData->details[PaxExtData::PASS_THROUGH_DATA] = $builder->autoSubstantiation;
         
         $transactionType = $this->mapTransactionType($builder->transactionType, $builder->requestMultiUseToken);
         switch ($builder->paymentMethodType) {

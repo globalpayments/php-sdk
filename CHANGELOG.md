@@ -4,7 +4,12 @@
 
 # Changelog
 
-## Latest Version - v12.0.8 (07/23/24)
+## Latest Version - v12.0.9 (08/14/24)
+### Enhancements:
+- [PAX] Portico - Added support for HSA/FSA
+- [MEET-IN-THE-CLOUD][UPA] -  Add new mapping response fields for "/devices" endpoint
+
+##  v12.0.8 (07/23/24)
 ### Bug Fixes:
 - [GP-API] Fix re-sign in after token expiration
 

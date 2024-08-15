@@ -7,6 +7,52 @@ use GlobalPayments\Api\Terminals\Abstractions\IBatchCloseResponse;
 
 class TransactionResponse extends UpaResponseHandler implements IBatchCloseResponse
 {
+    public string $responseId;
+
+    public string $responseDateTime;
+
+    public string $gatewayResponseCode;
+
+    public string $gatewayResponseMessage;
+
+    public string $avsResultCode;
+
+    public string $avsResultText;
+    public float $totalAmount;
+    public float $authorizedAmount;
+    public string $CpcInd;
+
+    public string $cardType;
+    public string $cardGroup;
+    public string $fallback;
+
+    public string $qpsQualified;
+    public string $storeAndForward;
+
+    public string $invoiceNumber;
+    public string $merchantId;
+    public string $cardBrandTransId;
+    public string $batchId;
+    public string $batchSeqNbr;
+    public string $pinVerified;
+    public string $applicationPAN;
+    public string $transactionSequenceCounter;
+    public string $additionalTerminalCapabilities;
+    public string $unpredictableNumber;
+    public string $applicationTransactionCounter;
+    public string $terminalType;
+    public string $terminalCapabilities;
+    public string $terminalCountryCode;
+    public string $issuerApplicationData;
+    public string $otherAmount;
+    public string $amountAuthorized;
+    public string $transactionTSI;
+    public string $transactionDate;
+    public string $transactionCurrencyCode;
+    public string $dedicatedDF;
+    public string $applicationAIP;
+    public string $applicationIdentifier;
+
     public function __construct($jsonResponse)
     {
         $this->parseResponse($jsonResponse);
@@ -15,31 +61,27 @@ class TransactionResponse extends UpaResponseHandler implements IBatchCloseRespo
     public function parseResponse($jsonResponse)
     {
         if ($this->isGpApiResponse($jsonResponse)) {
-            if (
-                !empty($jsonResponse['action']['result_code']) &&
-                $jsonResponse['action']['result_code'] === 'SUCCESS'
-            ) {
-                $this->deviceResponseCode = '00';
-            }
-
             $this->status = $jsonResponse['status'] ?? null;
             $this->transactionId = $jsonResponse['id'] ?? null;
             $this->deviceResponseText = $jsonResponse['status'] ?? null;
+            $secondDataNode = $jsonResponse['response']['data'] ?? null;
+            $cmdResult = $jsonResponse['response']['cmdResult'] ?? null;
         } else {
-            if (!empty($jsonResponse['data']['cmdResult'])) {
-                $this->checkResponse($jsonResponse['data']['cmdResult']);
+            $cmdResult = $jsonResponse['data']['cmdResult'] ?? null;
+            $secondDataNode = $jsonResponse['data']['data'] ?? null;
+        }
 
-                if ($jsonResponse['data']['cmdResult']['result'] === 'Success') {
-                    $this->deviceResponseCode = '00';
-                }
-            }
-
-            if (!empty($jsonResponse['data']['data'])) {
-                $responseMapping = $this->getResponseMapping();
-                foreach ($jsonResponse['data']['data'] as $responseData) {
-                    if (is_array($responseData)) {
-                        foreach ($responseData as $key => $value) {
-                            $propertyName = !empty($responseMapping[$key]) ? $responseMapping[$key] : $key;
+        if (!empty($cmdResult)) {
+            $this->checkResponse($cmdResult);
+            $this->deviceResponseCode = ($cmdResult['result'] === 'Success' ? '00' : null);
+        }
+        if (!empty($secondDataNode)) {
+            $responseMapping = $this->getResponseMapping();
+            foreach ($secondDataNode as $responseData) {
+                if (is_array($responseData)) {
+                    foreach ($responseData as $key => $value) {
+                        $propertyName = !empty($responseMapping[$key]) ? $responseMapping[$key] : $key;
+                        if (property_exists($this, $propertyName)) {
                             $this->{$propertyName} = $value;
                         }
                     }
@@ -94,6 +136,7 @@ class TransactionResponse extends UpaResponseHandler implements IBatchCloseRespo
             'taxDue' => 'taxDue',
             'tipDue' => 'tipDue',
             'cardBrandTransId' => 'cardBrandTransId',
+            'batchSeqNbr' => 'batchSeqNbr',
 
             //payment
             'cardHolderName' => 'cardHolderName',
@@ -108,6 +151,7 @@ class TransactionResponse extends UpaResponseHandler implements IBatchCloseRespo
             'storeAndForward' => 'storeAndForward',
             'clerkId' => 'clerkId',
             'invoiceNbr' => 'invoiceNumber',
+            'expiryDate' => 'expirationDate',
 
             //EMV
             '4F' => 'applicationIdentifier',

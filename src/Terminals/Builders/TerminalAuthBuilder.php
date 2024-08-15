@@ -59,6 +59,10 @@ class TerminalAuthBuilder extends TerminalBuilder
     
     public $tokenValue;
     
+    /**
+     * 
+     * @var AutoSubstantiation
+     */
     public $autoSubstantiation;
 
     public ?string $terminalRefNumber;
