@@ -30,8 +30,6 @@ class HpaController extends DeviceController
 {
     public $device;
 
-    public $deviceConfig;
-
     private $builderData = null;
 
     /*
@@ -242,7 +240,7 @@ class HpaController extends DeviceController
     
     public function sendFile($sendFileData)
     {
-        $sendFile = new HpaSendFileRequest($this->deviceConfig);
+        $sendFile = new HpaSendFileRequest($this->settings);
         $sendFile->validate($sendFileData);
         
         $fileInfo = $sendFile->getFileInformation($sendFileData);

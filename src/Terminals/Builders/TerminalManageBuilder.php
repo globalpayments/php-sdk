@@ -2,7 +2,8 @@
 
 namespace GlobalPayments\Api\Terminals\Builders;
 
-use GlobalPayments\Api\Entities\Enums\{TransactionModifier, TransactionType};
+use GlobalPayments\Api\Entities\LodgingData;
+use GlobalPayments\Api\Entities\Enums\{TaxType, TransactionModifier, TransactionType};
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Terminals\TerminalResponse;
@@ -14,6 +15,18 @@ class TerminalManageBuilder extends TerminalBuilder
     public $gratuity;
     public $transactionId;
     public $terminalRefNumber;
+    public string $taxType;
+
+    /** @var string Indicates whether the sale is exempted from Tax or not */
+    public string $taxExempt;
+
+    /** @var string Purchase Order to be sent to the host */
+    public string $orderId;
+
+    /** @var string The amount that merchants charge for tax processing.  */
+    public string $taxAmount;
+
+    public LodgingData $lodgingData;
 
     /**
      * {@inheritdoc}
@@ -100,9 +113,41 @@ class TerminalManageBuilder extends TerminalBuilder
         return $this;
     }
 
-    public function withEcrId(string $ecrId)
+    public function withTransactionModifier(string $modifier) : TerminalManageBuilder
+    {
+        $this->transactionModifier = $modifier;
+        return $this;
+    }
+
+    public function withEcrId(string $ecrId) : TerminalManageBuilder
     {
         $this->ecrId = $ecrId;
+        return $this;
+    }
+
+    public function withTaxType($taxType)
+    {
+        $this->taxType = $taxType;
+        $this->taxExempt = ($taxType === TaxType::TAX_EXEMPT) ? 1 : 0;
+
+        return $this;
+    }
+
+    public function withOrderId(string $orderId)
+    {
+        $this->orderId = $orderId;
+        return $this;
+    }
+
+    public function withTaxAmount($taxAmount)
+    {
+        $this->taxAmount = $taxAmount;
+        return $this;
+    }
+
+    public function withLodgingData(LodgingData $lodgingData)
+    {
+        $this->lodgingData = $lodgingData;
         return $this;
     }
 

@@ -2,38 +2,58 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals\UPA;
 
+use DateTime;
+use GlobalPayments\Api\Entities\AutoSubstantiation;
+use GlobalPayments\Api\Entities\Enums\ExtraChargeType;
+use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
+use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
+use GlobalPayments\Api\Entities\Enums\TaxType;
+use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\LodgingData;
+use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\Services\DeviceService;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
-use GlobalPayments\Api\Services\DeviceService;
 use GlobalPayments\Api\Terminals\TerminalResponse;
-use PHPUnit\Framework\TestCase;
+use GlobalPayments\Api\Terminals\UPA\Entities\Enums\UpaMessageId;
+use GlobalPayments\Api\Tests\Data\TestCards;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
-use GlobalPayments\Api\Entities\AutoSubstantiation;
-use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Utils\Logging\TerminalLogManagement;
+use PHPUnit\Framework\TestCase;
 
 class UpaCreditTests extends TestCase
 {
+    private IDeviceInterface $device;
+    private CreditCardData $card;
 
-    private $device;
-
-    public function setup() : void
+    /**
+     * @throws ApiException
+     */
+    public function setup(): void
     {
         $this->device = DeviceService::create($this->getConfig());
+
+        $this->card = new CreditCardData();
+        $this->card->number = '4111111111111111';
+        $this->card->expMonth = 12;
+        $this->card->expYear = TestCards::validCardExpYear();
+        $this->card->cvn = '123';
+        $this->card->cardHolderName = 'Joe Smith';
     }
 
-    public function tearDown() : void
+    public function tearDown(): void
     {
         sleep(3);
     }
 
-    protected function getConfig()
+    protected function getConfig(): ConnectionConfig
     {
         $config = new ConnectionConfig();
-        $config->ipAddress = '192.168.213.79';
+        $config->ipAddress = '192.168.8.181';
         $config->port = '8081';
-        $config->deviceType = DeviceType::UPA_SATURN_1000;
+        $config->deviceType = DeviceType::UPA_VERIFONE_T650P;
         $config->connectionMode = ConnectionModes::TCP_IP;
         $config->timeout = 30;
         $config->requestIdProvider = new RequestIdProvider();
@@ -46,13 +66,11 @@ class UpaCreditTests extends TestCase
     {
         /** @var TerminalResponse $response */
         $response = $this->device->sale(10)
-            ->withAllowDuplicates(1)
             ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
     }
-
 
     /*
      * Note: EMV cards needs to be used for this test case
@@ -60,7 +78,6 @@ class UpaCreditTests extends TestCase
     public function testCreditSaleEMV()
     {
         $response = $this->device->sale(10)
-            ->withAllowDuplicates(1)
             ->execute();
 
         $this->assertNotNull($response);
@@ -85,12 +102,14 @@ class UpaCreditTests extends TestCase
         $this->assertEquals('00', $response->deviceResponseCode);
         $this->assertNotNull($response->terminalRefNumber);
 
-        $refundResponse = $this->device->void()
+        sleep(15);
+
+        $voidResponse = $this->device->void()
             ->withTransactionId($response->transactionId)
             ->execute();
 
-        $this->assertNotNull($refundResponse);
-        $this->assertEquals('00', $refundResponse->deviceResponseCode);
+        $this->assertNotNull($voidResponse);
+        $this->assertEquals('00', $voidResponse->deviceResponseCode);
     }
 
     public function testSaleRefund()
@@ -121,7 +140,6 @@ class UpaCreditTests extends TestCase
     public function testCardVerify()
     {
         $response = $this->device->verify()
-            ->withClerkId(1234)
             ->execute();
 
         $this->assertNotNull($response);
@@ -135,13 +153,18 @@ class UpaCreditTests extends TestCase
 
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertNotNull($response->terminalRefNumber);
 
-        $refundResponse = $this->device->creditReversal()
+        sleep(15);
+
+        $reverseResponse = $this->device->reverse()
             ->withTerminalRefNumber($response->terminalRefNumber)
+            ->withAmount('10.00')
+            ->withEcrId('1')
             ->execute();
 
-        $this->assertNotNull($refundResponse);
-        $this->assertEquals('00', $refundResponse->deviceResponseCode);
+        $this->assertNotNull($reverseResponse);
+        $this->assertEquals('00', $reverseResponse->deviceResponseCode);
     }
 
     public function testVerifyWithTokenRequest()
@@ -159,8 +182,7 @@ class UpaCreditTests extends TestCase
     public function testPreAuth()
     {
         $response = $this->device->authorize(10)
-                ->withAllowDuplicates(1)
-                ->execute();
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
@@ -168,14 +190,24 @@ class UpaCreditTests extends TestCase
         $this->assertNotNull($response->transactionId);
 
         $captureResponse = $this->device->capture(10)
-                ->withTransactionId($response->transactionId)
-                ->execute();
+            ->withTransactionId($response->transactionId)
+            ->execute();
 
         $this->assertNotNull($captureResponse);
         $this->assertEquals('00', $captureResponse->deviceResponseCode);
         $this->assertNotNull($captureResponse->transactionId);
     }
-    
+
+    public function testAuthCompletion()
+    {
+        $response = $this->device->capture(10)
+            ->withTransactionId("0157")
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+    }
+
     public function testHealthCareCardSale()
     {
         $autoSubAmounts = new AutoSubstantiation();
@@ -185,10 +217,9 @@ class UpaCreditTests extends TestCase
         $autoSubAmounts->setVisionSubTotal(5);
 
         $response = $this->device->sale(10)
-                ->withAllowDuplicates(1)
-                ->withAutoSubstantiation($autoSubAmounts)
-                ->execute();
-        
+            ->withAutoSubstantiation($autoSubAmounts)
+            ->execute();
+
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
     }
@@ -196,46 +227,138 @@ class UpaCreditTests extends TestCase
     public function testCreditTokenRequest()
     {
         $response = $this->device->tokenize()
-        ->withCardOnFileIndicator(StoredCredentialInitiator::MERCHANT)
-        ->execute();
-        
+            ->withCardOnFileIndicator(StoredCredentialInitiator::MERCHANT)
+            ->execute();
+
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
         $this->assertNotNull($response->token);
-        
+
         $saleResponse = $this->device->sale(10)
-        ->withToken($response->token)
-        ->execute();
-        
+            ->withToken($response->token)
+            ->execute();
+
         $this->assertNotNull($saleResponse);
         $this->assertEquals('00', $saleResponse->deviceResponseCode);
     }
-    
+
     public function testCardVerifyTokenSale()
     {
         $response = $this->device->verify()
-        ->withRequestMultiUseToken(1)
-        ->withCardOnFileIndicator(StoredCredentialInitiator::MERCHANT)
-        ->execute();
-        
+            ->withRequestMultiUseToken(1)
+            ->withCardOnFileIndicator(StoredCredentialInitiator::MERCHANT)
+            ->execute();
+
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
         $this->assertNotNull($response->token);
         $this->assertNotNull($response->cardBrandTransId);
-        
+
         $autoSubAmounts = new AutoSubstantiation();
         $autoSubAmounts->realTimeSubstantiation = true;
         $autoSubAmounts->setDentalSubTotal(5.00);
         $autoSubAmounts->setClinicSubTotal(5);
         $autoSubAmounts->setVisionSubTotal(5);
-        
+
         $saleResponse = $this->device->sale(100)
-        ->withToken($response->token)
-        ->withCardOnFileIndicator(StoredCredentialInitiator::MERCHANT)
-        ->withAutoSubstantiation($autoSubAmounts)
-        ->execute();
-        
+            ->withToken($response->token)
+            ->withCardOnFileIndicator(StoredCredentialInitiator::MERCHANT)
+            ->withAutoSubstantiation($autoSubAmounts)
+            ->execute();
+
         $this->assertNotNull($saleResponse);
         $this->assertEquals('00', $saleResponse->deviceResponseCode);
+    }
+
+    public function testDeletePreAuth()
+    {
+        $response = $this->device->deletePreAuth()
+            ->withEcrId(13)
+            ->withTransactionId('200015214831')
+            ->withAmount(10)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+    }
+
+    public function testMailOrder()
+    {
+        $trnAmount = 10;
+        $this->card->entryMethod = ManualEntryMethod::MAIL;
+        $response = $this->device->sale($trnAmount)
+            ->withEcrId(12)
+            ->withTaxAmount(2.18)
+            ->withTaxType(TaxType::TAX_EXEMPT)
+            ->withProcessCPC(true)
+            ->withRequestMultiUseToken(1)
+            ->withInvoiceNumber('123A10')
+            ->withPaymentMethod($this->card)
+            ->withAllowDuplicates(true)
+            ->withCardOnFileIndicator(StoredCredentialInitiator::CARDHOLDER)
+            ->withCardBrandTransId("transId")
+            ->withShippingDate(new DateTime())
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertNotNull($response->transactionId);
+        $this->assertEquals($trnAmount, $response->transactionAmount);
+    }
+
+    public function testUpdateTaxInfo()
+    {
+        $response = $this->device->updateTaxInfo(14.56)
+            ->withTerminalRefNumber('0149')
+            ->withTaxType(TaxType::TAX_EXEMPT)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+    }
+
+    public function testUpdateLodgingDetails()
+    {
+        $lodgingData = new LodgingData();
+        $lodgingData->folioNumber = '1';
+        $lodgingData->extraCharges = [ExtraChargeType::RESTAURANT, ExtraChargeType::OTHER];
+
+        $response = $this->device->updateLodgingDetails(20)
+            ->withTransactionId('1676654133')
+            ->withLodgingData($lodgingData)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+    }
+
+    public function testLogon()
+    {
+        $response = $this->device->logon();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals(UpaMessageId::LOGON, $response->command);
+    }
+
+    public function testForceSale()
+    {
+        $trnAmount = 10;
+        $this->card->entryMethod = ManualEntryMethod::PHONE;
+
+        $response = $this->device->sale($trnAmount)
+            ->withEcrId(12)
+            ->withPaymentMethod($this->card)
+            ->withTaxAmount(2.18)
+            ->withTaxType(TaxType::TAX_EXEMPT)
+            ->withGratuity(12.56)
+            ->withInvoiceNumber('123456789012345')
+            ->withAllowDuplicates(true)
+            ->withConfirmationAmount(true)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('FORCE SALE', $response->transactionType);
     }
 }

@@ -4,7 +4,11 @@
 
 # Changelog
 
-## Latest Version - v12.0.9 (08/14/24)
+## Latest Version - v13.0.0 (08/22/24)
+### Enhancements:
+- [UPA] Add new UPA commands
+
+## v12.0.9 (08/14/24)
 ### Enhancements:
 - [PAX] Portico - Added support for HSA/FSA
 - [MEET-IN-THE-CLOUD][UPA] -  Add new mapping response fields for "/devices" endpoint

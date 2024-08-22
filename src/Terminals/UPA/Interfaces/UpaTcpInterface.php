@@ -156,7 +156,7 @@ class UpaTcpInterface implements IDeviceCommInterface
             foreach ($responseList as $rawMessage) {
                 $message = trim(preg_replace('/[\x00-\x0A\n]/', '', trim($rawMessage)));
                 $jsonResponse = json_decode(html_entity_decode($message), 1);
-                if ($jsonResponse['message'] == UpaMessageType::MSG) {
+                if (!empty($jsonResponse['message']) && $jsonResponse['message'] == UpaMessageType::MSG) {
                     return $jsonResponse;
                 }
             }

@@ -4,7 +4,7 @@ namespace GlobalPayments\Api\Terminals;
 
 use GlobalPayments\Api\Terminals\Enums\ApplicationCryptogramType;
 
-class TerminalResponse extends DeviceResponse
+abstract class TerminalResponse extends DeviceResponse
 {
     /** @var string */
     public $responseCode;
@@ -43,6 +43,10 @@ class TerminalResponse extends DeviceResponse
     public $balanceAmount ;
     /** @var string */
     public $cardHolderName ;
+    /** @var string Indicates the type of card used for the transaction. */
+    public ?string $cardType;
+    /** @var string|null Possible Values: Credit */
+    public ?string $cardGroup;
     /** @var string */
     public $cardBIN ;
     /** @var bool */
@@ -83,6 +87,18 @@ class TerminalResponse extends DeviceResponse
     public $cardHolderVerificationMethod;
     /** @var string */
     public $terminalVerificationResults;
+
     /** @var double */
     public $merchantFee ;
+
+    public ?string $ecrId;
+
+    public string $requestId;
+
+    /**
+     * Indicator if the POS should expect another response message. Possible Values: 0 or 1
+     *
+     * @var string|null
+     */
+    public ?string $multipleMessage;
 }

@@ -5,6 +5,8 @@ namespace GlobalPayments\Api\Terminals\UPA\SubGroups;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\Terminals\Abstractions\IRequestSubGroup;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
+use GlobalPayments\Api\Terminals\Builders\TerminalBuilder;
+use GlobalPayments\Api\Terminals\Diamond\Entities\Enums\TransactionType;
 
 class RequestParamFields implements IRequestSubGroup
 {
@@ -31,7 +33,21 @@ class RequestParamFields implements IRequestSubGroup
     public $cardOnFileIndicator = null;
 
     public $cardBrandTransId = null;
-        
+
+    public ?string $invoiceNbr = null;
+    /** @var string|null Indicates the Direct Market Invoice number */
+    public ?string $directMktInvoiceNbr = null;
+    /** @var string|null Indicates the Direct Market Ship Month. */
+    public ?string $directMktShipMonth = null;
+    /** @var string|null Indicates the Direct Market Ship Day. */
+    public ?string $directMktShipDay = null;
+
+    public ?int $timeout;
+    public ?string $acquisitionTypes;
+    public ?string $displayTotalAmount;
+    public ?string $PromptForManualEntryPassword;
+    public ?string $merchantDecision;
+    public ?string $languageCode;
     /*
      * return Array
      */
@@ -43,11 +59,16 @@ class RequestParamFields implements IRequestSubGroup
         });
     }
     
-    public function setParams($builder)
+    public function setParams(TerminalBuilder $builder)
     {
-        if (!empty($builder->clerkId)) {
-            $this->clerkId = $builder->clerkId;
+        switch ($builder->transactionType) {
+            case TransactionType::VOID:
+                $this->clerkId = $builder->clerkId ?? null;
+                return;
+            default:
+                break;
         }
+        $this->clerkId = $builder->clerkId ?? null;
 
         if (!empty($builder->cardOnFileIndicator)) {
             $this->cardOnFileIndicator = ($builder->cardOnFileIndicator === StoredCredentialInitiator::CARDHOLDER)
@@ -68,5 +89,24 @@ class RequestParamFields implements IRequestSubGroup
             ) {
             $this->tokenValue = $builder->paymentMethod->token;
         }
+        if (isset($builder->shippingDate) && !empty($builder->invoiceNumber)) {
+            $this->directMktInvoiceNbr = $builder->invoiceNumber;
+            $this->directMktShipMonth = $builder->shippingDate->format('m');
+            $this->directMktShipDay = $builder->shippingDate->format('d');
+        }
+        $this->timeout = $builder->timeout ?? null;
+        if (!empty($builder->acquisitionTypes)) {
+            $acquisitionTypes = '';
+            array_walk($builder->acquisitionTypes, function ($v) use (&$acquisitionTypes) {
+                $acquisitionTypes .= $v . '|';
+            });
+            $this->acquisitionTypes = rtrim($acquisitionTypes, '|');
+        }
+        if (!empty($builder->displayTotalAmount)) {
+            $this->displayTotalAmount = $builder->displayTotalAmount === true ? 'Y' : 'N';
+        }
+        $this->PromptForManualEntryPassword = $builder->promptForManualEntryPassword ?? null;
+        $this->merchantDecision = $builder->merchantDecision ?? null;
+        $this->languageCode = $builder->language ?? null;
     }
 }

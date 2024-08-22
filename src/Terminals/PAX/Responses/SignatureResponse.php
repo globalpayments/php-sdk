@@ -2,14 +2,14 @@
 
 namespace GlobalPayments\Api\Terminals\PAX\Responses;
 
+use GlobalPayments\Api\Terminals\Abstractions\ISignatureResponse;
 use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxMessageId;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
 
-class SignatureResponse extends PaxTerminalResponse
+class SignatureResponse extends PaxTerminalResponse implements ISignatureResponse
 {
-
     public $totalLength;
     public $responseLength;
     public $signatureData;

@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals\HPA;
 
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
@@ -12,7 +13,6 @@ use GlobalPayments\Api\Terminals\Enums\DownloadType;
 use GlobalPayments\Api\Services\DeviceService;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
-use GlobalPayments\Api\Terminals\HPA\Entities\LineItem;
 use GlobalPayments\Api\Entities\Enums\SendFileType;
 use GlobalPayments\Api\Terminals\HPA\Entities\SendFileData;
 
@@ -217,29 +217,13 @@ class HpaAdminTests extends TestCase
     
     public function testLineItem()
     {
-        $lineItemDetails = new LineItem();
-        $lineItemDetails->leftText = 'Green Beans, canned';
-        $lineItemDetails->rightText = '$0.59';
-        $lineItemDetails->runningLeftText = 'TOTAL';
-        $lineItemDetails->runningRightText = '$1.19';
-        
         $this->device->openLane();
-        $response = $this->device->lineItem($lineItemDetails);
+        $response = $this->device->lineItem('Green Beans, canned','$0.59', 'TOTAL', '$1.19');
         
         $this->assertNotNull($response);
         $this->assertEquals('0', $response->resultCode);
     }
-    
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     * @expectedExceptionMessage Line item left text cannot be null
-     */
-    public function testLineItemLeftext()
-    {
-        $lineItemDetails = new LineItem();
-        $response = $this->device->lineItem($lineItemDetails);
-    }
-    
+
     public function testEnableSafMode()
     {
         $response = $this->device->setSafMode(1);

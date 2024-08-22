@@ -2,12 +2,16 @@
 
 namespace GlobalPayments\Api\Terminals\UPA\Responses;
 
+use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\Exceptions\MessageException;
 use GlobalPayments\Api\Terminals\TerminalResponse;
 
 class UpaResponseHandler extends TerminalResponse
 {
-    public function checkResponse($commandResult)
+    const INVALID_RESPONSE_FORMAT = "The response received is not in the proper format.";
+
+    private function checkResponse(array $commandResult): void
     {
         if (!empty($commandResult['result']) && $commandResult['result'] === 'Failed') {
             throw new GatewayException(
@@ -20,5 +24,48 @@ class UpaResponseHandler extends TerminalResponse
                 $commandResult['errorMessage']
             );
         }
+    }
+
+    protected function parseResponse(array $response): void
+    {
+        $firstNodeData = $this->isGpApiResponse($response) ? $response['response'] : $response['data'];
+        if (empty($firstNodeData['cmdResult'])) {
+            throw new MessageException(self::INVALID_RESPONSE_FORMAT);
+        }
+        $this->checkResponse($firstNodeData['cmdResult']);
+        if ($this->isGpApiResponse($response)) {
+            $this->status = $response['status'] ?? null;
+            $this->transactionId = $response['id'] ?? null;
+            $this->deviceResponseText = $response['status'] ?? null;
+        } else {
+            $this->status = $firstNodeData['cmdResult']['result'] ?? null;
+        }
+
+        $this->deviceResponseCode = in_array($this->status, ['Success', 'COMPLETE']) ? '00' : null;
+        $this->command = $firstNodeData['response'] ?? null;
+        $this->requestId = $firstNodeData['requestId'] ?? '';
+        $this->ecrId = $firstNodeData['EcrId'] ?? '';
+    }
+
+    protected function isGpApiResponse($jsonResponse) : bool
+    {
+        if (is_object($jsonResponse)) {
+            $jsonResponse = $this->jsonToArray($jsonResponse);
+        }
+        return !empty($jsonResponse['provider']) && $jsonResponse['provider'] === GatewayProvider::GP_API;
+    }
+
+    /**
+     * @throws MessageException
+     */
+    protected function parseJsonResponse($response): void
+    {
+        $response = $this->jsonToArray($response);
+        $this->parseResponse($response);
+    }
+
+    private function jsonToArray(object $response) : array
+    {
+        return json_decode(json_encode($response), true);
     }
 }

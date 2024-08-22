@@ -37,7 +37,7 @@ use GlobalPayments\Api\Terminals\Enums\CurrencyType;
 use GlobalPayments\Api\PaymentMethods\GiftCard;
 use GlobalPayments\Api\Terminals\PAX\Responses\GiftResponse;
 use GlobalPayments\Api\Terminals\PAX\Interfaces\PaxHttpInterface;
-use GlobalPayments\Api\Terminals\PAX\Entities\Enums\TerminalReportType;
+use GlobalPayments\Api\Terminals\Enums\TerminalReportType;
 use GlobalPayments\Api\Terminals\PAX\Responses\PaxLocalReportResponse;
 use GlobalPayments\Api\Terminals\PAX\Responses\EBTResponse;
 

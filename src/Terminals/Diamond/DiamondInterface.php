@@ -11,7 +11,7 @@ use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
 use GlobalPayments\Api\Terminals\DeviceInterface;
-use GlobalPayments\Api\Terminals\PAX\Entities\Enums\TerminalReportType;
+use GlobalPayments\Api\Terminals\Enums\TerminalReportType;
 
 class DiamondInterface extends DeviceInterface
 {

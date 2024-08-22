@@ -19,9 +19,7 @@ class UpaBatchReport extends UpaResponseHandler
 
     public function parseResponse($jsonResponse)
     {
-        if (!empty($jsonResponse['data']['cmdResult'])) {
-            $this->checkResponse($jsonResponse['data']['cmdResult']);
-        }
+        parent::parseResponse($jsonResponse);
         
         if (!empty($jsonResponse['data']['data']['batchRecord'])) {
             $batchRecord = $jsonResponse['data']['data']['batchRecord'];

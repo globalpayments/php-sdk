@@ -23,6 +23,10 @@ class TerminalSearchBuilder
     public $merchantId;
     public $merchantName;
 
+    public string $ecrId;
+    public string $reportOutput;
+    public string $batch;
+
     public function __construct($reportBuilder)
     {
         $this->reportBuilder = $reportBuilder;

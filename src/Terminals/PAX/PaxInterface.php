@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Terminals\PAX;
 
 use GlobalPayments\Api\Terminals\Abstractions\IBatchCloseResponse;
+use GlobalPayments\Api\Terminals\Abstractions\ISignatureResponse;
 use GlobalPayments\Api\Terminals\DeviceInterface;
 use GlobalPayments\Api\Terminals\DeviceResponse;
 use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxMessageId;
@@ -15,7 +16,7 @@ use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
 use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
-use GlobalPayments\Api\Terminals\PAX\Entities\Enums\TerminalReportType;
+use GlobalPayments\Api\Terminals\Enums\TerminalReportType;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
@@ -23,6 +24,7 @@ use GlobalPayments\Api\Terminals\PAX\Responses\BatchResponse;
 use GlobalPayments\Api\Terminals\PAX\Responses\SafUploadResponse;
 use GlobalPayments\Api\Terminals\PAX\Responses\SafDeleteResponse;
 use GlobalPayments\Api\Terminals\PAX\Responses\SafSummaryReport;
+use GlobalPayments\Api\Terminals\UPA\Entities\SignatureData;
 
 /**
  * Heartland payment application implementation of device messages
@@ -116,7 +118,7 @@ class PaxInterface extends DeviceInterface
         return new SignatureResponse($rawResponse, PaxMessageId::A21_RSP_DO_SIGNATURE);
     }
 
-    public function getSignatureFile()
+    public function getSignatureFile(SignatureData $data = null) : ISignatureResponse
     {
         if (!function_exists('imagecreate')) {
             throw new ApiException("The gd2 extension needs to be enabled for this request. Please contact your admin");

@@ -3,6 +3,9 @@
 namespace GlobalPayments\Api\Terminals\Builders;
 
 use GlobalPayments\Api\Entities\AutoSubstantiation;
+use GlobalPayments\Api\Entities\LodgingData;
+use GlobalPayments\Api\Terminals\Entities\HostData;
+use GlobalPayments\Api\Terminals\Enums\AcquisitionType;
 use GlobalPayments\Api\Entities\Enums\{
     PaymentMethodType,
     StoredCredentialInitiator,
@@ -12,7 +15,6 @@ use GlobalPayments\Api\Entities\Enums\{
 };
 use GlobalPayments\Api\PaymentMethods\{CreditCardData, TransactionReference};
 use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\Terminals\Builders\TerminalBuilder;
 use GlobalPayments\Api\Terminals\Enums\CurrencyType;
 use GlobalPayments\Api\Terminals\TerminalResponse;
 
@@ -67,6 +69,14 @@ class TerminalAuthBuilder extends TerminalBuilder
 
     public ?string $terminalRefNumber;
 
+    public LodgingData $lodgingData;
+
+    public \DateTime $shippingDate;
+
+    public int $processCPC;
+
+    public bool $confirmAmount;
+
     /**
      * 
      * @var bool
@@ -78,6 +88,22 @@ class TerminalAuthBuilder extends TerminalBuilder
      * @var StoredCredentialInitiator
      */
     public $transactionInitiator;
+
+    public bool $isQuickChip;
+    public ?bool $hasCheckLuhn = null;
+    public ?bool $hasSecurityCode = null;
+    public array $cardTypeFilter = [];
+    public \DateTime $transactionDate;
+    /** @var int Number of seconds for timeout */
+    public ?int $timeout;
+    /** @var array<AcquisitionType> */
+    public array $acquisitionTypes;
+    public bool $displayTotalAmount;
+    /** @var string|PromptForManualEntryPassword  */
+    public ?string $promptForManualEntryPassword;
+    public ?string $merchantDecision;
+    public ?string $language;
+    public HostData $hostData;
 
     /**
      *
@@ -319,6 +345,101 @@ class TerminalAuthBuilder extends TerminalBuilder
     public function withAllowPartialAuth(bool $value)
     {
         $this->allowPartialAuth = $value;
+        return $this;
+    }
+
+    public function withLodgingData(LodgingData $lodgingData)
+    {
+        $this->lodgingData = $lodgingData;
+        return $this;
+    }
+
+    public function withShippingDate(\DateTime $date)
+    {
+        $this->shippingDate = $date;
+        return $this;
+    }
+
+    public function withProcessCPC(bool $processCPC)
+    {
+        $this->processCPC = (int) $processCPC;
+        return $this;
+    }
+
+    public function withConfirmationAmount(bool $value) : TerminalAuthBuilder
+    {
+        $this->confirmAmount = $value;
+        return $this;
+    }
+
+    public function withQuickChip(bool $value) : TerminalAuthBuilder
+    {
+        $this->isQuickChip = $value;
+        return $this;
+    }
+
+    public function withCheckLuhn(bool $value) : TerminalAuthBuilder
+    {
+        $this->hasCheckLuhn = $value;
+        return $this;
+    }
+
+    public function withSecurityCode(bool $value) : TerminalAuthBuilder
+    {
+        $this->hasSecurityCode = $value;
+        return $this;
+    }
+
+    public function withCardTypeFilter(array $cardTypeFilter) : TerminalAuthBuilder
+    {
+        $this->cardTypeFilter = $cardTypeFilter;
+        return $this;
+    }
+
+    public function withTransactionDate(\DateTime $date) : TerminalAuthBuilder
+    {
+        $this->transactionDate = $date;
+        return $this;
+    }
+
+    public function withTimeout(int $timeout) : TerminalAuthBuilder
+    {
+        $this->timeout = $timeout;
+        return $this;
+    }
+    public function withAcquisitionTypes(array $acquisitionTypes) : TerminalAuthBuilder
+    {
+        $this->acquisitionTypes = $acquisitionTypes;
+        return $this;
+    }
+
+    public function withDisplayTotalAmount(bool $value) : TerminalAuthBuilder
+    {
+        $this->displayTotalAmount = $value;
+        return $this;
+    }
+
+    public function withPromptForManualEntryPassword(string $value) : TerminalAuthBuilder
+    {
+        $this->promptForManualEntryPassword = $value;
+        return $this;
+    }
+
+    public function withMerchantDecision(string $merchantDecision) : TerminalAuthBuilder
+    {
+        $this->merchantDecision = $merchantDecision;
+        return $this;
+    }
+
+    public function withLanguage(string $language) : TerminalAuthBuilder
+    {
+        $this->language = $language;
+        return $this;
+    }
+
+    public function withHostData(HostData $hostData) : TerminalAuthBuilder
+    {
+        $this->hostData = $hostData;
         return $this;
     }
 }

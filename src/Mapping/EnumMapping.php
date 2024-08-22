@@ -126,6 +126,13 @@ class EnumMapping
                     default:
                         return $value;
                 }
+            case GatewayProvider::UPA:
+                switch ($value) {
+                    case CardType::MASTERCARD:
+                        return 'MC';
+                    default:
+                        return $value;
+                }
             default:
                 return $value;
         }

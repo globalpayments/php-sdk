@@ -1,6 +1,8 @@
 <?php
 namespace GlobalPayments\Api\Entities;
 
+use GlobalPayments\Api\Entities\Enums\ExtraChargeType;
+
 class LodgingData
 {
     /**
@@ -45,4 +47,10 @@ class LodgingData
 
     /** @var array<LodgingItems> */
     public $items;
+
+    /** @var array<ExtraChargeType> */
+    public array $extraCharges;
+    /** @var string Lodging system generated value used to group and manage charges during a stay */
+    public string $folioNumber;
+
 }

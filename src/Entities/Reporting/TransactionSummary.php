@@ -527,4 +527,8 @@ class TransactionSummary extends BaseSummary
 
     /** @var FraudManagementResponse */
     public $fraudManagementResponse;
+
+    public string $terminalRefNumber;
+    public ?bool $hostTimeout;
+    public ?string $cardEntryMethod;
 }

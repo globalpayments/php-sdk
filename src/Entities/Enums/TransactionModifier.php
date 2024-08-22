@@ -26,4 +26,11 @@ class TransactionModifier extends Enum
     const MERCHANT = 16;
     const BAY_NOW_PAY_LATER = 17;
     const DELETE_PRE_AUTH = 18;
+    const UPDATE_TAX_DETAILS = 19;
+    const UPDATE_LODGING_DETAILS = 20;
+    const START_TRANSACTION = 21;
+    const CONTINUE_EMV_TRANSACTION = 22;
+    const COMPLETE_TRANSACTION = 23;
+    const PROCESS_TRANSACTION = 24;
+    const CONTINUE_CARD_TRANSACTION = 25;
 }

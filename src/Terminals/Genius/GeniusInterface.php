@@ -4,6 +4,8 @@ namespace GlobalPayments\Api\Terminals\Genius;
 
 use Exception;
 use GlobalPayments\Api\Terminals\Abstractions\IBatchCloseResponse;
+use GlobalPayments\Api\Terminals\Abstractions\ISignatureResponse;
+use GlobalPayments\Api\Terminals\UPA\Entities\SignatureData;
 use GlobalPayments\Api\Entities\Enums\{PaymentMethodType, ReportType, TransactionType};
 use GlobalPayments\Api\Entities\Exceptions\{ApiException, NotImplementedException};
 use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
@@ -86,7 +88,7 @@ class GeniusInterface extends DeviceInterface
         return new NotImplementedException();
     }
 
-    public function getSignatureFile()
+    public function getSignatureFile(SignatureData $data = null) : ISignatureResponse
     {
         return new NotImplementedException();
     }

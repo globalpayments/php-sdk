@@ -3,15 +3,16 @@
 namespace GlobalPayments\Api\Terminals\Builders;
 
 use GlobalPayments\Api\Entities\Enums\ReportType;
-use GlobalPayments\Api\Entities\Reporting\SearchCriteriaBuilder;
 use GlobalPayments\Api\ServicesContainer;
+use GlobalPayments\Api\Terminals\Abstractions\ITerminalReport;
+use GlobalPayments\Api\Terminals\Enums\TerminalReportType;
 use GlobalPayments\Api\Terminals\TerminalResponse;
 
 class TerminalReportBuilder extends TerminalBuilder
 {
     /**
      * @internal
-     * @var ReportType
+     * @var TerminalReportType
      */
     public $reportType;
 
@@ -31,7 +32,7 @@ class TerminalReportBuilder extends TerminalBuilder
     public $transactionId;
 
     /**
-     * @param ReportType $reportType
+     * @param TerminalReportType $reportType
      *
      * @return
      */
@@ -46,7 +47,7 @@ class TerminalReportBuilder extends TerminalBuilder
      *
      * @return Transaction
      */
-    public function execute($configName = "default") : TerminalResponse
+    public function execute($configName = "default") : ITerminalReport
     {
         $client = ServicesContainer::instance()->getDeviceController($configName);
         return $client->processReport($this);

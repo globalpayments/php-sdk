@@ -13,8 +13,8 @@ use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
 use GlobalPayments\Api\Terminals\UPA\Entities\CancelParameters;
+use GlobalPayments\Api\Terminals\UPA\Responses\OpenTabDetailsResponse;
 use GlobalPayments\Api\Terminals\UPA\Responses\TransactionResponse;
-use GlobalPayments\Api\Terminals\UPA\Responses\UpaReportHandler;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 use GlobalPayments\Api\Utils\GenerationUtils;
@@ -52,6 +52,7 @@ class UpaMicTests extends TestCase
         $accessTokenInfo = new AccessTokenInfo();
         $accessTokenInfo->transactionProcessingAccountName = "9187";
         $gpApiConfig->accessTokenInfo = $accessTokenInfo;
+        $gpApiConfig->methodNotificationUrl = 'https://ab14d057d441b9eeeaa11e479229c154.m.pipedream.net';
         $config->gatewayConfig = $gpApiConfig;
         $config->requestIdProvider = new RequestIdProvider();
         $config->logManagementProvider = new TerminalLogManagement();
@@ -64,6 +65,15 @@ class UpaMicTests extends TestCase
         $response = $this->device->sale(10)
             ->withEcrId('13')
             ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('COMPLETE', $response->deviceResponseText);
+    }
+
+    public function testPing()
+    {
+        $response = $this->device->ping();
 
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
@@ -244,12 +254,15 @@ class UpaMicTests extends TestCase
 
     public function testGetOpenTabDetails()
     {
-        /** @var UpaReportHandler $response */
-        $response = $this->device->getOpenTabDetails();
+        $this->device->ecrId = '1';
+
+        /** @var OpenTabDetailsResponse $response */
+        $response = $this->device->getOpenTabDetails()
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals("00", $response->deviceResponseCode);
-        $this->assertNotNull($response->reportRecords);
+        $this->assertNotEmpty($response->openTabs);
     }
 
     public function testReboot()

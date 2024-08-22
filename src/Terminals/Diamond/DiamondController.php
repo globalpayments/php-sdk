@@ -25,7 +25,7 @@ use GlobalPayments\Api\Terminals\Diamond\Interfaces\DiamondHttpInterface;
 use GlobalPayments\Api\Terminals\Diamond\Responses\DiamondCloudResponse;
 use GlobalPayments\Api\Terminals\DiamondCloudConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
-use GlobalPayments\Api\Terminals\PAX\Entities\Enums\TerminalReportType;
+use GlobalPayments\Api\Terminals\Enums\TerminalReportType;
 use GlobalPayments\Api\Terminals\TerminalResponse;
 use GlobalPayments\Api\Utils\StringUtils;
 
