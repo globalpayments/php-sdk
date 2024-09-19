@@ -4,7 +4,11 @@
 
 # Changelog
 
-## Latest Version - v13.0.0 (08/22/24)
+## Latest Version - v13.0.1 (09/19/24)
+### Enhancements:
+- [GP-API] Send "cvv" in create transaction request with a tokenized card
+
+## v13.0.0 (08/22/24)
 ### Enhancements:
 - [UPA] Add new UPA commands
 
@@ -17,7 +21,7 @@
 ### Bug Fixes:
 - [GP-API] Fix re-sign in after token expiration
 
-## Latest Version - v12.0.7 (07/16/24)
+## v12.0.7 (07/16/24)
 ### Enhancements:
 - [GP-API] Adds avs data to "/transaction" request for digital wallet
 - [GP-API] Adds brand reference and stage time to the DisputeSummary
@@ -25,7 +29,7 @@
 ### Bug Fixes:
 - [PAX] Correction to tip/gratuity handling in the request to device
 
-## Latest Version - v12.0.6 (06/18/24)
+## v12.0.6 (06/18/24)
 ### Enhancements:
 - [GP-ECOM] Add Multi-Capture
 

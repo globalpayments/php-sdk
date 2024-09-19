@@ -567,6 +567,10 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         )) {
             if ($paymentMethodContainer instanceof ITokenizable && !empty($paymentMethodContainer->token)) {
                 $paymentMethod->id = $paymentMethodContainer->token;
+                if (!empty($paymentMethodContainer->cvn)) {
+                    $paymentMethod->card = new Card();
+                    $paymentMethod->card->cvv = $paymentMethodContainer->cvn;
+                }
             }
 
             if (is_null($paymentMethod->id)) {

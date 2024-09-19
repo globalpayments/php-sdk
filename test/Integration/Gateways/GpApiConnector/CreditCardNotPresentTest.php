@@ -537,6 +537,7 @@ class CreditCardNotPresentTest extends TestCase
         $tokenizedCard = new CreditCardData();
         $tokenizedCard->token = $tokenId;
         $tokenizedCard->cardHolderName = "James Mason";
+        $tokenizedCard->cvn = '123';
 
         $response = $tokenizedCard->charge(10)
             ->withCurrency("USD")

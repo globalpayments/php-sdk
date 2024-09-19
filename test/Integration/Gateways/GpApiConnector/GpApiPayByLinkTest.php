@@ -56,7 +56,7 @@ class GpApiPayByLinkTest extends TestCase
         BaseGpApiTestConfig::resetGpApiConfig();
     }
 
-    public function setup() : void
+    public function setup(): void
     {
         ServicesContainer::configureService($this->setUpConfig());
         $this->startDate = (new DateTime())->modify('-30 days')->setTime(0, 0, 0);
@@ -809,6 +809,7 @@ class GpApiPayByLinkTest extends TestCase
         $this->assertInstanceOf(PayByLinkSummary::class, $randomPayByLink);
         $this->assertEquals($amount, $randomPayByLink->amount);
     }
+
     public function testFindPayByLinkByExpireDate()
     {
         $date = new DateTime('2024-05-09');
@@ -839,16 +840,6 @@ class GpApiPayByLinkTest extends TestCase
 
     private function setupTransactionConfig(): GpApiConfig
     {
-        $configTrn = new GpApiConfig();
-        $configTrn->appId = 'oDVjAddrXt3qPJVPqQvrmgqM2MjMoHQS';
-        $configTrn->appKey = 'DHUGdzpjXfTbjZeo';
-        $configTrn->channel = Channel::CardNotPresent;
-        $configTrn->country = 'GB';
-        $configTrn->challengeNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
-        $configTrn->methodNotificationUrl = 'https://ensi808o85za.x.pipedream.net/';
-        $configTrn->merchantContactUrl = 'https://enp4qhvjseljg.x.pipedream.net/';
-        $configTrn->requestLogger = new SampleRequestLogger(new Logger("logs"));
-
-        return $configTrn;
+        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
     }
 }
