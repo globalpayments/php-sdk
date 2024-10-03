@@ -891,6 +891,10 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withCustomerData(Customer $customerData)
     {
         $this->customerData = $customerData;
+        if (!empty($customerData->id)) {
+            $this->customerId = $customerData->id;
+        }
+
         return $this;
     }
 
@@ -1482,11 +1486,11 @@ class AuthorizationBuilder extends TransactionBuilder
     /**
      * @param string $phoneCountryCode
      * @param string $number
-     * @param string $type
+     * @param string|PhoneNumberType $type
      *
      * @return AuthorizationBuilder
      */
-    public function withPhoneNumber($phoneCountryCode, $number, $type)
+    public function withPhoneNumber($phoneCountryCode, $number, string|PhoneNumberType $type)
     {
         $phoneNumber = new PhoneNumber($phoneCountryCode, $number, $type);
         switch ($phoneNumber->type) {

@@ -1,10 +1,8 @@
 <?php
 
-
 namespace GlobalPayments\Api\Entities\Reporting;
 
-
-class ActionSummary
+class ActionSummary extends BaseSummary
 {
     /**
      * @var string
@@ -60,11 +58,6 @@ class ActionSummary
      * @var string
      */
     public $appName;
-
-    /**
-     * @var string
-     */
-    public $merchantName;
 
     /**
      * @var string

@@ -31,7 +31,7 @@ abstract class RestGateway extends Gateway
             if (!empty($data)) {
                 $data = (array) $data;
                 $data = ArrayUtils::array_remove_empty($data);
-                $data = json_encode($data, JSON_UNESCAPED_SLASHES);
+                $data = json_encode($data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
             }
             if (!empty($queryStringParams)) {
                 $queryStringParams = ArrayUtils::array_remove_empty($queryStringParams);

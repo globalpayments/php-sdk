@@ -4,7 +4,13 @@
 
 # Changelog
 
-## Latest Version - v13.0.1 (09/19/24)
+## Latest Version - v13.0.2 (10/03/24)
+### Enhancements:
+- [Portico] Added support for 'CardHolderPhone' element
+- [GP-API] Update 3DS Object fields in transaction endpoint ("server_trans_ref" and "ds_trans_ref")
+- [GP-API] Cleanup and refacto on the GpApiConnector.
+
+## v13.0.1 (09/19/24)
 ### Enhancements:
 - [GP-API] Send "cvv" in create transaction request with a tokenized card
 

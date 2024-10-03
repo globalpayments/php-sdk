@@ -52,7 +52,6 @@ class UpaMicTests extends TestCase
         $accessTokenInfo = new AccessTokenInfo();
         $accessTokenInfo->transactionProcessingAccountName = "9187";
         $gpApiConfig->accessTokenInfo = $accessTokenInfo;
-        $gpApiConfig->methodNotificationUrl = 'https://ab14d057d441b9eeeaa11e479229c154.m.pipedream.net';
         $config->gatewayConfig = $gpApiConfig;
         $config->requestIdProvider = new RequestIdProvider();
         $config->logManagementProvider = new TerminalLogManagement();

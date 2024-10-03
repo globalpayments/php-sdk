@@ -8,6 +8,7 @@ use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\GpApi\DTO\Card;
@@ -136,7 +137,17 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                 $verb = 'POST';
                 $payload['amount'] = StringUtils::toNumeric($builder->amount);
                 $payload['gratuity'] = StringUtils::toNumeric($builder->gratuity);
+                $payload['capture_sequence'] = $builder->multiCaptureSequence ?? null;
+                $payload['total_capture_count'] = $builder->multiCapturePaymentCount ?? null;
                 $payload['currency_conversion'] = !empty($builder->dccRateData) ? $this->getDccRate($builder->dccRateData) : null;
+                if (!empty($builder->lodgingData)) {
+                    $this->setLodgingInfo($payload, $builder->lodgingData);
+                }
+                if (!empty($builder->tagData)) {
+                    $payload['payment_method'] = [
+                        'card' => ['tag' => $builder->tagData]
+                    ];
+                }
                 break;
             case TransactionType::DISPUTE_ACCEPTANCE:
                 $endpoint = GpApiRequest::DISPUTES_ENDPOINT . '/' . $builder->disputeId . '/acceptance';
@@ -197,32 +208,7 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                 $verb = 'POST';
                 $payload['amount'] = StringUtils::toNumeric($builder->amount);
                 if (!empty($builder->lodgingData)) {
-                    /** @var LodgingData $lodging */
-                    $lodging = $builder->lodgingData;
-                    if (!empty($lodging->items)) {
-                        $lodgingItems = [];
-                        /** @var LodgingItems $item */
-                        foreach ($lodging->items as $item) {
-                            $lodgingItems[] = [
-                                'types' => $item->types,
-                                'reference' => $item->reference,
-                                'total_amount' => !empty($item->totalAmount) ? StringUtils::toNumeric($item->totalAmount) : null,
-                                'payment_method_program_codes' => $item->paymentMethodProgramCodes
-                            ];
-                        }
-                    }
-
-                    $payload['lodging'] = [
-                        'booking_reference' => $lodging->bookingReference,
-                        'duration_days' => $lodging->durationDays,
-                        'date_checked_in' => !empty($lodging->checkedInDate) ?
-                            (new \DateTime($lodging->checkedInDate))->format('Y-m-d') : null,
-                        'date_checked_out' => !empty($lodging->checkedOutDate) ?
-                            (new \DateTime($lodging->checkedOutDate))->format('Y-m-d') : null,
-                        'daily_rate_amount' => !empty($lodging->dailyRateAmount) ?
-                            StringUtils::toNumeric($lodging->dailyRateAmount) : null,
-                        'lodging.charge_items' => !empty($lodgingItems) ? $lodgingItems : null
-                    ];
+                    $this->setLodgingInfo($payload, $builder->lodgingData);
                 }
                 break;
             case TransactionType::EDIT:
@@ -318,6 +304,34 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
         $reflector = new \ReflectionClass(TransactionType::class);
 
         return array_search($transactionType,$reflector->getConstants());
+    }
+
+    private function setLodgingInfo(&$payload, $lodging): void
+    {
+        if (!empty($lodging->items)) {
+            $lodgingItems = [];
+            /** @var LodgingItems $item */
+            foreach ($lodging->items as $item) {
+                $lodgingItems[] = [
+                    'types' => $item->types,
+                    'reference' => $item->reference,
+                    'total_amount' => !empty($item->totalAmount) ? StringUtils::toNumeric($item->totalAmount) : null,
+                    'payment_method_program_codes' => $item->paymentMethodProgramCodes
+                ];
+            }
+        }
+
+        $payload['lodging'] = [
+            'booking_reference' => $lodging->bookingReference ?? null,
+            'duration_days' => $lodging->durationDays ?? null,
+            'date_checked_in' => !empty($lodging->checkedInDate) ?
+                (new \DateTime($lodging->checkedInDate))->format('Y-m-d') : null,
+            'date_checked_out' => !empty($lodging->checkedOutDate) ?
+                (new \DateTime($lodging->checkedOutDate))->format('Y-m-d') : null,
+            'daily_rate_amount' => !empty($lodging->dailyRateAmount) ?
+                StringUtils::toNumeric($lodging->dailyRateAmount) : null,
+            'charge_items' =>  $lodgingItems ?? null
+        ];
     }
 
     public function buildRequestFromJson($jsonRequest, $config)

@@ -35,8 +35,8 @@ $config->environment = Environment::TEST;
 $config->country = 'GB';
 $config->channel = Channel::CardNotPresent;
 $config->merchantContactUrl = "https://www.example.com/contact-us";
-$config->methodNotificationUrl =  $_SERVER['HTTP_ORIGIN'] . '/examples/gp-api/end-to-end/methodNotificationUrl.php';
-$config->challengeNotificationUrl =  $_SERVER['HTTP_ORIGIN'] . '/examples/gp-api/end-to-end/challengeNotificationUrl.php';
+$config->methodNotificationUrl =  $_SERVER['HTTP_ORIGIN'] . '/gp-api/end-to-end/methodNotificationUrl.php';
+$config->challengeNotificationUrl =  $_SERVER['HTTP_ORIGIN'] . '/gp-api/end-to-end/challengeNotificationUrl.php';
 
 ServicesContainer::configureService($config);
 

@@ -4,18 +4,10 @@ namespace GlobalPayments\Api\Entities;
 
 class PayerDetails
 {
-    /** @var string */
-    public $firstName;
-
-    /** @var string */
-    public $lastName;
-
-    /** @var string */
-    public $email;
-
-    /** @var Address */
-    public $billingAddress;
-
-    /** @var Address */
-    public $shippingAddress;
+    public ?string $id;
+    public ?string $firstName;
+    public ?string $lastName;
+    public ?string $email;
+    public ?Address $billingAddress;
+    public ?Address $shippingAddress;
 }

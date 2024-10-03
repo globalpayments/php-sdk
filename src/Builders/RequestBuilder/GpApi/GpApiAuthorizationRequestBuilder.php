@@ -220,6 +220,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         if (!empty($builder->storedCredential)) {
             $this->setRequestStoredCredentials($builder->storedCredential, $requestBody);
         }
+
         return $requestBody;
     }
 
@@ -255,6 +256,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $requestBody['cashback_amount'] = StringUtils::toNumeric($builder->cashBackAmount);
         $requestBody['ip_address'] = $builder->customerIpAddress;
         $requestBody['merchant_category'] = $builder->merchantCategory ?? null;
+        $requestBody['payer'] = ['id' => $builder->customerId ?: ""];
         $requestBody['payment_method'] = $this->createPaymentMethodParam($builder, $config);
         $requestBody['risk_assessment'] = !empty($builder->fraudFilter) ? [$this->mapFraudManagement()] : null;
         if (!empty($builder->paymentLinkId)) {
@@ -437,6 +439,23 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             $paymentMethodContainer->accountHolderName : (!empty($paymentMethodContainer->cardHolderName) ?
                 $paymentMethodContainer->cardHolderName : null);
         $paymentMethod->narrative = !empty($builder->dynamicDescriptor) ? $builder->dynamicDescriptor : null;
+        if ($paymentMethodContainer instanceof IEncryptable && !empty($paymentMethodContainer->encryptionData)) {
+            /** @var EncryptionData $encryptionData */
+            $encryptionData = $paymentMethodContainer->encryptionData;
+            $encryption['version'] = $encryptionData->version ?? null;
+            if (!empty($encryptionData->ktb)) {
+                $method = 'KBT';
+                $info = $encryptionData->ktb;
+            } elseif (!empty($encryptionData->ksn)) {
+                $method = 'KSN';
+                $info = $encryptionData->ksn;
+            }
+            if (!empty($info)) {
+                $encryption['method'] = $method ?? null;
+                $encryption['info'] = $info ?? null;
+                $paymentMethod->encryption = $encryption;
+            }
+        }
         switch (get_class($paymentMethodContainer)) {
             case CreditCardData::class;
                 $paymentMethod->fingerprint_mode =
@@ -451,8 +470,8 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                                 'exempt_status' => $secureEcom->exemptStatus,
                                 'message_version' => $secureEcom->messageVersion,
                                 'eci' => $secureEcom->eci,
-                                'server_trans_reference' => $secureEcom->serverTransactionId,
-                                'ds_trans_reference' => $secureEcom->directoryServerTransactionId,
+                                'server_trans_ref' => $secureEcom->serverTransactionId,
+                                'ds_trans_ref' => $secureEcom->directoryServerTransactionId,
                                 'value' => $secureEcom->authenticationValue
                             ]
                         ];
@@ -492,27 +511,6 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     4
                 );
                 return $paymentMethod;
-            case IEncryptable::class:
-                if (!empty($paymentMethodContainer->encryptionData)) {
-                    /**
-                     * @var EncryptionData $encryptionData
-                     */
-                    $encryptionData = $paymentMethodContainer->encryptionData;
-                    $encryption = ['version' => $encryptionData->version];
-                    if (!empty($encryptionData->ktb)) {
-                        $method = 'KBT';
-                        $info = $encryptionData->ktb;
-                    } elseif (!empty($encryptionData->ksn)) {
-                        $method = 'KSN';
-                        $info = $encryptionData->ksn;
-                    }
-                    if (!empty($info)) {
-                        $encryption->method = $method;
-                        $encryption->info = $info;
-                        $paymentMethod->encryption = $encryption;
-                    }
-                }
-                break;
             case AlternativePaymentMethod::class:
                 $paymentMethod->apm = [
                     'provider' => $paymentMethodContainer->alternativePaymentMethodType,

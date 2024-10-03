@@ -2,17 +2,22 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\PorticoConnector;
 
+use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\EncryptionData;
+use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
 use GlobalPayments\Api\Services\CreditService;
 use GlobalPayments\Api\ServicesContainer;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
+use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\Tests\Data\TestCards;
+use SebastianBergmann\RecursionContext\InvalidArgumentException;
+use PHPUnit\Framework\ExpectationFailedException;
 
 class CreditTest extends TestCase
 {
@@ -415,5 +420,79 @@ class CreditTest extends TestCase
             $this->assertNotNull($refundResponse);
             $this->assertEquals('00', $refundResponse->responseCode);
         }
+    }
+
+    /**
+     * 
+     * @return void 
+     * @throws ApiException 
+     * @throws InvalidArgumentException 
+     * @throws ExpectationFailedException 
+     */
+    public function testCardHolderPhone() : void
+    {
+        $reportingService = new ReportingService();
+
+        $customer1 = new Customer();
+        $customer1->homePhone = '555 666 7777';
+
+        $response1 = $this->card->charge(10)
+            ->withCustomerData($customer1)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $reportReponse1 = $reportingService
+            ->transactionDetail($response1->transactionId)
+            ->execute();
+
+        $this->assertEquals('5556667777', $reportReponse1->phone);
+
+        $customer2 = new Customer();
+        $customer2->mobilePhone = '555 666 7777';
+
+        $response2 = $this->card->charge(10)
+            ->withCustomerData($customer2)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $reportReponse2 = $reportingService
+            ->transactionDetail($response2->transactionId)
+            ->execute();
+
+        $this->assertEquals('5556667777', $reportReponse2->phone);
+
+        $customer3 = new Customer();
+        $customer3->workPhone = '555 666 7777';
+
+        $response3 = $this->card->charge(10)
+            ->withCustomerData($customer3)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $reportReponse3 = $reportingService
+            ->transactionDetail($response3->transactionId)
+            ->execute();
+
+        $this->assertEquals('5556667777', $reportReponse3->phone);
+
+        // I'm leaving part 4 below commented out for now. There is currently an
+        // issue with Portico's DB - it only allows 10 characters for this value
+        // though it should support up to 20 characters. We have been informed that
+        // this will be corrected in the future.
+
+        // $response4 = $this->card->charge(10)
+        //     ->withPhoneNumber('1', '7778889999', PhoneNumberType::HOME)
+        //     ->withCurrency('USD')
+        //     ->withAllowDuplicates(true)
+        //     ->execute();
+
+        // $reportReponse4 = $reportingService
+        //     ->transactionDetail($response4->transactionId)
+        //     ->execute();
+
+        // $this->assertEquals('17778889999', $reportReponse4->phone);
     }
 }

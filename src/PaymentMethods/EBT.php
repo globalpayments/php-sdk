@@ -103,4 +103,9 @@ abstract class EBT implements
     {
         throw new NotImplementedException();
     }
+
+    public function verify(): AuthorizationBuilder
+    {
+        return new AuthorizationBuilder(TransactionType::VERIFY, $this);
+    }
 }

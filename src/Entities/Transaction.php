@@ -251,9 +251,8 @@ class Transaction
     public $dccRateData;
 
     /**
-     * The Dcc Response
+     * The risk assessment fraud response
      *
-     * @internal
      * @var FraudManagementResponse
      */
     public $fraudFilterResponse;

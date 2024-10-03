@@ -17,7 +17,7 @@ class UpaBatchReport extends UpaResponseHandler
         $this->parseResponse($jsonResponse);
     }
 
-    public function parseResponse($jsonResponse)
+    public function parseResponse($jsonResponse): void
     {
         parent::parseResponse($jsonResponse);
         

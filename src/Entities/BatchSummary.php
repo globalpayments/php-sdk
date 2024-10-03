@@ -2,6 +2,8 @@
 
 namespace GlobalPayments\Api\Entities;
 
+use GlobalPayments\Api\Entities\Enums\CardType;
+
 /**
  * Details a closed batch.
  */
@@ -62,4 +64,10 @@ class BatchSummary
      * @var integer
      */
     public $processedDeviceId;
+
+    public BatchTotals $batchTotals;
+
+    /** @var ?array<CardType, BatchTotals> */
+    public ?array $brandBreakdown;
+    public ?array $hostBreakdown;
 }

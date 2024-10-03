@@ -93,7 +93,7 @@ class ReportingStoredPaymentMethodsTest extends TestCase
 
     public function testFindStoredPaymentMethod_By_Id()
     {
-        $paymentMethodId = 'PMT_e76e8d26-ae61-4261-a8c7-dc31d8afaa51';
+        $paymentMethodId = 'PMT_ea7a6d69-4a25-4f05-9e09-2fe03f9916a2';
         $response = ReportingService::findStoredPaymentMethodsPaged(1, 10)
             ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::STORED_PAYMENT_METHOD_ID, $paymentMethodId)

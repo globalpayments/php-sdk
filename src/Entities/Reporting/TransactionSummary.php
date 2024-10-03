@@ -5,10 +5,12 @@ namespace GlobalPayments\Api\Entities\Reporting;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\BankPaymentResponse;
 use GlobalPayments\Api\Entities\BNPLResponse;
-use GlobalPayments\Api\Entities\Enums\FraudFilterResult;
+use GlobalPayments\Api\Entities\Card;
+use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
 use GlobalPayments\Api\Entities\FraudManagementResponse;
 use GlobalPayments\Api\Entities\LodgingData;
+use GlobalPayments\Api\Entities\ThreeDSecure;
 
 class TransactionSummary extends BaseSummary
 {
@@ -32,6 +34,51 @@ class TransactionSummary extends BaseSummary
      * @var decimal
      */
     public $authorizedAmount;
+
+    /**
+     * @var decimal
+     */
+    public $captureAmount;
+
+    /**
+     * The originally requested convenience amount.
+     *
+     * @var decimal
+     */
+    public $convenienceAmount;
+
+    /**
+     * @var decimal
+     */
+    public $gratuityAmount;
+
+    /**
+     * The settled from the authorization.
+     *
+     * @var decimal
+     */
+    public $settlementAmount;
+
+    /**
+     * The originally requested shipping amount.
+     *
+     * @var decimal
+     */
+    public $shippingAmount;
+
+    /**
+     * @var decimal
+     */
+    public $surchargeAmount;
+
+    /**
+     * @var decimal
+     */
+    public $taxAmount;
+
+    public ?float $cashBackAmount = null;
+    public ?float $merchantAmount = null;
+    public ?string $merchantCurrency = null;
 
     /**
      * The authorization code provided by the issuer.
@@ -65,11 +112,6 @@ class TransactionSummary extends BaseSummary
      * @var string
      */
     public $brandReference;
-
-    /**
-     * @var decimal
-     */
-    public $captureAmount;
 
     /**
      * @var string
@@ -112,9 +154,11 @@ class TransactionSummary extends BaseSummary
     public $cardSwiped;
 
     /**
-     * @var string
+     * @deprecated  Will soon be replaced with $cardDetails->brand
      */
     public $cardType;
+
+    public Card $cardDetails;
 
     /**
      * @var string
@@ -147,13 +191,6 @@ class TransactionSummary extends BaseSummary
      * @var string
      */
     public $companyName;
-
-    /**
-     * The originally requested convenience amount.
-     *
-     * @var decimal
-     */
-    public $convenienceAmount;
 
     /**
      * @var string
@@ -206,17 +243,17 @@ class TransactionSummary extends BaseSummary
     /**
      * @var string
      */
+    public $phone;
+
+    /**
+     * @var string
+     */
     public $fraudRuleInfo;
 
     /**
      * @var bool
      */
     public $fullyCaptured;
-
-    /**
-     * @var decimal
-     */
-    public $gratuityAmount;
 
     /**
      * @var bool
@@ -282,6 +319,7 @@ class TransactionSummary extends BaseSummary
     public $maskedAlias;
 
     /**
+     * @deprecated  Will soon be replaced with $cardDetails->maskedCardNumber
      * The authorized card number, masked.
      *
      * @var string
@@ -294,6 +332,8 @@ class TransactionSummary extends BaseSummary
      * @var string
      */
     public $maskedAccountNumber;
+
+    public ?string $maskedPaymentToken;
 
     /**
      * @var bool
@@ -362,20 +402,6 @@ class TransactionSummary extends BaseSummary
     public $serviceName;
 
     /**
-     * The settled from the authorization.
-     *
-     * @var decimal
-     */
-    public $settlementAmount;
-
-    /**
-     * The originally requested shipping amount.
-     *
-     * @var decimal
-     */
-    public $shippingAmount;
-
-    /**
      * @var string
      */
     public $siteTrace;
@@ -393,19 +419,14 @@ class TransactionSummary extends BaseSummary
     public $transactionType;
 
     /**
-     * @var decimal
-     */
-    public $surchargeAmount;
-
-    /**
-     * @var decimal
-     */
-    public $taxAmount;
-
-    /**
      * @var string
      */
     public $taxType;
+
+    /** 
+     * @var ThreeDSecure 
+     */
+    public $threeDSecure;
 
     /**
      * @var string
@@ -496,10 +517,7 @@ class TransactionSummary extends BaseSummary
      */
     public $accountType;
 
-    /**
-     * @var AlternativePaymentResponse
-     */
-    public $alternativePaymentResponse;
+    public ?AlternativePaymentResponse $alternativePaymentResponse;
 
     /** @var string */
     public $orderId;
@@ -516,19 +534,17 @@ class TransactionSummary extends BaseSummary
     /** @var BankPaymentResponse */
     public $bankPaymentResponse;
 
-    /** @var BNPLResponse */
-    public $bnplResponse;
+    public ?BNPLResponse $bnplResponse;
 
     /** @var string */
     public $fingerprint;
 
     /** @var string */
     public $fingerprintIndicator;
-
-    /** @var FraudManagementResponse */
-    public $fraudManagementResponse;
-
-    public string $terminalRefNumber;
+    public ?FraudManagementResponse $fraudManagementResponse;
+    public ?string $terminalRefNumber;
     public ?bool $hostTimeout;
     public ?string $cardEntryMethod;
+
+    public ?DccRateData $dccRateData;
 }

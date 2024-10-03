@@ -51,8 +51,7 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->execute();
 
-        $expectedDccValue = $this->getAmount($dccDetails);
-        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
+        $this->assertDccInfoResponse($dccDetails);
 
         sleep(2);
 
@@ -60,7 +59,7 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->withDccRateData($dccDetails->dccRateData)
             ->execute();
-        $this->assertTransactionResponse($response, TransactionStatus::CAPTURED, $expectedDccValue);
+        $this->assertTransactionResponse($response, TransactionStatus::CAPTURED, $dccDetails->dccRateData->cardHolderRate);
     }
 
     public function testCreditDccRateAuthorize()
@@ -70,8 +69,7 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->execute();
 
-        $expectedDccValue = $this->getAmount($dccDetails);
-        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
+        $this->assertDccInfoResponse($dccDetails);
 
         sleep(2);
 
@@ -79,7 +77,11 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->withDccRateData($dccDetails->dccRateData)
             ->execute();
-        $this->assertTransactionResponse($response, TransactionStatus::PREAUTHORIZED, $expectedDccValue);
+        $this->assertTransactionResponse(
+            $response,
+            TransactionStatus::PREAUTHORIZED,
+            $dccDetails->dccRateData->cardHolderRate
+        );
     }
 
     public function testCreditDccRateRefundStandalone()
@@ -89,8 +91,7 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->execute();
 
-        $expectedDccValue = $this->getAmount($dccDetails);
-        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
+        $this->assertDccInfoResponse($dccDetails);
 
         sleep(2);
 
@@ -98,7 +99,7 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->withDccRateData($dccDetails->dccRateData)
             ->execute();
-        $this->assertTransactionResponse($response, TransactionStatus::CAPTURED, $expectedDccValue);
+        $this->assertTransactionResponse($response, TransactionStatus::CAPTURED, $dccDetails->dccRateData->cardHolderRate);
     }
 
     public function testCreditDccRateReversal()
@@ -108,8 +109,7 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->execute();
 
-        $expectedDccValue = $this->getAmount($dccDetails);
-        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
+        $this->assertDccInfoResponse($dccDetails);
 
         sleep(2);
 
@@ -117,12 +117,12 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->withDccRateData($dccDetails->dccRateData)
             ->execute();
-        $this->assertTransactionResponse($transaction, TransactionStatus::CAPTURED, $expectedDccValue);
+        $this->assertTransactionResponse($transaction, TransactionStatus::CAPTURED,$dccDetails->dccRateData->cardHolderRate);
 
         $reverse = $transaction->reverse()
             ->withDccRateData($transaction->dccRateData)
             ->execute();
-        $this->assertTransactionResponse($reverse, TransactionStatus::REVERSED, $expectedDccValue);
+        $this->assertTransactionResponse($reverse, TransactionStatus::REVERSED, $dccDetails->dccRateData->cardHolderRate);
     }
 
     public function testCreditDccRateRefund()
@@ -132,8 +132,7 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->execute();
 
-        $expectedDccValue = $this->getAmount($dccDetails);
-        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
+        $this->assertDccInfoResponse($dccDetails);
 
         sleep(2);
 
@@ -141,13 +140,13 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->withDccRateData($dccDetails->dccRateData)
             ->execute();
-        $this->assertTransactionResponse($transaction, TransactionStatus::CAPTURED, $expectedDccValue);
+        $this->assertTransactionResponse($transaction, TransactionStatus::CAPTURED, $dccDetails->dccRateData->cardHolderRate);
 
         $refund = $transaction->refund()
             ->withCurrency($this->currency)
             ->withDccRateData($dccDetails->dccRateData)
             ->execute();
-        $this->assertTransactionResponse($refund, TransactionStatus::CAPTURED, $expectedDccValue);
+        $this->assertTransactionResponse($refund, TransactionStatus::CAPTURED, $dccDetails->dccRateData->cardHolderRate);
     }
 
     public function testAuthorizationThenCapture()
@@ -157,8 +156,7 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->execute();
 
-        $expectedDccValue = $this->getAmount($dccDetails);
-        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
+        $this->assertDccInfoResponse($dccDetails);
 
         sleep(2);
 
@@ -167,12 +165,12 @@ class DccCardNotPresentTest extends TestCase
             ->withAllowDuplicates(true)
             ->withDccRateData($dccDetails->dccRateData)
             ->execute();
-        $this->assertTransactionResponse($transaction, TransactionStatus::PREAUTHORIZED, $expectedDccValue);
+        $this->assertTransactionResponse($transaction, TransactionStatus::PREAUTHORIZED, $dccDetails->dccRateData->cardHolderRate);
 
         $capture = $transaction->capture()
             ->withDccRateData($dccDetails->dccRateData)
             ->execute();
-        $this->assertTransactionResponse($capture, TransactionStatus::CAPTURED, $expectedDccValue);
+        $this->assertTransactionResponse($capture, TransactionStatus::CAPTURED, $dccDetails->dccRateData->cardHolderRate);
     }
 
     public function testCardTokenizationThenPayingWithToken()
@@ -192,8 +190,7 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->execute();
 
-        $expectedDccValue = $this->getAmount($dccDetails);
-        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
+        $this->assertDccInfoResponse($dccDetails);
 
         sleep(2);
 
@@ -201,7 +198,7 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->withDccRateData($dccDetails->dccRateData)
             ->execute();
-        $this->assertTransactionResponse($response, TransactionStatus::CAPTURED, $expectedDccValue);
+        $this->assertTransactionResponse($response, TransactionStatus::CAPTURED, $dccDetails->dccRateData->cardHolderRate);
     }
 
     public function testCreditGetDccInfo_WithIdempotencyKey()
@@ -214,8 +211,7 @@ class DccCardNotPresentTest extends TestCase
             ->withIdempotencyKey($idempotency)
             ->execute();
 
-        $expectedDccValue = $this->getAmount($dccDetails);
-        $this->assertDccInfoResponse($dccDetails, $expectedDccValue);
+        $this->assertDccInfoResponse($dccDetails);
 
         sleep(2);
 
@@ -247,12 +243,12 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->execute();
 
-        $expectedDccValue = $this->getAmount($dccDetails);
+        $expectedDccValue = $this->getAmount($dccDetails->dccRateData->cardHolderRate);
         $this->assertNotNull($dccDetails);
         $this->assertEquals('SUCCESS', $dccDetails->responseCode);
         $this->assertEquals('NOT_AVAILABLE', $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
-        $this->assertEquals($expectedDccValue, $dccDetails->dccRateData->cardHolderAmount);
+        $this->assertEmpty($dccDetails->dccRateData->cardHolderAmount);
 
         sleep(2);
 
@@ -260,7 +256,8 @@ class DccCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->withDccRateData($dccDetails->dccRateData)
             ->execute();
-        $this->assertTransactionResponse($response, TransactionStatus::CAPTURED, $this->amount);
+
+        $this->assertTransactionResponse($response, TransactionStatus::CAPTURED, $dccDetails->dccRateData->cardHolderRate);
         $this->assertEquals($this->amount, $response->dccRateData->cardHolderAmount);
         $this->assertEquals($this->currency, $response->dccRateData->cardHolderCurrency);
     }
@@ -316,17 +313,19 @@ class DccCardNotPresentTest extends TestCase
         }
     }
 
-    private function assertDccInfoResponse($dccDetails, $expectedDccValue): void
+    private function assertDccInfoResponse($dccDetails): void
     {
         $this->assertNotNull($dccDetails);
         $this->assertEquals('SUCCESS', $dccDetails->responseCode);
         $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
+        $expectedDccValue = $this->getAmount($dccDetails->dccRateData->cardHolderRate);
         $this->assertEquals($expectedDccValue, $dccDetails->dccRateData->cardHolderAmount);
     }
 
-    private function assertTransactionResponse($transaction, $transactionStatus, $expectedDccValue): void
+    private function assertTransactionResponse($transaction, $transactionStatus, $cardHolderRate): void
     {
+        $expectedDccValue = $this->getAmount($cardHolderRate);
         $this->assertNotNull($transaction);
         $this->assertEquals('SUCCESS', $transaction->responseCode);
         $this->assertEquals($transactionStatus, $transaction->responseMessage);
@@ -335,9 +334,12 @@ class DccCardNotPresentTest extends TestCase
         }
     }
 
-    private function getAmount($dccDetails): float
+    private function getAmount($cardHolderRate): float
     {
-        return round($this->amount * $dccDetails->dccRateData->cardHolderRate, 2);
+        if (empty($cardHolderRate)) {
+            return $this->amount;
+        }
+        return round($this->amount * $cardHolderRate, 2);
     }
 
 }

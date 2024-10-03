@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Utils\Logging;
 
 use GlobalPayments\Api\Entities\IRequestLogger;
 use GlobalPayments\Api\Gateways\GatewayResponse;
+use GlobalPayments\Api\Utils\StringUtils;
 
 class SampleRequestLogger implements IRequestLogger
 {
@@ -34,6 +35,9 @@ class SampleRequestLogger implements IRequestLogger
         $rs = clone $response;
         if (strpos($rs->header, ': gzip') !== false) {
             $rs->rawResponse = gzdecode($rs->rawResponse);
+        }
+        if (StringUtils::isJson($rs->rawResponse)) {
+            $rs->rawResponse = json_encode(json_decode($rs->rawResponse), JSON_PRETTY_PRINT);
         }
         $this->logger->info("Response body: " . $rs->rawResponse);
         $this->logger->info("Response END");

@@ -2,7 +2,9 @@
 
 namespace GlobalPayments\Api\Entities\GpApi;
 
-class PagedResult
+use GlobalPayments\Api\Entities\Reporting\BaseSummary;
+
+class PagedResult extends BaseSummary
 {
     public $totalRecordCount;
     public $page;

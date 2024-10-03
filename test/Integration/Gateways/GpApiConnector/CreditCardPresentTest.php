@@ -191,7 +191,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
 
         $this->assertTransactionResponse($reverse, 'SUCCESS', TransactionStatus::REVERSED);
-
+        sleep(2);
         $response = $reverse->reauthorized($result->amount)
             ->execute();
 
@@ -614,7 +614,7 @@ class CreditCardPresentTest extends TestCase
         $lodgingInfo->dailyRateAmount = '13.49';
         $item1 = new LodgingItems();
         $item1->types = [LodgingItemType::NO_SHOW];
-        $item1->reference = 'item_1';
+        $item1->reference = 'item1';
         $item1->totalAmount = '13.49';
         $item1->paymentMethodProgramCodes = [PaymentMethodProgram::ASSURED_RESERVATION];
         $lodgingInfo->items = [$item1];

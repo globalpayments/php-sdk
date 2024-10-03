@@ -160,7 +160,6 @@ class PayerTest extends TestCase
 
     public function testEditPayer()
     {
-        $this->newCustomer->key = 'payer-123';
         $this->newCustomer->id = 'PYR_b2d3b367fcf141dcbd03cd9ccfa60519';
 
         $tokenizeResponse = $this->card->tokenize()->execute();

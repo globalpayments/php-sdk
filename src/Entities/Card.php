@@ -5,9 +5,6 @@ namespace GlobalPayments\Api\Entities;
 class Card
 {
     /** @var string */
-    public $cardholderName;
-
-    /** @var string */
     public $cardNumber;
 
 
@@ -64,4 +61,12 @@ class Card
      * @var string
      */
     public $issuer;
+
+    /** @var string|null The result of the CVV check. */
+    public ?string $cvnResponseMessage;
+    /** @var string|null The result of the AVS address check. */
+    public ?string $avsAddressResponse;
+    /** @var string|null The result of the AVS postal code check. */
+    public ?string $avsResponseCode;
+    public ?string $tagResponse;
 }

@@ -110,4 +110,7 @@ class DepositSummary extends BaseSummary
      * @var string
      */
     public $status;
+
+    public ?int $taxTotalCount = null;
+    public ?string $taxTotalAmount = null;
 }

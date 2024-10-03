@@ -8,7 +8,7 @@ use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\MerchantAccountType;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
 
-class MerchantAccountSummary
+class MerchantAccountSummary extends BaseSummary
 {
     /**
      * @var string

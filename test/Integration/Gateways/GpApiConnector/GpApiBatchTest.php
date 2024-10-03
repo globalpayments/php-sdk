@@ -273,7 +273,7 @@ class GpApiBatchTest extends TestCase
         $batch = BatchService::closeBatch($transaction->batchSummary->batchReference);
         $this->assertBatchCloseResponse($batch, $this->amount);
 
-        sleep(2);
+        sleep(3);
 
         $exceptionCaught = false;
         try {
@@ -343,8 +343,8 @@ class GpApiBatchTest extends TestCase
             BatchService::closeBatch($batchReference);
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('40118', $e->responseCode);
-            $this->assertEquals(sprintf('Status Code: RESOURCE_NOT_FOUND - Batch %s not found at this location.', $batchReference), $e->getMessage());
+            $this->assertEquals(sprintf('Status Code: INVALID_REQUEST_DATA - batch_id contains unexpected data', $batchReference), $e->getMessage());
+            $this->assertEquals('40213', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
         }

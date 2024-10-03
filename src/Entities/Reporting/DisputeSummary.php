@@ -5,18 +5,14 @@ namespace GlobalPayments\Api\Entities\Reporting;
 
 
 use GlobalPayments\Api\Builders\ManagementBuilder;
+use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use GlobalPayments\Api\Entities\DisputeDocument;
+use GlobalPayments\Api\Entities\Enums\ReportType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\PaymentMethods\Interfaces\IReport;
 
-class DisputeSummary
+class DisputeSummary extends BaseSummary
 {
-    /**
-     * @var string
-     */
-    public $merchantHierarchy;
-
-    public ?string $merchantName;
-
     /**
      * @var \DateTime
      */
@@ -114,10 +110,7 @@ class DisputeSummary
     public $disputeCustomerAmount;
 
     public ?string $disputeCustomerCurrency;
-    /**
-     * @var \DateTime
-     */
-    public $respondByDate;
+    public ?\DateTime $respondByDate;
 
     /**
      * @var integer
@@ -132,15 +125,20 @@ class DisputeSummary
      */
     public $lastAdjustmentFunding;
 
+    public ?string $lastAdjustmentTimeCreated;
+
     /** @var array<DisputeDocument> */
     public $documents;
 
     public ?string $transactionBrandReference;
+    public ?string $fundingType;
+    public ?string $orderId;
+    public ?string $responseCode;
 
     /**
      * @return ManagementBuilder
      */
-    public function accept()
+    public function accept(): ManagementBuilder
     {
         return (new ManagementBuilder(TransactionType::DISPUTE_ACCEPTANCE))->withDisputeId($this->caseId);
     }
@@ -150,10 +148,17 @@ class DisputeSummary
      *
      * @return ManagementBuilder
      */
-    public function challenge($documents)
+    public function challenge(array $documents): ManagementBuilder
     {
         return (new ManagementBuilder(TransactionType::DISPUTE_CHALLENGE))
             ->withDisputeId($this->caseId)
             ->withDisputeDocuments($documents);
+    }
+    public static function fromId($disputeId): DisputeSummary
+    {
+        $dispute = new DisputeSummary();
+        $dispute->caseId = $disputeId;
+
+        return $dispute;
     }
 }

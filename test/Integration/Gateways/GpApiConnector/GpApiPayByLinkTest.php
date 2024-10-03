@@ -793,7 +793,7 @@ class GpApiPayByLinkTest extends TestCase
 
     public function testFindPayByLinkByAmount()
     {
-        $amount = 10.00;
+        $amount = 2.11;
         $response = PayByLinkService::findPayByLink(1, 10)
             ->orderBy(PayByLinkSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::START_DATE, $this->startDate)
@@ -812,7 +812,7 @@ class GpApiPayByLinkTest extends TestCase
 
     public function testFindPayByLinkByExpireDate()
     {
-        $date = new DateTime('2024-05-09');
+        $date = new DateTime('+1month');
         $response = PayByLinkService::findPayByLink(1, 10)
             ->orderBy(PayByLinkSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::START_DATE, $this->startDate)

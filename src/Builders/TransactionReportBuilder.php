@@ -2,7 +2,6 @@
 
 namespace GlobalPayments\Api\Builders;
 
-use GlobalPayments\Api\Entities\Enums\MerchantAccountsSortProperty;
 use GlobalPayments\Api\Entities\Enums\ActionSortProperty;
 use GlobalPayments\Api\Entities\Enums\DepositSortProperty;
 use GlobalPayments\Api\Entities\Enums\DisputeSortProperty;

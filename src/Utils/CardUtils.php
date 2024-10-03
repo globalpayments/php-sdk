@@ -213,7 +213,7 @@ class CardUtils
         $card->avs_postal_code = $postalCode;
         $card->authcode = $builder->offlineAuthCode;
         if ($paymentMethod instanceof IPinProtected) {
-            $card->pin_block =$paymentMethod->pinBlock;
+            $card->pin_block = $paymentMethod->pinBlock;
         }
 
         return $card;

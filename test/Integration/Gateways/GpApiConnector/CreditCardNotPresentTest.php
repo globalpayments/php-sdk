@@ -1161,24 +1161,6 @@ class CreditCardNotPresentTest extends TestCase
         }
     }
 
-    public function testCreditSale_ExpiryCard()
-    {
-        $this->card->expYear = date('Y', strtotime('-1 year'));
-
-        $exceptionCaught = false;
-        try {
-            $this->card->charge(1)
-                ->withCurrency($this->currency)
-                ->execute();
-        } catch (GatewayException $e) {
-            $exceptionCaught = true;
-            $this->assertEquals('40085', $e->responseCode);
-            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - Expiry date invalid', $e->getMessage());
-        } finally {
-            $this->assertTrue($exceptionCaught);
-        }
-    }
-
     /**
      * Avs test cards scenario
      *

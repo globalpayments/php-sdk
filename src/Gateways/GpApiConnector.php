@@ -25,6 +25,7 @@ use GlobalPayments\Api\Entities\GpApi\GpApiTokenResponse;
 use GlobalPayments\Api\Entities\GpApi\GpApiSessionInfo;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\IRequestBuilder;
+use GlobalPayments\Api\Entities\Reporting\BaseSummary;
 use GlobalPayments\Api\Entities\Reporting\DepositSummary;
 use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
 use GlobalPayments\Api\Entities\Reporting\MerchantAccountSummary;
@@ -38,6 +39,7 @@ use GlobalPayments\Api\PaymentMethods\TransactionReference;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Mapping\GpApiMapping;
 use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
+use GlobalPayments\Api\Entities\RecurringEntity;
 
 class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dProvider, IPayFacProvider, IFraudCheckService, IDeviceCloudService, IFileProcessingService
 {
@@ -152,7 +154,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
      * @throws ApiException
      * @throws GatewayException
      */
-    public function processReport(ReportBuilder $builder)
+    public function processReport(ReportBuilder $builder): BaseSummary
     {
         if (empty($this->accessToken)) {
             $this->signIn();
@@ -225,7 +227,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         return GpApiMapping::mapFileProcessingResponse($response);
     }
 
-    public function processRecurring(RecurringBuilder $builder)
+    public function processRecurring(RecurringBuilder $builder): RecurringEntity
     {
         if (empty($this->accessToken)) {
             $this->signIn();

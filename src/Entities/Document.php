@@ -4,8 +4,9 @@ namespace GlobalPayments\Api\Entities;
 
 use GlobalPayments\Api\Entities\Enums\DocumentCategory;
 use GlobalPayments\Api\Entities\Enums\FileType;
+use GlobalPayments\Api\Entities\Reporting\BaseSummary;
 
-class Document
+class Document extends BaseSummary
 {
     public string $id;
     public string $name;

@@ -12,16 +12,22 @@ use GlobalPayments\Api\Builders\{
     ReportBuilder,
     TransactionReportBuilder
 };
-use GlobalPayments\Api\Entities\{BatchSummary, Transaction, Address, LodgingData};
+use GlobalPayments\Api\Entities\{
+    BatchSummary,
+    Transaction,
+    Address,
+    LodgingData,
+    ThreeDSecure
+};
 use GlobalPayments\Api\Entities\Enums\{
     AccountType,
     AliasAction,
     CheckType,
     EntryMethod,
-    MobilePaymentMethodType,
     PaymentMethodType,
     PaymentDataSourceType,
     ReportType,
+    Secure3dVersion,
     StoredCredentialInitiator,
     TaxType,
     TransactionModifier,
@@ -1532,6 +1538,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             if (isset($item->CardHolderData->CardHolderEmail)) {
                 $summary->email = (string)$item->CardHolderData->CardHolderEmail;
             }
+            if (isset($item->CardHolderData->CardHolderPhone)) {
+                $summary->phone = (string)$item->CardHolderData->CardHolderPhone;
+            }
         } else {
             if (isset($item->CardHolderFirstName)) {
                 $summary->cardHolderFirstName = (string)$item->CardHolderFirstName;
@@ -1556,6 +1565,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             }
             if (isset($item->CardHolderEmail)) {
                 $summary->email = (string)$item->CardHolderEmail;
+            }
+            if (isset($item->CardHolderPhone)) {
+                $summary->phone = (string)$item->CardHolderPhone;
             }
         }
 
@@ -1830,6 +1842,30 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             }
         }
 
+        // 3DSecure
+        if (isset($item) && isset($item->Secure3D)) {
+            $secure3D = new ThreeDSecure();
+            $secure3D->authenticationValue = (string)$item->Secure3D->AuthenticationValue;
+            $secure3D->directoryServerTransactionId = (string)$item->Secure3D->DirectoryServerTxnId;
+            $secure3D->eci = (int)$item->Secure3D->ECI;
+
+            try {
+                // account for default value of Version One.No value will be returned from Portico in this case.
+                $versionString = (string)$item->Secure3D->Version;
+                if (is_null($versionString) || empty($versionString)) {
+                    // Default to version One.
+                    $secure3D->setVersion(Secure3dVersion::ONE);
+                } else {
+                    $versionNumber = (int)$item->Secure3D->Version;
+                    $secure3D->setVersion($this->getSecure3DVersionType($versionNumber));
+                }
+            } catch (Exception) {
+                trigger_error("No Matching Version Found");
+            }
+
+            $summary->threeDSecure = $secure3D;
+        }
+
         return $summary;
     }
 
@@ -2099,23 +2135,67 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             );
         }
 
-        if ($builder->customerData !== null && $builder->customerData->email !== null) {
-            $holder->appendChild(
-                $xml->createElement($isCheck ? 'EmailAddress' : 'CardHolderEmail',$builder->customerData->email));
-        }
-
-        $propertyName = $isCheck ? 'checkHolderName' : 'cardHolderName';
-        if (!empty($builder->paymentMethod->{$propertyName})) {
-            $names = explode(' ', htmlentities($builder->paymentMethod->{$propertyName}), 2);
-            $holder->appendChild(
-                $xml->createElement($isCheck ? 'FirstName' : 'CardHolderFirstName', $names[0])
-            );
-
-            if (isset($names[1])) {
+        if ($builder->customerData !== null) {
+            if (!empty($builder->customerData->email)) {
                 $holder->appendChild(
-                    $xml->createElement($isCheck ? 'LastName' : 'CardHolderLastName', $names[1])
+                    $xml->createElement(
+                        $isCheck ? 'EmailAddress' : 'CardHolderEmail',
+                        $builder->customerData->email
+                    )
                 );
             }
+
+            // on the off chance more than one phone value is supplied, this 
+            // is organized in order of importance
+            if (!empty($builder->customerData->homePhone)) {
+                $cardHolderPhone = preg_replace("/[^0-9]/", "", $builder->customerData->homePhone);
+            } elseif (!empty($builder->customerData->workPhone)) {
+                $cardHolderPhone = preg_replace("/[^0-9]/", "", $builder->customerData->workPhone);
+            } elseif (!empty($builder->customerData->mobilePhone)) {
+                $cardHolderPhone = preg_replace("/[^0-9]/", "", $builder->customerData->mobilePhone);
+            };
+
+            $propertyName = $isCheck ? 'checkHolderName' : 'cardHolderName';
+            if (!empty($builder->paymentMethod->{$propertyName})) {
+                $names = explode(' ', htmlentities($builder->paymentMethod->{$propertyName}), 2);
+                $holder->appendChild(
+                    $xml->createElement($isCheck ? 'FirstName' : 'CardHolderFirstName', $names[0])
+                );
+
+                if (isset($names[1])) {
+                    $holder->appendChild(
+                        $xml->createElement($isCheck ? 'LastName' : 'CardHolderLastName', $names[1])
+                    );
+                }
+            }
+        }
+
+        // on the off chance more than one phone value is supplied, this 
+        // is organized in order of importance
+        if (!empty($builder->homePhone->number)) {
+            $cardHolderPhone = preg_replace(
+                "/[^0-9]/",
+                "",
+                $builder->homePhone->countryCode . $builder->homePhone->number
+            );
+        } elseif (!empty($builder->workPhone->number)) {
+            $cardHolderPhone = preg_replace(
+                "/[^0-9]/",
+                "",
+                $builder->workPhone->countryCode . $builder->workPhone->number
+            );
+        } elseif (!empty($builder->shippingPhone->phone)) {
+            $cardHolderPhone = preg_replace(
+                "/[^0-9]/",
+                "",
+                $builder->shippingPhone->countryCode . $builder->shippingPhone->number
+            );
+        };
+
+        if (!empty($cardHolderPhone)) {
+            $holder->appendChild(
+                $xml->createElement('CardHolderPhone', $cardHolderPhone)
+            );
         }
 
         if ($isCheck) {
@@ -2504,6 +2584,26 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             case 'ANY':
             default:
                 return 1;
+        }
+    }
+
+    /**
+     * To get Secure3dVersion
+     *
+     * @param int $version
+     * @return Secure3dVersion
+     */
+    private function getSecure3DVersionType($version)
+    {
+        switch ($version){
+            case 0:
+                return Secure3dVersion::NONE;
+            case 1:
+                return Secure3dVersion::ONE;
+            case 2:
+                return Secure3dVersion::TWO;
+            default:
+                return Secure3dVersion::ANY;
         }
     }
 }

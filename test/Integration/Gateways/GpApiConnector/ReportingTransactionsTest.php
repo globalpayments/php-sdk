@@ -90,14 +90,10 @@ class ReportingTransactionsTest extends TestCase
     public function testReportFindTransactionsById()
     {
         $transactionId = 'TRN_C7vphPAKEn3eYwo9QJiCYeqnFanF6U_c7c2fffd2836';
-        try {
-            $response = ReportingService::findTransactionsPaged(1, 10)
-                ->withTransactionId($transactionId)
-                ->where(SearchCriteria::START_DATE, $this->startDate)
-                ->execute();
-        } catch (ApiException $e) {
-            $this->fail("Find transactions by Id failed: " . $e->getMessage());
-        }
+        $response = ReportingService::findTransactionsPaged(1, 10)
+            ->withTransactionId($transactionId)
+            ->where(SearchCriteria::START_DATE, $this->startDate)
+            ->execute();
 
         $this->assertNotNull($response);
         $this->assertTrue(is_array($response->result));

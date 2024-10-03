@@ -1,10 +1,8 @@
 <?php
 
-
 namespace GlobalPayments\Api\Entities\Reporting;
 
-
-class StoredPaymentMethodSummary
+class StoredPaymentMethodSummary extends BaseSummary
 {
     /**
      * @var string

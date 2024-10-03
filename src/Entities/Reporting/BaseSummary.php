@@ -14,23 +14,11 @@ abstract class BaseSummary
      * @var string
      */
     public $currency;
-    /**
-     * @var string
-     */
-    public $merchantId;
 
-    /**
-     * @var string
-     */
-    public $merchantHierarchy;
+    public ?string $merchantId;
 
-    /**
-     * @var string
-     */
-    public $merchantName;
+    public ?string $merchantHierarchy;
 
-    /**
-     * @var string
-     */
-    public $merchantDbaName;
+    public ?string $merchantName;
+    public ?string $merchantDbaName;
 }

@@ -211,7 +211,7 @@ class ReportingSettlementTransactionsTest extends TestCase
     public function testReportFindSettlementTransactions_FilterBy_Wrong_CardBrand()
     {
         $startDate = (new DateTime())->modify('-30 days');
-        $cardBrand = "Bank of America";
+        $cardBrand = "VISAX";
         try {
             $response = ReportingService::findSettlementTransactionsPaged(1, 10)
                 ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
