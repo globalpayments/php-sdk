@@ -3,10 +3,12 @@
 namespace GlobalPayments\Api\Entities;
 
 use GlobalPayments\Api\Builders\ManagementBuilder;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
-use GlobalPayments\Api\Entities\Enums\TransactionModifier;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\Entities\Enums\{
+    PaymentMethodType,
+    PaymentMethodUsageMode,
+    TransactionModifier,
+    TransactionType
+};
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 
@@ -408,7 +410,7 @@ class Transaction
      *
      * @return ManagementBuilder
      */
-    public function additionalAuth($amount = null)
+    public function additionalAuth($amount = null) : ManagementBuilder
     {
         return (new ManagementBuilder(TransactionType::AUTH))
             ->withPaymentMethod($this->transactionReference)

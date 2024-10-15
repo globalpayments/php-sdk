@@ -495,4 +495,34 @@ class CreditTest extends TestCase
 
         // $this->assertEquals('17778889999', $reportReponse4->phone);
     }
+
+    /**
+     * 
+     * This test demonstrates using Portico Gateway 'CreditIncrementalAuth' transaction type
+     * 
+     * @return void 
+     * @throws ApiException 
+     */
+    public function testIncrementalAuth(): void
+    {
+        $authResponse = $this->card->authorize(10)
+            ->withCurrency("USD")
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $incrementalAuthResponse = Transaction::fromId($authResponse->transactionId)->additionalAuth(10)
+            ->execute();
+
+        $this->assertEquals('00', $incrementalAuthResponse->responseCode);
+
+        $reportResponse = ReportingService::transactionDetail($authResponse->transactionId)
+            ->execute();
+
+        $this->assertEquals("20.00", $reportResponse->settlementAmount);
+
+        $captureResponse = Transaction::fromId($authResponse->transactionId)->capture()
+            ->execute();
+
+        $this->assertEquals('00', $captureResponse->responseCode);
+    }
 }

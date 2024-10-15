@@ -634,6 +634,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 || $builder->transactionType === TransactionType::REFUND
                 || $builder->paymentMethod->paymentMethodType === PaymentMethodType::GIFT
                 || $builder->paymentMethod->paymentMethodType === PaymentMethodType::ACH
+                || $builder->transactionType === TransactionTYpe::AUTH
             ) {
                 $root = $xml->createElement('Block1');
             } else {
@@ -939,6 +940,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 || $builder->transactionType === TransactionType::REFUND
                 || $builder->paymentMethod->paymentMethodType === PaymentMethodType::GIFT
                 || $builder->paymentMethod->paymentMethodType === PaymentMethodType::ACH
+                || $builder->transactionType === TransactionTYpe::AUTH
             ) {
                 $transaction->appendChild($root);
             }
@@ -1901,7 +1903,7 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 if ($builder->paymentMethod->paymentMethodType === PaymentMethodType::CREDIT) {
                     if ($builder->transactionModifier === TransactionModifier::ADDITIONAL) {
                         return 'CreditAdditionalAuth';
-                    } elseif ($builder->transactionModifier === TransactionModifier::INCREMENTAL) {
+                    } elseif (is_a($builder, 'GlobalPayments\Api\Builders\ManagementBuilder')) {
                         return 'CreditIncrementalAuth';
                     } elseif ($builder->transactionModifier === TransactionModifier::OFFLINE) {
                         return 'CreditOfflineAuth';
