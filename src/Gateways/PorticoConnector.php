@@ -1309,6 +1309,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         $gatewayRspText = (string)$root->Header->GatewayRspMsg;
 
         if (!in_array($gatewayRspCode, $acceptedCodes)) {
+
+            if (!empty($root->Header->GatewayTxnId))
+                $gatewayRspText .= '. GatewayTxnId: ' . $root->Header->GatewayTxnId;
+
             throw new GatewayException(
                 sprintf(
                     'Unexpected Gateway Response: %s - %s. ',

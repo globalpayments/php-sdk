@@ -4,11 +4,15 @@
 
 # Changelog
 
-## Latest Version - v13.0.3 (10/15/24)
+## Latest Version - v13.0.4 (11/06/24)
+### Enhancements:
+- [Portico] Added 'GatewayTxnId' value to GatewayException message when available
+
+## v13.0.3 (10/15/24)
 ### Enhancements:
 - [Portico] Added support for 'CreditIncrementalAuth' transaction type
 
-## Latest Version - v13.0.2 (10/03/24)
+## v13.0.2 (10/03/24)
 ### Enhancements:
 - [Portico] Added support for 'CardHolderPhone' element
 - [GP-API] Update 3DS Object fields in transaction endpoint ("server_trans_ref" and "ds_trans_ref")
