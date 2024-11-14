@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Terminals\UPA\Responses;
 
+use GlobalPayments\Api\Entities\Card;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Reporting\TransactionList;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
@@ -28,7 +29,7 @@ class BatchReportResponse extends UpaResponseHandler
     {
         parent::parseJsonResponse($jsonResponse);
         $firstDataNode = $this->isGpApiResponse($jsonResponse) ? $jsonResponse->response : $jsonResponse->data;
-        $this->ecrId = $firstDataNode->ecrId ?? null;
+        $this->ecrId = $firstDataNode->EcrId ?? null;
         $secondDataNode = $firstDataNode->data ?? null;
         $this->merchantName = $secondDataNode->merchantName ?? null;
         $this->multipleMessage = $secondDataNode->multipleMessage ?? null;
@@ -69,7 +70,10 @@ class BatchReportResponse extends UpaResponseHandler
             $transactionSummary->authorizedAmount = $transaction->authorizedAmount;
             $transactionSummary->cardEntryMethod = $transaction->cardAcquisition ?? null;
             $transactionSummary->cardType = $transaction->cardType;
-            $transactionSummary->maskedCardNumber = $transaction->maskedPAN ?? null;
+            $transactionSummary->maskedCardNumber = $transaction->maskedPan ?? null;
+            $transactionSummary->cardDetails = new Card();
+            $transactionSummary->cardDetails->brand = $transaction->cardType ?? null;
+            $transactionSummary->cardDetails->maskedCardNumber = $transaction->maskedPan ?? null;
             $transactionSummary->referenceNumber = $transaction->referenceNumber;
             $transactionSummary->issuerTransactionId = $transaction->gatewayTxnId;
             $transactionSummary->clerkId = $transaction->clerkId ?? null;
@@ -81,6 +85,7 @@ class BatchReportResponse extends UpaResponseHandler
             $transactionSummary->gratuityAmount = $transaction->tipAmount ?? null;
             $transactionSummary->settlementAmount = $transaction->settleAmount ?? null;
             $transactionSummary->taxAmount = $transaction->taxAmount ?? null;
+            $transactionSummary->cardSwiped = $transaction->cardSwiped ?? null;
             $batchRecordResponse->transactionDetails->add($transactionSummary);
         }
     }

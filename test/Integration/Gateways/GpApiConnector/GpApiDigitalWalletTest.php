@@ -4,6 +4,7 @@ namespace Gateways\GpApiConnector;
 
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\AddressType;
+use GlobalPayments\Api\Entities\Enums\CardType;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
@@ -32,9 +33,9 @@ class GpApiDigitalWalletTest extends TestCase
         $this->card->cardHolderName = "James Mason";
         $this->clickToPayToken = '8144735251653223601';
         $this->googlePayToken = '{
-          "signature": "MEUCIQCYj/IzxdfmoL03Buao0VyKERNQ5b9Sk0Wqr2KNDdyy5wIgfax2jPYMpcKgfLtsIwMRLojt3/nqVfz4Y5njfnaQ0Jc=",
+          "signature": "MEUCIHES+D2qscALKRtWzGb9ti5USOkP1M5myGG+n2gnLw7oAiEAwFj7JeulajB71ZdW9LvjRNwB6A4v7yjgNwTkzAR+fNo=",
           "protocolVersion": "ECv1",
-          "signedMessage": "{\"encryptedMessage\":\"2UHlq0quCxAIvVaFX3QioTH38wAPR9a2RXYZmIKkfMhB1ilOECL3c0u01aDsBr/gd+wMGT41CzxT+rrlbt+nouko823FgFyP+ofdJmvmcm23LsqvCL3TRp3mvpSVZ221Jb8P9W2DriaFbVej6hb/zYcNwxfcydR44TCS2YpZGW/ZwydG898JOwCdZiMw5gh19UdmiioDGF09dYijGWsiQjgX9e5kJXJ0LTuuxxP2s6oc6CrMOtTmTP9qBhaYpCyYsZCpXDYwycBUQLcB5StFLmJD6msD9gtMWgK0cyKcZdRyQozdngNUa09EIvvrOr1SmGGHkTnddJze0gWD/G8rpZj4wosZoMmc6FAwEOFMkqKEUGqrYLpZRXKFzmU1wM76I5JBg9cy7XH78YJLeLopn9xgOd9VtNrccqWJN1UV\",\"ephemeralPublicKey\":\"BKpOmGO/XVU8FjhVY5xgNLvfz7HAxaUVdn/d5G43V/vE4Y2Yjdr8Z1Ot4WUWBWGh5kFx2MTjP+tPJiAUggc4DUU\\u003d\",\"tag\":\"KiOuZ7MyMamxKLGhEfiMzj4WmjFLda/9tAgK1yKGSJc\\u003d\"}"
+          "signedMessage": "{\"encryptedMessage\":\"a0X0HwBemGudk84o6K+MUZG1YwInK4rgmNT4bLwtOrbVhQ/2jaT2EX0HYaxi3C5o063++A7EJ5KIl7uwqTSp1GWHtAFqZaWdIMKgK+0ZuGliVkPqFmYmXSD1ksQJQw/veDbANfbtQUiR1c4ZBWm9l2SUDTAbk/BICbYzdWlMIxv/d+wQEWaxYLekCRojSMPAA/tsJigswY8tGAbimvi6Q0eKP7LBd0lLYCP2OnICorODdYcv9kM8RPNXniPphxJ+DKIw9brWb4zSUq0/sJjQYoXIbz/eVXJ5wxZOHf0FUXz2gRwAteziL2HpuxlnNKWgi06TC/CuxrfnqWgJ8QE6bb9NDOrjHxiZS4hZnFsqhmcHZL8Idnmc0fSNY+2zbDkLS+sNrsbzahpEIrHJBGNkNbOEcq3JmFIR8U7Nc30z\",\"ephemeralPublicKey\":\"BCs/ogxOtzEsAmrHwSw1M2Ly2AhX7dUQ/M+HFjFwT4J9MD+nIl8Raruw488czk43t7nC0+wJhWCDzpR3W3Af3TM\\u003d\",\"tag\":\"bjWbrD74J3QPaLtCk7/4RKOPlb0xe33eYcRqUSqMovI\\u003d\"}"
         }';
     }
 
@@ -202,6 +203,8 @@ class GpApiDigitalWalletTest extends TestCase
             ->execute();
 
         $this->assertTransactionResponse($response, TransactionStatus::CAPTURED);
+        $this->assertNotEmpty($response->cardBrandTransactionId);
+        $this->assertEquals(CardType::VISA, $response->cardDetails->brand);
     }
 
     public function testGooglePayEncrypted_LinkedRefund()

@@ -6,6 +6,7 @@ use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Exceptions\MessageException;
 use GlobalPayments\Api\Terminals\TerminalResponse;
+use GlobalPayments\Api\Utils\ArrayUtils;
 
 class UpaResponseHandler extends TerminalResponse
 {
@@ -47,25 +48,20 @@ class UpaResponseHandler extends TerminalResponse
         $this->ecrId = $firstNodeData['EcrId'] ?? '';
     }
 
-    protected function isGpApiResponse($jsonResponse) : bool
-    {
-        if (is_object($jsonResponse)) {
-            $jsonResponse = $this->jsonToArray($jsonResponse);
-        }
-        return !empty($jsonResponse['provider']) && $jsonResponse['provider'] === GatewayProvider::GP_API;
-    }
-
     /**
      * @throws MessageException
      */
     protected function parseJsonResponse($response): void
     {
-        $response = $this->jsonToArray($response);
+        $response = ArrayUtils::jsonToArray($response);
         $this->parseResponse($response);
     }
 
-    private function jsonToArray(object $response) : array
+    protected function isGpApiResponse($jsonResponse) : bool
     {
-        return json_decode(json_encode($response), true);
+        if (is_object($jsonResponse)) {
+            $jsonResponse = ArrayUtils::jsonToArray($jsonResponse);
+        }
+        return !empty($jsonResponse['provider']) && $jsonResponse['provider'] === GatewayProvider::GP_API;
     }
 }

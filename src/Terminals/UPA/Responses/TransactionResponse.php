@@ -2,7 +2,6 @@
 
 namespace GlobalPayments\Api\Terminals\UPA\Responses;
 
-use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 use GlobalPayments\Api\Entities\Exceptions\MessageException;
 use GlobalPayments\Api\Terminals\Abstractions\IBatchCloseResponse;
 use GlobalPayments\Api\Terminals\Entities\{PANDetails, ThreeDesDukpt,TrackData};

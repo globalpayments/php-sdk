@@ -11,14 +11,14 @@ class ArrayUtils
      *
      * @return array
      */
-    public static function array_remove_empty($haystack)
+    public static function array_remove_empty(?array $haystack): array
     {
         if (is_null($haystack)) {
             return [];
         }
         foreach ($haystack as $key => $value) {
             if (is_array($value) || is_object($value)) {
-                $v = (array) $haystack[$key];
+                $v = (array)$value;
                 $haystack[$key] = self::array_remove_empty($v);
             }
             if (empty($haystack[$key])) {
@@ -29,5 +29,10 @@ class ArrayUtils
         }
 
         return $haystack;
+    }
+
+    public static function jsonToArray(object $response) : array
+    {
+        return json_decode(json_encode($response), true);
     }
 }

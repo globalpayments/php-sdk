@@ -22,6 +22,7 @@ use GlobalPayments\Api\Terminals\Entities\PromptData;
 use GlobalPayments\Api\Terminals\Entities\PromptMessages;
 use GlobalPayments\Api\Terminals\Entities\ScanData;
 use GlobalPayments\Api\Terminals\Entities\UDData;
+use GlobalPayments\Api\Terminals\Enums\BatchReportType;
 use GlobalPayments\Api\Terminals\Enums\CurrencyType;
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
 use GlobalPayments\Api\Terminals\Enums\DeviceConfigType;
@@ -436,7 +437,7 @@ abstract class DeviceInterface implements IDeviceInterface
         );
     }
 
-    public function getBatchDetails(?string $batchId = null,bool $printReport = false): ITerminalReport
+    public function getBatchDetails(?string $batchId = null,bool $printReport = false, string|BatchReportType $reportType = null): ITerminalReport
     {
         throw new UnsupportedTransactionException(
             "This method is not supported by the currently configured device."

@@ -15,8 +15,8 @@ class UDData
     /** @var UDFileTypes Contains the parameters for the file to be loaded */
     public string $fileType;
 
-    /** @var string Slot number of the data file */
-    public string $slotNum;
+    /** @var int Slot number of the data file */
+    public int $slotNum;
 
     /** @var string Filename of the file to be stored in the device. Must include the file extension.
      * Must not contain a file path.

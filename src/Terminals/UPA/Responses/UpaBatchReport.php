@@ -4,8 +4,6 @@ namespace GlobalPayments\Api\Terminals\UPA\Responses;
 class UpaBatchReport extends UpaResponseHandler
 {
     
-    public $deviceResponseCode;
-    
     public $merchantName;
     
     public $batchSummary;

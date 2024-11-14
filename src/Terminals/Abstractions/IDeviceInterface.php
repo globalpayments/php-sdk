@@ -15,6 +15,7 @@ use GlobalPayments\Api\Terminals\Entities\PromptData;
 use GlobalPayments\Api\Terminals\Entities\PromptMessages;
 use GlobalPayments\Api\Terminals\Entities\ScanData;
 use GlobalPayments\Api\Terminals\Entities\UDData;
+use GlobalPayments\Api\Terminals\Enums\BatchReportType;
 use GlobalPayments\Api\Terminals\Enums\DeviceConfigType;
 use GlobalPayments\Api\Terminals\Enums\DisplayOption;
 use GlobalPayments\Api\Terminals\Enums\PromptType;
@@ -255,7 +256,7 @@ interface IDeviceInterface
 
     public function getSAFReport() : TerminalReportBuilder;
     public function getBatchReport() : TerminalReportBuilder;
-    public function getBatchDetails(?string $batchId = null, bool $printReport = false) : ITerminalReport;
+    public function getBatchDetails(?string $batchId = null, bool $printReport = false, string|BatchReportType $reportType = null) : ITerminalReport;
     public function findBatches() : TerminalReportBuilder;
     public function getOpenTabDetails() : TerminalReportBuilder;
 }

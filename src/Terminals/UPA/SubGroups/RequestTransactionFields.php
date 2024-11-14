@@ -135,6 +135,7 @@ class RequestTransactionFields implements IRequestSubGroup
                 case TransactionType::EDIT:
                     if ($builder->transactionModifier == TransactionModifier::UPDATE_LODGING_DETAILS) {
                         $this->amount = sprintf('%07.2f', $builder->amount);
+                        $this->clerkId = $builder->clerkId ?? null;
                     }
                     break;
                 case TransactionType::SALE:
@@ -200,7 +201,6 @@ class RequestTransactionFields implements IRequestSubGroup
         $this->taxIndicator = $builder->taxExempt ?? null;
         $this->processCPC = $builder->processCPC ?? null;
         $this->purchaseOrder = $builder->orderId ?? null;
-        $this->clerkId = $builder->clerkId ?? null;
         if (isset($builder->confirmAmount)) {
             $this->confirmAmount = $builder->confirmAmount === true ? "Y" : "N";
         }

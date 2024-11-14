@@ -4,7 +4,7 @@ namespace GlobalPayments\Api\Terminals\Diamond\Entities\Enums;
 
 use GlobalPayments\Api\Entities\Enum;
 
-class TransactionType extends Enum
+class TransactionTypeResponse extends Enum
 {
     const UNKNOWN = '0';
     const SALE = '1';

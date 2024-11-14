@@ -22,10 +22,11 @@ class TerminalSetupResponse extends UpaResponseHandler implements IBatchCloseRes
     public function parseResponse($jsonResponse): void
     {
         parent::parseResponse($jsonResponse);
-        if (empty($jsonResponse['data']['data'])) {
+        $firstDataNode = $this->isGpApiResponse($jsonResponse) ? $jsonResponse['response'] : $jsonResponse['data'];
+        if (empty($firstDataNode['data'])) {
             return;
         }
-        $secondNode = $jsonResponse['data']['data'];
+        $secondNode = $firstDataNode['data'];
         switch ($this->command) {
             case UpaMessageId::GET_CONFIG_CONTENTS:
                 $this->configType = $secondNode['configType'] ?? '';

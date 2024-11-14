@@ -4,7 +4,14 @@
 
 # Changelog
 
-## Latest Version - v13.0.4 (11/06/24)
+## Latest Version - v13.0.5 (11/14/24)
+### Enhancements:
+- [GP-API] - Add new mapping fields on digital wallet transaction response: masked_number_last4, brand, brand_reference
+- [MITC UPA] - Add new commands:  getAppInfo, getParam, setTimeZone,clearDataLake, reset, returnToIdle, getDeviceConfig, 
+              print, scan, getDebugInfo, setDebugLevel, getDebugLevel, getSignatureFile, communicationCheck, logon, 
+              findBatches, getBatchDetails, getBatchReport, displayMessage
+
+## v13.0.4 (11/07/24)
 ### Enhancements:
 - [Portico] Added 'GatewayTxnId' value to GatewayException message when available
 

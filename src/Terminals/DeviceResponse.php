@@ -18,6 +18,5 @@ abstract class DeviceResponse implements IDeviceResponse, IBatchCloseResponse, I
     public $deviceResponseCode;
     /** @var string */
     public $deviceResponseText;
-    /** @var string */
-    public $referenceNumber;
+    public ?string $referenceNumber;
 }

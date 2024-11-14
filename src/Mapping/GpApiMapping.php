@@ -2,6 +2,8 @@
 
 namespace GlobalPayments\Api\Mapping;
 
+use DateTime;
+use Exception;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\AddressCollection;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
@@ -29,6 +31,7 @@ use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Enums\UserType;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use GlobalPayments\Api\Entities\FileList;
 use GlobalPayments\Api\Entities\FileProcessor;
 use GlobalPayments\Api\Entities\FileUploaded;
@@ -38,7 +41,6 @@ use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\PayerDetails;
 use GlobalPayments\Api\Entities\PayByLinkResponse;
-use GlobalPayments\Api\Entities\PayFac\UserReference;
 use GlobalPayments\Api\Entities\PaymentMethodList;
 use GlobalPayments\Api\Entities\Person;
 use GlobalPayments\Api\Entities\PersonList;
@@ -92,8 +94,9 @@ class GpApiMapping
      *
      * @param Object $response
      * @return Transaction
+     * @throws Exception
      */
-    public static function mapResponse($response)
+    public static function mapResponse(object $response): Transaction
     {
         $transaction = new Transaction();
 
@@ -176,7 +179,8 @@ class GpApiMapping
         }
         return $transaction;
     }
-    private static function mapBatchCloseResponse(BatchSummary &$batchSummary, $response) : void
+
+    private static function mapBatchCloseResponse(BatchSummary &$batchSummary, $response): void
     {
         $batchSummary->id = $response->id;
         $batchSummary->processedDeviceId = $response->device_reference ?? null;
@@ -190,7 +194,7 @@ class GpApiMapping
         }
     }
 
-    private static function extractBatchTotals($response) : BatchTotals
+    private static function extractBatchTotals($response): BatchTotals
     {
         $batchTotals = new BatchTotals();
         $batchTotals->salesCount = $response->sales->count ?? null;
@@ -212,6 +216,10 @@ class GpApiMapping
 
         return $batchTotals;
     }
+
+    /**
+     * @throws Exception
+     */
     private static function mapTransferFundsAccountDetails(&$transaction, $transfersResponse): void
     {
         $transfers = new TransferFundsAccountCollection();
@@ -219,7 +227,7 @@ class GpApiMapping
             $transfer = new FundsAccountDetails();
             $transfer->id = $transferResponse->id;
             $transfer->timeCreated = !empty($transferResponse->time_created) ?
-                new \DateTime($transferResponse->time_created) : '';
+                new DateTime($transferResponse->time_created) : '';
             $transfer->amount = !empty($transferResponse->amount) ?
                 StringUtils::toAmount($transferResponse->amount) : null;
             $transfer->reference = $transferResponse->reference ?? null;
@@ -230,7 +238,7 @@ class GpApiMapping
         $transaction->transfersFundsAccount = $transfers;
     }
 
-    private static function mapPaymentMethodTransactionDetails(Transaction &$transaction, $paymentMethodResponse)
+    private static function mapPaymentMethodTransactionDetails(Transaction &$transaction, $paymentMethodResponse): void
     {
         $cardIssuerResponse = new CardIssuerResponse();
         $cardIssuerResponse->result = $paymentMethodResponse->result ?? null;
@@ -241,26 +249,24 @@ class GpApiMapping
             $paymentMethodResponse->fingerprint : null;
         $transaction->fingerprintIndicator = !empty($paymentMethodResponse->fingerprint_presence_indicator) ?
             $paymentMethodResponse->fingerprint_presence_indicator : null;
-        if (!empty($paymentMethodResponse->card)) {
-            $card = $paymentMethodResponse->card;
-            $transaction->cardDetails = self::mapCardDetails($card);
+        $paymentMethodObj = $paymentMethodResponse->card ?? ($paymentMethodResponse->digital_wallet ?? null);
+        if (!empty($paymentMethodObj)) {
+            $transaction->cardDetails = self::mapCardDetails($paymentMethodObj);
 
-            $transaction->cardLast4 = !empty($card->masked_number_last4) ?
-                $card->masked_number_last4 : null;
-            $transaction->cardType = !empty($card->brand) ? $card->brand : null;
-            $transaction->cvnResponseCode = !empty($card->cvv) ? $card->cvv : null;
-            $transaction->cvnResponseMessage = !empty($card->cvv_result) ? $card->cvv_result : null;
-            $transaction->cardBrandTransactionId = !empty($card->brand_reference) ?
-                $card->brand_reference : null;
-            $transaction->avsResponseCode = !empty($card->avs_postal_code_result) ?
-                $card->avs_postal_code_result : null;
-            $transaction->avsAddressResponse = !empty($card->avs_address_result) ? $card->avs_address_result : null;
-            $transaction->avsResponseMessage = !empty($card->avs_action) ? $card->avs_action : null;
-            $transaction->authorizationCode = $card->authcode ?? null;
-            if (!empty($card->provider)) {
-                self::mapCardIssuerResponse($cardIssuerResponse, $card->provider);
+            $transaction->cardLast4 = $paymentMethodObj->masked_number_last4 ?? null;
+            $transaction->cardType = $paymentMethodObj->brand ?? null;
+            $transaction->cvnResponseCode = $paymentMethodObj->cvv ?? null;
+            $transaction->cvnResponseMessage = $paymentMethodObj->cvv_result ?? null;
+            $transaction->cardBrandTransactionId = $paymentMethodObj->brand_reference ?? null;
+            $transaction->avsResponseCode = $paymentMethodObj->avs_postal_code_result ?? null;
+            $transaction->avsAddressResponse = $paymentMethodObj->avs_address_result ?? null;
+            $transaction->avsResponseMessage = $paymentMethodObj->avs_action ?? null;
+            $transaction->authorizationCode = $paymentMethodObj->authcode ?? null;
+            if (!empty($paymentMethodObj->provider)) {
+                self::mapCardIssuerResponse($cardIssuerResponse, $paymentMethodObj->provider);
             }
         }
+
         $transaction->cardIssuerResponse = $cardIssuerResponse;
         if (!empty($paymentMethodResponse->apm) &&
             $paymentMethodResponse->apm->provider == strtolower(PaymentProvider::OPEN_BANKING)
@@ -300,8 +306,8 @@ class GpApiMapping
         $payerDetails->email = $payer->email ?? null;
         if (!empty($payer->billing_address)) {
             $billingAddress = $payer->billing_address;
-            $payerDetails->firstName = $billingAddress->first_name  ?? null;
-            $payerDetails->lastName = $billingAddress->last_name  ?? null;
+            $payerDetails->firstName = $billingAddress->first_name ?? null;
+            $payerDetails->lastName = $billingAddress->last_name ?? null;
             $payerDetails->billingAddress = self::mapAddressObject(
                 $billingAddress,
                 AddressType::BILLING
@@ -333,7 +339,7 @@ class GpApiMapping
         return $fraudFilterResponse;
     }
 
-    private static function mapFraudResponseResult($fraudResponseResult)
+    private static function mapFraudResponseResult($fraudResponseResult): string
     {
         switch ($fraudResponseResult) {
             case 'PENDING_REVIEW':
@@ -353,7 +359,7 @@ class GpApiMapping
         }
     }
 
-    private static function mapDccInfo($response)
+    private static function mapDccInfo($response): DccRateData
     {
         $dccRateData = new DccRateData();
         $dccRateData->cardHolderCurrency = !empty($response->payer_currency) ? $response->payer_currency : null;
@@ -369,7 +375,7 @@ class GpApiMapping
         $dccRateData->commissionPercentage = !empty($response->commission_percentage) ?
             $response->commission_percentage : null;
         $dccRateData->exchangeRateSourceTimestamp = !empty($response->exchange_rate_time_created) ?
-            $response->exchange_rate_time_created: null;
+            $response->exchange_rate_time_created : null;
         $dccRateData->dccId = !empty($response->id) ? $response->id : null;
 
         return $dccRateData;
@@ -378,8 +384,11 @@ class GpApiMapping
     /**
      * @param $response
      * @param $reportType
+     * @return PayByLinkSummary|TransactionSummary|PagedResult|MerchantAccountSummary|DisputeSummary|ActionSummary|StoredPaymentMethodSummary|DepositSummary|DisputeDocument
+     * @throws ApiException
+     * @throws Exception
      */
-    public static function mapReportResponse($response, $reportType)
+    public static function mapReportResponse($response, $reportType): PayByLinkSummary|TransactionSummary|PagedResult|MerchantAccountSummary|DisputeSummary|ActionSummary|StoredPaymentMethodSummary|DepositSummary|DisputeDocument
     {
         switch ($reportType) {
             case ReportType::TRANSACTION_DETAIL:
@@ -398,7 +407,7 @@ class GpApiMapping
             case ReportType::FIND_DEPOSITS_PAGED:
                 $report = self::setPagingInfo($response);
                 foreach ($response->deposits as $deposit) {
-                    array_push($report->result, self::mapDepositSummary($deposit));
+                    $report->result[] = self::mapDepositSummary($deposit);
                 }
                 break;
             case ReportType::DOCUMENT_DISPUTE_DETAIL:
@@ -414,13 +423,13 @@ class GpApiMapping
             case ReportType::FIND_SETTLEMENT_DISPUTES_PAGED:
                 $report = self::setPagingInfo($response);
                 foreach ($response->disputes as $dispute) {
-                    array_push($report->result, self::mapDisputeSummary($dispute));
+                    $report->result[] = self::mapDisputeSummary($dispute);
                 }
                 break;
             case ReportType::FIND_STORED_PAYMENT_METHODS_PAGED:
                 $report = self::setPagingInfo($response);
                 foreach ($response->payment_methods as $spm) {
-                    array_push($report->result, self::mapStoredPaymentMethodSummary($spm));
+                    $report->result[] = self::mapStoredPaymentMethodSummary($spm);
                 }
                 break;
             case ReportType::STORED_PAYMENT_METHOD_DETAIL:
@@ -432,7 +441,7 @@ class GpApiMapping
             case ReportType::FIND_ACTIONS_PAGED:
                 $report = self::setPagingInfo($response);
                 foreach ($response->actions as $action) {
-                    array_push($report->result, self::mapActionsSummary($action));
+                    $report->result[] = self::mapActionsSummary($action);
                 }
                 break;
             case ReportType::PAYBYLINK_DETAIL:
@@ -441,19 +450,19 @@ class GpApiMapping
             case ReportType::FIND_PAYBYLINK_PAGED:
                 $report = self::setPagingInfo($response);
                 foreach ($response->links as $link) {
-                    array_push($report->result, self::mapPayByLinkSummary($link));
+                    $report->result[] = self::mapPayByLinkSummary($link);
                 }
                 break;
             case ReportType::FIND_MERCHANTS_PAGED:
                 $report = self::setPagingInfo($response);
                 foreach ($response->merchants as $merchant) {
-                    array_push($report->result, self::mapMerchantSummary($merchant));
+                    $report->result[] = self::mapMerchantSummary($merchant);
                 }
                 return $report;
             case ReportType::FIND_ACCOUNTS_PAGED:
                 $report = self::setPagingInfo($response);
                 foreach ($response->accounts as $account) {
-                    array_push($report->result, self::mapMerchantAccountSummary($account));
+                    $report->result[] = self::mapMerchantAccountSummary($account);
                 }
                 return $report;
             case ReportType::FIND_ACCOUNT_DETAIL:
@@ -470,22 +479,23 @@ class GpApiMapping
      *
      * @param $response
      * @return TransactionSummary
+     * @throws Exception
      */
-    public static function mapTransactionSummary($response)
+    public static function mapTransactionSummary($response): TransactionSummary
     {
         $summary = self::createTransactionSummary($response);
         $summary->transactionLocalDate = !empty($response->time_created_reference) ?
-            new \DateTime($response->time_created_reference) : '';
+            new DateTime($response->time_created_reference) : '';
         $summary->batchSequenceNumber = $response->batch_id;
         $summary->country = !empty($response->country) ? $response->country : null;
         $summary->originalTransactionId = !empty($response->parent_resource_id) ? $response->parent_resource_id : null;
         $summary->depositReference = !empty($response->deposit_id) ? $response->deposit_id : '';
         $summary->depositStatus = !empty($response->deposit_status) ? $response->deposit_status : '';
         $summary->depositTimeCreated = !empty($response->deposit_time_created) ?
-            new \DateTime($response->deposit_time_created) : '';
+            new DateTime($response->deposit_time_created) : '';
         $summary->settlementAmount = !empty($response->deposit_amount) ?
             StringUtils::toAmount($response->deposit_amount) : null;
-        $summary->batchCloseDate = !empty($response->batch_time_created) ? new \DateTime($response->batch_time_created) : '';
+        $summary->batchCloseDate = !empty($response->batch_time_created) ? new DateTime($response->batch_time_created) : '';
         $summary->orderId = $response->order->reference ?? null;
 
         if (isset($response->system)) {
@@ -501,7 +511,7 @@ class GpApiMapping
             /** map card details */
             if (isset($paymentMethod->card)) {
                 $card = $paymentMethod->card;
-                $summary->aquirerReferenceNumber = isset($card->arn) ? $card->arn : null;
+                $summary->aquirerReferenceNumber = $card->arn ?? null;
                 $summary->maskedCardNumber = $card->masked_number_first6last4 ?? null;
                 $summary->paymentType = PaymentMethodName::CARD;
                 $summary->cardDetails = self::mapCardDetails($card);
@@ -547,7 +557,8 @@ class GpApiMapping
                     $bankPaymentResponse->redirectUrl = $response->payment_method->redirect_url ?? null;
                     $summary->bankPaymentResponse = $bankPaymentResponse;
                     $summary->accountNumberLast4 = $response->payment_method->bank_transfer->masked_account_number_last4 ?? null;
-                } else { /** map APMs (Paypal) response info */
+                } else {
+                    /** map APMs (Paypal) response info */
                     $apm = $response->payment_method->apm;
                     $alternativePaymentResponse = new AlternativePaymentResponse();
                     $alternativePaymentResponse->redirectUrl = !empty($response->payment_method->redirect_url) ?
@@ -588,12 +599,13 @@ class GpApiMapping
      * @param Object $response
      *
      * @return DepositSummary
+     * @throws Exception
      */
-    public static function mapDepositSummary($response)
+    public static function mapDepositSummary(object $response): DepositSummary
     {
         $summary = new DepositSummary();
         $summary->depositId = $response->id;
-        $summary->depositDate = new \DateTime($response->time_created);
+        $summary->depositDate = new DateTime($response->time_created);
         $summary->status = $response->status;
         $summary->type = $response->funding_type;
         $summary->amount = StringUtils::toAmount($response->amount);
@@ -603,13 +615,13 @@ class GpApiMapping
         }
         if (isset($response->sales)) {
             $sales = $response->sales;
-            $summary->salesTotalCount = isset($sales->count) ? $sales->count : 0;
+            $summary->salesTotalCount = $sales->count ?? 0;
             $summary->salesTotalAmount = isset($sales->amount) ? StringUtils::toAmount($sales->amount) : 0;
         }
 
         if (isset($response->refunds)) {
             $refunds = $response->refunds;
-            $summary->refundsTotalCount = isset($refunds->count) ? $refunds->count : 0;
+            $summary->refundsTotalCount = $refunds->count ?? 0;
             $summary->refundsTotalAmount = isset($refunds->amount) ? StringUtils::toAmount($refunds->amount) : 0;
         }
 
@@ -620,11 +632,11 @@ class GpApiMapping
 
         if (isset($response->disputes)) {
             $disputes = $response->disputes;
-            $summary->chargebackTotalCount = isset($disputes->chargebacks->count) ? $disputes->chargebacks->count : 0;
+            $summary->chargebackTotalCount = $disputes->chargebacks->count ?? 0;
             $summary->chargebackTotalAmount = isset($disputes->chargebacks->amount) ?
                 StringUtils::toAmount($disputes->chargebacks->amount) : 0;
 
-            $summary->adjustmentTotalCount = isset($disputes->reversals->count) ? $disputes->reversals->count : 0;
+            $summary->adjustmentTotalCount = $disputes->reversals->count ?? 0;
             $summary->adjustmentTotalAmount = isset($disputes->reversals->amount) ?
                 StringUtils::toAmount($disputes->reversals->amount) : 0;
         }
@@ -640,16 +652,17 @@ class GpApiMapping
      * @param Object $response
      *
      * @return DisputeSummary
+     * @throws Exception
      */
-    public static function mapDisputeSummary($response)
+    public static function mapDisputeSummary(object $response): DisputeSummary
     {
         $summary = new DisputeSummary();
         $summary->caseId = $response->id;
-        $summary->caseIdTime = !empty($response->time_created) ? new \DateTime($response->time_created) : null;
+        $summary->caseIdTime = !empty($response->time_created) ? new DateTime($response->time_created) : null;
         $summary->caseStatus = $response->status;
         $summary->caseStage = $response->stage;
         $summary->disputeStageTime =
-            (!empty($response->stage_time_created) ? new \DateTime($response->stage_time_created) : null);
+            (!empty($response->stage_time_created) ? new DateTime($response->stage_time_created) : null);
         $summary->caseAmount = StringUtils::toAmount($response->amount);
         $summary->caseCurrency = $response->currency;
 
@@ -695,7 +708,7 @@ class GpApiMapping
         $summary->reasonCode = $response->reason_code;
         $summary->reason = $response->reason_description;
         $summary->respondByDate = !empty($response->time_to_respond_by) ?
-            new \DateTime($response->time_to_respond_by) : null;
+            new DateTime($response->time_to_respond_by) : null;
         $summary->result = $response->result;
         $summary->fundingType = $response->funding_type ?? null;
         $summary->lastAdjustmentAmount = !empty($response->last_adjustment_amount) ?
@@ -730,12 +743,13 @@ class GpApiMapping
      * @param $response
      *
      * @return StoredPaymentMethodSummary
+     * @throws Exception
      */
-    public static function mapStoredPaymentMethodSummary($response)
+    public static function mapStoredPaymentMethodSummary($response): StoredPaymentMethodSummary
     {
         $summary = new StoredPaymentMethodSummary();
         $summary->paymentMethodId = $response->id;
-        $summary->timeCreated = !empty($response->time_created) ? new \DateTime($response->time_created) : '';
+        $summary->timeCreated = !empty($response->time_created) ? new DateTime($response->time_created) : '';
         $summary->status = !empty($response->status) ? $response->status : '';
         $summary->reference = !empty($response->reference) ? $response->reference : '';
         $summary->cardHolderName = !empty($response->name) ? $response->name : '';
@@ -750,12 +764,15 @@ class GpApiMapping
         return $summary;
     }
 
-    public static function mapActionsSummary($response)
+    /**
+     * @throws Exception
+     */
+    public static function mapActionsSummary($response): ActionSummary
     {
         $summary = new ActionSummary();
 
         $summary->id = $response->id;
-        $summary->timeCreated = !empty($response->time_created) ? new \DateTime($response->time_created) : null;
+        $summary->timeCreated = !empty($response->time_created) ? new DateTime($response->time_created) : null;
         $summary->type = !empty($response->type) ? $response->type : null;
         $summary->resource = !empty($response->resource) ? $response->resource : null;
         $summary->resourceId = !empty($response->resource_id) ? $response->resource_id : null;
@@ -770,10 +787,11 @@ class GpApiMapping
         $summary->accountId = !empty($response->account_id) ? $response->account_id : null;
         $summary->rawRequest = $response->message_received ?? null;
         $summary->rawResponse = $response->message_sent ?? null;
+
         return $summary;
     }
 
-    public static function mapRiskAssessmentResponse($response)
+    public static function mapRiskAssessmentResponse($response): RiskAssessment
     {
         $riskAssessment = new RiskAssessment();
         $riskAssessment->id = $response->id;
@@ -803,7 +821,7 @@ class GpApiMapping
         return $riskAssessment;
     }
 
-    public static function mapCardDetails($paymentMethod) : Card
+    public static function mapCardDetails($paymentMethod): Card
     {
         $card = new Card();
         $card->maskedNumberLast4 = $paymentMethod->masked_number_last4 ?? null;
@@ -827,8 +845,9 @@ class GpApiMapping
 
     /**
      * @param Object $response
+     * @return Transaction
      */
-    public static function mapResponseSecure3D($response)
+    public static function mapResponseSecure3D(object $response): Transaction
     {
         $transaction = new Transaction();
         $threeDSecure = new ThreeDSecure();
@@ -836,16 +855,11 @@ class GpApiMapping
 
         if (!empty($response->three_ds->message_version)) {
             $messageVersion = $response->three_ds->message_version;
-            switch (substr($messageVersion, 0, 2)) {
-                case '1.':
-                    $version = Secure3dVersion::ONE;
-                    break;
-                case '2.':
-                    $version = Secure3dVersion::TWO;
-                    break;
-                default:
-                    $version = Secure3dVersion::ANY;
-            }
+            $version = match (substr($messageVersion, 0, 2)) {
+                '1.' => Secure3dVersion::ONE,
+                '2.' => Secure3dVersion::TWO,
+                default => Secure3dVersion::ANY,
+            };
             $threeDSecure->messageVersion = $messageVersion;
             $threeDSecure->setVersion($version);
         }
@@ -865,8 +879,8 @@ class GpApiMapping
             $response->three_ds->acs_info_indicator : null;
         $threeDSecure->acsReferenceNumber = $response->three_ds->acs_reference_number ?? null;
         $threeDSecure->providerServerTransRef = $response->three_ds->server_trans_ref ?? null;
-        $threeDSecure->challengeMandated = !empty($response->three_ds->challenge_status) ?
-            ($response->three_ds->challenge_status == 'MANDATED') : false;
+        $threeDSecure->challengeMandated = !empty($response->three_ds->challenge_status) &&
+            $response->three_ds->challenge_status == 'MANDATED';
         $threeDSecure->payerAuthenticationRequest = !empty($response->three_ds->method_data->encoded_method_data) ?
             $response->three_ds->method_data->encoded_method_data : null;
         $threeDSecure->issuerAcsUrl = !empty($response->three_ds->method_url) ? $response->three_ds->method_url : null;
@@ -923,7 +937,7 @@ class GpApiMapping
             foreach ($response->three_ds->message_extension as $messageExtension) {
                 $msgItem = new MessageExtension();
                 $msgItem->criticalityIndicator = !empty($messageExtension->criticality_indicator) ?
-                        $messageExtension->criticality_indicator : null;
+                    $messageExtension->criticality_indicator : null;
                 $msgItem->messageExtensionData = !empty($messageExtension->data) ?
                     json_encode($messageExtension->data) : null;
                 $msgItem->messageExtensionId = !empty($messageExtension->id) ? $messageExtension->id : null;
@@ -937,15 +951,15 @@ class GpApiMapping
         return $transaction;
     }
 
-    private static function setPagingInfo($response)
+    private static function setPagingInfo($response): PagedResult
     {
         $pageInfo = new PagedResult();
         $pageInfo->totalRecordCount = !empty($response->total_count) ? $response->total_count :
             (!empty($response->total_record_count) ? $response->total_record_count : null);
-        $pageInfo->pageSize = !empty($response->paging->page_size) ? $response->paging->page_size :  null;
-        $pageInfo->page = !empty($response->paging->page) ? $response->paging->page :  null;
-        $pageInfo->order = !empty($response->paging->order) ? $response->paging->order :  null;
-        $pageInfo->orderBy = !empty($response->paging->order_by) ? $response->paging->order_by :  null;
+        $pageInfo->pageSize = !empty($response->paging->page_size) ? $response->paging->page_size : null;
+        $pageInfo->page = !empty($response->paging->page) ? $response->paging->page : null;
+        $pageInfo->order = !empty($response->paging->order) ? $response->paging->order : null;
+        $pageInfo->orderBy = !empty($response->paging->order_by) ? $response->paging->order_by : null;
 
         return $pageInfo;
     }
@@ -956,8 +970,9 @@ class GpApiMapping
      * @param Object $response
      *
      * @return Transaction
+     * @throws Exception
      */
-    public static function mapResponseAPM($response)
+    public static function mapResponseAPM(object $response): Transaction
     {
         $apm = new AlternativePaymentResponse();
         $transaction = self::mapResponse($response);
@@ -965,6 +980,8 @@ class GpApiMapping
         $apm->redirectUrl = !empty($response->payment_method->redirect_url) ?
             $response->payment_method->redirect_url : ($paymentMethodApm->redirect_url ?? null);
         $apm->qrCodeImage = $response->payment_method->qr_code ?? null;
+        $apm->timeCreatedReference = !empty($paymentMethodApm->time_created_reference) ?
+            new DateTime($paymentMethodApm->time_created_reference) : null;
         if (is_string($paymentMethodApm->provider)) {
             $apm->providerName = $paymentMethodApm->provider;
         } elseif (is_object($paymentMethodApm->provider)) {
@@ -979,10 +996,9 @@ class GpApiMapping
         $apm->correlationReference = $paymentMethodApm->correlation_reference ?? null;
         $apm->versionReference = $paymentMethodApm->version_reference ?? null;
         $apm->buildReference = $paymentMethodApm->build_reference ?? null;
-        $apm->timeCreatedReference = !empty($paymentMethodApm->time_created_reference) ?
-            new \DateTime($paymentMethodApm->time_created_reference) : null;
+
         $apm->transactionReference = !empty($paymentMethodApm->transaction_reference) ?
-            $paymentMethodApm->transaction_reference: null;
+            $paymentMethodApm->transaction_reference : null;
         $apm->secureAccountReference = !empty($paymentMethodApm->secure_account_reference) ?
             $paymentMethodApm->secure_account_reference : null;
         $apm->reasonCode = !empty($paymentMethodApm->reason_code) ? $paymentMethodApm->reason_code : null;
@@ -990,7 +1006,7 @@ class GpApiMapping
         $apm->grossAmount = !empty($paymentMethodApm->gross_amount) ?
             StringUtils::toAmount($paymentMethodApm->gross_amount) : null;
         $apm->paymentTimeReference = !empty($paymentMethodApm->payment_time_reference) ?
-            new \DateTime($paymentMethodApm->payment_time_reference) : null;
+            new DateTime($paymentMethodApm->payment_time_reference) : null;
         $apm->paymentType = !empty($paymentMethodApm->payment_type) ? $paymentMethodApm->payment_type : null;
         $apm->paymentStatus = !empty($paymentMethodApm->payment_status) ? $paymentMethodApm->payment_status : null;
         $apm->type = !empty($paymentMethodApm->type) ? $paymentMethodApm->type : null;
@@ -1026,8 +1042,9 @@ class GpApiMapping
     /**
      * @param $response
      * @return PayByLinkSummary
+     * @throws Exception
      */
-    public static function mapPayByLinkSummary($response)
+    public static function mapPayByLinkSummary($response): PayByLinkSummary
     {
         $summary = new PayByLinkSummary();
         $summary->merchantId = $response->merchant_id ?? null;
@@ -1045,7 +1062,7 @@ class GpApiMapping
         $summary->description = $response->description ?? null;
         $summary->viewedCount = $response->viewed_count ?? null;
         $summary->expirationDate = !empty($response->expiration_date) ?
-            new \DateTime($response->expiration_date) : null;
+            new DateTime($response->expiration_date) : null;
 
         $summary->shippable = $response->shippable ?? null;
         $summary->usageCount = $response->usage_count ?? null;
@@ -1058,7 +1075,7 @@ class GpApiMapping
             $summary->allowedPaymentMethods = $response->transactions->allowed_payment_methods ?? null; //@TODO check
             if (!empty($response->transactions->transaction_list)) {
                 foreach ($response->transactions->transaction_list as $transaction) {
-                    $summary->transactions[] =  self::createTransactionSummary($transaction);
+                    $summary->transactions[] = self::createTransactionSummary($transaction);
                 }
             }
         }
@@ -1066,7 +1083,10 @@ class GpApiMapping
         return $summary;
     }
 
-    public static function mapPayByLinkResponse($response)
+    /**
+     * @throws Exception
+     */
+    public static function mapPayByLinkResponse($response): PayByLinkResponse
     {
         $payByLinkResponse = new PayByLinkResponse();
         $payByLinkResponse->id = $response->id;
@@ -1080,7 +1100,7 @@ class GpApiMapping
         $payByLinkResponse->name = $response->name ?? null;
         $payByLinkResponse->description = $response->description ?? null;
         $payByLinkResponse->viewedCount = $response->viewed_count ?? null;
-        $payByLinkResponse->expirationDate = !empty($response->expiration_date) ? new \DateTime($response->expiration_date) : null;
+        $payByLinkResponse->expirationDate = !empty($response->expiration_date) ? new DateTime($response->expiration_date) : null;
         $payByLinkResponse->isShippable = $response->shippable ?? null;
 
         return $payByLinkResponse;
@@ -1092,13 +1112,14 @@ class GpApiMapping
      * @param $response
      *
      * @return TransactionSummary
+     * @throws Exception
      */
     private static function createTransactionSummary($response): TransactionSummary
     {
         $transaction = new TransactionSummary();
         $transaction->transactionId = $response->id ?? null;
         $timeCreated = self::validateStringDate($response->time_created);
-        $transaction->transactionDate = !empty($timeCreated) ? new \DateTime($timeCreated) : '';
+        $transaction->transactionDate = !empty($timeCreated) ? new DateTime($timeCreated) : '';
         $transaction->transactionStatus = $response->status;
         $transaction->transactionType = $response->type;
         $transaction->channel = !empty($response->channel) ? $response->channel : null;
@@ -1118,7 +1139,7 @@ class GpApiMapping
      *
      * @return Transaction
      */
-    private static function mapBNPLResponse($response,Transaction $transaction)
+    private static function mapBNPLResponse($response, Transaction $transaction): Transaction
     {
         $transaction->paymentMethodType = PaymentMethodType::BNPL;
         $bnplResponse = new BNPLResponse();
@@ -1131,9 +1152,9 @@ class GpApiMapping
         return $transaction;
     }
 
-    private static function mapMerchantAccountSummary($account)
+    private static function mapMerchantAccountSummary($account): MerchantAccountSummary
     {
-        $merchantAccountSummary  = new MerchantAccountSummary();
+        $merchantAccountSummary = new MerchantAccountSummary();
         $merchantAccountSummary->id = $account->id ?? null;
         $merchantAccountSummary->type = $account->type ?? null;
         $merchantAccountSummary->name = $account->name ?? null;
@@ -1175,14 +1196,14 @@ class GpApiMapping
 
     /**
      * @param $response
-     * @param UserReference $userReference
      * @return User
      * @throws UnsupportedTransactionException
+     * @throws Exception
      */
-    public static function mapMerchantsEndpointResponse($response,?UserReference $userReference): User
+    public static function mapMerchantsEndpointResponse($response): User
     {
         if (empty($response->action->type)) {
-            throw new UnsupportedTransactionException(sprintf("Empty action type response!"));
+            throw new UnsupportedTransactionException("Empty action type response!");
         }
 
         switch ($response->action->type) {
@@ -1210,9 +1231,9 @@ class GpApiMapping
                 $user->name = $response->name ?? null;
                 $user->userStatus = $response->status;
                 $user->userType = $response->type;
-                $user->timeCreate = !empty($response->time_created) ? new \DateTime($response->time_created) : null;
+                $user->timeCreate = !empty($response->time_created) ? new DateTime($response->time_created) : null;
                 $user->timeLastUpdated = !empty($response->time_last_updated) ?
-                    new \DateTime($response->time_last_updated) : null;
+                    new DateTime($response->time_last_updated) : null;
                 $user->responseCode = $response->action->result_code ?? null;
                 $user->statusDescription = $response->status_description ?? null;
                 $user->email = $response->email ?? null;
@@ -1235,7 +1256,7 @@ class GpApiMapping
                     self::mapMerchantPersonList($response->persons, $user);
                 }
                 if (!empty($response->payment_methods)) {
-                    self::mapMerchantPaymentMethods($response->payment_methods,$user);
+                    self::mapMerchantPaymentMethods($response->payment_methods, $user);
                 }
                 return $user;
             case self::FUNDS:
@@ -1261,7 +1282,10 @@ class GpApiMapping
         }
     }
 
-    public static function mapFileProcessingResponse($response)
+    /**
+     * @throws UnsupportedTransactionException
+     */
+    public static function mapFileProcessingResponse($response): FileProcessor
     {
         $fp = new FileProcessor();
         switch ($response->action->type) {
@@ -1304,8 +1328,9 @@ class GpApiMapping
     /**
      * @param $paymentMethods
      * @param User $user
+     * @throws ArgumentException
      */
-    private static function mapMerchantPaymentMethods($paymentMethods, &$user)
+    private static function mapMerchantPaymentMethods($paymentMethods, User &$user): void
     {
         $pmList = new PaymentMethodList();
         foreach ($paymentMethods as $paymentMethod) {
@@ -1334,13 +1359,12 @@ class GpApiMapping
         $user->paymentMethodList = $pmList;
     }
 
-    private static function mapAddressObject($address, $type = null)
+    private static function mapAddressObject($address, $type = null): ?Address
     {
         if (empty($address)) {
             return null;
         }
         $userAddress = new Address();
-        $userAddress->type = $type;
         $userAddress->streetAddress1 = $address->line_1 ?? null;
         $userAddress->streetAddress2 = $address->line_2 ?? null;
         $userAddress->streetAddress3 = $address->line_3 ?? null;
@@ -1353,7 +1377,7 @@ class GpApiMapping
         return $userAddress;
     }
 
-    private static function mapMerchantPersonList($persons, &$user)
+    private static function mapMerchantPersonList($persons, &$user): void
     {
         $personList = new PersonList();
         foreach ($persons as $person) {
@@ -1386,9 +1410,9 @@ class GpApiMapping
     private static function validateStringDate($date): string
     {
         try {
-            new \DateTime($date);
-        } catch (\Exception $e) {
-            $errors = \DateTime::getLastErrors();
+            new DateTime($date);
+        } catch (Exception) {
+            $errors = DateTime::getLastErrors();
             if (isset($errors['error_count']) && $errors['error_count'] > 0) {
                 return '';
             }
@@ -1403,7 +1427,7 @@ class GpApiMapping
      * @param CardIssuerResponse $cardIssuer
      * @param $cardIssuerResponse
      */
-    private static function mapCardIssuerResponse(CardIssuerResponse &$cardIssuer, $cardIssuerResponse)
+    private static function mapCardIssuerResponse(CardIssuerResponse &$cardIssuer, $cardIssuerResponse): void
     {
         $cardIssuer->result = $cardIssuerResponse->result ?? null;
         $cardIssuer->avsResult = $cardIssuerResponse->avs_result ?? null;
@@ -1416,7 +1440,7 @@ class GpApiMapping
      * @param TransactionSummary|DepositSummary $summary
      * @param $system
      */
-    private static function mapSystemResponse(TransactionSummary|DepositSummary &$summary, $system)
+    private static function mapSystemResponse(TransactionSummary|DepositSummary &$summary, $system): void
     {
         if (!isset($system)) {
             return;
@@ -1428,7 +1452,7 @@ class GpApiMapping
         $summary->merchantDbaName = $system->dba ?? null;
     }
 
-    public static function mapRecurringEntity($response,RecurringEntity $recurringEntity) : RecurringEntity
+    public static function mapRecurringEntity($response, RecurringEntity $recurringEntity): ?RecurringEntity
     {
         switch (get_class($recurringEntity)) {
             case Customer::class:
@@ -1449,8 +1473,7 @@ class GpApiMapping
                 }
                 return $payer;
             default:
-                break;
+                return null;
         }
     }
-
 }

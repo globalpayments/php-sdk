@@ -18,6 +18,8 @@ use GlobalPayments\Api\Entities\Enums\StoredCredentialType;
 use GlobalPayments\Api\Entities\Enums\StoredPaymentMethodSortProperty;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\StoredCredential;
@@ -741,6 +743,9 @@ class CreditCardNotPresentTest extends TestCase
         }
     }
 
+    /**
+     * @throws BuilderException
+     */
     public function testCardTokenizationThenUpdate()
     {
         // process an auto-capture authorization
@@ -1257,12 +1262,16 @@ class CreditCardNotPresentTest extends TestCase
         }
     }
 
+    /**
+     * @throws ArgumentException
+     * @throws BuilderException
+     */
     public function testUpdatePaymentToken()
     {
         $startDate = (new DateTime())->modify('-30 days')->setTime(0, 0, 0);
 
         $response = ReportingService::findStoredPaymentMethodsPaged(1, 1)
-            ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::DESC)
+            ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED)
             ->where(SearchCriteria::START_DATE, $startDate)
             ->execute();
 

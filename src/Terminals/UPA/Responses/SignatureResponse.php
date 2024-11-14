@@ -16,13 +16,13 @@ class SignatureResponse extends UpaResponseHandler implements ISignatureResponse
     public function parseResponse($jsonResponse): void
     {
         parent::parseResponse($jsonResponse);
-
-        if (empty($jsonResponse['data']['data'])) {
+        $firstDataNode = $this->isGpApiResponse($jsonResponse) ? $jsonResponse['response'] : $jsonResponse['data'];
+        if (empty($firstDataNode['data'])) {
             throw new MessageException(self::INVALID_RESPONSE_FORMAT);
         }
         switch ($this->command) {
             case UpaMessageId::GET_SIGNATURE:
-                $this->signatureData = $jsonResponse['data']['data']['signatureData'] ?? null;
+                $this->signatureData = $firstDataNode['data']['signatureData'] ?? null;
                 break;
         }
     }

@@ -25,6 +25,7 @@ class TerminalSearchBuilder
 
     public string $ecrId;
     public string $reportOutput;
+    public ?string $reportType;
     public string $batch;
 
     public function __construct($reportBuilder)

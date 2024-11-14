@@ -351,6 +351,7 @@ class UpaController extends DeviceController
             case TerminalReportType::GET_BATCH_DETAILS:
                 $requestMessage['data']["params"] = [
                     "reportOutput" => $builder->searchBuilder->reportOutput ?? null,
+                    "reportType" => $builder->searchBuilder->reportType ?? null,
                     "batch" => $builder->searchBuilder->batch ?? null
                 ];
                 break;

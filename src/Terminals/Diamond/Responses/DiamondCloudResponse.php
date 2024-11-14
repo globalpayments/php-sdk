@@ -7,7 +7,7 @@ use GlobalPayments\Api\Terminals\Diamond\Entities\Enums\AuthorizationMethod;
 use GlobalPayments\Api\Terminals\Diamond\Entities\Enums\AuthorizationType;
 use GlobalPayments\Api\Terminals\Diamond\Entities\Enums\CardSource;
 use GlobalPayments\Api\Terminals\Diamond\Entities\Enums\TransactionResult;
-use GlobalPayments\Api\Terminals\Diamond\Entities\Enums\TransactionType;
+use GlobalPayments\Api\Terminals\Diamond\Entities\Enums\TransactionTypeResponse;
 use GlobalPayments\Api\Terminals\TerminalResponse;
 use GlobalPayments\Api\Utils\StringUtils;
 
@@ -196,7 +196,7 @@ class DiamondCloudResponse extends TerminalResponse implements ITerminalReport
                 $this->transactionCurrency = $paymentDetails->transactionCurrency ?? null;
                 $this->transactionTitle = $paymentDetails->transactionTitle ?? null;
                 $this->transactionType = isset($paymentDetails->type) ?
-                    TransactionType::getKey($paymentDetails->type) : null;
+                    TransactionTypeResponse::getKey($paymentDetails->type) : null;
                 $this->emvCardTransactionCounter = $paymentDetails->ATC ?? null;
                 $this->emvCryptogram =  $paymentDetails->AC ?? null;
                 $this->emvApplicationId = $paymentDetails->AID ?? null;

@@ -23,7 +23,8 @@ use GlobalPayments\Api\Terminals\Builders\{
     TerminalAuthBuilder, TerminalManageBuilder, TerminalReportBuilder
 };
 
-use GlobalPayments\Api\Terminals\Enums\{DebugLevel,
+use GlobalPayments\Api\Terminals\Enums\{BatchReportType,
+    DebugLevel,
     DeviceConfigType,
     DisplayOption,
     PromptType,
@@ -337,16 +338,24 @@ class UpaInterface extends DeviceInterface
         return new UpaBatchReport($rawResponse, UpaMessageId::GET_BATCH_REPORT);
     }
 
-    public function getBatchDetails(?string $batchId = null, bool $printReport = false) : ITerminalReport
+    public function getBatchDetails(?string $batchId = null, bool $printReport = false, string|BatchReportType $reportType = null) : ITerminalReport
     {
         $builder = (new TerminalReportBuilder(TerminalReportType::GET_BATCH_DETAILS))
-            ->where(UpaSearchCriteria::BATCH, $batchId)
-            ->andCondition(UpaSearchCriteria::ECR_ID, "1");
+            ->where(UpaSearchCriteria::ECR_ID, "1");
+
+        if (!empty($batchId)) {
+            $builder->andCondition(UpaSearchCriteria::BATCH, $batchId);
+        }
+
         if (true === $printReport) {
             $builder->andCondition(
                 UpaSearchCriteria::REPORT_OUTPUT,
                 implode("|", [ReportOutput::PRINT, ReportOutput::RETURN_DATA])
             );
+        }
+
+        if (!empty($reportType)) {
+            $builder->andCondition(UpaSearchCriteria::REPORT_TYPE, $reportType);
         }
 
         return $builder->execute();
@@ -712,7 +721,7 @@ class UpaInterface extends DeviceInterface
         $data['params'] = [
             'fileType' => $screen->fileType,
             'slotNum' => $screen->slotNum,
-            'displayOption' => $screen->displayOption
+            'displayOption' => $screen->displayOption ?? null
         ];
 
         $message = TerminalUtils::buildUPAMessage(

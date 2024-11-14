@@ -2,11 +2,12 @@
 
 namespace GlobalPayments\Api\Terminals\UPA\SubGroups;
 
+use GlobalPayments\Api\Entities\Enums\TransactionModifier;
+use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\Terminals\Abstractions\IRequestSubGroup;
 use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
 use GlobalPayments\Api\Terminals\Builders\TerminalBuilder;
-use GlobalPayments\Api\Terminals\Diamond\Entities\Enums\TransactionType;
 
 class RequestParamFields implements IRequestSubGroup
 {
@@ -65,10 +66,21 @@ class RequestParamFields implements IRequestSubGroup
             case TransactionType::VOID:
                 $this->clerkId = $builder->clerkId ?? null;
                 return;
+            case TransactionType::SALE:
+            case TransactionType::REFUND:
+            case TransactionType::VERIFY:
+            case TransactionType::AUTH:
+            case TransactionType::CAPTURE:
+                $this->clerkId = $builder->clerkId;
+                break;
+            case TransactionType::EDIT:
+                if ($builder->transactionModifier !== TransactionModifier::UPDATE_LODGING_DETAILS) {
+                    $this->clerkId = $builder->clerkId;
+                }
+                break;
             default:
                 break;
         }
-        $this->clerkId = $builder->clerkId ?? null;
 
         if (!empty($builder->cardOnFileIndicator)) {
             $this->cardOnFileIndicator = ($builder->cardOnFileIndicator === StoredCredentialInitiator::CARDHOLDER)
@@ -80,15 +92,16 @@ class RequestParamFields implements IRequestSubGroup
         }
         
         if (!empty($builder->requestMultiUseToken)) {
-            $this->tokenRequest = $builder->requestMultiUseToken;
+            $this->tokenRequest = $builder->requestMultiUseToken === true ? 1 : 0;
         }
         
-        if ($builder->paymentMethod != null &&
-                    $builder->paymentMethod instanceof CreditCardData &&
-                    !empty($builder->paymentMethod->token)
-            ) {
+        if (
+            $builder->paymentMethod instanceof CreditCardData &&
+            !empty($builder->paymentMethod->token)
+        ) {
             $this->tokenValue = $builder->paymentMethod->token;
         }
+
         if (isset($builder->shippingDate) && !empty($builder->invoiceNumber)) {
             $this->directMktInvoiceNbr = $builder->invoiceNumber;
             $this->directMktShipMonth = $builder->shippingDate->format('m');
