@@ -473,13 +473,15 @@ class Transaction
      * Refunds/returns the original transaction.
      *
      * @param string|float $amount The amount to refund/return
+     * @param string $currency The currency type for this refund/return
      *
      * @return ManagementBuilder
      */
-    public function refund($amount = null)
+    public function refund($amount = null, $currency = null)
     {
         return (new ManagementBuilder(TransactionType::REFUND))
             ->withPaymentMethod($this->transactionReference)
+            ->withCurrency($currency)
             ->withAmount($amount);
     }
 
