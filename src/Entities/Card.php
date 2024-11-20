@@ -69,4 +69,6 @@ class Card
     /** @var string|null The result of the AVS postal code check. */
     public ?string $avsResponseCode;
     public ?string $tagResponse;
+
+    public ?string $funding;
 }

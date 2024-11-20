@@ -4,7 +4,11 @@
 
 # Changelog
 
-## Latest Version - v13.0.5 (11/14/24)
+## Latest Version - v13.0.6 (11/19/24)
+### Enhancements:
+- [GP-API] - Add new mapping fields on get transaction list: "funding", "authentication"
+
+## v13.0.5 (11/14/24)
 ### Enhancements:
 - [GP-API] - Add new mapping fields on digital wallet transaction response: masked_number_last4, brand, brand_reference
 - [MITC UPA] - Add new commands:  getAppInfo, getParam, setTimeZone,clearDataLake, reset, returnToIdle, getDeviceConfig, 

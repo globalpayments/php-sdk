@@ -158,7 +158,7 @@ class TransactionSummary extends BaseSummary
      */
     public $cardType;
 
-    public Card $cardDetails;
+    public ?Card $cardDetails = null;
 
     /**
      * @var string

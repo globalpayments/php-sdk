@@ -21,4 +21,5 @@ abstract class BaseSummary
 
     public ?string $merchantName;
     public ?string $merchantDbaName;
+    public ?string $merchantDeviceIdentifier;
 }

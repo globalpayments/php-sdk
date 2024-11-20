@@ -25,6 +25,7 @@ use ReflectionClass;
 
 class ReportingTransactionsTest extends TestCase
 {
+
     private DateTime $startDate;
     private DateTime $endDate;
 
@@ -42,7 +43,7 @@ class ReportingTransactionsTest extends TestCase
 
     public function testTransactionDetailsReport()
     {
-        $transactionId = 'TRN_RyWZELCUbOq12IPDowbOevTC9BZxZi_6827116a3d1b';
+        $transactionId = 'TRN_OGd2Bv22SzLFJ5jCzNwhzg6tiN6Qip_ed02d12cbb74';
         try {
             /** @var TransactionSummary $response */
             $response = ReportingService::transactionDetail($transactionId)->execute();
@@ -487,8 +488,9 @@ class ReportingTransactionsTest extends TestCase
         $this->assertTrue(is_array($response->result));
         /** @var TransactionSummary $rs */
         foreach ($response->result as $rs) {
-            $this->assertStringStartsWith($tokenFirst6, (string)$rs->maskedCardNumber);
-            $this->assertStringEndsWith($tokenLast4, $rs->maskedCardNumber);
+            $this->assertNotNull($rs->cardDetails);
+            $this->assertStringStartsWith($tokenFirst6,$rs->cardDetails->maskedCardNumber);
+            $this->assertStringEndsWith($tokenLast4, $rs->cardDetails->maskedNumberLast4);
         }
     }
 

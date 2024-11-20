@@ -510,20 +510,20 @@ class GpApiMapping
 
             /** map card details */
             if (isset($paymentMethod->card)) {
-                $card = $paymentMethod->card;
-                $summary->aquirerReferenceNumber = $card->arn ?? null;
-                $summary->maskedCardNumber = $card->masked_number_first6last4 ?? null;
+                $paymentMethodObj = $paymentMethod->card;
+                $summary->aquirerReferenceNumber = $paymentMethodObj->arn ?? null;
+                $summary->maskedCardNumber = $paymentMethodObj->masked_number_first6last4 ?? null;
                 $summary->paymentType = PaymentMethodName::CARD;
-                $summary->cardDetails = self::mapCardDetails($card);
+                $summary->cardDetails = self::mapCardDetails($paymentMethodObj);
             }
             /** map digital wallet info */
             if (isset($paymentMethod->digital_wallet)) {
-                $card = $response->payment_method->digital_wallet;
-                $summary->maskedPaymentToken = $card->masked_token_first6last4 ?? null;
+                $paymentMethodObj = $response->payment_method->digital_wallet;
+                $summary->maskedPaymentToken = $paymentMethodObj->masked_token_first6last4 ?? null;
                 $summary->paymentType = PaymentMethodName::DIGITAL_WALLET;
             }
 
-            if (!empty($card)) {
+            if (!empty($paymentMethodObj)) {
                 $summary->cardType = $card->brand ?? null;
                 $summary->authCode = $card->authcode ?? null;
                 $summary->brandReference = $card->brand_reference ?? null;
@@ -540,6 +540,7 @@ class GpApiMapping
                     $bankTransfer->masked_account_number_last4 : null;
                 $summary->accountType = !empty($bankTransfer->account_type) ? $bankTransfer->account_type : null;
             }
+            /** map APM response info */
             if (isset($response->payment_method->apm)) {
                 /** map Open Banking response info */
                 if ($response->payment_method->apm->provider == strtolower(PaymentProvider::OPEN_BANKING)) {
@@ -557,6 +558,7 @@ class GpApiMapping
                     $bankPaymentResponse->redirectUrl = $response->payment_method->redirect_url ?? null;
                     $summary->bankPaymentResponse = $bankPaymentResponse;
                     $summary->accountNumberLast4 = $response->payment_method->bank_transfer->masked_account_number_last4 ?? null;
+
                 } else {
                     /** map APMs (Paypal) response info */
                     $apm = $response->payment_method->apm;
@@ -577,7 +579,11 @@ class GpApiMapping
                 $summary->bnplResponse = $bnplResponse;
                 $summary->paymentType = PaymentMethodName::BNPL;
             }
+            if (isset($paymentMethod->authentication)) {
+                $summary->threeDSecure = self::map3DSInfo($paymentMethod->authentication);
+            }
         }
+
 
         $summary->fraudManagementResponse = !empty($response->risk_assessment) ?
             self::mapFraudManagement($response->risk_assessment) : null;
@@ -589,6 +595,8 @@ class GpApiMapping
         $summary->merchantAmount = !empty($response->merchant_amount) ?
             StringUtils::toAmount($response->merchant_amount) : null;
         $summary->merchantCurrency = $response->merchant_currency ?? null;
+        $summary->gratuityAmount = !empty($response->gratuity_amount) ?
+            StringUtils::toAmount($response->gratuity_amount) : null;
 
         return $summary;
     }
@@ -825,6 +833,7 @@ class GpApiMapping
     {
         $card = new Card();
         $card->maskedNumberLast4 = $paymentMethod->masked_number_last4 ?? null;
+        $card->maskedCardNumber = $paymentMethod->masked_number_first6last4 ?? null;
         $card->brand = $paymentMethod->brand ?? null;
         $card->brandReference = $paymentMethod->brand_reference ?? null;
         $card->bin = $paymentMethod->bin ?? null;
@@ -834,11 +843,11 @@ class GpApiMapping
         $card->cardNumber = $paymentMethod->number ?? null;
         $card->cardExpMonth = $paymentMethod->expiry_month ?? null;
         $card->cardExpYear = $paymentMethod->expiry_year ?? null;
-        $card->maskedCardNumber = $paymentMethod->masked_number_first6last4 ?? null;
         $card->cvnResponseMessage = $paymentMethod->cvv_result ?? null;
         $card->avsAddressResponse = $paymentMethod->avs_address_result ?? null;
         $card->avsResponseCode = $paymentMethod->avs_postal_code_result ?? null;
         $card->tagResponse = $paymentMethod->tag_response ?? null;
+        $card->funding = $paymentMethod->funding ?? null;
 
         return $card;
     }
@@ -1107,7 +1116,7 @@ class GpApiMapping
     }
 
     /**
-     * Create an new TransactionSummary object
+     * Create a new TransactionSummary object
      *
      * @param $response
      *
@@ -1318,7 +1327,7 @@ class GpApiMapping
         return $fp;
     }
 
-    private static function mapGeneralFileProcessingResponse($response, &$fp)
+    private static function mapGeneralFileProcessingResponse($response, &$fp): void
     {
         $fp->resourceId = $response->id;
         $fp->status = $fp->responseMessage = $response->status;
@@ -1450,6 +1459,7 @@ class GpApiMapping
         $summary->merchantHierarchy = $system->hierarchy ?? null;
         $summary->merchantName = $system->name ?? null;
         $summary->merchantDbaName = $system->dba ?? null;
+        $summary->merchantDeviceIdentifier = $system->tid ?? null;
     }
 
     public static function mapRecurringEntity($response, RecurringEntity $recurringEntity): ?RecurringEntity
@@ -1475,5 +1485,24 @@ class GpApiMapping
             default:
                 return null;
         }
+    }
+
+    private static function map3DSInfo(object $response) : ?ThreeDSecure
+    {
+        $threeDS = new ThreeDSecure();
+        $threeDS->serverTransactionId = $response->id ?? null;
+        $threeDSNode = $response->three_ds ?? null;
+        if (empty($threeDSNode)) {
+            return null;
+        }
+        $threeDS->messageVersion = $threeDSNode->message_version ?? null;
+        $threeDS->eci = $threeDSNode->eci ?? null;
+        $threeDS->authenticationValue = $threeDSNode->value ?? null;
+        $threeDS->providerServerTransRef = $threeDSNode->server_trans_ref ?? null;
+        $threeDS->directoryServerTransactionId = $threeDSNode->ds_trans_ref ?? null;
+        $threeDS->exemptStatus = $threeDSNode->exempt_status ?? null;
+        $threeDS->cavv = $threeDSNode->cavv_result ?? null;
+
+        return $threeDS;
     }
 }
