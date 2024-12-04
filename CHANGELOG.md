@@ -3,8 +3,12 @@
 </a>
 
 # Changelog
+## Latest Version - v13.0.7 (12/03/24)
+### Enhancements:
+- Add console logger feature
+- [GP-API/GP-ECOM] Unit tests enhancements
 
-## Latest Version - v13.0.6 (11/19/24)
+## v13.0.6 (11/19/24)
 ### Enhancements:
 - [GP-API] - Add new mapping fields on get transaction list: "funding", "authentication"
 

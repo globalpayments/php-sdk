@@ -92,7 +92,7 @@ abstract class Gateway
         array $queryStringParams = null
     ) {
         try {
-            $queryString = $this->buildQueryString($queryStringParams);
+            $queryString = !empty($queryStringParams) ? "?" . http_build_query($queryStringParams) : '';
             $request = curl_init($this->serviceUrl . $endpoint . $queryString);
 
             $headers = $this->prepareHeaders($data);
@@ -212,25 +212,5 @@ abstract class Gateway
         }
 
         return $headers ?? [];
-    }
-
-    /**
-     * @param array<string,string>|null $queryStringParams
-     *
-     * @return string
-     */
-    private function buildQueryString(array $queryStringParams = null)
-    {
-        if ($queryStringParams === null) {
-            return '';
-        }
-
-        $query = [];
-
-        foreach ($queryStringParams as $key => $value) {
-            $query[] = sprintf('%s=%s', $key, $value);
-        }
-
-        return sprintf('?%s', implode('&', $query));
     }
 }

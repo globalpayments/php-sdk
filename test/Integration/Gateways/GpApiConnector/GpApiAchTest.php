@@ -152,7 +152,7 @@ class GpApiAchTest extends TestCase
         $this->eCheck->routingNumber = '123456780';
         $startDate = (new DateTime())->modify('-1 year');
         $endDate = (new DateTime())->modify('-2 days');
-        $amount = '1.29';
+        $amount = '11';
         $response = ReportingService::findTransactionsPaged(1, 10)
             ->orderBy(TransactionSortProperty::TIME_CREATED, SortDirection::DESC)
             ->where(SearchCriteria::START_DATE, $startDate)

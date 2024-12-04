@@ -31,6 +31,7 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Tests\Data\GpApiAvsCheckTestCards;
 use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Utils\Logging\RequestConsoleLogger;
 use PHPUnit\Framework\TestCase;
 
 class CreditCardNotPresentTest extends TestCase
@@ -1405,6 +1406,7 @@ class CreditCardNotPresentTest extends TestCase
     public function setUpConfig(): GpApiConfig
     {
         $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $config->requestLogger = new RequestConsoleLogger();
         //DO NO DELETE - usage example for some settings
 //        $config->dynamicHeaders = [
 //            'x-gp-platform' => 'prestashop;version=1.7.2',
@@ -1412,7 +1414,6 @@ class CreditCardNotPresentTest extends TestCase
 //        ];
 //        $config->permissions = ['TRN_POST_Authorize'];
 //        $config->webProxy = new CustomWebProxy('127.0.0.1:8866');
-//        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
 
         return $config;
     }

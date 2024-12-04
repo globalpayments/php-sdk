@@ -16,31 +16,25 @@ use GlobalPayments\Api\Services\GpApiService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 
 class DccCardPresentTest extends TestCase
 {
     private string $currency = 'EUR';
-    private float $amount = 15.11;
+    private float $amount = 0.10;
     /** @var CreditCardData */
     private CreditCardData $card;
-    const DCC_RATE_CONFIG = 'dcc_rate';
 
     public function setup(): void
     {
-        $this->markTestIncomplete();
         $config = $this->setUpConfig();
+        $config->country = 'GB';
         $accessTokenInfo = GpApiService::generateTransactionKey($config);
         $config->accessTokenInfo->accessToken = $accessTokenInfo->accessToken;
         ServicesContainer::configureService($config);
-        $dccRateConfig = $this->setUpConfigDcc();
-        $dccRateConfig->accessTokenInfo->accessToken = $accessTokenInfo->accessToken;
-        ServicesContainer::configureService($dccRateConfig, self::DCC_RATE_CONFIG);
 
         $this->card = new CreditCardData();
-        $this->card->number = "4263970000005262";
+        $this->card->number = "4242424242424242";
         $this->card->expMonth = date('m');
         $this->card->expYear = date('Y', strtotime('+1 year'));
         $this->card->cardHolderName = "James Mason";
@@ -56,18 +50,8 @@ class DccCardPresentTest extends TestCase
     {
         $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
         $accessTokenInfo = new AccessTokenInfo();
-        $accessTokenInfo->transactionProcessingAccountName = 'dcc';
+        $accessTokenInfo->transactionProcessingAccountName = 'dcc_p';
         $config->accessTokenInfo = $accessTokenInfo;
-        return $config;
-    }
-
-    public function setUpConfigDcc(): GpApiConfig
-    {
-        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
-        $accessTokenInfo = new AccessTokenInfo();
-        $accessTokenInfo->transactionProcessingAccountName = 'dcc_rate';
-        $config->accessTokenInfo = $accessTokenInfo;
-        $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
         return $config;
     }
 
@@ -76,12 +60,11 @@ class DccCardPresentTest extends TestCase
         return $this->card->getDccRate()
             ->withAmount($this->amount)
             ->withCurrency($this->currency)
-            ->execute(self::DCC_RATE_CONFIG);
+            ->execute();
     }
 
     public function testCreditGetDccInfo()
     {
-        $this->card->number = '4006097467207025';
         $orderId = GenerationUtils::generateOrderId();
 
         $dccDetails = $this->getDccDetails();
@@ -105,7 +88,6 @@ class DccCardPresentTest extends TestCase
 
     public function testCreditDccRateAuthorize()
     {
-        $this->card->number = '4006097467207025';
         $orderId = GenerationUtils::generateOrderId();
 
         $dccDetails = $this->getDccDetails();
@@ -129,7 +111,6 @@ class DccCardPresentTest extends TestCase
 
     public function testCreditDccRateRefundStandalone()
     {
-        $this->card->number = '4006097467207025';
         $orderId = GenerationUtils::generateOrderId();
 
         $dccDetails = $this->getDccDetails();
@@ -153,7 +134,6 @@ class DccCardPresentTest extends TestCase
 
     public function testCreditDccRateReversal()
     {
-        $this->card->number = '4006097467207025';
         $orderId = GenerationUtils::generateOrderId();
 
         $dccDetails = $this->getDccDetails();
@@ -185,7 +165,6 @@ class DccCardPresentTest extends TestCase
 
     public function testCreditDccRateRefund()
     {
-        $this->card->number = '4006097467207025';
         $orderId = GenerationUtils::generateOrderId();
 
         $dccDetails = $this->getDccDetails();
@@ -219,31 +198,32 @@ class DccCardPresentTest extends TestCase
     public function testCreditGetDccInfo_CreditTrackData()
     {
         $creditTrackData = new CreditTrackData();
-        $creditTrackData->setTrackData('%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?');
-        $creditTrackData->entryMethod = EntryMethod::SWIPE;
+        $creditTrackData->setTrackData(';4761739001010036=25122011184404889?');
+        $creditTrackData->entryMethod = EntryMethod::PROXIMITY;
+        $tagData = "9F4005F000F0A0019F02060000000025009F03060000000000009F2608D90A06501B48564E82027C005F3401019F360200029F0702FF009F0802008C9F0902008C9F34030403029F2701809F0D05F0400088009F0E0508000000009F0F05F0400098005F280208409F390105FFC605DC4000A800FFC7050010000000FFC805DC4004F8009F3303E0B8C89F1A0208409F350122950500000080005F2A0208409A031409109B02E8009F21030811539C01009F37045EED3A8E4F07A00000000310109F0607A00000000310108407A00000000310109F100706010A03A400029F410400000001";
         $orderId = GenerationUtils::generateOrderId();
 
-        $dccDetails = $this->getDccDetails();
+        $dccDetails = $creditTrackData->getDccRate()
+            ->withAmount($this->amount)
+            ->withCurrency($this->currency)
+            ->execute();
+
         $this->assertNotNull($dccDetails);
         $this->assertEquals('SUCCESS', $dccDetails->responseCode);
-        $this->assertEquals('NOT_AVAILABLE', $dccDetails->responseMessage);
+        $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
 
-        $exceptionCaught = false;
-        try {
-            $creditTrackData->charge($this->amount)
+        $transaction =   $creditTrackData->charge($this->amount)
                 ->withCurrency($this->currency)
                 ->withAllowDuplicates(true)
                 ->withDccRateData($dccDetails->dccRateData)
                 ->withClientTransactionId($orderId)
+                ->withTagData($tagData)
                 ->execute();
-        } catch (GatewayException $e) {
-            $exceptionCaught = true;
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - 37,Request expects the following field  payer_amount payer_currency exchange_rate commission_percentage  from the Merchant.', $e->getMessage());
-            $this->assertEquals('40211', $e->responseCode);
-        } finally {
-            $this->assertTrue($exceptionCaught);
-        }
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
     }
 
     public function testCreditGetDccInfo_DebitTrackData()

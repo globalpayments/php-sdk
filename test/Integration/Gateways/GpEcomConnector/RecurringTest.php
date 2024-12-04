@@ -3,13 +3,22 @@
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
 use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\BrowserData;
 use GlobalPayments\Api\Entities\Customer;
+use GlobalPayments\Api\Entities\Enums\AddressType;
+use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
+use GlobalPayments\Api\Entities\Enums\ChallengeWindowSize;
+use GlobalPayments\Api\Entities\Enums\ColorDepth;
 use GlobalPayments\Api\Entities\Enums\DccProcessor;
 use GlobalPayments\Api\Entities\Enums\DccRateType;
+use GlobalPayments\Api\Entities\Enums\MethodUrlCompletion;
 use GlobalPayments\Api\Entities\Enums\RecurringSequence;
 use GlobalPayments\Api\Entities\Enums\RecurringType;
 use GlobalPayments\Api\Entities\Enums\ScheduleFrequency;
+use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
+use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Enums\TransactionModifier;
+use GlobalPayments\Api\Entities\Enums\TransactionStatus;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
@@ -20,8 +29,10 @@ use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\RecurringPaymentMethod;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
 use GlobalPayments\Api\Services\RecurringService;
+use GlobalPayments\Api\Services\Secure3dService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
+use GlobalPayments\Api\Tests\Integration\Gateways\ThreeDSecureAcsClient;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\Logging\Logger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
@@ -33,6 +44,7 @@ class RecurringTest extends TestCase
 
     public Customer $newCustomer;
     public CreditCardData $card;
+    public string $gatewayProvider;
 
     public function getCustomerId()
     {
@@ -58,6 +70,8 @@ class RecurringTest extends TestCase
         $config->sharedSecret = "secret";
         $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
         $config->channel = 'ECOM';
+        $config->challengeNotificationUrl = 'https://ensi808o85za.x.pipedream.net';
+
         return $config;
     }
 
@@ -68,13 +82,16 @@ class RecurringTest extends TestCase
         $config->accountId = "apidcc";
         $config->refundPassword = "refund";
         $config->sharedSecret = "secret";
+        $config->methodNotificationUrl = 'https://www.example.com/methodNotificationUrl';
 
         ServicesContainer::configureService($config);
     }
 
     public function setup(): void
     {
-        ServicesContainer::configureService($this->config());
+        $config = $this->config();
+        ServicesContainer::configureService($config);
+        $this->gatewayProvider = $config->getGatewayProvider();
 
         $this->newCustomer = new Customer();
         $this->newCustomer->key = $this->getCustomerId();
@@ -210,7 +227,6 @@ class RecurringTest extends TestCase
     public function testcardStorageThreeDSecureVerifyEnrolled()
     {
         $paymentMethod = new RecurringPaymentMethod($this->getCustomerId(), $this->getPaymentId("Credit"));
-
         $response = $paymentMethod->verify()
             ->withAmount(10)
             ->withCurrency('USD')
@@ -1052,6 +1068,111 @@ class RecurringTest extends TestCase
             $this->assertEquals('key cannot be null for this transaction type.', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testcardStorage3DSflow()
+    {
+        $amount = 10.01;
+        $currency = 'USD';
+        $shippingAddress = new Address();
+        $shippingAddress->streetAddress1 = "Apartment 852";
+        $shippingAddress->streetAddress2 = "Complex 741";
+        $shippingAddress->streetAddress3 = "no";
+        $shippingAddress->city = "Chicago";
+        $shippingAddress->postalCode = "5001";
+        $shippingAddress->state = "IL";
+        $shippingAddress->countryCode = "840";
+
+        $browserData = new BrowserData();
+        $browserData->acceptHeader = "text/html,application/xhtml+xml,application/xml;q=9,image/webp,img/apng,*/*;q=0.8";
+        $browserData->colorDepth = ColorDepth::TWENTY_FOUR_BITS;
+        $browserData->ipAddress = "123.123.123.123";
+        $browserData->javaEnabled = true;
+        $browserData->javaScriptEnabled = true;
+        $browserData->language = "en";
+        $browserData->screenHeight = 1080;
+        $browserData->screenWidth = 1920;
+        $browserData->challengWindowSize = ChallengeWindowSize::WINDOWED_600X400;
+        $browserData->timeZone = "0";
+        $browserData->userAgent = "Mozilla/5.0 (Windows NT 6.1; Win64, x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36";
+
+        $paymentMethod = new RecurringPaymentMethod($this->getCustomerRef(), $this->getPaymentRef());
+        sleep(5);
+        $secureEcom = Secure3dService::checkEnrollment($paymentMethod)
+            ->execute();
+
+        $this->assertNotNull($secureEcom);
+        $this->assertNotNull($secureEcom->serverTransactionId);
+
+        $this->assertEquals(Secure3dStatus::ENROLLED, $secureEcom->enrolled);
+        $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
+
+        $initAuth = Secure3dService::initiateAuthentication($paymentMethod, $secureEcom)
+            ->withAmount($amount)
+            ->withCurrency($currency)
+            ->withAuthenticationSource(AuthenticationSource::BROWSER)
+            ->withMethodUrlCompletion(MethodUrlCompletion::YES)
+            ->withOrderCreateDate(date('Y-m-d H:i:s'))
+            ->withAddress($shippingAddress, AddressType::BILLING)
+            ->withAddress($shippingAddress, AddressType::SHIPPING)
+            ->withBrowserData($browserData)
+            ->withMethodUrlCompletion(MethodUrlCompletion::NO)
+            ->withCustomerEmail('me@globalpayments.com')
+            ->execute();
+
+        $this->assertNotNull($initAuth);
+        $this->assertEquals(Secure3dStatus::CHALLENGE_REQUIRED, $secureEcom->status);
+        $this->assertNotNull($initAuth->issuerAcsUrl);
+        $this->assertNotNull($initAuth->payerAuthenticationRequest);
+        $this->assertEmpty($initAuth->eci);
+
+        $authClient = new ThreeDSecureAcsClient($secureEcom->issuerAcsUrl);
+        $authClient->setGatewayProvider($this->gatewayProvider);
+        $authResponse = $authClient->authenticate_v2($initAuth);
+        $this->assertTrue($authResponse->getStatus());
+        $this->assertNotEmpty($authResponse->getMerchantData());
+
+        $secureEcom = Secure3dService::getAuthenticationData()
+            ->withServerTransactionId($secureEcom->serverTransactionId)
+            ->execute();
+
+        $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $secureEcom->status);
+
+        $paymentMethod->threeDSecure = $secureEcom;
+        $response = $paymentMethod->charge($amount)->withCurrency($currency)->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+    }
+
+    private function getCustomerRef() : ?string
+    {
+        try {
+            $customer = $this->newCustomer;
+            $customer->key = sprintf("%s-Realex", (new \DateTime())->format("YmdHms"));
+            $customer->Create();
+            return $customer->id;
+        } catch (GatewayException $e) {
+        }
+    }
+
+    private function getPaymentRef()
+    {
+        $card = new CreditCardData();
+        $card->number = "4012001037141112";
+        $card->expMonth = 10;
+        $card->expYear = TestCards::validCardExpYear();
+        $card->cvn = '123';
+        $card->cardHolderName = 'James Mason';
+        $paymentId = sprintf("%s-Realex-%s", (new \DateTime())->format("YmdHms"), "Credit");
+        try {
+            /** @var RecurringPaymentMethod $paymentMethod */
+            $paymentMethod = $this->newCustomer->addPaymentMethod($paymentId, $card)->create();
+            return $paymentMethod->id;
+        } catch (GatewayException $exc) {
+            return  null;
         }
     }
 }

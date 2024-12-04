@@ -27,13 +27,12 @@ class SampleRequestLogger implements IRequestLogger
         $this->logger->info("REQUEST END");
     }
 
-
     public function responseReceived(GatewayResponse $response)
     {
         $this->logger->info("Response START");
         $this->logger->info("Status code: " . $response->statusCode);
         $rs = clone $response;
-        if (strpos($rs->header, ': gzip') !== false) {
+        if (str_contains($rs->header, ': gzip')) {
             $rs->rawResponse = gzdecode($rs->rawResponse);
         }
         if (StringUtils::isJson($rs->rawResponse)) {

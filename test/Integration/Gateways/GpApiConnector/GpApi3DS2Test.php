@@ -569,7 +569,7 @@ class GpApi3DS2Test extends TestCase
 
         $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $secureEcom->status);
         $this->assertEquals('05', $secureEcom->eci);
-        $this->assertEquals('2.1.0', $secureEcom->messageVersion);
+        $this->assertEquals('2.2.0', $secureEcom->messageVersion);
         $this->assertNotNull($secureEcom->acsTransactionId);
         $this->assertNotNull($secureEcom->serverTransactionId);
         $this->assertNotNull($secureEcom->directoryServerTransactionId);
@@ -611,7 +611,7 @@ class GpApi3DS2Test extends TestCase
 
         $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $secureEcom->status);
         $this->assertEquals('05', $secureEcom->eci);
-        $this->assertEquals('2.1.0', $secureEcom->messageVersion);
+        $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
         $this->assertNotNull($secureEcom->acsTransactionId);
         $this->assertNotNull($secureEcom->serverTransactionId);
         $this->assertNotNull($secureEcom->directoryServerTransactionId);
@@ -664,7 +664,7 @@ class GpApi3DS2Test extends TestCase
 
         $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $secureEcom->status);
         $this->assertEquals('05', $secureEcom->eci);
-        $this->assertEquals('2.2.0', $secureEcom->messageVersion);
+        $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
         $this->assertNotNull($secureEcom->acsTransactionId);
         $this->assertNotNull($secureEcom->serverTransactionId);
         $this->assertNotNull($secureEcom->directoryServerTransactionId);
@@ -702,7 +702,7 @@ class GpApi3DS2Test extends TestCase
 
         $this->assertEquals(Secure3dStatus::SUCCESS_AUTHENTICATED, $secureEcom->status);
         $this->assertEquals('05', $secureEcom->eci);
-        $this->assertEquals('2.2.0', $secureEcom->messageVersion);
+        $this->assertEquals(Secure3dVersion::TWO, $secureEcom->getVersion());
         $this->assertNotNull($secureEcom->acsTransactionId);
         $this->assertNotNull($secureEcom->serverTransactionId);
         $this->assertNotNull($secureEcom->directoryServerTransactionId);
@@ -1290,7 +1290,7 @@ class GpApi3DS2Test extends TestCase
         $this->assertNotNull($initAuth->payerAuthenticationRequest);
         $this->assertNotNull($initAuth->acsTransactionId);
         $this->assertEmpty($initAuth->eci);
-        $this->assertEquals("2.1.0", $initAuth->messageVersion);
+        $this->assertEquals("2.2.0", $initAuth->messageVersion);
     }
 
 }

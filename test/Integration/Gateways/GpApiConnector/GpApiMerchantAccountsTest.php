@@ -249,7 +249,7 @@ class GpApiMerchantAccountsTest extends TestCase
         $address = new Address();
         $address->postalCode = 'CB6 1AS';
         $address->streetAddress1 = '2649';
-        $address->streetAddress2 = 'Primrose';
+        $address->streetAddress2 = 'Primrose Cottage';
         /** @var MerchantAccountSummary $response */
         $response = ReportingService::accountDetail($this->config->accessTokenInfo->merchantManagementAccountID)
             ->withPaging(1, 10)
