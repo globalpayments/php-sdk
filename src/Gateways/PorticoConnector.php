@@ -648,11 +648,37 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 );
             }
 
-            // Client Transaction ID
-            if ($builder->paymentMethod !== null && !empty($builder->paymentMethod->clientTransactionId)) {
-                $root->appendChild(
-                    $xml->createElement('ClientTxnId', $builder->paymentMethod->clientTransactionId)
-                );
+            // reversal & Capture
+            if (
+                $builder->transactionType === TransactionType::REVERSAL ||
+                (
+                    $builder->paymentMethod !== null &&
+                    $builder->paymentMethod->paymentMethodType === PaymentMethodType::ACH
+                )
+            ) {
+                // Client Transaction ID
+                if (!empty($builder->paymentMethod->clientTransactionId)) {
+                    $root->appendChild(
+                        $xml->createElement(
+                            'ClientTxnId',
+                            $builder->paymentMethod->clientTransactionId
+                        )
+                    );
+                }
+            }
+
+            if (
+                $builder->transactionType === TransactionType::REVERSAL
+                || $builder->transactionType === TransactionType::CAPTURE
+                || ($builder->paymentMethod !== null && $builder->paymentMethod->paymentMethodType === PaymentMethodType::ACH)
+            ) {
+                // tag data
+                if (!empty($builder->tagData)) {
+                    $tagDataElement = $xml->createElement('TagData');
+                    $root->appendChild($tagDataElement);
+                    $tagValuesElement = $xml->createElementNS('TagValues', 'source', 'chip');
+                    $tagDataElement->appendChild($tagValuesElement);
+                }
             }
 
             if ($builder->allowDuplicates !== null && !empty($builder->allowDuplicates)) {
@@ -949,30 +975,28 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         $response = $this->doTransaction($this->buildEnvelope($xml, $transaction));
         return $this->mapResponse($response, $builder, $this->buildEnvelope($xml, $transaction));
     }
-
     public function processReport(ReportBuilder $builder)
     {
         $xml = new DOMDocument('1.0', 'utf-8');
 
+        $reportType = $builder->reportType;
         $transaction = $xml->createElement($this->mapReportType($builder));
-        $transaction->appendChild($xml->createElement('TzConversion', $builder->timeZoneConversion ?? ''));
 
         if ($builder instanceof TransactionReportBuilder) {
-            /*  if ($builder->deviceId !== null) {
-                $transaction->appendChild($xml->createElement('DeviceId', $builder->deviceId));
+            /** @var TransactionReportBuilder */
+            $trb = $builder;
+            
+            if (
+                $reportType === ReportType::FIND_TRANSACTIONS
+                || $reportType === ReportType::TRANSACTION_DETAIL
+            ) {
+                if ($trb->transactionId !== null) {
+                    $transaction->appendChild(
+                        $xml->createElement('TxnId', $builder->transactionId)
+                    );
+                }
             }
-
-            if ($builder->startDate !== null) {
-                $transaction->appendChild($xml->createElement('RptStartUtcDT', $builder->startDate->format()));
-            }
-
-            if ($builder->endDate !== null) {
-                $transaction->appendChild($xml->createElement('RptEndUtcDT', $builder->endDate->format()));
-            } */
-
-            if ($builder->transactionId !== null) {
-                $transaction->appendChild($xml->createElement('TxnId', $builder->transactionId));
-            } else {
+            if ($reportType === ReportType::FIND_TRANSACTIONS) {
                 $criteria = $transaction->appendChild($xml->createElement('Criteria'));
 
                 if ($builder->searchBuilder->startDate !== null) {
@@ -1190,6 +1214,45 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                         'FullyCapturedInd',
                         $builder->searchBuilder->fullyCaptured
                     ));
+                }
+            }
+
+            if ($reportType === ReportType::ACTIVITY) {
+                if ($trb->startDate !== null) {
+                    $transaction->appendChild(
+                        $xml->createElement('RptStartUtcDT', $builder->startDate->format('Y-m-d\TH:i:s.v'))
+                    );
+                }
+
+                if ($trb->endDate !== null) {
+                    $transaction->appendChild(
+                        $xml->createElement('RptEndUtcDT', $builder->endDate->format('Y-m-d\TH:i:s.v'))
+                    );
+                }
+            }
+
+            if (
+                $reportType === ReportType::ACTIVITY ||
+                $reportType === ReportType::OPEN_AUTH ||
+                $reportType === ReportType::BATCH_DETAIL
+            ) {
+                if ($trb->deviceId !== null) {
+                    $transaction->appendChild(
+                        $xml->createElement('DeviceId', $trb->deviceId)
+                    );
+                }
+                if ($trb->timeZoneConversion !== null) {
+                    $transaction->appendChild(
+                        $xml->createElement('TzConversion', $trb->timeZoneConversion ?? '')
+                    );
+                }
+            }
+
+            if ($reportType === ReportType::BATCH_DETAIL) {
+                if ($trb->batchId !== 0 && $trb->batchId !== null) {
+                    $transaction->appendChild(
+                        $xml->createElement('BatchId', $trb->batchId)
+                    );
                 }
             }
         }
@@ -1478,6 +1541,20 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
         if ($builder->reportType === ReportType::TRANSACTION_DETAIL) {
             if (isset($doc->Data))
                 return $this->hydrateTransactionSummary($doc->Data);
+        }
+
+        if ((
+                $builder->reportType === ReportType::BATCH_DETAIL
+                || $builder->reportType === ReportType::OPEN_AUTH
+            )
+            && isset($doc->Details)
+        ) {
+            $response = [];
+            foreach ($doc->Details as $item) {
+                $response[] = $this->hydrateTransactionSummary($item);
+            }
+
+            return $response;
         }
 
         return null;
@@ -2040,6 +2117,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 return 'FindTransactions';
             case ReportType::TRANSACTION_DETAIL:
                 return 'ReportTxnDetail';
+            case ReportType::BATCH_DETAIL:
+                return 'ReportBatchDetail';
+            case ReportType::OPEN_AUTH:
+                return 'ReportOpenAuths';
             default:
                 throw new UnsupportedTransactionException();
         }

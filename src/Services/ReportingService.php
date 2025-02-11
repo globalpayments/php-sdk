@@ -15,6 +15,16 @@ class ReportingService
             ->withTransactionId($transactionId);
     }
 
+    public static function batchDetail(): TransactionReportBuilder
+    {
+        return (new TransactionReportBuilder(ReportType::BATCH_DETAIL));
+    }
+
+    public static function openAuths(): TransactionReportBuilder
+    {
+        return (new TransactionReportBuilder(ReportType::OPEN_AUTH));
+    }
+
     public static function findDeposits()
     {
         return new TransactionReportBuilder(ReportType::FIND_DEPOSITS);

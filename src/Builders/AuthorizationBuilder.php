@@ -829,16 +829,23 @@ class AuthorizationBuilder extends TransactionBuilder
      */
     public function withClientTransactionId($clientTransactionId)
     {
-        if ($this->transactionType !== TransactionType::REVERSAL) {
+        if ($this->transactionType === TransactionType::REVERSAL) {
+            if ($this->paymentMethod instanceof TransactionReference) {
+                $this->paymentMethod->clientTransactionId = $clientTransactionId;
+            } else {
+                /** @var TransactionReference */
+                $ref = new TransactionReference();
+                $ref->clientTransactionId = $clientTransactionId;
+                if ($this->paymentMethod !== null) {
+                    $ref->paymentMethodType = $this->paymentMethod;
+                }
+
+                $this->paymentMethod = $ref;
+            }
+        } else {
             $this->clientTransactionId = $clientTransactionId;
-            return $this;
         }
 
-        if (!$this->paymentMethod instanceof TransactionReference) {
-            $this->paymentMethod = new TransactionReference();
-        }
-
-        $this->paymentMethod->clientTransactionId = $clientTransactionId;
         return $this;
     }
 

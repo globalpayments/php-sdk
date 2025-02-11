@@ -3,7 +3,11 @@
 </a>
 
 # Changelog
-## Latest Version - v13.0.7 (12/03/24)
+## Latest Version - v13.0.8 (02/08/25)
+### Enhancements:
+- [Portico] Added Portico client txn id response
+
+## v13.0.7 (12/03/24)
 ### Enhancements:
 - Add console logger feature
 - [GP-API/GP-ECOM] Unit tests enhancements

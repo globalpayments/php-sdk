@@ -16,6 +16,7 @@ use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\Tests\Data\TestCards;
+use GlobalPayments\Api\Utils\Logging\{SampleRequestLogger, Logger};
 use SebastianBergmann\RecursionContext\InvalidArgumentException;
 use PHPUnit\Framework\ExpectationFailedException;
 
@@ -33,8 +34,7 @@ class CreditTest extends TestCase
         $this->card->expYear = TestCards::validCardExpYear();
         $this->card->cvn = '123';
         $this->card->cardHolderName = 'Joe Smith';
-
-
+        
         $this->track = new CreditTrackData();
         $this->track->value = '<E1050711%B4012001000000016^VI TEST CREDIT^251200000000000000000000?|LO04K0WFOmdkDz0um+GwUkILL8ZZOP6Zc4rCpZ9+kg2T3JBT4AEOilWTI|+++++++Dbbn04ekG|11;4012001000000016=25120000000000000000?|1u2F/aEhbdoPixyAPGyIDv3gBfF|+++++++Dbbn04ekG|00|||/wECAQECAoFGAgEH2wYcShV78RZwb3NAc2VjdXJlZXhjaGFuZ2UubmV0PX50qfj4dt0lu9oFBESQQNkpoxEVpCW3ZKmoIV3T93zphPS3XKP4+DiVlM8VIOOmAuRrpzxNi0TN/DWXWSjUC8m/PI2dACGdl/hVJ/imfqIs68wYDnp8j0ZfgvM26MlnDbTVRrSx68Nzj2QAgpBCHcaBb/FZm9T7pfMr2Mlh2YcAt6gGG1i2bJgiEJn8IiSDX5M2ybzqRT86PCbKle/XCTwFFe1X|>;';
         $this->track->encryptionData = new EncryptionData();
@@ -43,9 +43,28 @@ class CreditTest extends TestCase
         ServicesContainer::configureService($this->getConfig());
     }
 
+    protected function getConfig()
+    {
+        $config = new PorticoConfig();
+        /*$config->secretApiKey = 'skapi_cert_MY5OAAAQrmIF_IZDKbr1ecycRr7n1Q1SxNkVgzDhwg';
+        $config->serviceUrl = ($this->enableCryptoUrl) ?
+                              'https://cert.api2-c.heartlandportico.com/':
+                              'https://cert.api2.heartlandportico.com';*/
+        $config->secretApiKey = 'skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w';
+        $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
+        $config->developerId = '002914';
+        $config->versionNumber = '3026';
+        $config->requestLogger = new SampleRequestLogger(new Logger('portico-logs'));
+
+        return $config;
+    }
+
     public function testCreditAuthorization()
     {
+        $clientTxnID = rand(10,100000);
+
         $authorization = $this->card->authorize(14)
+            ->withClientTransactionId($clientTxnID)
             ->withCurrency('USD')
             ->withAllowDuplicates(true)
             ->execute();
@@ -284,16 +303,6 @@ class CreditTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->responseCode);
-    }
-
-    protected function getConfig()
-    {
-        $config = new PorticoConfig();
-        $config->secretApiKey = 'skapi_cert_MY5OAAAQrmIF_IZDKbr1ecycRr7n1Q1SxNkVgzDhwg';
-        $config->serviceUrl = ($this->enableCryptoUrl) ?
-                              'https://cert.api2-c.heartlandportico.com/':
-                              'https://cert.api2.heartlandportico.com';
-        return $config;
     }
 
     public function testCreditSaleWithCOF()

@@ -12,6 +12,7 @@ use GlobalPayments\Api\Entities\Enums\TimeZoneConversion;
 use DateTime;
 use DateInterval;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
+use GlobalPayments\Api\Utils\Logging\{Logger, SampleRequestLogger};
 
 class PorticoReportingTests extends TestCase
 {
@@ -38,10 +39,15 @@ class PorticoReportingTests extends TestCase
     protected function getConfig()
     {
         $config = new PorticoConfig();
-        $config->secretApiKey = 'skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw';
-        $config->serviceUrl = ($this->enableCryptoUrl) ?
+        //$config->secretApiKey = 'skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw';
+        /*$config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':
-                              'https://cert.api2.heartlandportico.com';
+                              'https://cert.api2.heartlandportico.com';*/
+        $config->secretApiKey = 'skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w';
+        $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
+        //$config->requestLogger = new SampleRequestLogger(new Logger('portico-logs'));
+        $config->requestLogger = new SampleRequestLogger(new Logger('portico-logs'));
+
         return $config;
     }
 
@@ -301,5 +307,101 @@ class PorticoReportingTests extends TestCase
 
         $this->assertNotNull($response->cvnResponseCode);
         $this->assertNotNull($response->cvnResponseMessage);
+    }
+
+    public function testReportBatchDetailWithClientTxnIdAndBatchID()
+    {
+        //setting up the card to use
+        $card = new CreditCardData();
+        $card->number = '4111111111111111';
+        $card->expMonth = '12';
+        $card->expYear = '2025';
+        $card->cvn = '123';
+
+        // generate random clienttxnid
+        $randomID = rand(10,100000);
+        /** @var string */
+        $clientTxnID = (string)$randomID;
+
+        // Do authorize
+        $response = $card->authorize(15)
+            ->withCurrency('USD')
+            ->withClientTransactionId($clientTxnID)
+            ->withAllowDuplicates(true)
+            ->execute();
+        
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode);
+
+        // Do a capture to add to batch
+        $capture = $response->capture(16)
+            ->withGratuity(2)
+            ->execute();
+        
+        $this->assertNotNull($capture);
+        $this->assertEquals('00', $capture->responseCode);
+
+        // Get ReportBatchDetail
+        $reportResponse = ReportingService::batchDetail()
+            //->withBatchId(992515)
+            ->execute();
+        
+        //Get reportItem that matches the clienttxnid
+        $reportItem = array_filter(
+            $reportResponse,
+            function ($summary) use ($clientTxnID) {
+                return $summary->clientTransactionId === $clientTxnID;
+            }
+        );
+
+        $reportItem = reset($reportItem); // Get the first match
+
+        $this->assertNotNull($reportItem);
+        $this->assertEquals($reportItem->clientTransactionId, $clientTxnID);
+    }
+
+    public function testReportOpenAuthsWithClientTxnId()
+    {
+        //setting up the card to use
+        $card = new CreditCardData();
+        $card->number = '4111111111111111';
+        $card->expMonth = '12';
+        $card->expYear = '2025';
+        $card->cvn = '123';
+
+        // generate random clienttxnid
+        $randomID = rand(10,100000);
+        /** @var string */
+        $clientTxnID = (string)$randomID;
+
+        // Do authorize
+        $response = $card->authorize(15)
+            ->withCurrency('USD')
+            ->withClientTransactionId($clientTxnID)
+            ->withAllowDuplicates(true)
+            ->execute();
+        
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode);
+
+        // Get ReportOpenAuths
+        $reportResponse = ReportingService::openAuths()
+            ->withDeviceId('5577503')
+            ->execute();
+        
+        $this->assertNotNull($reportResponse);
+
+        // Get reportItem that matches the clienttxnid
+        $reportItem = array_filter(
+            $reportResponse,
+            function ($summary) use ($clientTxnID) {
+                return $summary->clientTransactionId === $clientTxnID;
+            }
+        );
+
+        $reportItem = reset($reportItem); // Get the first match
+
+        $this->assertNotNull($reportItem);
+        $this->assertEquals($reportItem->clientTransactionId, $clientTxnID);
     }
 }

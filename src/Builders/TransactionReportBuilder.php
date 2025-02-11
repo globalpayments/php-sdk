@@ -110,6 +110,11 @@ class TransactionReportBuilder extends ReportBuilder
      */
     public $timeZoneConversion;
 
+    /**
+     * @var int
+     */
+    public $batchId;
+
     public function __construct($activity)
     {
         parent::__construct($activity);
@@ -214,6 +219,19 @@ class TransactionReportBuilder extends ReportBuilder
     public function withTimeZoneConversion($value)
     {
         $this->timeZoneConversion = $value;
+        return $this;
+    }
+
+    /**
+     * Sets the batchId for the report.
+     * 
+     * @param int $value The batchId method
+     * 
+     * @return TransactionReportBuilder
+     */
+    public function withBatchId($value)
+    {
+        $this->batchId = $value;
         return $this;
     }
 
