@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Builders;
 
 use GlobalPayments\Api\Entities\{DccRateData, FundsData, LodgingData, Transaction};
+use GlobalPayments\Api\Entities\BillPay\Bill;
 use GlobalPayments\Api\Entities\Enums\{
     CommercialIndicator,
     CreditDebitIndicator,
@@ -58,6 +59,14 @@ class ManagementBuilder extends TransactionBuilder
     public $commercialData;
 
     /**
+     * Request convenienceAmount;
+     *
+     * @internal
+     * @var float
+     */
+    public $convenienceAmount;
+
+    /**
      * Request currency
      *
      * @internal
@@ -72,6 +81,14 @@ class ManagementBuilder extends TransactionBuilder
      * @var string|float
      */
     public $customerId;
+
+    /**
+     * Request ipAddress
+     * 
+     * @internal
+     * @var string|float
+     */
+    public $customerIpAddress;
 
     /**
      * @internal
@@ -177,6 +194,11 @@ class ManagementBuilder extends TransactionBuilder
      * @var string
      */
     public $batchReference;
+
+    /**
+     * @var ?array
+     */
+    public $bills;
 
     /**
      * Request dynamic descriptor
@@ -388,6 +410,17 @@ class ManagementBuilder extends TransactionBuilder
 
         return $this;
     }
+    
+    /**
+     * Sets the convenience amount.
+     *
+     * @return ManagementBuilder
+     */
+    public function withConvenienceAmount(float $amount): ManagementBuilder
+    {
+        $this->convenienceAmount = $amount;
+        return $this;
+    }
 
     /**
      * Sets the currency.
@@ -415,6 +448,19 @@ class ManagementBuilder extends TransactionBuilder
     public function withCustomerId($customerId)
     {
         $this->customerId = $customerId;
+        return $this;
+    }
+
+    /**
+     * Set the request ipAddress
+     * 
+     * @param string $ipAddress
+     * 
+     * @return AuthorizationBuilder
+     */
+    public function withCustomerIpAddress(string $ipAddress) 
+    {
+        $this->customerIpAddress = $ipAddress;
         return $this;
     }
 
@@ -649,6 +695,39 @@ class ManagementBuilder extends TransactionBuilder
     public function withBatchReference($value)
     {
         $this->batchReference = $value;
+
+        return $this;
+    }
+
+    /**
+     * @param Bill 
+     * 
+     * @return this
+     */
+    public function withBill(Bill $bill): ManagementBuilder
+    {
+        if ($this->bills === null) {
+            $this->bills = array();
+        }
+
+        array_push($this->bills, $bill);
+        return $this;
+    }
+
+    /**
+     * @param array<Bill>
+     * 
+     * @return this
+     */
+    public function withBills(array $bills): ManagementBuilder
+    {
+        if ($this->bills === null) {
+            $this->bills = array();
+        }
+
+        foreach($bills as $bill) {
+            array_push($this->bills, $bill);
+        }
 
         return $this;
     }

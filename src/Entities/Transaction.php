@@ -3,6 +3,8 @@
 namespace GlobalPayments\Api\Entities;
 
 use GlobalPayments\Api\Builders\ManagementBuilder;
+use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\BillPay\TokenData;
 use GlobalPayments\Api\Entities\Enums\{
     PaymentMethodType,
     PaymentMethodUsageMode,
@@ -349,6 +351,18 @@ class Transaction
     /** @var Card */
     public $cardDetails;
 
+    /** @var Address */
+    public $address;
+
+    /** @var Customer */
+    public $customerData;
+
+    /** @var TokenData */
+    public $tokenData;
+
+    /** @var float */
+    public $convenienceFee;
+
     /**
      * Creates a `Transaction` object from a stored transaction ID.
      *
@@ -682,5 +696,13 @@ class Transaction
         }
 
         throw new ArgumentException(sprintf('Property `%s` does not exist on Transaction', $name));
+    }
+
+    public function setPaymentMethodType($paymentMethodType)
+    {
+        if ($this->transactionReference === null) {
+            $this->transactionReference = new TransactionReference();
+        }
+        $this->transactionReference->paymentMethodType = $paymentMethodType;
     }
 }

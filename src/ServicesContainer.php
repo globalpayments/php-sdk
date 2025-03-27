@@ -205,6 +205,15 @@ class ServicesContainer
         throw new ApiException("The specified configuration has not been added for open banking.");
     }
 
+    public function getBillingClient($configName)
+    {
+        if (array_key_exists($configName, static::$configurations)) {
+            return static::$configurations[$configName]->getBillingProvider();
+        }
+
+        throw new ApiException("The specified configuration has not been configured for gateway processing.");
+    }
+
     public function getFraudCheckClient($configName)
     {
         if (array_key_exists($configName, static::$configurations)) {

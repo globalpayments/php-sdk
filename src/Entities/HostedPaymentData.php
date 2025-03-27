@@ -2,8 +2,11 @@
 
 namespace GlobalPayments\Api\Entities;
 
-use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
-use GlobalPayments\Api\Entities\Enums\BlockCardType;
+use GlobalPayments\Api\Entities\Enums\{
+    AlternativePaymentType,
+    BlockCardType,
+    HostedPaymentType
+};
 use GlobalPayments\Api\PaymentMethods\BankPayment;
 
 /**
@@ -116,6 +119,9 @@ class HostedPaymentData
     /** @var string */
     public $customerLastName;
 
+    /** @var ?string */
+    public $cancelUrl;
+
     /** @var string */
     public $merchantResponseUrl;
 
@@ -134,6 +140,18 @@ class HostedPaymentData
     /** @var array<BlockCardType> */
     public array $blockCardTypes;
 
+    /** @var array<Bill> */
+    public array $bills;
+
+    /** @var Address */
+    public Address $customerAddress;
+
+    /** @var boolean */
+    public bool $customerIsEditable;
+
+    /** @var HostedPaymentType */
+    public $hostedPaymentType;
+
     /**
      * Instantiates a new `HostedPaymentData` object.
      *
@@ -143,5 +161,7 @@ class HostedPaymentData
     {
         $this->supplementaryData = [];
         $this->blockCardTypes = [];
+        $this->bills = [];
+        $this->customerIsEditable = false;
     }
 }

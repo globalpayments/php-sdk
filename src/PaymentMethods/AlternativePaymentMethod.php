@@ -3,16 +3,21 @@
 namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\Enums\TransactionModifier;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IChargable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IEncryptable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IPinProtected;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IPrePayable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IRefundable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IReversable;
+use GlobalPayments\Api\Entities\Enums\{
+    PaymentMethodType,
+    TransactionType,
+    TransactionModifier
+};
+use GlobalPayments\Api\Entities\Exceptions\NotImplementedException;
+use GlobalPayments\Api\PaymentMethods\Interfaces\{
+    IChargable,
+    IEncryptable,
+    IPaymentMethod,
+    IPinProtected,
+    IPrePayable,
+    IRefundable,
+    IReversable
+};
 
 class AlternativePaymentMethod implements
     IPaymentMethod,
@@ -107,8 +112,8 @@ class AlternativePaymentMethod implements
     public function charge($amount = null)
     {
         return (new AuthorizationBuilder(TransactionType::SALE, $this))
-            ->withModifier(TransactionModifier::ALTERNATIVE_PAYMENT_METHOD)
-            ->withAmount($amount);
+            ->withAmount($amount)
+            ->withModifier(TransactionModifier::ALTERNATIVE_PAYMENT_METHOD);
     }
 
     /**
@@ -121,8 +126,8 @@ class AlternativePaymentMethod implements
     public function authorize($amount = null)
     {
         return (new AuthorizationBuilder(TransactionType::AUTH, $this))
-            ->withModifier(TransactionModifier::ALTERNATIVE_PAYMENT_METHOD)
-            ->withAmount($amount);
+            ->withAmount($amount)
+            ->withModifier(TransactionModifier::ALTERNATIVE_PAYMENT_METHOD);
     }
 
     public function addValue($amount = null)
@@ -138,5 +143,11 @@ class AlternativePaymentMethod implements
     public function reverse($amount = null)
     {
         throw new NotImplementedException();
+    }
+
+    /** @return PaymentMethodType */
+    function getPaymentMethodType()
+    {
+        return $this->paymentMethodType;
     }
 }

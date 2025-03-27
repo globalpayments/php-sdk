@@ -6,6 +6,7 @@ use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\BankPaymentResponse;
 use GlobalPayments\Api\Entities\BNPLResponse;
 use GlobalPayments\Api\Entities\Card;
+use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\DccRateData;
 use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
 use GlobalPayments\Api\Entities\FraudManagementResponse;
@@ -34,6 +35,16 @@ class TransactionSummary extends BaseSummary
      * @var decimal
      */
     public $authorizedAmount;
+
+    /**
+     * @var string
+     */
+    public $application;
+
+    /**
+     * @var ?AuthorizationRecord[]
+     */
+    public $authorizationRecords;
 
     /**
      * @var decimal
@@ -81,6 +92,36 @@ class TransactionSummary extends BaseSummary
     public ?string $merchantCurrency = null;
 
     /**
+     * @var string
+     */
+    public $merchantInvoiceNumber;
+
+    /**
+     * @var string
+    */
+    public $merchantPONumber;
+
+    /**
+     * @var string
+     */
+    public $merchantTransactionDescription;
+
+    /**
+     * @var string
+     */
+    public $merchantTransactionID;
+
+    /**
+     * @var float
+     */
+    public $netAmount;
+
+    /**
+     * @var float
+     */
+    public $netFeeAmount;
+
+    /**
      * The authorization code provided by the issuer.
      *
      * @var string
@@ -107,6 +148,11 @@ class TransactionSummary extends BaseSummary
      * @var Address
      */
     public $billingAddress;
+
+    /**
+     * @var ?Bill[] $bills 
+     */
+    public $billTransactions;
 
     /**
      * @var string
@@ -246,6 +292,11 @@ class TransactionSummary extends BaseSummary
     public $phone;
 
     /**
+     * @var float
+     */
+    public $feeAmount;
+
+    /**
      * @var string
      */
     public $fraudRuleInfo;
@@ -361,6 +412,11 @@ class TransactionSummary extends BaseSummary
      * @var string
      */
     public $paymentType;
+
+    /**
+     * @var Customer
+     */
+    public $payorData;
 
     /**
      * @var string

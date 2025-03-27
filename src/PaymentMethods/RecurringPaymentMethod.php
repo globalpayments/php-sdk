@@ -125,6 +125,9 @@ class RecurringPaymentMethod extends RecurringEntity implements
 
     /** @var ThreeDSecure */
     public $threeDSecure;
+
+    /** @var string */
+    public $token;
     
     /**
      * Set the Card on File storage
@@ -273,5 +276,11 @@ class RecurringPaymentMethod extends RecurringEntity implements
 
         return (new AuthorizationBuilder(TransactionType::DCC_RATE_LOOKUP, $this))
                         ->withDccRateData($dccRateData);
+    }
+
+    /** @return PaymentMethodType */
+    function getPaymentMethodType()
+    {
+        return $this->paymentMethodType;
     }
 }

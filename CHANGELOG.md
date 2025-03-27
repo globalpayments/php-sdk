@@ -3,7 +3,11 @@
 </a>
 
 # Changelog
-## Latest Version - v13.0.8 (02/08/25)
+## Latest Version - v13.1.0 (03/21/25)
+### New Feature:
+- [Billpay] Implemented Billpay functionality
+
+## v13.0.8 (02/08/25)
 ### Enhancements:
 - [Portico] Added Portico client txn id response
 

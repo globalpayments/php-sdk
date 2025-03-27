@@ -18,6 +18,9 @@
     <testsuite name="all">
       <directory>./test/</directory>
     </testsuite>
+    <testsuite name="billpay">
+      <directory>./test/BillPay/</directory>
+    </testsuite>
     <testsuite name="unit">
       <directory>./test/Unit/</directory>
     </testsuite>

@@ -68,4 +68,10 @@ class BankPayment implements IPaymentMethod, IChargable
             ->withModifier(TransactionModifier::BANK_PAYMENT)
             ->withAmount($amount);
     }
+
+    /** @return PaymentMethodType */
+    function getPaymentMethodType()
+    {
+        return $this->paymentMethodType;
+    }
 }

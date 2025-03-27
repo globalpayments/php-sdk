@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Enums\UsableBalanceMode;
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
@@ -44,5 +45,11 @@ class FundsAccount implements IPaymentMethod
     {
         return (new AuthorizationBuilder(TransactionType::TRANSFER_FUNDS, $this))
             ->withAmount($amount);
+    }
+
+    /** @return PaymentMethodType */
+    function getPaymentMethodType()
+    {
+        return PaymentMethodType::ACCOUNT_FUNDS;
     }
 }

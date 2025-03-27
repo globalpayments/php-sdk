@@ -108,4 +108,10 @@ abstract class EBT implements
     {
         return new AuthorizationBuilder(TransactionType::VERIFY, $this);
     }
+
+    /** @return PaymentMethodType */
+    function getPaymentMethodType()
+    {
+        return $this->paymentMethodType;
+    }
 }

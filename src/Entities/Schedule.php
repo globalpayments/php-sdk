@@ -2,6 +2,10 @@
 
 namespace GlobalPayments\Api\Entities;
 
+use DateTime;
+use GlobalPayments\Api\Entities\BillPay\Bill;
+use GlobalPayments\Api\Entities\Enums\{InitialPaymentMethod, RecurringAuthorizationType};
+
 /**
  * A recurring schedule record.
  */
@@ -176,8 +180,58 @@ class Schedule extends RecurringEntity
      */
     public $customerNumber;
 
+    /**
+     * The schedule's last primary convenience amount
+     *
+     * @var float|string|null
+     */
+    public $lastPrimaryConvenienceAmount;
+
+    /**
+     * The schedule's primary convenience amount
+     *
+     * @var float|string|null
+     */
+    public $primaryConvenienceAmount;
+
+    /**
+     * The schedule's initial payment method
+     *
+     * @var InitialPaymentMethod
+     */
+    public $initialPaymentMethod;
+    
+    /**
+     * The schedule's recurring authorization type
+     *
+     * @var RecurringAuthorizationType
+     */
+    public $recurringAuthorizationType;
+
+    /** @var ?array */
+    public $bills;
+
+    /** 
+     * The schedule's second instance date
+     * 
+     * @var ?DateTime
+     * */
+    public $secondInstanceDate;
+
+    /** @var string */
+    public $token;
+
+    /** @var string */
+    public $secondaryToken;
+
+    /** @var string */
+    public $signatureImageInBase64;
+
     /** @var string */
     public $scheduletext;
+
+    /** @var Customer */
+    public $customer;
 
     /**
      * Instantiates a new `Schedule` object.
@@ -444,6 +498,125 @@ class Schedule extends RecurringEntity
     public function withTaxAmount($value)
     {
         $this->taxAmount = $value;
+        return $this;
+    }
+
+    /**
+     * Set single Bill
+     * 
+     * @param Bill
+     * 
+     * * @return Schedule
+     */
+    public function withBill(Bill $bill): Schedule
+    {
+        if ($this->bills === null) {
+            $this->bills = array();
+        }
+
+        array_push($this->bills, $bill);
+        return $this;
+    }
+
+    /**
+     * Set multiple Bills
+     * 
+     * @param array<Bill>
+     * 
+     * @return Schedule
+     */
+    public function withBills(array $bills): Schedule
+    {
+        if ($this->bills === null) {
+            $this->bills = array();
+        }
+
+        foreach($bills as $bill) {
+            array_push($this->bills, $bill);
+        }
+
+        return $this;
+    }
+
+    public function withSecondInstanceDate(?DateTime $secondInstanceDate)
+    {
+        $this->secondInstanceDate = $secondInstanceDate;
+
+        return $this;
+    }
+
+    /**
+     * Set schedule's token
+     * 
+     * @param string
+     * 
+     * * @return Schedule
+     */
+    public function withToken(string $token) {
+        $this->token = $token;
+        return $this;
+    }
+
+    /**
+     * Set the schedule's last primary convenience amount
+     * 
+     * @param @param float|string $amount The tax amount
+     * 
+     * * @return Schedule
+     */
+    public function withLastPrimaryConvenienceAmount($amount): Schedule
+    {
+        $this->lastPrimaryConvenienceAmount = $amount;
+
+        return $this;
+    }
+
+    /**
+     * Set the schedule's initial payment method
+     * 
+     * @param @param float|string $amount The tax amount
+     * 
+     * * @return Schedule
+     */
+    public function withInitialPaymentMethod($initialPaymentMethod): Schedule
+    {
+        $this->initialPaymentMethod = $initialPaymentMethod;
+
+        return $this;
+    }
+
+    /**
+     * Set the schedule's primary convenience amount
+     * 
+     * @param @param float|string $amount The tax amount
+     * 
+     * * @return Schedule
+     */
+    public function withPrimaryConvenienceAmount($amount): Schedule
+    {
+        $this->primaryConvenienceAmount = $amount;
+
+        return $this;
+    }
+
+    public function withRecurringAuthorizationType($recurringAuthorizationType): Schedule
+    {
+        $this->recurringAuthorizationType = $recurringAuthorizationType;
+
+        return $this;
+    }
+
+    /**
+     * Set `Customer` 
+     * 
+     * @param Customer
+     * 
+     * * @return Schedule
+     */
+    public function withCustomer(Customer $customer): Schedule
+    {
+        $this->customer = $customer;
+
         return $this;
     }
 

@@ -3,12 +3,13 @@
 namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
-use GlobalPayments\Api\Entities\Enums\BNPLType;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Entities\Enums\TransactionModifier;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IAuthable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
+use GlobalPayments\Api\Entities\Enums\{
+    BNPLType,
+    PaymentMethodType,
+    TransactionModifier,
+    TransactionType
+};
+use GlobalPayments\Api\PaymentMethods\Interfaces\{IAuthable, IPaymentMethod};
 
 class BNPL implements
     IPaymentMethod,
@@ -60,7 +61,13 @@ class BNPL implements
     public function authorize($amount = null)
     {
         return (new AuthorizationBuilder(TransactionType::AUTH, $this))
-            ->withModifier(TransactionModifier::BAY_NOW_PAY_LATER)
-            ->withAmount($amount);
+            ->withAmount($amount)
+            ->withModifier(TransactionModifier::BAY_NOW_PAY_LATER);
+    }
+
+    /** @return PaymentMethodType */
+    function getPaymentMethodType()
+    {
+        return PaymentMethodType::BNPL;
     }
 }

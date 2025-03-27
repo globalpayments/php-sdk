@@ -253,4 +253,10 @@ class GiftCard implements
                 return;
         }
     }
+
+    /** @return PaymentMethodType */
+    function getPaymentMethodType()
+    {
+        return $this->paymentMethodType;
+    }
 }

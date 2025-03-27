@@ -16,6 +16,7 @@ use GlobalPayments\Api\Entities\{Address,
     DccRateData,
     DecisionManager,
     Transaction};
+use GlobalPayments\Api\Entities\BillPay\Bill;
 use GlobalPayments\Api\Entities\Enums\{AddressType,
     AliasAction,
     BNPLShippingMethod,
@@ -223,10 +224,7 @@ class AuthorizationBuilder extends TransactionBuilder
     public $gratuity;
 
     /**
-     * Request convenience amount
-     *
-     * @internal
-     * @var string|amount
+     * @var ?float
      */
     public $convenienceAmount;
 
@@ -343,7 +341,7 @@ class AuthorizationBuilder extends TransactionBuilder
     /**
      * Used in conjunction with $requestMultiUseToken to request a unique token
      * For use with Portico Gateway only
-     * 
+     *
      * @internal
      * @var bool
      */
@@ -457,7 +455,7 @@ class AuthorizationBuilder extends TransactionBuilder
 
     /**
      * Used with some stored-credential transactions
-     * 
+     *
      * @var string $categoryIndicator
      */
     public string $categoryIndicator;
@@ -528,6 +526,9 @@ class AuthorizationBuilder extends TransactionBuilder
 
     /** @var string|CreditDebitIndicator */
     public string $creditDebitIndicator;
+
+    /** @var ?array */
+    public $bills;
 
     /**
      * {@inheritdoc}
@@ -1186,6 +1187,10 @@ class AuthorizationBuilder extends TransactionBuilder
      */
     public function withConvenienceAmount($convenienceAmount)
     {
+        if (!empty($this->convenienceAmount)) {
+            $this->convenienceAmount = 0.0;
+        }
+
         $this->convenienceAmount = $convenienceAmount;
         return $this;
     }
@@ -1579,6 +1584,35 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withMerchantCategory($merchantCategory) : AuthorizationBuilder
     {
         $this->merchantCategory = $merchantCategory;
+        return $this;
+    }
+
+    /**
+     * @param Bill
+     */
+    public function withBill(Bill $bill): AuthorizationBuilder
+    {
+        if ($this->bills === null) {
+            $this->bills = array();
+        }
+
+        array_push($this->bills, $bill);
+        return $this;
+    }
+
+    /**
+     * @param array<Bill>
+     */
+    public function withBills(array $bills): AuthorizationBuilder
+    {
+        if ($this->bills === null) {
+            $this->bills = array();
+        }
+
+        foreach($bills as $bill) {
+            array_push($this->bills, $bill);
+        }
+
         return $this;
     }
 }

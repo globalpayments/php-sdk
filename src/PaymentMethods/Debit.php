@@ -78,4 +78,10 @@ abstract class Debit implements
         return (new AuthorizationBuilder(TransactionType::REVERSAL, $this))
             ->withAmount($amount);
     }
+
+    /** @return PaymentMethodType */
+    function getPaymentMethodType()
+    {
+        return $this->paymentMethodType;
+    }
 }

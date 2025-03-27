@@ -66,4 +66,5 @@ class TransactionType extends Enum
     const PAYBYLINK_UPDATE = 144115188075855872; // 1 << 57
     const TRANSFER_FUNDS = 288230376151711744; // 1 << 58
     const DEVICE_ORDER = 576460752303423488; // 1 << 59
+    const GET_TOKEN_INFO = 4461637978905770969; // 1 << 60
 }

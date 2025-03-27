@@ -15,7 +15,7 @@ class TransactionReference implements IPaymentMethod
      *
      * @var PaymentMethodType
      */
-    public $paymentMethodType;
+    public $paymentMethodType = PaymentMethodType::REFERENCE;
 
     /**
      * Previous transaction's authorization code
@@ -57,4 +57,10 @@ class TransactionReference implements IPaymentMethod
 
     /** @var TransferFundsAccountCollection */
     public $transfersFundsAccount;
+
+    /** @return PaymentMethodType */
+    function getPaymentMethodType()
+    {
+        return $this->paymentMethodType;
+    }
 }

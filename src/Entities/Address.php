@@ -79,16 +79,16 @@ class Address
     /**
      * Consumer's country.
      *
-     * @var string
+     * @var ?string
      */
-    protected $country;
+    public $country;
     
     /**
      * Consumer's country code.
      *
      * @var string
      */
-    protected $countryCode;
+    public $countryCode;
 
     private static $_MaxLength = array(
         'PhoneNumber' => 20,

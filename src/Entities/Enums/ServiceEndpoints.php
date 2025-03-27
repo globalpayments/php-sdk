@@ -35,4 +35,7 @@ class ServiceEndpoints extends Enum
     const DIAMOND_CLOUD_PROD_EU = "https://qreu.simpletabcloud.com/tomcat/command";
     const MEET_IN_THE_CLOUD_PROD = "https://api.paygateway.com";
     const MEET_IN_THE_CLOUD_TEST = "https://api.pit.paygateway.com";
+    const BILLPAY_TEST = "https://testing.heartlandpaymentservices.net";
+    const BILLPAY_CERTIFICATION = "https://staging.heartlandpaymentservices.net";
+    const BILLPAY_PRODUCTION = "https://heartlandpaymentservices.net";
 }

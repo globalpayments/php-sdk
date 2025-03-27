@@ -5,8 +5,10 @@ namespace GlobalPayments\Api\Entities;
 class Card
 {
     /** @var string */
-    public $cardNumber;
+    public $cardHolderName;
 
+    /** @var string */
+    public $cardNumber;
 
     /** @var string */
     public $maskedCardNumber;

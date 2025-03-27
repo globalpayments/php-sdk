@@ -3,7 +3,7 @@
 namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Builders\{AuthorizationBuilder, ManagementBuilder};
-use GlobalPayments\Api\Entities\{DccRateData, ThreeDSecure};
+use GlobalPayments\Api\Entities\{Address, Customer, DccRateData, ThreeDSecure, Transaction};
 use GlobalPayments\Api\Entities\Enums\{
     EntryMethod,
     ManualEntryMethod,
@@ -39,6 +39,11 @@ abstract class Credit implements
     IBalanceable,
     ISecure3d
 {
+    /**
+     * @var string
+     */
+    public $bankName;
+
     /**
      * The card type of the manual entry data.
      */
@@ -197,7 +202,7 @@ abstract class Credit implements
      *
      * @return AuthorizationBuilder
      */
-    public function tokenize($verifyCard = true, $usageMode = PaymentMethodUsageMode::MULTIPLE)
+    public function tokenize($verifyCard = true, $usageMode = PaymentMethodUsageMode::MULTIPLE) : AuthorizationBuilder
     {
         if ($verifyCard !== false) {
             $verifyCard = true;
@@ -207,6 +212,40 @@ abstract class Credit implements
         return (new AuthorizationBuilder($type, $this))
             ->withRequestMultiUseToken(true)
             ->withPaymentMethodUsageMode($usageMode);
+    }
+
+    /**
+     * Tokenizes the payment method
+     * 
+     * @param bool $verifyCard
+     * @param Address $billingAddress
+     * @param Customer $customerData
+     * @param string $configName
+     * 
+     * @return string
+     */
+    public function tokenizeWithVerifyCardUsageAddressCustomerConfig(
+        bool $verifyCard,
+        Address $billingAddress,
+        Customer $customerData,
+        string $configName = 'default'
+    ): string {
+        /** @var TransactionType */
+        $type = $verifyCard ? TransactionType::VERIFY : TransactionType::TOKENIZE;
+
+        $builder = new AuthorizationBuilder($type, $this);
+        $builder->withRequestMultiUseToken($verifyCard)
+            ->withPaymentMethodUsageMode(PaymentMethodUsageMode::MULTIPLE);
+
+        if ($billingAddress !== null) {
+            $builder->withAddress($billingAddress);
+        }
+        if ($billingAddress !== null) {
+            $builder->withCustomerData($customerData);
+        }
+
+        $response = $builder->execute($configName);
+        return $response->token;
     }
 
     /**
@@ -260,6 +299,13 @@ abstract class Credit implements
         return true;
     }
 
+    public function getTokenInformation(string $configName = null): Transaction
+    {
+        $authBuilder = new AuthorizationBuilder(TransactionType::GET_TOKEN_INFO, $this);
+
+        return ($configName === null) ?  $authBuilder->execute("default") : $authBuilder->execute($configName);
+    }
+
     public function getDccRate($dccRateType = null, $ccp = null)
     {
         if (!empty($dccRateType) || !empty($ccp)) {
@@ -283,5 +329,11 @@ abstract class Credit implements
 
         return (new ManagementBuilder(TransactionType::DETOKENIZE, $this))
             ->execute();
+    }
+
+    /** @return PaymentMethodType */
+    function getPaymentMethodType()
+    {
+        return $this->paymentMethodType;
     }
 }

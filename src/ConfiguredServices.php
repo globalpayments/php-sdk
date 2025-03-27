@@ -2,11 +2,9 @@
 
 namespace GlobalPayments\Api;
 
-use GlobalPayments\Api\Gateways\Interfaces\IFileProcessingService;
-use GlobalPayments\Api\Gateways\IPaymentGateway;
-use GlobalPayments\Api\Gateways\IRecurringService;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
-use GlobalPayments\Api\Gateways\OpenBankingProvider;
+use GlobalPayments\Api\Gateways\{OpenBankingProvider, IPaymentGateway, IRecurringService};
+use GlobalPayments\Api\Gateways\Interfaces\{IFileProcessingService, IBillingProvider};
 use GlobalPayments\Api\Services\FraudService;
 use GlobalPayments\Api\Terminals\DeviceController;
 
@@ -49,6 +47,9 @@ class ConfiguredServices
 
     public IFileProcessingService $fileProcessingService;
 
+    /** @var IBillingProvider */
+    private $billingProvider;
+
     public function __construct()
     {
         $this->secure3dProviders = array();
@@ -73,7 +74,20 @@ class ConfiguredServices
     {
         $this->secure3dProviders[$version] = $provider;
     }
-    
+
+    /**
+     * @return IBillingProvider
+     */
+    public function getBillingProvider()
+    {
+        return $this->billingProvider;
+    }
+
+    public function setBillingProvider(IBillingProvider $billingProvider)
+    {
+        $this->billingProvider = $billingProvider;
+    }
+
     /**
      * @return void
      */
