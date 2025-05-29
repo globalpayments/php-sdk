@@ -3,7 +3,11 @@
 </a>
 
 # Changelog
-## Latest Version - v13.1.0 (03/21/25)
+## Latest Version - v13.1.1 (05/29/25)
+### Bug Fixes:
+- [TSYS/Merchantware] Correction to partial-auth response handling
+
+## v13.1.0 (03/21/25)
 ### New Feature:
 - [Billpay] Implemented Billpay functionality
 

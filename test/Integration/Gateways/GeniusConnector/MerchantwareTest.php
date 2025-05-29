@@ -10,8 +10,9 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GeniusConfig;
+use GlobalPayments\Api\Entities\Exceptions\ApiException;
 
-class MerchantwareTests extends TestCase
+class MerchantwareTest extends TestCase
 {
     protected $address;
     protected $applePay;

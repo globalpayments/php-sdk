@@ -603,4 +603,9 @@ class TransactionSummary extends BaseSummary
     public ?string $cardEntryMethod;
 
     public ?DccRateData $dccRateData;
+
+    /**
+     * @var installment
+     */
+    public $installment;
 }

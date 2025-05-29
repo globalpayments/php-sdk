@@ -598,6 +598,10 @@ class GpApiMapping
         $summary->gratuityAmount = !empty($response->gratuity_amount) ?
             StringUtils::toAmount($response->gratuity_amount) : null;
 
+        /** map Installment transaction Report response info */
+        if (!empty($response->installment)) {
+            $summary->installment =  $response->installment;
+        }
         return $summary;
     }
 
@@ -1497,6 +1501,7 @@ class GpApiMapping
         }
         $threeDS->messageVersion = $threeDSNode->message_version ?? null;
         $threeDS->eci = $threeDSNode->eci ?? null;
+        $threeDS->threeDSecure_status = $threeDSNode->status ?? null;
         $threeDS->authenticationValue = $threeDSNode->value ?? null;
         $threeDS->providerServerTransRef = $threeDSNode->server_trans_ref ?? null;
         $threeDS->directoryServerTransactionId = $threeDSNode->ds_trans_ref ?? null;

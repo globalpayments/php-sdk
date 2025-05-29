@@ -4,10 +4,12 @@ namespace GlobalPayments\Api\Gateways;
 
 use DOMDocument;
 use DOMElement;
-use GlobalPayments\Api\Builders\TransactionBuilder;
+use GlobalPayments\Api\Builders\{AuthorizationBuilder, TransactionBuilder};
 use GlobalPayments\Api\Entities\{BatchSummary, Transaction};
 use GlobalPayments\Api\Entities\Enums\{
-    PaymentMethodType, TransactionModifier, TransactionType
+    PaymentMethodType,
+    TransactionModifier,
+    TransactionType
 };
 use GlobalPayments\Api\Entities\Exceptions\{
     ApiException, GatewayException, UnsupportedTransactionException
@@ -260,6 +262,17 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
                     $errorMessage
                 )
             );
+        }
+
+        if (!empty($item->ApprovalStatus)) {
+            if ((string) $item->ApprovalStatus !== 'APPROVED' && (string) $item->ApprovalStatus !== 'ACCEPTED') {
+                throw new GatewayException(
+                    sprintf(
+                        'Unexpected Gateway Response: %s. ',
+                        (string) $item->ApprovalStatus
+                    )
+                );
+            }
         }
 
         $response = new Transaction();

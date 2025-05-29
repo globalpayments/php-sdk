@@ -671,6 +671,57 @@ class ReportingTransactionsTest extends TestCase
         }
     }
 
+    /**
+     * Mexico GP API Installment Test Report using TransactionId
+    */
+    public function testReportforInstallmentTransactionById()
+    {
+        $transactionId = 'TRN_p0iTdlt7bybvA9LI77pplBBxsQTSl8_a236a95216cb';
+        try {
+            /** @var TransactionSummary $response */
+           $response = ReportingService::transactionDetail($transactionId)->execute();
+        } catch (ApiException $e) {
+            $this->fail("Installment Transaction by ID report failed with " . $e->getMessage());
+        }
+        $this->assertNotNull($response);
+        $this->assertInstanceOf(TransactionSummary::class, $response);
+        $this->assertEquals($transactionId, $response->transactionId);
+    }
+
+    /**
+     * Mexico GP API Installment Test Report For Status In ThreeDSecure
+    */
+    public function testReportForStatusInThreeDSecure()
+    {
+        $transactionStatus = TransactionStatus::AUTHENTICATED;
+        try {
+            $response = ReportingService::findTransactionsPaged(1, 10)
+                ->where(SearchCriteria::TRANSACTION_STATUS, $transactionStatus)
+                ->andWith(SearchCriteria::START_DATE, $this->startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail("Find Status In Authentication ThreeDSecure Report failed with " . $e->getMessage());
+        }
+        
+        $this->assertNotNull($response);
+    }
+
+    /**
+     * Mexico GP API Installment Test Report For TransactionList
+    */
+    public function testReportforInstallmentTransactionList()
+    {
+        try {
+            $response = ReportingService::findTransactionsPaged(1, 10)
+                ->where(SearchCriteria::START_DATE, $this->startDate)
+                ->execute();
+        } catch (ApiException $e) {
+            $this->fail("Installment transactions list Report failed with " . $e->getMessage());
+        }
+
+        $this->assertNotNull($response);
+    }
+
     public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);

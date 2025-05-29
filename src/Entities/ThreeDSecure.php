@@ -155,6 +155,13 @@ class ThreeDSecure implements ISecureCheck
     public $eci;
 
     /**
+     * The authentication 3DSecure status
+     *
+     * @var string
+     */
+    public $threeDSecure_status; 
+
+    /**
      * The enrollment status
      *
      * @var string
