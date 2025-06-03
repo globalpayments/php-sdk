@@ -291,6 +291,10 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             ];
         }
 
+        if (!empty($builder->installment)) {
+            $requestBody['installment'] =  $builder->installment;
+        }
+
         return $requestBody;
     }
 

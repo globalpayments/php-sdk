@@ -203,6 +203,18 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                     )
                 );
             }
+
+            if ($builder->paymentMethod->paymentMethodType === PaymentMethodType::CREDIT 
+                && $builder->transactionModifier === TransactionModifier::NONE
+                && $builder->amountEstimated !== null
+            ) {
+                $block1->appendChild(
+                    $xml->createElement(
+                        'AmountIndicator',
+                        ($builder->amountEstimated ? 'E' : 'F')
+                    )
+                );
+            }
         }
 
         if ($builder->amount !== null) {
@@ -1734,6 +1746,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         if (isset($item) && isset($item->RefNbr)) {
             $summary->referenceNumber = (string)$item->RefNbr;
+        }
+
+        if (isset($item) && isset($item->AmountIndicator)) {
+            $summary->amountIndicator = (string)$item->AmountIndicator;
         }
 
         if (isset($item) && isset($item->RspDT)) {

@@ -15,6 +15,7 @@ use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\Services\ReportingService;
+use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use GlobalPayments\Api\Utils\Logging\{SampleRequestLogger, Logger};
 use SebastianBergmann\RecursionContext\InvalidArgumentException;
@@ -533,5 +534,89 @@ class CreditTest extends TestCase
             ->execute();
 
         $this->assertEquals('00', $captureResponse->responseCode);
+    }
+
+    public function testCredit_Sale_AmountIndicator_F()
+    {
+        $response = $this->card->charge(10)
+            ->withCurrency("USD")
+            ->withAmountEstimated(false)
+            ->withAllowDuplicates(true)
+            ->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->responseCode);
+
+        $reportingService = new ReportingService();
+        /** @var TransactionSummary */
+        $reportingServiceResponse = $reportingService->transactionDetail($response->transactionReference->transactionId)->execute();
+        $this->assertNotNull($reportingServiceResponse);
+        $this->assertEquals('F', $reportingServiceResponse->amountIndicator);
+    }
+
+    public function testCredit_Sale_AmountIndicator_E()
+    {
+        $response = $this->card->charge(10)
+            ->withCurrency("USD")
+            ->withAmountEstimated(true)
+            ->withAllowDuplicates(true)
+            ->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->responseCode);
+
+        $reportingService = new ReportingService();
+        /** @var TransactionSummary */
+        $reportingServiceResponse = $reportingService->transactionDetail($response->transactionReference->transactionId)->execute();
+        $this->assertNotNull($reportingServiceResponse);
+        $this->assertEquals('E', $reportingServiceResponse->amountIndicator);
+    }
+
+    public function testCredit_Auth_AmountIndicator_F()
+    {
+        $response = $this->card->authorize(10)
+            ->withCurrency("USD")
+            ->withAmountEstimated(false)
+            ->withAllowDuplicates(true)
+            ->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->responseCode);
+
+        $reportingService = new ReportingService();
+        /** @var TransactionSummary */
+        $reportingServiceResponse = $reportingService->transactionDetail($response->transactionReference->transactionId)->execute();
+        $this->assertNotNull($reportingServiceResponse);
+        $this->assertEquals('F', $reportingServiceResponse->amountIndicator);
+    }
+
+    public function testCredit_Auth_AmountIndicator_E()
+    {
+        $response = $this->card->authorize(10)
+            ->withCurrency("USD")
+            ->withAmountEstimated(true)
+            ->withAllowDuplicates(true)
+            ->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->responseCode);
+
+        $reportingService = new ReportingService();
+        /** @var TransactionSummary */
+        $reportingServiceResponse = $reportingService->transactionDetail($response->transactionReference->transactionId)->execute();
+        $this->assertNotNull($reportingServiceResponse);
+        $this->assertEquals('E', $reportingServiceResponse->amountIndicator);
+    }
+
+    public function testCredit_Sale_AmountIndicator_Null()
+    {
+        $response = $this->card->charge(10)
+            ->withCurrency("USD")
+            ->withAllowDuplicates(true)
+            ->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->responseCode);
+
+        $reportingService = new ReportingService();
+        /** @var TransactionSummary */
+        $reportingServiceResponse = $reportingService->transactionDetail($response->transactionReference->transactionId)->execute();
+        $this->assertNotNull($reportingServiceResponse);
+        $this->assertFalse(isset($reportingServiceResponse->amountIndicator));
     }
 }

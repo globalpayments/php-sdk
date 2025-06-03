@@ -11,6 +11,7 @@ use GlobalPayments\Api\Entities\Enums\{
     TransactionModifier,
     TransactionType
 };
+use GlobalPayments\Api\Entities\Installment;
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 
@@ -362,6 +363,11 @@ class Transaction
 
     /** @var float */
     public $convenienceFee;
+
+    /**
+     * @var Installment
+    */
+    public $installment;
 
     /**
      * Creates a `Transaction` object from a stored transaction ID.

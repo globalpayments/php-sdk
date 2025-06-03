@@ -3,7 +3,14 @@
 </a>
 
 # Changelog
-## Latest Version - v13.1.1 (05/29/25)
+## Latest Version v13.1.2 (06/03/25)
+### Enchancements:
+- [Portico] Added AmountIndicator element
+### New Feature:
+- [GPApi] - Added Installment Object in Create Sale API (POST /transactions)
+- [GPApi] - Added Installment Object in Reporting API (GET /transactions & GET /transactions/{id})
+
+## v13.1.1 (05/29/25)
 ### Bug Fixes:
 - [TSYS/Merchantware] Correction to partial-auth response handling
 

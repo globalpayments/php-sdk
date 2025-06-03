@@ -608,4 +608,6 @@ class TransactionSummary extends BaseSummary
      * @var installment
      */
     public $installment;
+
+    public string $amountIndicator;
 }

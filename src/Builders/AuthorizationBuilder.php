@@ -12,6 +12,7 @@ use GlobalPayments\Api\Entities\{Address,
     HostedPaymentData,
     PhoneNumber,
     StoredCredential,
+    Installment,
     OrderDetails,
     DccRateData,
     DecisionManager,
@@ -247,6 +248,12 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var StoredCredential
      */
     public $storedCredential;
+
+    /**
+     * @internal
+     * @var Installment
+     */
+    public $installment;
 
     /**
      * Request hosted payment data
@@ -1238,6 +1245,12 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withStoredCredential($storedCredential)
     {
         $this->storedCredential = $storedCredential;
+        return $this;
+    }
+
+    public function withInstallment(Installment $installment): AuthorizationBuilder
+    {
+        $this->installment = $installment;
         return $this;
     }
 
