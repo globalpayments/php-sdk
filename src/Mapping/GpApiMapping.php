@@ -4,6 +4,10 @@ namespace GlobalPayments\Api\Mapping;
 
 use DateTime;
 use Exception;
+use GlobalPayments\Api\Entities\{
+    Action,
+    Terms
+};
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\AddressCollection;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
@@ -69,6 +73,7 @@ use GlobalPayments\Api\PaymentMethods\ECheck;
 use GlobalPayments\Api\Utils\StringUtils;
 use GlobalPayments\Api\Entities\MessageExtension;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
+use GlobalPayments\Api\PaymentMethods\Installment;
 
 class GpApiMapping
 {
@@ -1517,5 +1522,60 @@ class GpApiMapping
         $threeDS->cavv = $threeDSNode->cavv_result ?? null;
 
         return $threeDS;
+    }
+
+    /**
+     * @param $response
+     * @param Installment $installment
+     *
+     * @return Installment
+     */
+    public static function mapInstallmentResponse($response, Installment $installment): Installment
+    {
+        $installment->id = $response->id;
+        $installment->timeCreated = $response->time_created;
+        $installment->type = $response->type;
+        $installment->status = $response->status;
+        $installment->channel = $response->channel;
+        $installment->amount = $response->amount;
+        $installment->currency = $response->currency;
+        $installment->country = $response->country;
+        $installment->merchantId = $response->merchant_id;
+        $installment->merchantName = $response->merchant_name;
+        $installment->accountId = $response->account_id;
+        $installment->reference = $response->reference;
+        $installment->program = $response->program;
+        
+        $installment->result = $response->payment_method->result;
+        $installment->entryMode = $response->payment_method->entry_mode;
+        $installment->message = $response->payment_method->message;
+
+        $cardData = $response->payment_method->card;
+        $card = new Card();
+        $card->brand = $cardData->brand;
+        $card->maskedNumberLast4 = $cardData->masked_number_last4;
+        $card->authCode = $cardData->authcode;
+        $card->brandReference = $cardData->brand_reference;
+        $installment->card = $card;
+     
+        if (!empty($response->action)) {
+            $action = new Action();
+            $action->id = $response->action->id;
+            $action->type = $response->action->type;
+            $action->timeCreated = $response->action->time_created;
+            $action->resultCode = $response->action->result_code;
+            $action->appId = $response->action->app_id;
+            $action->appName = $response->action->app_name;
+            $installment->action = $action;
+        }
+
+        if (!empty($response->terms)) {
+            $terms = new Terms();
+            $terms->id = $response->Id;
+            $terms->timeUnit = $response->time_unit;
+            $terms->timeUnitNumbers = $response->time_unit_numbers;
+            $installment->terms = $terms;
+        }
+        return $installment;
     }
 }

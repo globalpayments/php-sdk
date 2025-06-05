@@ -3,7 +3,11 @@
 </a>
 
 # Changelog
-## Latest Version v13.1.2 (06/03/25)
+## Latest Version v13.2.0 (06/05/25)
+### New Feature:
+- [GPAPI] - Mexico GP API Create Installment
+
+## v13.1.2 (06/03/25)
 ### Enchancements:
 - [Portico] Added AmountIndicator element
 ### New Feature:

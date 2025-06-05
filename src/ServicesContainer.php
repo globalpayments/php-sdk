@@ -4,10 +4,12 @@ namespace GlobalPayments\Api;
 
 use GlobalPayments\Api\Gateways\IPaymentGateway;
 use GlobalPayments\Api\Gateways\IRecurringService;
+use GlobalPayments\Api\Gateways\IInstallmentService;
 use GlobalPayments\Api\Gateways\ISecure3dProvider;
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
+use GlobalPayments\Api\Gateways\GpApiConnector;
 use GlobalPayments\Api\ServiceConfigs\ServicesConfig;
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
 
@@ -19,6 +21,8 @@ class ServicesContainer
     public $gatewayConnector;
     /** @var IRecurringService */
     public $recurringConnector ;
+     /** @var IInstallmentService */
+     public $installmentService ;
     /** @var ServicesContainer */
     private static $instance;
 
@@ -31,10 +35,14 @@ class ServicesContainer
      *
      * @return
      */
-    public function __construct(IPaymentGateway $gateway = null, IRecurringService $recurring = null)
-    {
+    public function __construct(
+        IPaymentGateway $gateway = null, 
+        IRecurringService $recurring = null, 
+        IInstallmentService $installmentService = null
+    ) {
         $this->gatewayConnector = $gateway;
         $this->recurringConnector = $recurring;
+        $this->installmentService = $installmentService;
     }
 
     public static function configure(ServicesConfig $config, $configName = 'default')
@@ -129,6 +137,19 @@ class ServicesContainer
         }
         
         throw new ApiException("The specified configuration has not been configured for recurring processing.");
+    }
+
+    /**
+     * @param string $configName
+     * @return GpApiConnector
+     */
+    public function getInstallmentClient(string $configName) : GpApiConnector
+    {
+        if (array_key_exists($configName, static::$configurations)) {
+            return static::$configurations[$configName]->installmentService;
+        }
+        
+        throw new ApiException("The specified configuration has not been configured for installment processing.");
     }
 
     public function getTableServiceClient($configName)

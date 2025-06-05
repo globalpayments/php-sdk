@@ -11,6 +11,7 @@ use GlobalPayments\Api\Builders\PayFacBuilder;
 use GlobalPayments\Api\Builders\RecurringBuilder;
 use GlobalPayments\Api\Builders\ReportBuilder;
 use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiMiCRequestBuilder;
+use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiInstallmentRequestBuilder;
 use GlobalPayments\Api\Builders\RequestBuilder\RequestBuilderFactory;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
@@ -40,6 +41,8 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Mapping\GpApiMapping;
 use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
 use GlobalPayments\Api\Entities\RecurringEntity;
+use GlobalPayments\Api\PaymentMethods\Installment;
+use GlobalPayments\Api\Builders\InstallmentBuilder;
 
 class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dProvider, IPayFacProvider, IFraudCheckService, IDeviceCloudService, IFileProcessingService
 {
@@ -51,6 +54,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
     private $gpApiConfig;
     private $accessToken;
     private $builtInMerchantManagementService = true;
+    private $config;
 
     public function supportsOpenBanking() : bool
     {
@@ -235,6 +239,34 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         $response = $this->executeProcess($builder);
 
         return GpApiMapping::mapRecurringEntity($response, $builder->entity);
+    }
+
+    /**
+    * @var InstallmentBuilder $builder
+    *
+    * @return Installment|null
+    */
+    public function processInstallment(InstallmentBuilder $builder): ?Installment
+    {
+        if (empty($this->accessToken))
+            $this->signIn();
+
+        $requestBuilder = new GpApiInstallmentRequestBuilder();
+        $request = $requestBuilder->buildRequest($builder, $this->config);
+
+        if ($request != null) {
+            $request->endpoint = $this->getMerchantUrl($request) . $request->endpoint;
+            $response = $this->doTransaction(
+                $request->httpVerb,
+                $request->endpoint,
+                $request->requestBody,
+                $request->queryParams
+            );
+
+            return GpApiMapping::mapInstallmentResponse($response, $builder->entity);
+        }
+
+        return null;
     }
 
     private function executeProcess(BaseBuilder $builder)

@@ -73,4 +73,5 @@ class Card
     public ?string $tagResponse;
 
     public ?string $funding;
+    public ?string $authCode;
 }

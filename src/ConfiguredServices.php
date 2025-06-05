@@ -3,7 +3,12 @@
 namespace GlobalPayments\Api;
 
 use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
-use GlobalPayments\Api\Gateways\{OpenBankingProvider, IPaymentGateway, IRecurringService};
+use GlobalPayments\Api\Gateways\{
+    OpenBankingProvider, 
+    IPaymentGateway, 
+    IRecurringService, 
+    IInstallmentService
+};
 use GlobalPayments\Api\Gateways\Interfaces\{IFileProcessingService, IBillingProvider};
 use GlobalPayments\Api\Services\FraudService;
 use GlobalPayments\Api\Terminals\DeviceController;
@@ -23,6 +28,9 @@ class ConfiguredServices
 
     /** @var IRecurringService */
     public $recurringConnector;
+
+     /** @var IInstallmentService */
+     public $installmentService;
 
     /** @var IReportingService */
     public $reportingService;

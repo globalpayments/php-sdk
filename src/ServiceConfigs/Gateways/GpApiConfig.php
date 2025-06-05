@@ -119,6 +119,7 @@ class GpApiConfig extends GatewayConfig
         $services->fraudService = $gateway;
         $services->fileProcessingService = $gateway;
         $services->recurringConnector = $gateway;
+        $services->installmentService = $gateway;
 
         $services->setOpenBankingProvider($gateway);
         $services->setPayFacProvider($gateway);
