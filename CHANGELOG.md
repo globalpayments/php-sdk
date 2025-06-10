@@ -3,7 +3,13 @@
 </a>
 
 # Changelog
-## Latest Version v13.2.0 (06/05/25)
+## Latest Version v13.2.1 (06/10/25)
+### Bug Fixes:
+- [GP-API] HotFix for Installment class naming convention issue
+### Enhancements:
+- [Portico] - Apply improvements in PorticoReportingTests suite
+
+## v13.2.0 (06/05/25)
 ### New Feature:
 - [GPAPI] - Mexico GP API Create Installment
 

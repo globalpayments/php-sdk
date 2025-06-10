@@ -87,7 +87,15 @@ class PorticoReportingTests extends TestCase
     
     public function testReportTransactionDetail()
     {
-        $response = $this->reportingService->transactionDetail("1088532284")->execute();
+        $response = $this->card->charge(10)
+            ->withCurrency("USD")
+            ->withAmountEstimated(false)
+            ->withAllowDuplicates(true)
+            ->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->responseCode);
+
+        $response = $this->reportingService->transactionDetail($response->transactionReference->transactionId)->execute();
         $this->assertNotNull($response);
     }
 
@@ -297,8 +305,16 @@ class PorticoReportingTests extends TestCase
 
     public function testReportTransactionAvsCvvDetail()
     {
-        $response = ReportingService::transactionDetail("1631054288")
-        ->execute();
+        $response = $this->card->charge(10)
+            ->withCurrency("USD")
+            ->withAmountEstimated(false)
+            ->withAllowDuplicates(true)
+            ->execute();
+        $this->assertNotNull($response);
+        $this->assertEquals("00", $response->responseCode);
+
+        $response = ReportingService::transactionDetail($response->transactionReference->transactionId)
+            ->execute();
 
         $this->assertNotNull($response);
 

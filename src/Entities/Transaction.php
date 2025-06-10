@@ -11,7 +11,7 @@ use GlobalPayments\Api\Entities\Enums\{
     TransactionModifier,
     TransactionType
 };
-use GlobalPayments\Api\Entities\Installment;
+use GlobalPayments\Api\Entities\InstallmentData;
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use GlobalPayments\Api\PaymentMethods\TransactionReference;
 
@@ -365,7 +365,7 @@ class Transaction
     public $convenienceFee;
 
     /**
-     * @var Installment
+     * @var InstallmentData
     */
     public $installment;
 

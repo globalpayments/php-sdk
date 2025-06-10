@@ -1,7 +1,7 @@
 <?php
 
 namespace GlobalPayments\Api\Entities;
-class Installment
+class InstallmentData
 {
     /**
      * @var string

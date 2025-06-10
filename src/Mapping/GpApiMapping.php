@@ -59,7 +59,7 @@ use GlobalPayments\Api\Entities\Reporting\PayByLinkSummary;
 use GlobalPayments\Api\Entities\Reporting\StoredPaymentMethodSummary;
 use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\RiskAssessment;
-use GlobalPayments\Api\Entities\Installment;
+use GlobalPayments\Api\Entities\InstallmentData;
 use GlobalPayments\Api\Entities\ThirdPartyResponse;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Transaction;
@@ -95,7 +95,7 @@ class GpApiMapping
 
     const BATCH_CLOSE = 'CLOSE';
 
-    /** @var Installment */
+    /** @var InstallmentData */
      public $installment;
     /**
      * Map a response to a Transaction object for further chaining

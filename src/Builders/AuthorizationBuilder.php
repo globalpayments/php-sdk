@@ -12,7 +12,7 @@ use GlobalPayments\Api\Entities\{Address,
     HostedPaymentData,
     PhoneNumber,
     StoredCredential,
-    Installment,
+    InstallmentData,
     OrderDetails,
     DccRateData,
     DecisionManager,
@@ -251,7 +251,7 @@ class AuthorizationBuilder extends TransactionBuilder
 
     /**
      * @internal
-     * @var Installment
+     * @var InstallmentData
      */
     public $installment;
 
@@ -1248,7 +1248,7 @@ class AuthorizationBuilder extends TransactionBuilder
         return $this;
     }
 
-    public function withInstallment(Installment $installment): AuthorizationBuilder
+    public function withInstallment(InstallmentData $installment): AuthorizationBuilder
     {
         $this->installment = $installment;
         return $this;

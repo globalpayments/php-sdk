@@ -8,7 +8,7 @@ use GlobalPayments\Api\Entities\Reporting\{
 };
 use GlobalPayments\Api\Entities\{
     Address,
-    Installment,
+    InstallmentData,
     StoredCredential
 };
 use GlobalPayments\Api\Entities\Enums\{
@@ -59,9 +59,9 @@ class GpApiInstallmentTest extends TestCase
     private Address $address;
 
     /**
-     * @var Installment $installment
+     * @var InstallmentData $installment
      */
-    private Installment $installment;
+    private InstallmentData $installment;
 
     /**
      * @var string
@@ -84,7 +84,7 @@ class GpApiInstallmentTest extends TestCase
         $this->address->state = "NJ";
         $this->address->postalCode = "12345";
 
-        $this->installment = new Installment();
+        $this->installment = new InstallmentData();
         $this->installment->program = "SIP";
         $this->installment->mode = "INTEREST";
         $this->installment->count = "99";
