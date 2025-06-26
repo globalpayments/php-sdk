@@ -3,7 +3,11 @@
 </a>
 
 # Changelog
-## Latest Version v13.2.1 (06/10/25)
+## Latest Version v13.2.2 (06/26/25)
+### Enhancements:
+- [GPAPI] - Added SDK support for Blik as a payment APM.
+
+## v13.2.1 (06/10/25)
 ### Bug Fixes:
 - [GP-API] HotFix for Installment class naming convention issue
 ### Enhancements:

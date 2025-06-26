@@ -74,6 +74,7 @@ use GlobalPayments\Api\Utils\StringUtils;
 use GlobalPayments\Api\Entities\MessageExtension;
 use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\PaymentMethods\Installment;
+use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 
 class GpApiMapping
 {
@@ -302,6 +303,15 @@ class GpApiMapping
             $transaction->paymentMethodType = PaymentMethodType::ACH;
         } elseif (!empty($paymentMethodResponse->apm)) {
             $transaction->paymentMethodType = PaymentMethodType::APM;
+        }
+
+        if ( !empty($paymentMethodResponse->apm->provider) &&
+            $paymentMethodResponse->apm->provider == strtolower(AlternativePaymentType::BLIK)
+        ) {
+            $alternativePaymentResponse = new AlternativePaymentResponse();
+            $alternativePaymentResponse->redirectUrl = !empty($paymentMethodResponse->apm->redirect_url);
+            $alternativePaymentResponse->providerName = !empty($paymentMethodResponse->apm->provider);
+            $transaction->alternativePaymentResponse = $alternativePaymentResponse;
         }
 
         if (

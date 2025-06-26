@@ -2,18 +2,33 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
+use GlobalPayments\Api\Entities\Enums\{
+    Channel,
+    AlternativePaymentType
+};
+use GlobalPayments\Api\Utils\Logging\{
+    Logger,
+    SampleRequestLogger,
+    RequestConsoleLogger
+}; 
+use GlobalPayments\Api\Entities\Exceptions\{
+    GatewayException,
+    BuilderException
+};
 use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
-use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\Services\ReportingService;
+use GlobalPayments\Api\ServiceConfigs\Configuration;
+use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
+use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
+use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
+
 use PHPUnit\Framework\TestCase;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
-use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 
 class ApmTest extends TestCase
 {
+    private float $blikTranAmount = 2.02;
 
     protected function config()
     {
@@ -29,9 +44,28 @@ class ApmTest extends TestCase
         return $config;
     }
 
+    private function blikConfig() : Configuration
+    {
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $config->country = 'PL';
+        $config->appId = 'p2GgW0PntEUiUh4qXhJHPoDqj3G5GFGI';
+        $config->appKey = 'lJk4Np5LoUEilFhH';
+        $config->serviceUrl = 'https://apis-sit.globalpay.com/ucp';
+
+        $accessTokenInfo = new AccessTokenInfo();
+        $accessTokenInfo->riskAssessmentAccountName = 'EOS_RiskAssessment';
+        $accessTokenInfo->transactionProcessingAccountName = 'GPECOM_BLIK_APM_Transaction_Processing';
+        $config->accessTokenInfo = $accessTokenInfo;
+
+        $config->requestLogger = new RequestConsoleLogger();
+
+        return $config;
+    }
+
     public function setup() : void
     {
         ServicesContainer::configureService($this->config());
+        ServicesContainer::configureService($this->blikConfig(), 'blikConfig');
     }
 
     public function testApmForCharge()
@@ -274,5 +308,130 @@ class ApmTest extends TestCase
         
         $this->assertNotEquals(null, $response);
         $this->assertEquals("00", $responseCode);
+    }
+
+    /* Validates a successful sale transaction using Blik APM with all required fields provided */
+    public function testBlikSale_WhenRequestIsValid_ShouldSucceed() {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::BLIK);
+
+        $paymentMethod->returnUrl = 'https://www.example.com/returnUrl';
+        $paymentMethod->statusUpdateUrl = 'https://www.example.com/statusUrl';
+        $paymentMethod->descriptor = 'Test Transaction';
+        $paymentMethod->country = 'PL';
+        $paymentMethod->accountHolderName = 'James Mason';
+
+        $response = $paymentMethod->charge($this->blikTranAmount)
+            ->withCurrency("PLN")
+            ->withDescription('New APM')
+            ->execute('blikConfig');
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertNotNull($response->alternativePaymentResponse);
+        $this->assertNotNull($response->alternativePaymentResponse->redirectUrl);
+        $this->assertEquals("BLIK", strtoupper($response->alternativePaymentResponse->providerName));
+    }
+
+    /* verify that a sale transaction using Blik APM throws an exception when the ReturnUrl is missing. */
+    public function testBlikSale_WhenReturnUrlMissing_ShouldThrowException() {
+        $errorFound = false;
+        try {
+            $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::BLIK);
+            $paymentMethod->statusUpdateUrl = 'https://www.example.com/statusUrl';
+            $paymentMethod->descriptor = 'Test Transaction';
+            $paymentMethod->country = 'PL';
+            $paymentMethod->accountHolderName = 'James Mason';
+
+            $response = $paymentMethod->charge($this->blikTranAmount)
+                ->withCurrency("PLN")
+                ->withDescription('New APM')
+                ->execute('blikConfig');
+
+            $this->assertNotNull($response);
+        } catch (BuilderException $e) {
+            $errorFound = true;
+                $this->assertEquals('returnUrl cannot be null for this transaction type.', $e->getMessage());
+        } finally {
+            $this->assertTrue($errorFound);
+        }
+    }
+
+    /* verify that a sale transaction using Blik APM throws an exception when the statusUpdateUrl is missing. */
+    public function testBlikSale_WhenStatusUpdateUrlMissing_ShouldThrowException() {
+
+        $errorFound = false;
+        try {
+            $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::BLIK);
+            $paymentMethod->returnUrl = 'https://www.example.com/returnUrl';
+            $paymentMethod->descriptor = 'Test Transaction';
+            $paymentMethod->country = 'PL';
+            $paymentMethod->accountHolderName = 'James Mason';
+
+            $response = $paymentMethod->charge($this->blikTranAmount)
+                ->withCurrency("PLN")
+                ->withDescription('New APM')
+                ->execute('blikConfig');
+
+            $this->assertNotNull($response);
+        } catch (BuilderException $e) {
+            $errorFound = true;
+                $this->assertEquals('statusUpdateUrl cannot be null for this transaction type.', $e->getMessage());
+        } finally {
+            $this->assertTrue($errorFound);
+        }
+    }
+
+    /* Validates that the first refund attempt on a Blik APM transaction is approved successfully. */
+    public function testBlikRefund_WhenFirstAttempt_ShouldSucceed() {
+
+        $this->markTestSkipped('To run this test you need to follow below steps for Refund transaction.');
+
+        /**
+         * 1. For refund we have to run sale test and get Transaction ID from that response and paste here in transactionId.
+         * 2. Also go to redirect_url from response of sale and approve by entering the code.
+         * 3. After some time when status changed to "Captured" run the refund test.
+         */
+        $transactionId = "TRN_QabwK3KyGNauPdHTsOQcScUxVksN7u_fe28cfcf1aa4";
+
+        /** create the rebate transaction object */
+        $transaction = Transaction::fromId($transactionId);
+
+        /** @var TransactionSummary $response */
+        $transactionDetails = ReportingService::transactionDetail($transactionId)->execute('blikConfig');
+
+        $transaction->alternativePaymentResponse = $transactionDetails->alternativePaymentResponse;
+
+        $response = $transaction->refund($this->blikTranAmount)
+                ->withCurrency("PLN")
+                ->withAlternativePaymentType(AlternativePaymentType::BLIK)
+                ->execute('blikConfig');
+    
+        $this->assertNotNull($response);
+        $this->assertEquals("blik", $response->alternativePaymentResponse->providerName);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+    }
+
+    /* Ensures that a second refund attempt on the same Blik APM transaction returns a "Declined" response. */
+    public function testBlikRefund_WhenSecondAttempt_ShouldBeDeclined() {
+
+        /* Run Refund with same transaction Id given in first time blik apm refund */
+        $transactionId = "TRN_QabwK3KyGNauPdHTsOQcScUxVksN7u_fe28cfcf1aa4";
+
+        /* Create the rebate transaction object */
+        $transaction = Transaction::fromId($transactionId);
+
+        /** @var TransactionSummary $response */
+        $transactionDetails = ReportingService::transactionDetail($transactionId)->execute('blikConfig');
+
+        $transaction->alternativePaymentResponse = $transactionDetails->alternativePaymentResponse;
+
+        $response = $transaction->refund($this->blikTranAmount)
+                ->withCurrency("PLN")
+                ->withAlternativePaymentType(AlternativePaymentType::BLIK)
+                ->execute('blikConfig');
+
+        $this->assertNotNull($response);
+        $this->assertEquals("blik", $response->alternativePaymentResponse->providerName);
+        $this->assertEquals('DECLINED', $response->responseCode);
     }
 }
