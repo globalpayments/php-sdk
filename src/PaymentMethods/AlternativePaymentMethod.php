@@ -94,6 +94,9 @@ class AlternativePaymentMethod implements
      * @var string
      */
     public $addressOverrideMode;
+
+    /** @var Bank */
+    public $bank;
     
     public function __construct($alternativePaymentMethodType)
     {

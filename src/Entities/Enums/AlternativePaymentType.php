@@ -145,4 +145,5 @@ class AlternativePaymentType extends Enum
     const PAYBYBANKAPP = 'paybybankapp';
     const ALIPAY = 'alipay';
     const BLIK = 'blik';
+    const OB = 'ob';
 }

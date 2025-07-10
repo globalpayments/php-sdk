@@ -521,6 +521,11 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     'address_override_mode' => !empty($paymentMethodContainer->addressOverrideMode) ?
                         $paymentMethodContainer->addressOverrideMode : null
                 ];
+                $paymentMethod->bank_transfer = [
+                    'bank' => [
+                        'name' => $paymentMethodContainer->bank
+                    ]
+                ];
                 return $paymentMethod;
             case BankPayment::class:
                 $paymentMethod->apm = [

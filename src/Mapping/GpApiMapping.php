@@ -314,6 +314,18 @@ class GpApiMapping
             $transaction->alternativePaymentResponse = $alternativePaymentResponse;
         }
 
+        if ( !empty($paymentMethodResponse->apm->provider) &&
+            $paymentMethodResponse->apm->provider == strtolower(AlternativePaymentType::OB)
+        ) {
+            $alternativePaymentResponse = new AlternativePaymentResponse();
+            $alternativePaymentResponse->providerName = !empty($paymentMethodResponse->apm->provider);
+            $transaction->alternativePaymentResponse = $alternativePaymentResponse;
+
+            $obResponse = new BankPaymentResponse();
+            $obResponse->accountName = $paymentMethodResponse->apm->bank->name;
+            $transaction->bankPaymentResponse = $obResponse;
+        }
+
         if (
             !empty($paymentMethodResponse->shipping_address) ||
             !empty($paymentMethodResponse->payer)

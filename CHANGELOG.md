@@ -2,8 +2,12 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
+## Latest Version v13.3.0 (07/10/25)
+### Enhancements:
+- [GPAPI] - Added SDK support for PayU as a payment APM.
+
 # Changelog
-## Latest Version v13.2.2 (06/26/25)
+## v13.2.2 (06/26/25)
 ### Enhancements:
 - [GPAPI] - Added SDK support for Blik as a payment APM.
 

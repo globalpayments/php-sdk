@@ -62,10 +62,29 @@ class ApmTest extends TestCase
         return $config;
     }
 
+    private function payuConfig() : Configuration
+    {
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $config->country = 'PL';
+        $config->appId = 'ZbFY1jAz6sqq0GAyIPZe1raLCC7cUlpD';
+        $config->appKey = '4NpIQJDCIDzfTKhA';
+        $config->serviceUrl = 'https://apis.globalpay.com/ucp';
+
+        $accessTokenInfo = new AccessTokenInfo();
+        $accessTokenInfo->riskAssessmentAccountName = 'EOS_RiskAssessment';
+        $accessTokenInfo->transactionProcessingAccountName = 'transaction_processing';
+        $config->accessTokenInfo = $accessTokenInfo;
+
+        $config->requestLogger = new RequestConsoleLogger();
+
+        return $config;
+    }
+
     public function setup() : void
     {
         ServicesContainer::configureService($this->config());
         ServicesContainer::configureService($this->blikConfig(), 'blikConfig');
+        ServicesContainer::configureService($this->payuConfig(), 'payuConfig');
     }
 
     public function testApmForCharge()
@@ -433,5 +452,78 @@ class ApmTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals("blik", $response->alternativePaymentResponse->providerName);
         $this->assertEquals('DECLINED', $response->responseCode);
+    }
+
+    /* Validates a successful sale transaction using Payu APM with all required fields provided */
+    public function testPayUSale_WhenRequestIsValid_ShouldSucceed() {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::OB);
+        $paymentMethod->bank = 'mbank';
+        $paymentMethod->country = 'PL';
+        $paymentMethod->accountHolderName = 'Jane';
+        $paymentMethod->descriptor = 'Test Transaction';
+        $paymentMethod->returnUrl = 'https://webhook.site/b4d275cd-42af-48c4-a89b-7a21cbb071c8';
+        $paymentMethod->statusUpdateUrl = 'https://webhook.site/b4d275cd-42af-48c4-a89b-7a21cbb071c8';
+        $paymentMethod->cancelUrl = 'https://webhook.site/b4d275cd-42af-48c4-a89b-7a21cbb071c8';
+
+        $response = $paymentMethod->charge(0.01)
+            ->withCurrency("PLN")
+            ->withDescription('New APM')
+            ->execute('payuConfig');
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertNotNull($response->alternativePaymentResponse);
+        $this->assertEquals("BANK_PAYMENT", strtoupper($response->alternativePaymentResponse->providerName));
+    }
+    
+    /* verify that a sale transaction using PayU APM throws an exception when the ReturnUrl is missing. */
+    public function testPayuSale_WhenReturnUrlMissing_ShouldThrowException() {
+        $errorFound = false;
+        try {
+            $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::OB);
+            $paymentMethod->country = 'PL';
+            $paymentMethod->accountHolderName = 'Jane';
+            $paymentMethod->descriptor = 'Test Transaction';
+            $paymentMethod->statusUpdateUrl = 'https://webhook.site/b4d275cd-42af-48c4-a89b-7a21cbb071c8';
+            $paymentMethod->cancelUrl = 'https://webhook.site/b4d275cd-42af-48c4-a89b-7a21cbb071c8';
+
+            $response = $paymentMethod->charge(0.01)
+                ->withCurrency("PLN")
+                ->withDescription('New APM')
+                ->execute('payuConfig');
+
+            $this->assertNotNull($response);
+        } catch (BuilderException $e) {
+            $errorFound = true;
+                $this->assertEquals('returnUrl cannot be null for this transaction type.', $e->getMessage());
+        } finally {
+            $this->assertTrue($errorFound);
+        }
+    }
+
+    /* verify that a sale transaction using PayU APM throws an exception when the statusUpdateUrl is missing. */
+    public function testPayuSale_WhenStatusUpdateUrlMissing_ShouldThrowException() {
+
+        $errorFound = false;
+        try {
+            $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::OB);
+            $paymentMethod->country = 'PL';
+            $paymentMethod->accountHolderName = 'Jane';
+            $paymentMethod->descriptor = 'Test Transaction';
+            $paymentMethod->returnUrl = 'https://webhook.site/b4d275cd-42af-48c4-a89b-7a21cbb071c8';
+            $paymentMethod->cancelUrl = 'https://webhook.site/b4d275cd-42af-48c4-a89b-7a21cbb071c8';
+
+            $response = $paymentMethod->charge(0.01)
+                ->withCurrency("PLN")
+                ->withDescription('New APM')
+                ->execute('payuConfig');
+
+            $this->assertNotNull($response);
+        } catch (BuilderException $e) {
+            $errorFound = true;
+                $this->assertEquals('statusUpdateUrl cannot be null for this transaction type.', $e->getMessage());
+        } finally {
+            $this->assertTrue($errorFound);
+        }
     }
 }
