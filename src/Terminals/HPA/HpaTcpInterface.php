@@ -107,7 +107,9 @@ class HpaTcpInterface implements IDeviceCommInterface
             try {
                 $length = TerminalUtils::findLength($message);
                 
-                if (false === ($bytes_written = fwrite($this->tcpConnection, $length.$message))) {
+                // Sanitize sensitive data
+                $sanitizedMessage = $this->sanitizeMessage($message);
+                if (false === fwrite($this->tcpConnection, $length . $sanitizedMessage)) {
                     throw new GatewayException('Device error: failed to write to socket');
                 } else {
                     //set time out for read and write
@@ -140,6 +142,23 @@ class HpaTcpInterface implements IDeviceCommInterface
             }
         }
         return;
+    }
+
+    /**
+     * Sanitize sensitive data in the message before sending.
+     *
+     * This method masks sensitive information such as RequestId and ECRId
+     * in the XML message to ensure user privacy and security.
+     *
+     * @param string $message The original XML message containing sensitive data.
+     * @return string The sanitized XML message with sensitive data masked.
+     */
+    private function sanitizeMessage(string $message) : string
+    {
+        $message = preg_replace('/<RequestId>\d+<\/RequestId>/', '<RequestId>MASKED</RequestId>', $message);
+        $message = preg_replace('/<ECRId>\d+<\/ECRId>/', '<ECRId>MASKED</ECRId>', $message);
+    
+        return $message;
     }
 
     /*
