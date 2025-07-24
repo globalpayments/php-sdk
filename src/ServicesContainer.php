@@ -15,6 +15,12 @@ use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
 
 class ServicesContainer
 {
+    /** @var IPaymentGateway */
+    private $gateway;
+
+    /** @var IRecurringService */
+    private $recurring;
+ 
     /** @var  array */
     private $secure3dProviders;
     /** @var IPaymentGateway */
@@ -31,15 +37,17 @@ class ServicesContainer
     /**
      * ServicesContainer constructor.
      *
-     * @param IGateway $gateway
-     *
-     * @return
+     * @param IPaymentGateway $gateway
+     * @param IRecurringService $recurring
+     * @param IInstallmentService $installmentService
      */
     public function __construct(
         IPaymentGateway $gateway = null, 
         IRecurringService $recurring = null, 
         IInstallmentService $installmentService = null
     ) {
+        $this->gateway = $gateway;
+        $this->recurring = $recurring;
         $this->gatewayConnector = $gateway;
         $this->recurringConnector = $recurring;
         $this->installmentService = $installmentService;

@@ -3,7 +3,11 @@
 </a>
 
 # Changelog
-## Latest Version v13.3.1 (07/14/25)
+## Latest Version v13.3.2 (07/24/25)
+### Bug Fixes:
+- Fix Prod issue Gateway is deprecated.
+
+## v13.3.1 (07/14/25)
 ### Bug Fixes:
 - Fix macroscope reported Privacy Violation issue
 
