@@ -3,7 +3,12 @@
 </a>
 
 # Changelog
-## Latest Version v13.3.2 (07/24/25)
+## Latest Version v13.3.3 (07/29/25)
+### Enhancements:
+- Security enhancements for some terminal loggers
+- [UPA] - Correct reference mapping
+
+## v13.3.2 (07/24/25)
 ### Bug Fixes:
 - Fix Prod issue Gateway is deprecated.
 

@@ -364,7 +364,7 @@ class TransactionResponse extends UpaResponseHandler implements IBatchCloseRespo
         $data = json_decode(json_encode($data));
         $host = $data->host;
         $this->responseId = $host->responseId ?? null;
-        $this->transactionId = $host->responseId ?? null;
+        $this->transactionId = $host->referenceNumber ?? null;
         $this->terminalRefNumber = $host->tranNo ?? null;
         $this->responseDateTime = $host->respDateTime ?? null;
         $this->gatewayResponseCode = $host->gatewayResponseCode ?? null;

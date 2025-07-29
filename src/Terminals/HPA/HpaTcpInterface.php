@@ -147,16 +147,26 @@ class HpaTcpInterface implements IDeviceCommInterface
     /**
      * Sanitize sensitive data in the message before sending.
      *
-     * This method masks sensitive information such as RequestId and ECRId
-     * in the XML message to ensure user privacy and security.
+     * This method masks sensitive information such as RequestId, ECRId, and other
+     * potential sensitive fields in the XML message to ensure user privacy and security.
      *
      * @param string $message The original XML message containing sensitive data.
      * @return string The sanitized XML message with sensitive data masked.
      */
     private function sanitizeMessage(string $message) : string
     {
-        $message = preg_replace('/<RequestId>\d+<\/RequestId>/', '<RequestId>MASKED</RequestId>', $message);
-        $message = preg_replace('/<ECRId>\d+<\/ECRId>/', '<ECRId>MASKED</ECRId>', $message);
+        // Define patterns for sensitive fields to be masked
+        $patterns = [
+            '/<Version>.*?<\/Version>/' => '<Version>MASKED</Version>',
+            '/<ECRId>.*?<\/ECRId>/' => '<ECRId>MASKED</ECRId>',
+            '/<Request>.*?<\/Request>/' => '<Request>MASKED</Request>',
+            '/<RequestId>.*?<\/RequestId>/' => '<RequestId>MASKED</RequestId>'
+        ];
+
+        // Apply all patterns to sanitize the message
+        foreach ($patterns as $pattern => $replacement) {
+            $message = preg_replace($pattern, $replacement, $message);
+        }
     
         return $message;
     }

@@ -2,25 +2,34 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals\UPA;
 
-use DateTime;
-use GlobalPayments\Api\Entities\AutoSubstantiation;
-use GlobalPayments\Api\Entities\Enums\ExtraChargeType;
-use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
-use GlobalPayments\Api\Entities\Enums\StoredCredentialInitiator;
-use GlobalPayments\Api\Entities\Enums\TaxType;
-use GlobalPayments\Api\Entities\Exceptions\ApiException;
-use GlobalPayments\Api\Entities\LodgingData;
-use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\Services\DeviceService;
-use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
-use GlobalPayments\Api\Terminals\ConnectionConfig;
-use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
-use GlobalPayments\Api\Terminals\Enums\DeviceType;
-use GlobalPayments\Api\Terminals\TerminalResponse;
-use GlobalPayments\Api\Terminals\UPA\Entities\Enums\UpaMessageId;
+use GlobalPayments\Api\Entities\{
+    LodgingData,
+    AutoSubstantiation
+};
+use GlobalPayments\Api\Terminals\Enums\{
+    DeviceType,
+    ConnectionModes
+};
+use GlobalPayments\Api\Terminals\{
+    ConnectionConfig,
+    TerminalResponse
+};
+use GlobalPayments\Api\Entities\Enums\{
+    TaxType,
+    ExtraChargeType,
+    ManualEntryMethod,
+    StoredCredentialInitiator
+};
 use GlobalPayments\Api\Tests\Data\TestCards;
-use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
+use GlobalPayments\Api\Services\DeviceService;
+use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Utils\Logging\TerminalLogManagement;
+use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
+use GlobalPayments\Api\Terminals\UPA\Entities\Enums\UpaMessageId;
+use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
+
+use DateTime;
 use PHPUnit\Framework\TestCase;
 
 class UpaCreditTests extends TestCase
@@ -51,7 +60,7 @@ class UpaCreditTests extends TestCase
     protected function getConfig(): ConnectionConfig
     {
         $config = new ConnectionConfig();
-        $config->ipAddress = '192.168.8.181';
+        $config->ipAddress = '192.168.71.118';
         $config->port = '8081';
         $config->deviceType = DeviceType::UPA_VERIFONE_T650P;
         $config->connectionMode = ConnectionModes::TCP_IP;
@@ -121,7 +130,24 @@ class UpaCreditTests extends TestCase
         $this->assertEquals('00', $refundResponse->deviceResponseCode);
     }
 
-    public function testCreditTipAdjust()
+    public function testCreditRefund_ByTransactionId()
+    {
+        $saleResponse = $this->device->sale(1)
+            ->execute();
+
+        $this->assertNotNull($saleResponse);
+        $this->assertEquals('00', $saleResponse->deviceResponseCode);
+        $this->assertNotNull($saleResponse->transactionId);
+
+        $refundResponse = $this->device->refund(1)
+            ->withTransactionId($saleResponse->transactionId)
+            ->execute();
+      
+        $this->assertNotNull($refundResponse);
+        $this->assertEquals('00', $refundResponse->deviceResponseCode);
+    }
+
+    public function testTipAdjust_withTerminalRefNumber()
     {
         $response = $this->device->sale(10)
             ->execute();
@@ -131,6 +157,22 @@ class UpaCreditTests extends TestCase
 
         $adjust = $this->device->tipAdjust(1.05)
             ->withTerminalRefNumber($response->terminalRefNumber)
+            ->execute();
+
+        $this->assertNotNull($adjust);
+        $this->assertEquals('00', $adjust->deviceResponseCode);
+    }
+
+    public function testTipAdjust_withReferenceNo()
+    {
+        $response = $this->device->sale(1)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+
+        $adjust = $this->device->tipAdjust(1.05)
+            ->withTransactionId($response->transactionId)
             ->execute();
 
         $this->assertNotNull($adjust);

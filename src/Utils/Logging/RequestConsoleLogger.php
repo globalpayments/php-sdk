@@ -16,21 +16,23 @@ class RequestConsoleLogger implements IRequestLogger
         print_r("Request endpoint: " . $endpoint . PHP_EOL);
 
         // Sanitize sensitive headers before logging
-        $sanitizedHeaders = [];
+        $sensitiveHeaders = [
+            'X-GP-Version', 
+            'Accept', 
+            'Accept-Encoding', 
+            'x-gp-sdk',
+            'Content-Type',
+            'Content-Length',
+            'Authorization'
+        ];
+
         foreach ($headers as $header) {
-            $parts = explode(': ', $header, 2); // Split the header into key and value
+            $parts = explode(': ', $header, 2);
             if (count($parts) === 2) {
                 $key = $parts[0];
                 $value = $parts[1];
-                $sanitizedHeaders[$key] = $value; // Assign to sanitizedHeaders array
+                $sanitizedHeaders[$key] = in_array($key, $sensitiveHeaders, true) ? 'REDACTED' : $value;
             }
-        }
-    
-        if (isset($sanitizedHeaders['Authorization'])) {
-            $sanitizedHeaders['Authorization'] = 'REDACTED';
-        }
-        if (isset($sanitizedHeaders['X-GP-Version'])) {
-            $sanitizedHeaders['X-GP-Version'] = 'REDACTED';
         }
         print_r("Request headers: " . json_encode($sanitizedHeaders, JSON_PRETTY_PRINT) . PHP_EOL);
 
@@ -44,17 +46,14 @@ class RequestConsoleLogger implements IRequestLogger
             }
         
             // Use a regular expression to redact sensitive values associated with specific keys
-            $sanitizedData = preg_replace(
-                '/("app_id"\s*:\s*")[^"]+(")/',
-                '$1REDACTED$2',
-                $sanitizedData
-            );
-        
-            $sanitizedData = preg_replace(
-                '/("nonce"\s*:\s*")[^"]+(")/',
-                '$1REDACTED$2',
-                $sanitizedData
-            );
+            $sensitiveKeys = ['app_id', 'nonce', 'secret', 'grant_type'];
+            foreach ($sensitiveKeys as $key) {
+                $sanitizedData = preg_replace(
+                    '/("' . preg_quote($key, '/') . '"\s*:\s*")[^"]+(")/',
+                    '$1REDACTED$2',
+                    $sanitizedData
+                );
+            }
         
             print_r("Request body: " . $sanitizedData . PHP_EOL);
         }
