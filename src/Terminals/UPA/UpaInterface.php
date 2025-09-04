@@ -23,21 +23,25 @@ use GlobalPayments\Api\Terminals\Builders\{
     TerminalAuthBuilder, TerminalManageBuilder, TerminalReportBuilder
 };
 
-use GlobalPayments\Api\Terminals\Enums\{BatchReportType,
+use GlobalPayments\Api\Terminals\Enums\{
+    BatchReportType,
     DebugLevel,
     DeviceConfigType,
     DisplayOption,
     PromptType,
     TerminalReportType,
-    ReportOutput};
-
-use GlobalPayments\Api\Terminals\Entities\{GenericData,
+    ReportOutput
+};
+use GlobalPayments\Api\Terminals\Entities\{
+    GenericData,
     MessageLines,
     PrintData,
     PromptData,
     PromptMessages,
     ScanData,
-    UDData};
+    UDData,
+    UpaConfigContent
+};
 
 use GlobalPayments\Api\Terminals\UPA\Entities\{
     SignatureData, POSData
@@ -46,12 +50,14 @@ use GlobalPayments\Api\Terminals\UPA\Entities\Enums\{
     UpaMessageId, UpaSearchCriteria
 };
 
-use GlobalPayments\Api\Terminals\UPA\Responses\{SignatureResponse,
+use GlobalPayments\Api\Terminals\UPA\Responses\{
+    SignatureResponse,
     UDScreenResponse,
     UpaBatchReport,
     TransactionResponse,
     TerminalSetupResponse,
-    UpaSAFResponse};
+    UpaSAFResponse
+};
 
 /**
  * Heartland payment application implementation of device messages
@@ -94,7 +100,6 @@ class UpaInterface extends DeviceInterface
             $this->ecrId,
             $data
         );
-        
         $rawResponse = $this->upaController->send($message, UpaMessageId::CANCEL);
         return new TransactionResponse($rawResponse, UpaMessageId::CANCEL);
     }
@@ -509,6 +514,73 @@ class UpaInterface extends DeviceInterface
         );
         $rawResponse = $this->upaController->send($message, UpaMessageId::COMMUNICATION_CHECK);
 
+        return new TransactionResponse($rawResponse);
+    }
+
+    public function saveConfigFile(UpaConfigContent $upaConfigContent): DeviceResponse
+    {
+        if (
+            empty($upaConfigContent->configType) || 
+            empty($upaConfigContent->fileContents) || 
+            $upaConfigContent->length < 0 || 
+            $upaConfigContent->length > 999999
+        ) {
+            throw new ApiException("Invalid UpaConfigContent: null or missing required fields.");
+        }
+
+        $dataParam['params'] = [
+            'configType' => $upaConfigContent->configType,
+            'fileContents' =>  $upaConfigContent->fileContents,
+            'length' => $upaConfigContent->length,
+            'reinitialize' => $upaConfigContent->reinitialize
+        ];
+        
+        $message = TerminalUtils::buildUPAMessage(
+            UpaMessageId::SAVE_CONFIG_FILE,
+            $this->upaController->requestIdProvider->getRequestId(),
+            $this->ecrId,
+            ArrayUtils::array_remove_empty($dataParam)
+        );
+        $rawResponse = $this->upaController->send($message, UpaMessageId::SAVE_CONFIG_FILE);
+
+        return new TransactionResponse($rawResponse);
+    }
+
+    public function setLogoCarouselInterval(int $intervalTime, bool $isFullScreen) : DeviceResponse
+    {
+        if ($intervalTime < 0 || $intervalTime > 9) {
+            throw new ApiException("Interval time must be between 0 to 9 seconds.");
+        }
+
+        if (!is_bool($isFullScreen)) {
+            throw new ArgumentException("isFullScreen must be a boolean value.");
+        }
+
+        $data['params'] = [
+            'intervalTime' => $intervalTime,
+            'isFullScreen' => $isFullScreen,
+        ];
+
+        $message = TerminalUtils::buildUPAMessage(
+            UpaMessageId::SET_LOGO_CAROUSEL_INTERVAL,
+            $this->upaController->requestIdProvider->getRequestId(),
+            $this->ecrId,
+            $data
+        );
+        $rawResponse = $this->upaController->send($message, UpaMessageId::SET_LOGO_CAROUSEL_INTERVAL);
+
+        return new TransactionResponse($rawResponse);
+    }
+
+    public function getBatteryPercentage() : DeviceResponse
+    {
+        $message = TerminalUtils::buildUPAMessage(
+            UpaMessageId::GET_BATTERY_PERCENTAGE,
+            $this->upaController->requestIdProvider->getRequestId(),
+            $this->ecrId,
+        );
+        $rawResponse = $this->upaController->send($message, UpaMessageId::GET_BATTERY_PERCENTAGE);
+                
         return new TransactionResponse($rawResponse);
     }
 

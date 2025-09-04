@@ -2,34 +2,49 @@
 
 namespace GlobalPayments\Api\Terminals;
 
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\Exceptions\NotImplementedException;
-use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
-use GlobalPayments\Api\Terminals\Abstractions\IBatchCloseResponse;
-use GlobalPayments\Api\Terminals\Abstractions\IDeviceScreen;
-use GlobalPayments\Api\Terminals\Abstractions\IDeviceUpdatable;
-use GlobalPayments\Api\Terminals\Abstractions\ISAFResponse;
-use GlobalPayments\Api\Terminals\Abstractions\ISignatureResponse;
-use GlobalPayments\Api\Terminals\Abstractions\ITerminalReport;
-use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
-use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
-use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
-use GlobalPayments\Api\Terminals\Entities\GenericData;
-use GlobalPayments\Api\Terminals\Entities\MessageLines;
-use GlobalPayments\Api\Terminals\Entities\PrintData;
-use GlobalPayments\Api\Terminals\Entities\PromptData;
-use GlobalPayments\Api\Terminals\Entities\PromptMessages;
-use GlobalPayments\Api\Terminals\Entities\ScanData;
-use GlobalPayments\Api\Terminals\Entities\UDData;
-use GlobalPayments\Api\Terminals\Enums\BatchReportType;
-use GlobalPayments\Api\Terminals\Enums\CurrencyType;
-use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
-use GlobalPayments\Api\Terminals\Enums\DeviceConfigType;
-use GlobalPayments\Api\Terminals\Enums\DisplayOption;
-use GlobalPayments\Api\Terminals\Enums\PromptType;
-use GlobalPayments\Api\Terminals\UPA\Entities\POSData;
-use GlobalPayments\Api\Terminals\UPA\Entities\SignatureData;
+use GlobalPayments\Api\Entities\Enums\{
+    PaymentMethodType,
+    TransactionType
+};
+use GlobalPayments\Api\Entities\Exceptions\{
+    NotImplementedException,
+    UnsupportedTransactionException
+};
+use GlobalPayments\Api\Terminals\Abstractions\{
+    IBatchCloseResponse,
+    IDeviceInterface,
+    IDeviceScreen,
+    IDeviceUpdatable,
+    ISAFResponse,
+    ISignatureResponse,
+    ITerminalReport
+};
+use GlobalPayments\Api\Terminals\Builders\{
+    TerminalAuthBuilder,
+    TerminalManageBuilder,
+    TerminalReportBuilder
+};
+use GlobalPayments\Api\Terminals\Entities\{
+    GenericData,
+    MessageLines,
+    PrintData,
+    PromptData,
+    PromptMessages,
+    ScanData,
+    UDData,
+    UpaConfigContent
+};
+use GlobalPayments\Api\Terminals\Enums\{
+    BatchReportType,
+    CurrencyType,
+    DeviceConfigType,
+    DisplayOption,
+    PromptType
+};
+use GlobalPayments\Api\Terminals\UPA\Entities\{
+    POSData,
+    SignatureData
+};
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 
 abstract class DeviceInterface implements IDeviceInterface
@@ -171,6 +186,21 @@ abstract class DeviceInterface implements IDeviceInterface
     }
 
     public function communicationCheck() : DeviceResponse
+    {
+        throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
+    }
+
+    public function saveConfigFile(UpaConfigContent $upaConfigContent) : DeviceResponse
+    {
+        throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
+    }
+
+    public function setLogoCarouselInterval(int $intervalTime, bool $isFullScreen) : DeviceResponse
+    {
+        throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
+    }
+
+    public function getBatteryPercentage() : DeviceResponse
     {
         throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
     }

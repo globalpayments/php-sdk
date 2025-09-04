@@ -2,33 +2,46 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals\UPA;
 
-use GlobalPayments\Api\Entities\Enums\TimeZoneIdentifier;
+use GlobalPayments\Api\Terminals\Abstractions\{
+    IDeviceInterface, 
+    IDeviceResponse, 
+    ISAFResponse
+};
+use GlobalPayments\Api\Terminals\Entities\{
+    PrintData, 
+    PromptMessages, 
+    ScanData, 
+    UDData, 
+    UpaConfigContent
+};
+use GlobalPayments\Api\Terminals\Enums\{
+    ConnectionModes, 
+    DebugLevel, 
+    DebugLogsOutput, 
+    DeviceConfigType, 
+    DeviceType, 
+    DisplayOption, 
+    LogFileIndicator, 
+    UDFileTypes, 
+    Reinitialize
+};
+use GlobalPayments\Api\Terminals\UPA\Entities\{
+    CancelParameters, 
+    POSData, 
+    SignatureData
+};
+use GlobalPayments\Api\Terminals\UPA\Responses\{
+    SignatureResponse, 
+    TerminalSetupResponse, 
+    TransactionResponse, 
+    UDScreenResponse
+};
 use GlobalPayments\Api\Services\DeviceService;
-use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
-use GlobalPayments\Api\Terminals\Abstractions\IDeviceResponse;
-use GlobalPayments\Api\Terminals\Abstractions\ISAFResponse;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
-use GlobalPayments\Api\Terminals\Entities\PrintData;
-use GlobalPayments\Api\Terminals\Entities\PromptMessages;
-use GlobalPayments\Api\Terminals\Entities\ScanData;
-use GlobalPayments\Api\Terminals\Entities\UDData;
-use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
-use GlobalPayments\Api\Terminals\Enums\DebugLevel;
-use GlobalPayments\Api\Terminals\Enums\DebugLogsOutput;
-use GlobalPayments\Api\Terminals\Enums\DeviceConfigType;
-use GlobalPayments\Api\Terminals\Enums\DeviceType;
-use GlobalPayments\Api\Terminals\Enums\DisplayOption;
-use GlobalPayments\Api\Terminals\Enums\LogFileIndicator;
-use GlobalPayments\Api\Terminals\Enums\UDFileTypes;
-use GlobalPayments\Api\Terminals\UPA\Entities\CancelParameters;
-use GlobalPayments\Api\Terminals\UPA\Entities\POSData;
-use GlobalPayments\Api\Terminals\UPA\Entities\SignatureData;
-use GlobalPayments\Api\Terminals\UPA\Responses\SignatureResponse;
-use GlobalPayments\Api\Terminals\UPA\Responses\TerminalSetupResponse;
-use GlobalPayments\Api\Terminals\UPA\Responses\TransactionResponse;
-use GlobalPayments\Api\Terminals\UPA\Responses\UDScreenResponse;
-use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
+use GlobalPayments\Api\Entities\Enums\TimeZoneIdentifier;
 use GlobalPayments\Api\Utils\Logging\TerminalLogManagement;
+use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
+
 use PHPUnit\Framework\TestCase;
 
 class UpaAdminTests extends TestCase
@@ -59,7 +72,7 @@ class UpaAdminTests extends TestCase
         return $config;
     }
 
-    public function testCancel()
+    public function testCancelTransaction()
     {
         $cancelParams = new CancelParameters();
         $cancelParams->displayOption = "1";
@@ -67,6 +80,8 @@ class UpaAdminTests extends TestCase
 
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('Success', $response->status);
+        $this->assertEquals('CancelTransaction', $response->command);
     }
 
     public function testReboot()
@@ -92,6 +107,25 @@ class UpaAdminTests extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
 
+        $cancelParams = new CancelParameters();
+        $cancelParams->displayOption = "1";
+        $this->device->cancel($cancelParams);
+    }
+
+    public function testDisplayLineItem_WithCancel()
+    {
+        $leftText = "Toothpaste";
+        $rightText = "10.00";
+    
+        /** @var IDeviceResponse $response */
+        $response = $this->device->lineItem($leftText, $rightText);
+    
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('Success', $response->status);
+        $this->assertEquals('LineItemDisplay', $response->command);
+    
+        // Clear prior to display the new line items
         $cancelParams = new CancelParameters();
         $cancelParams->displayOption = "1";
         $this->device->cancel($cancelParams);
@@ -376,5 +410,50 @@ class UpaAdminTests extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
         $this->assertEquals('Success', $response->status);
+    }
+     
+    public function testSaveConfigFile()
+    {
+        $upaConfig = new UpaConfigContent();
+        $upaConfig->configType = DeviceConfigType::CONTACT_TERMINAL_CONFIG;
+        $upaConfig->fileContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" .
+            "<TerminalConfiguration>\n" .
+            "    <ContactTerminalConfiguration>\n" .
+            "        <TerminalType>Contact</TerminalType>\n" .
+            "        <TerminalCapabilities>...</TerminalCapabilities>\n" .
+            "    </ContactTerminalConfiguration>\n" .
+            "</TerminalConfiguration>";
+        $upaConfig->length = 13321;
+        $upaConfig->reinitialize = Reinitialize::REINITIALIZE_APPLICATION;
+
+        /** @var TransactionResponse $response */
+        $response = $this->device->saveConfigFile($upaConfig);
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('Success', $response->status);
+        $this->assertEquals('SaveConfigFile', $response->command);
+    }
+
+    public function testsetLogoCarouselInterval()
+    {
+        /** @var ISAFResponse $response */
+        $response = $this->device->setLogoCarouselInterval(9, false);
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('Success', $response->status);
+        $this->assertEquals('SetLogoCarouselInterval', $response->command);
+    }
+
+    public function testGetBatteryPercentage()
+    {
+        /** @var ISAFResponse $response */
+        $response = $this->device->getBatteryPercentage();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('Success', $response->status);
+        $this->assertEquals('GetBatteryPercentage', $response->command);
     }
 }

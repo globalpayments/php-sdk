@@ -90,6 +90,12 @@ class GpApiConfig extends GatewayConfig
      */
     public string $statusUrl;
 
+    /**
+     * transaction account name used for recurring operation
+     * @var string
+     */
+    public string $transactionAccountName;
+
     public IAccessTokenProvider $accessTokenProvider;
 
     public function __construct()

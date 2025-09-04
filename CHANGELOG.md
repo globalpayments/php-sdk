@@ -3,7 +3,12 @@
 </a>
 
 # Changelog
-## Latest Version v13.3.3 (07/29/25)
+## Latest Version v13.3.4 (09/04/25)
+### Enhancements:
+- [UPA] Add new UPA commands : CancelTransaction, SaveConfigFile, LineItemDisplay, SetLogoCarouselInterval, GetBatteryPercentage
+- [GP-API] - Include merchant ID for recurring operations
+
+## v13.3.3 (07/29/25)
 ### Enhancements:
 - Security enhancements for some terminal loggers
 - [UPA] - Correct reference mapping
