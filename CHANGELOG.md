@@ -3,7 +3,11 @@
 </a>
 
 # Changelog
-## Latest Version v13.3.4 (09/04/25)
+## Latest Version v13.3.5 (09/09/25)
+### Enhancements:
+- [UPA] Added list of PayU bank list
+
+## v13.3.4 (09/04/25)
 ### Enhancements:
 - [UPA] Add new UPA commands : CancelTransaction, SaveConfigFile, LineItemDisplay, SetLogoCarouselInterval, GetBatteryPercentage
 - [GP-API] - Include merchant ID for recurring operations

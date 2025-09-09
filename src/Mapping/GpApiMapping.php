@@ -6,75 +6,85 @@ use DateTime;
 use Exception;
 use GlobalPayments\Api\Entities\{
     Action,
-    Terms
+    Terms,
+    Address,
+    AddressCollection,
+    AlternativePaymentResponse,
+    BankPaymentResponse,
+    BatchSummary,
+    BatchTotals,
+    BNPLResponse,
+    Card,
+    CardIssuerResponse,
+    Customer,
+    DisputeDocument,
+    DccRateData,
+    Document,
+    FileList,
+    FileProcessor,
+    FileUploaded,
+    FraudManagementResponse,
+    FraudRule,
+    PayerDetails,
+    PayByLinkResponse,
+    PaymentMethodList,
+    Person,
+    PersonList,
+    PhoneNumber,
+    RecurringEntity,
+    RiskAssessment,
+    InstallmentData,
+    ThirdPartyResponse,
+    ThreeDSecure,
+    Transaction,
+    TransferFundsAccountCollection,
+    FundsAccountDetails,
+    User,
+    UserAccount,
+    UserLinks,
+    MessageExtension
 };
-use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\AddressCollection;
-use GlobalPayments\Api\Entities\AlternativePaymentResponse;
-use GlobalPayments\Api\Entities\BankPaymentResponse;
-use GlobalPayments\Api\Entities\BatchSummary;
-use GlobalPayments\Api\Entities\BatchTotals;
-use GlobalPayments\Api\Entities\BNPLResponse;
-use GlobalPayments\Api\Entities\Card;
-use GlobalPayments\Api\Entities\CardIssuerResponse;
-use GlobalPayments\Api\Entities\Customer;
-use GlobalPayments\Api\Entities\DisputeDocument;
-use GlobalPayments\Api\Entities\DccRateData;
-use GlobalPayments\Api\Entities\Document;
-use GlobalPayments\Api\Entities\Enums\AddressType;
-use GlobalPayments\Api\Entities\Enums\AuthenticationSource;
-use GlobalPayments\Api\Entities\Enums\CaptureMode;
-use GlobalPayments\Api\Entities\Enums\FraudFilterResult;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Entities\Enums\PaymentProvider;
-use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
-use GlobalPayments\Api\Entities\Enums\ReportType;
-use GlobalPayments\Api\Entities\Enums\Secure3dStatus;
-use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
-use GlobalPayments\Api\Entities\Enums\TransactionStatus;
-use GlobalPayments\Api\Entities\Enums\UserType;
-use GlobalPayments\Api\Entities\Exceptions\ApiException;
-use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
-use GlobalPayments\Api\Entities\FileList;
-use GlobalPayments\Api\Entities\FileProcessor;
-use GlobalPayments\Api\Entities\FileUploaded;
-use GlobalPayments\Api\Entities\FraudManagementResponse;
-use GlobalPayments\Api\Entities\FraudRule;
-use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
-use GlobalPayments\Api\Entities\GpApi\PagedResult;
-use GlobalPayments\Api\Entities\PayerDetails;
-use GlobalPayments\Api\Entities\PayByLinkResponse;
-use GlobalPayments\Api\Entities\PaymentMethodList;
-use GlobalPayments\Api\Entities\Person;
-use GlobalPayments\Api\Entities\PersonList;
-use GlobalPayments\Api\Entities\PhoneNumber;
-use GlobalPayments\Api\Entities\RecurringEntity;
-use GlobalPayments\Api\Entities\Reporting\ActionSummary;
-use GlobalPayments\Api\Entities\Reporting\DepositSummary;
-use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
-use GlobalPayments\Api\Entities\Reporting\MerchantAccountSummary;
-use GlobalPayments\Api\Entities\Reporting\MerchantSummary;
-use GlobalPayments\Api\Entities\Reporting\PayByLinkSummary;
-use GlobalPayments\Api\Entities\Reporting\StoredPaymentMethodSummary;
-use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
-use GlobalPayments\Api\Entities\RiskAssessment;
-use GlobalPayments\Api\Entities\InstallmentData;
-use GlobalPayments\Api\Entities\ThirdPartyResponse;
-use GlobalPayments\Api\Entities\ThreeDSecure;
-use GlobalPayments\Api\Entities\Transaction;
-use GlobalPayments\Api\Entities\TransferFundsAccountCollection;
-use GlobalPayments\Api\Entities\FundsAccountDetails;
-use GlobalPayments\Api\Entities\User;
-use GlobalPayments\Api\Entities\UserAccount;
-use GlobalPayments\Api\Entities\UserLinks;
-use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\PaymentMethods\ECheck;
+
+use GlobalPayments\Api\Entities\Enums\{
+    AddressType,
+    AuthenticationSource,
+    CaptureMode,
+    FraudFilterResult,
+    PaymentMethodName,
+    PaymentMethodType,
+    PaymentProvider,
+    PhoneNumberType,
+    ReportType,
+    Secure3dStatus,
+    Secure3dVersion,
+    TransactionStatus,
+    UserType,
+    AlternativePaymentType
+};
+use GlobalPayments\Api\Entities\Exceptions\{
+    ApiException,
+    ArgumentException,
+    UnsupportedTransactionException
+};
+use GlobalPayments\Api\Entities\Reporting\{
+    ActionSummary,
+    DepositSummary,
+    DisputeSummary,
+    MerchantAccountSummary,
+    MerchantSummary,
+    PayByLinkSummary,
+    StoredPaymentMethodSummary,
+    TransactionSummary
+};
+use GlobalPayments\Api\PaymentMethods\{
+    CreditCardData,
+    ECheck,
+    Installment,
+    Bank
+};
 use GlobalPayments\Api\Utils\StringUtils;
-use GlobalPayments\Api\Entities\MessageExtension;
-use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
-use GlobalPayments\Api\PaymentMethods\Installment;
-use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
+use GlobalPayments\Api\Entities\GpApi\PagedResult;
+use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
 
 class GpApiMapping
 {
@@ -315,15 +325,23 @@ class GpApiMapping
         }
 
         if ( !empty($paymentMethodResponse->apm->provider) &&
-            $paymentMethodResponse->apm->provider == strtolower(AlternativePaymentType::OB)
+            strcasecmp($paymentMethodResponse->apm->provider, "BANK_PAYMENT") === 0
         ) {
             $alternativePaymentResponse = new AlternativePaymentResponse();
             $alternativePaymentResponse->providerName = !empty($paymentMethodResponse->apm->provider);
             $transaction->alternativePaymentResponse = $alternativePaymentResponse;
 
-            $obResponse = new BankPaymentResponse();
-            $obResponse->accountName = $paymentMethodResponse->apm->bank->name;
-            $transaction->bankPaymentResponse = $obResponse;
+            if(!empty($paymentMethodResponse->apm->bank)) {
+                $bank = $paymentMethodResponse->apm->bank;
+
+                $obResponse = new Bank();
+                $obResponse->name = $bank->name;
+                $obResponse->identifierCode = $bank->identifier_code;
+                $obResponse->iban = $bank->iban;
+                $obResponse->code = $bank->code;
+                $obResponse->accountNumber = $bank->account_number;
+                $transaction->bankPaymentResponse = $obResponse;
+            }
         }
 
         if (

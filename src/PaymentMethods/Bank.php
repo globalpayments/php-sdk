@@ -2,6 +2,9 @@
 
 namespace GlobalPayments\Api\PaymentMethods;
 
+use GlobalPayments\Api\Entities\Enums\BankList;
+use GlobalPayments\Api\Entities\Address;
+
 class Bank
 {
     /**
@@ -9,13 +12,24 @@ class Bank
      */
     public $code;
 
-    /**
-     * @var string
-     */
+    /** @var BankList */
     public $name;
+
+    /** @var Address */
+    public $address;
 
     /**
      * @var string
      */
-    public $address;
+    public $identifierCode;
+
+    /**
+     * @var string
+     */
+    public $iban;
+
+    /**
+     * @var string
+     */
+    public $accountNumber;
 }
