@@ -627,7 +627,7 @@ class TransITConnector extends XmlGateway implements IPaymentGateway
             $tempTransactionKey
         );
         $sEncryptedData = bin2hex(base64_decode($encrypted));
-        $hashKey = hash_hmac('sha256', $this->transactionKey, $this->transactionKey);
+        $hashKey = hash_hmac('md5', $this->transactionKey, $this->transactionKey);
         return substr($hashKey, 0, 4) . $sEncryptedData . substr($hashKey, -4, 4);
     }
 }

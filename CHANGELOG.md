@@ -3,7 +3,12 @@
 </a>
 
 # Changelog
-## Latest Version v13.3.5 (09/09/25)
+## Latest Version v13.3.6 (09/11/25)
+### Enhancements:
+- [UPA] Return all UPA error response properties
+- [Macroscope] Reverted security fixes from v13.3.1 and v13.3.3
+
+## v13.3.5 (09/09/25)
 ### Enhancements:
 - [UPA] Added list of PayU bank list
 

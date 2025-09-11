@@ -70,16 +70,16 @@ class GenerationUtils
     public static function generateHash($secret, $toHash = null)
     {
         if ($toHash === null) {
-            return hash('sha256', $secret);
+            return sha1($secret);
         }
 
         //first pass hashes the String of required fields
-        $toHashFirstPass = hash('sha256', $toHash);
+        $toHashFirstPass = sha1($toHash);
 
         //second pass takes the first hash, adds the secret and hashes again
         $toHashSecondPass = $toHashFirstPass . '.' . $secret;
 
-        return hash('sha256', $toHashSecondPass);
+        return sha1($toHashSecondPass);
     }
     public static function generateNewHash($secret, $toHash, $shaType = ShaHashType::SHA1)
     {

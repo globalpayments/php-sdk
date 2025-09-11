@@ -14,15 +14,28 @@ class UpaResponseHandler extends TerminalResponse
 
     private function checkResponse(array $commandResult): void
     {
-        if (!empty($commandResult['result']) && $commandResult['result'] === 'Failed') {
+        $cmdResult = $commandResult['cmdResult'] ?? ($commandResult['data']['cmdResult'] ?? null);
+        if (!empty($cmdResult['result']) && $cmdResult['result'] === 'Failed') {
+            $errorCode = $cmdResult['errorCode'] ?? '';
+            $errorMessage = $cmdResult['errorMessage'] ?? '';
+            $host = $commandResult['data']['host'] ?? [];
+            $gatewayResponseCode = $host['gatewayResponseCode'] ?? '';
+            $gatewayResponseMessage = $host['gatewayResponseMessage'] ?? '';
+            $issuerResponseCode = $host['responseCode'] ?? '';
+            $issuerResponseMessage = $host['responseText'] ?? '';
+            $fullMessage = sprintf(
+                'Unexpected Gateway Response: %s - %s | GatewayResponseCode: %s | GatewayResponseMessage: %s | IssuerResponseCode: %s | IssuerResponseMessage: %s',
+                $errorCode,
+                $errorMessage,
+                $gatewayResponseCode,
+                $gatewayResponseMessage,
+                $issuerResponseCode,
+                $issuerResponseMessage
+            );
             throw new GatewayException(
-                sprintf(
-                    'Unexpected Gateway Response: %s - %s',
-                    $commandResult['errorCode'],
-                    $commandResult['errorMessage']
-                ),
-                $commandResult['errorCode'],
-                $commandResult['errorMessage']
+                $fullMessage,
+                $errorCode,
+                $errorMessage
             );
         }
     }
@@ -33,7 +46,7 @@ class UpaResponseHandler extends TerminalResponse
         if (empty($firstNodeData['cmdResult'])) {
             throw new MessageException(self::INVALID_RESPONSE_FORMAT);
         }
-        $this->checkResponse($firstNodeData['cmdResult']);
+        $this->checkResponse($firstNodeData);
         if ($this->isGpApiResponse($response)) {
             $this->status = $response['status'] ?? null;
             $this->transactionId = $response['id'] ?? null;
