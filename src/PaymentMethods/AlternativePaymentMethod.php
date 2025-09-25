@@ -4,7 +4,6 @@ namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
 use GlobalPayments\Api\Entities\Enums\{
-    BankList,
     PaymentMethodType,
     TransactionType,
     TransactionModifier
@@ -96,7 +95,7 @@ class AlternativePaymentMethod implements
      */
     public $addressOverrideMode;
 
-    /** @var BankList */
+    /** @var Bank */
     public $bank;
     
     public function __construct($alternativePaymentMethodType)

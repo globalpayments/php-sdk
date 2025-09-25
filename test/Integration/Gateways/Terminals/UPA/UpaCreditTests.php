@@ -28,7 +28,6 @@ use GlobalPayments\Api\Utils\Logging\TerminalLogManagement;
 use GlobalPayments\Api\Terminals\Abstractions\IDeviceInterface;
 use GlobalPayments\Api\Terminals\UPA\Entities\Enums\UpaMessageId;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
-use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 
 use DateTime;
 use PHPUnit\Framework\TestCase;
@@ -403,19 +402,5 @@ class UpaCreditTests extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->deviceResponseCode);
         $this->assertEquals('FORCE SALE', $response->transactionType);
-    }
-
-    public function testErrorResponse()
-    {
-        try {
-            $response = $this->device->void()
-                ->withTransactionId('167665433')
-                ->execute();
-                $this->assertEquals('00', $response->deviceResponseCode);
-        } catch (GatewayException $e) {
-            var_dump($e->getMessage());
-            var_dump($e->responseCode);
-            var_dump($e->responseMessage);
-        }
     }
 }

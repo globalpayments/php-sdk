@@ -67,7 +67,4 @@ class UpaMessageId extends Enum
     const COMPLETE_EMV_TRANSACTION = "CompleteEMVTransaction";
     const PROCESS_CARD_TRANSACTION = "ProcessCardTransaction";
     const CONTINUE_CARD_TRANSACTION = "ContinueCardTransaction";
-    const SAVE_CONFIG_FILE = "SaveConfigFile";
-    const SET_LOGO_CAROUSEL_INTERVAL = "SetLogoCarouselInterval";
-    const GET_BATTERY_PERCENTAGE = "GetBatteryPercentage";
 }

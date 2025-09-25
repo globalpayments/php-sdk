@@ -3,7 +3,6 @@
 namespace GlobalPayments\Api\Tests\Integration\Gateways\GpEcomConnector;
 
 use GlobalPayments\Api\Entities\Enums\{
-    BankList,
     Channel,
     AlternativePaymentType
 };
@@ -416,8 +415,14 @@ class ApmTest extends TestCase
         /** create the rebate transaction object */
         $transaction = Transaction::fromId($transactionId);
 
+        /** @var TransactionSummary $response */
+        $transactionDetails = ReportingService::transactionDetail($transactionId)->execute('blikConfig');
+
+        $transaction->alternativePaymentResponse = $transactionDetails->alternativePaymentResponse;
+
         $response = $transaction->refund($this->blikTranAmount)
                 ->withCurrency("PLN")
+                ->withAlternativePaymentType(AlternativePaymentType::BLIK)
                 ->execute('blikConfig');
     
         $this->assertNotNull($response);
@@ -434,8 +439,14 @@ class ApmTest extends TestCase
         /* Create the rebate transaction object */
         $transaction = Transaction::fromId($transactionId);
 
+        /** @var TransactionSummary $response */
+        $transactionDetails = ReportingService::transactionDetail($transactionId)->execute('blikConfig');
+
+        $transaction->alternativePaymentResponse = $transactionDetails->alternativePaymentResponse;
+
         $response = $transaction->refund($this->blikTranAmount)
                 ->withCurrency("PLN")
+                ->withAlternativePaymentType(AlternativePaymentType::BLIK)
                 ->execute('blikConfig');
 
         $this->assertNotNull($response);
@@ -446,12 +457,13 @@ class ApmTest extends TestCase
     /* Validates a successful sale transaction using Payu APM with all required fields provided */
     public function testPayUSale_WhenRequestIsValid_ShouldSucceed() {
         $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::OB);
-        $paymentMethod->bank = BankList::MBANK;
+        $paymentMethod->bank = 'mbank';
         $paymentMethod->country = 'PL';
         $paymentMethod->accountHolderName = 'Jane';
         $paymentMethod->descriptor = 'Test Transaction';
-        $paymentMethod->returnUrl = 'https://www.example.com/returnUrl';
-        $paymentMethod->statusUpdateUrl = 'https://www.example.com/statusUrl';
+        $paymentMethod->returnUrl = 'https://webhook.site/b4d275cd-42af-48c4-a89b-7a21cbb071c8';
+        $paymentMethod->statusUpdateUrl = 'https://webhook.site/b4d275cd-42af-48c4-a89b-7a21cbb071c8';
+        $paymentMethod->cancelUrl = 'https://webhook.site/b4d275cd-42af-48c4-a89b-7a21cbb071c8';
 
         $response = $paymentMethod->charge(0.01)
             ->withCurrency("PLN")
@@ -472,7 +484,8 @@ class ApmTest extends TestCase
             $paymentMethod->country = 'PL';
             $paymentMethod->accountHolderName = 'Jane';
             $paymentMethod->descriptor = 'Test Transaction';
-            $paymentMethod->statusUpdateUrl = 'https://www.example.com/statusUrl';
+            $paymentMethod->statusUpdateUrl = 'https://webhook.site/b4d275cd-42af-48c4-a89b-7a21cbb071c8';
+            $paymentMethod->cancelUrl = 'https://webhook.site/b4d275cd-42af-48c4-a89b-7a21cbb071c8';
 
             $response = $paymentMethod->charge(0.01)
                 ->withCurrency("PLN")
@@ -497,7 +510,8 @@ class ApmTest extends TestCase
             $paymentMethod->country = 'PL';
             $paymentMethod->accountHolderName = 'Jane';
             $paymentMethod->descriptor = 'Test Transaction';
-            $paymentMethod->returnUrl = 'https://www.example.com/returnUrl';
+            $paymentMethod->returnUrl = 'https://webhook.site/b4d275cd-42af-48c4-a89b-7a21cbb071c8';
+            $paymentMethod->cancelUrl = 'https://webhook.site/b4d275cd-42af-48c4-a89b-7a21cbb071c8';
 
             $response = $paymentMethod->charge(0.01)
                 ->withCurrency("PLN")
@@ -511,47 +525,5 @@ class ApmTest extends TestCase
         } finally {
             $this->assertTrue($errorFound);
         }
-    }
-
-    /* Validates that the first refund attempt on a PayU APM transaction is approved successfully. */
-     public function testPayuRefund_WhenFirstAttempt_ShouldSucceed() {
-
-        $this->markTestSkipped('To run this test you need to follow below steps for Refund transaction.');
-
-        /**
-         * 1. For refund we have to run sale test and get Transaction ID from that response and paste here in transactionId.
-         * 2. Also go to redirect_url from response of sale and approve by entering the code.
-         * 3. After some time when status changed to "Captured" run the refund test.
-         */
-        $transactionId = "TRN_9vcJLhDER6YAV5507UCcDDcDlRmN85_59016331";
-
-        /** create the rebate transaction object */
-        $transaction = Transaction::fromId($transactionId);
-
-        $response = $transaction->refund(0.01)
-                ->withCurrency("PLN")
-                ->execute('payuConfig');
-    
-        $this->assertNotNull($response);
-        $this->assertEquals("BANK_PAYMENT", $response->alternativePaymentResponse->providerName);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-    }
-
-    /* Ensures that a second refund attempt on the same Payu APM transaction returns a "Declined" response. */
-    public function testPayuRefund_WhenSecondAttempt_ShouldBeDeclined() {
-
-        /* Run Refund with same transaction Id given in first time Payu apm refund */
-        $transactionId = "TRN_9vcJLhDER6YAV5507UCcDDcDlRmN85_59016331";
-
-        /* Create the rebate transaction object */
-        $transaction = Transaction::fromId($transactionId);
-
-        $response = $transaction->refund(0.01)
-                ->withCurrency("PLN")
-                ->execute('payuConfig');
-
-        $this->assertNotNull($response);
-        $this->assertEquals("BANK_PAYMENT", $response->alternativePaymentResponse->providerName);
-        $this->assertEquals('DECLINED', $response->responseCode);
     }
 }

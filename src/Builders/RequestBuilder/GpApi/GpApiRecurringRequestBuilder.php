@@ -39,16 +39,12 @@ class GpApiRecurringRequestBuilder implements IRequestBuilder
         /** @var RecurringBuilder $builder */
         $this->builder = $builder;
         $requestData = [];
-        /** @var string $merchantUrl */
-        $merchantUrl = '';
-       
-        if($config->merchantId != null){
-            $merchantUrl = "/merchants/".$config->merchantId;
-        }
+        /**
+         * @var RecurringBuilder $builder
+         */
         switch ($builder->transactionType) {
             case TransactionType::CREATE:
                 $endpoint = GpApiRequest::PAYERS_ENDPOINT;
-                $endpoint = $merchantUrl . GpApiRequest::PAYERS_ENDPOINT;
                 $verb = 'POST';
                 if ($builder->entity instanceof Customer) {
                     $this->preparePayerRequest($requestData);
@@ -56,7 +52,6 @@ class GpApiRecurringRequestBuilder implements IRequestBuilder
                 break;
             case TransactionType::EDIT:
                 $endpoint = GpApiRequest::PAYERS_ENDPOINT . '/' . $this->builder->entity->id;
-                $endpoint = $merchantUrl . GpApiRequest::PAYERS_ENDPOINT . "/";
                 $verb = 'PATCH';
                 if ($builder->entity instanceof Customer) {
                     $this->preparePayerRequest($requestData);

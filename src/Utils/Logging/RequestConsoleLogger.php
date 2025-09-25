@@ -14,10 +14,48 @@ class RequestConsoleLogger implements IRequestLogger
         print_r("Request START" . PHP_EOL);
         print_r("Request verb: " . $verb . PHP_EOL);
         print_r("Request endpoint: " . $endpoint . PHP_EOL);
-        print_r("Request headers: " . json_encode($headers, JSON_PRETTY_PRINT) . PHP_EOL);
+
+        // Sanitize sensitive headers before logging
+        $sensitiveHeaders = [
+            'X-GP-Version', 
+            'Accept', 
+            'Accept-Encoding', 
+            'x-gp-sdk',
+            'Content-Type',
+            'Content-Length',
+            'Authorization'
+        ];
+
+        foreach ($headers as $header) {
+            $parts = explode(': ', $header, 2);
+            if (count($parts) === 2) {
+                $key = $parts[0];
+                $value = $parts[1];
+                $sanitizedHeaders[$key] = in_array($key, $sensitiveHeaders, true) ? 'REDACTED' : $value;
+            }
+        }
+        print_r("Request headers: " . json_encode($sanitizedHeaders, JSON_PRETTY_PRINT) . PHP_EOL);
 
         if (!empty($data)) {
-            print_r("Request body: " . $data . PHP_EOL);
+            // Sanitize sensitive data in the request body
+            $sanitizedData = $data;
+        
+            // If the data is an array or object, convert it to JSON for processing
+            if (is_array($sanitizedData) || is_object($sanitizedData)) {
+                $sanitizedData = json_encode($sanitizedData, JSON_PRETTY_PRINT);
+            }
+        
+            // Use a regular expression to redact sensitive values associated with specific keys
+            $sensitiveKeys = ['app_id', 'nonce', 'secret', 'grant_type'];
+            foreach ($sensitiveKeys as $key) {
+                $sanitizedData = preg_replace(
+                    '/("' . preg_quote($key, '/') . '"\s*:\s*")[^"]+(")/',
+                    '$1REDACTED$2',
+                    $sanitizedData
+                );
+            }
+        
+            print_r("Request body: " . $sanitizedData . PHP_EOL);
         }
         print_r("REQUEST END" . PHP_EOL);
     }

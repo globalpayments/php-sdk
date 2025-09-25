@@ -2,36 +2,25 @@
 
 namespace GlobalPayments\Api\Terminals\Abstractions;
 
-use GlobalPayments\Api\Entities\Enums\{
-    PaymentMethodType,
-    TransactionType
-};
-use GlobalPayments\Api\Terminals\Builders\{
-    TerminalAuthBuilder,
-    TerminalManageBuilder,
-    TerminalReportBuilder
-};
-use GlobalPayments\Api\Terminals\Entities\{
-    GenericData,
-    MessageLines,
-    PrintData,
-    PromptData,
-    PromptMessages,
-    ScanData,
-    UDData,
-    UpaConfigContent
-};
-use GlobalPayments\Api\Terminals\Enums\{
-    BatchReportType,
-    DeviceConfigType,
-    DisplayOption,
-    PromptType
-};
-use GlobalPayments\Api\Terminals\UPA\Entities\{
-    POSData,
-    SignatureData
-};
+use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
+use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
+use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
 use GlobalPayments\Api\Terminals\DeviceResponse;
+use GlobalPayments\Api\Terminals\Entities\GenericData;
+use GlobalPayments\Api\Terminals\Entities\MessageLines;
+use GlobalPayments\Api\Terminals\Entities\PrintData;
+use GlobalPayments\Api\Terminals\Entities\PromptData;
+use GlobalPayments\Api\Terminals\Entities\PromptMessages;
+use GlobalPayments\Api\Terminals\Entities\ScanData;
+use GlobalPayments\Api\Terminals\Entities\UDData;
+use GlobalPayments\Api\Terminals\Enums\BatchReportType;
+use GlobalPayments\Api\Terminals\Enums\DeviceConfigType;
+use GlobalPayments\Api\Terminals\Enums\DisplayOption;
+use GlobalPayments\Api\Terminals\Enums\PromptType;
+use GlobalPayments\Api\Terminals\UPA\Entities\POSData;
+use GlobalPayments\Api\Terminals\UPA\Entities\SignatureData;
 
 interface IDeviceInterface
 {
@@ -124,12 +113,6 @@ interface IDeviceInterface
      * @return DeviceResponse
      */
     public function communicationCheck() : DeviceResponse;
-
-    public function saveConfigFile(UpaConfigContent $upaConfigContent) : DeviceResponse;
-
-    public function setLogoCarouselInterval(int $intervalTime, bool $isFullScreen) : DeviceResponse;
-
-    public function getBatteryPercentage() : DeviceResponse;
 
     /**
      * This command is used for testing the host connection by sending a test Credit Sale transaction.

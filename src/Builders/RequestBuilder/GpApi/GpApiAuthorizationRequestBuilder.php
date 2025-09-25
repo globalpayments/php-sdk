@@ -2,57 +2,55 @@
 
 namespace GlobalPayments\Api\Builders\RequestBuilder\GpApi;
 
-use GlobalPayments\Api\Builders\AuthorizationBuilder;
-use GlobalPayments\Api\Builders\BaseBuilder;
-use GlobalPayments\Api\Entities\CustomerDocument;
-use GlobalPayments\Api\Entities\EncryptionData;
-use GlobalPayments\Api\Entities\Enums\BankPaymentType;
-use GlobalPayments\Api\Entities\Enums\CardType;
-use GlobalPayments\Api\Entities\Enums\Channel;
-use GlobalPayments\Api\Entities\Enums\DigitalWalletTokenFormat;
-use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
-use GlobalPayments\Api\Entities\Enums\EntryMethod;
-use GlobalPayments\Api\Entities\Enums\GatewayProvider;
-use GlobalPayments\Api\Entities\Enums\ManualEntryMethod;
-use GlobalPayments\Api\Entities\Enums\CaptureMode;
-use GlobalPayments\Api\Entities\Enums\PayByLinkStatus;
-use GlobalPayments\Api\Entities\Enums\PaymentEntryMode;
-use GlobalPayments\Api\Entities\Enums\PaymentProvider;
-use GlobalPayments\Api\Entities\Enums\PaymentType;
-use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
-use GlobalPayments\Api\Entities\Enums\TransactionModifier;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\Exceptions\ApiException;
-use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
-use GlobalPayments\Api\Entities\GpApi\DTO\Card;
-use GlobalPayments\Api\Entities\GpApi\DTO\PaymentMethod;
+use GlobalPayments\Api\Builders\{AuthorizationBuilder, BaseBuilder};
+use GlobalPayments\Api\Entities\{
+    CustomerDocument,
+    EncryptionData,
+    IRequestBuilder,
+    PayByLinkData,
+    PhoneNumber,
+    Product,
+    StoredCredential
+};
+use GlobalPayments\Api\Entities\Enums\{
+    AddressType,
+    BankPaymentType,
+    CaptureMode,
+    CardType,
+    Channel,
+    DigitalWalletTokenFormat,
+    EncyptedMobileType,
+    EntryMethod,
+    GatewayProvider,
+    ManualEntryMethod,
+    PayByLinkStatus,
+    PaymentEntryMode,
+    PaymentProvider,
+    PaymentType,
+    PhoneNumberType,
+    TransactionModifier,
+    TransactionType
+};
+use GlobalPayments\Api\Entities\Exceptions\{ApiException, UnsupportedTransactionException};
+use GlobalPayments\Api\Entities\GpApi\DTO\{Card, PaymentMethod};
 use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
-use GlobalPayments\Api\Entities\IRequestBuilder;
-use GlobalPayments\Api\Entities\PayByLinkData;
-use GlobalPayments\Api\Entities\PhoneNumber;
-use GlobalPayments\Api\Entities\Product;
-use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Gateways\OpenBankingProvider;
 use GlobalPayments\Api\Mapping\EnumMapping;
-use GlobalPayments\Api\PaymentMethods\BankPayment;
-use GlobalPayments\Api\PaymentMethods\BNPL;
-use GlobalPayments\Api\PaymentMethods\Credit;
-use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\PaymentMethods\CreditTrackData;
-use GlobalPayments\Api\PaymentMethods\DebitTrackData;
-use GlobalPayments\Api\PaymentMethods\ECheck;
-use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
-use GlobalPayments\Api\PaymentMethods\FundsAccount;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ICardData;
-use GlobalPayments\Api\PaymentMethods\Interfaces\IEncryptable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ITokenizable;
-use GlobalPayments\Api\PaymentMethods\Interfaces\ITrackData;
+use GlobalPayments\Api\PaymentMethods\{
+    AlternativePaymentMethod,
+    BankPayment,
+    BNPL,
+    Credit,
+    CreditCardData,
+    CreditTrackData,
+    DebitTrackData,
+    ECheck,
+    FundsAccount
+};
+use GlobalPayments\Api\PaymentMethods\Interfaces\{ICardData, IEncryptable, ITokenizable, ITrackData};
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
-use GlobalPayments\Api\Utils\CardUtils;
-use GlobalPayments\Api\Utils\EmvUtils;
-use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Utils\{CardUtils, EmvUtils, GenerationUtils, StringUtils};
 use GlobalPayments\Api\Utils\Logging\ProtectSensitiveData;
-use GlobalPayments\Api\Utils\StringUtils;
 
 class GpApiAuthorizationRequestBuilder implements IRequestBuilder
 {
@@ -160,7 +158,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $requestData['reference'] = $builder->clientTransactionId;
                     $requestData['name'] = $payByLink->name;
                     $requestData['description'] = $builder->description;
-                    $requestData['shippable'] = $payByLink->isShippable == true ? 'YES' : 'NO';
+                    $requestData['shippable'] = StringUtils::boolToYesNo($payByLink->isShippable) ? StringUtils::boolToYesNo($payByLink->isShippable) : "NO";
                     $requestData['shipping_amount'] = StringUtils::toNumeric($payByLink->shippingAmount);
                     $requestData['expiration_date'] = !empty($payByLink->expirationDate) ?
                         (new \DateTime($payByLink->expirationDate))->format('Y-m-d\TH:i:s\Z') : null;
@@ -197,6 +195,238 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     'description' => $builder->description,
                     'usable_balance_mode' => $builder->paymentMethod->usableBalanceMode ?? null
                 ];
+                break;
+            case TransactionType::HOSTED_PAYMENT_PAGE:
+                // P.M: Similar to TransactionType::CREATE, but with more data in the request some of which is required 
+                // for the 3DS challange.
+                if ($builder->hostedPaymentData) {
+                    $endpoint = GpApiRequest::PAYBYLINK_ENDPOINT;
+                    $verb = 'POST';
+                    $requestData = [];
+                    $requestData['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
+                    $requestData['account_id'] = $config->accessTokenInfo->transactionProcessingAccountID;
+                    $requestData['type'] = $builder->hostedPaymentData->type;
+                    $requestData['name'] = $builder->hostedPaymentData->name;
+                    $requestData['description'] = $builder->hostedPaymentData->description;
+                    $requestData['reference'] = $builder->hostedPaymentData->reference;
+                    if(property_exists($builder->hostedPaymentData, 'expirationDate') && !empty($builder->hostedPaymentData->expirationDate)) {
+                        $requestData['expiration_date'] = (new \DateTime($builder->hostedPaymentData->expirationDate))->format('Y-m-d\TH:i:s\Z');
+                    }
+                    if(property_exists($builder->hostedPaymentData, "images") && !empty($builder->hostedPaymentData->images)) {
+                        $requestData['images'] = $builder->hostedPaymentData->images;
+                    }
+
+                    $shippable = $builder->hostedPaymentData->shippable ?? false;
+                    $requestData['shippable'] = is_bool($shippable) 
+                        ? StringUtils::boolToYesNo($shippable) 
+                        : "NO";
+                    
+                    // Add shipping_amount if shippable is YES and amount is provided
+                    if ($requestData['shippable'] === 'YES' && !empty($builder->hostedPaymentData->shippingAmount)) {
+                        $requestData['shipping_amount'] = StringUtils::toNumeric($builder->hostedPaymentData->shippingAmount);
+                    }
+                    
+                    // Add usage_mode and usage_limit
+                    if ($builder->hostedPaymentData->order && $builder->hostedPaymentData->order->HPPTransactionConfiguration) {
+                        if (!empty($builder->hostedPaymentData->order->HPPTransactionConfiguration->usageMode)) {
+                            $requestData['usage_mode'] = $builder->hostedPaymentData->order->HPPTransactionConfiguration->usageMode;
+                        }
+                        
+                        if (!empty($builder->hostedPaymentData->order->HPPTransactionConfiguration->usageLimit)) {
+                            $requestData['usage_limit'] = $builder->hostedPaymentData->order->HPPTransactionConfiguration->usageLimit;
+                        }
+                    }
+                    
+                    // Payer information - Already validation in place for this data
+                    if ($builder->hostedPaymentData->payer) {
+                        $payer = $builder->hostedPaymentData->payer;
+                        $requestData['payer'] = [
+                            'status' => $payer->status ?? "NEW",
+                            // 'id' => $payer->id ?? "",
+                            'name' => $payer->name ?? "",
+                            'first_name' => $payer->firstName ?? "",
+                            'last_name' => $payer->lastName ?? "",
+                            'language' => $payer->language ?? 'en',
+                            'email' => $payer->email ?? ""
+                        ];
+                        if(property_exists($payer, 'id') && !empty($payer->id)) {
+                            $requestData['payer']['id'] = $payer->id;
+                        }
+                        
+                        // Mobile phone - Allready validation in place for this data
+                        if ($payer->mobilePhone) {
+                            $requestData['payer']['mobile_phone'] = [
+                                'country_code' => $payer->mobilePhone->countryCode ?? null,
+                                'subscriber_number' => $payer->mobilePhone->number ?? null
+                            ];
+                        }
+                        
+                        // Billing address - Allready validation in place for this data
+                        if ($payer->billingAddress) {
+                            $requestData['payer']['billing_address'] = [
+                                'line_1' => $payer->billingAddress->streetAddress1 ?? null,
+                                'line_2' => $payer->billingAddress->streetAddress2 ?? null,
+                                'line_3' => $payer->billingAddress->streetAddress3 ?? null,
+                                'city' => $payer->billingAddress->city ?? null,
+                                'postal_code' => $payer->billingAddress->postalCode ?? null,
+                                'state' => $payer->billingAddress->state ?? null,
+                                'country' => $payer->billingAddress->countryCode ?? null,
+                                'type' => $payer->billingAddress->type ?? AddressType::BILLING
+                            ];
+                            if(property_exists($payer->billingAddress, 'phone') && !empty($payer->billingAddress->phone)) {
+                                $requestData['payer']['billing_address']['phone'] = $payer->billingAddress->phone;
+                            }
+                        }
+                        
+                        // Address match indicator
+                        if (!empty($payer->addressMatchIndicator)) {
+                            $requestData['payer']['address_match_indicator'] = is_bool($payer->addressMatchIndicator) 
+                                ? StringUtils::boolToYesNo($payer->addressMatchIndicator) 
+                                : "NO";
+                        }
+                    }
+                    
+                    // Order information
+                    if ($builder->hostedPaymentData->order) {
+                        $order = $builder->hostedPaymentData->order;
+                        $requestData['order'] = [
+                            'amount' => StringUtils::toNumeric($order->amount),
+                            'currency' => $order->currency
+                        ];
+                        
+                        // Add order reference if available
+                        if (!empty($order->reference)) {
+                            $requestData['order']['reference'] = $order->reference;
+                        }
+                        
+                        // Order Transaction configuration
+                        if ($order->HPPTransactionConfiguration) {
+                            $transactionConfig = $order->HPPTransactionConfiguration;
+                            $requestData['order']['transaction_configuration'] = [
+                                'channel' => $config->channel,
+                                'country' => $config->country,
+                                'allowed_payment_methods' => $transactionConfig->allowedPaymentMethods ?? ["CARD"],
+                            ];
+                            
+                            // Add capture mode if available
+                            if (!empty($transactionConfig->captureMode)) {
+                                $requestData['order']['transaction_configuration']['capture_mode'] = $transactionConfig->captureMode;
+                            }
+                            
+                            // Add currency conversion mode if available
+                            if (!empty($transactionConfig->currencyConversionMode)) {
+                                $requestData['order']['transaction_configuration']['currency_conversion_mode'] = is_bool($transactionConfig->currencyConversionMode) 
+                                    ? StringUtils::boolToYesNo($transactionConfig->currencyConversionMode) 
+                                    : "NO";
+                            }
+                        }
+                        
+                        // Payment method configuration
+                        if ($order->HPPPaymentMethodConfiguration) {
+                            $paymentMethodConfig = $order->HPPPaymentMethodConfiguration;
+                            $requestData['order']['payment_method_configuration'] = [];
+                            // Authentications
+                            if ($paymentMethodConfig->authentications) {
+                                $auth = $paymentMethodConfig->authentications;
+                                $requestData['order']['payment_method_configuration']['authentications'] = [
+                                    'preference' => $auth->preference ?? "CHALLENGE_PREFERRED",
+                                    'exempt_status' => $auth->exemptStatus ?? "LOW_VALUE",
+                                    'billing_address_required' => is_bool($auth->billingAddressRequired) 
+                                        ? StringUtils::boolToYesNo($auth->billingAddressRequired) 
+                                        : 'NO'
+                                ];
+                            }
+                            // APM configuration
+                            if ($paymentMethodConfig->apm) {
+                                $apm = $paymentMethodConfig->apm;
+                                $requestData['order']['payment_method_configuration']['apm'] = [
+                                    'shipping_address_enabled' => is_bool($apm->shippingAddressEnabled) 
+                                        ? StringUtils::boolToYesNo($apm->shippingAddressEnabled) 
+                                        : 'NO',
+                                    'address_override' => is_bool($apm->addressOverride) 
+                                        ? StringUtils::boolToYesNo($apm->addressOverride) 
+                                        : 'NO',
+                                ];
+                            }
+                            // Storage mode
+                            if (!empty($paymentMethodConfig->storageMode)) {
+                                $requestData['order']['payment_method_configuration']['storage_mode'] = $paymentMethodConfig->storageMode;
+                            }
+                            // Digital wallets
+                            if (!empty($paymentMethodConfig->digitalWallets)) {
+                                $requestData['order']['payment_method_configuration']['digital_wallets'] = $paymentMethodConfig->digitalWallets;
+                            }
+                        }
+                        
+                        // Shipping address 
+                        if ($builder->hostedPaymentData->payer && $builder->hostedPaymentData->payer->shippingAddress) {
+                            $shippingAddr = $builder->hostedPaymentData->payer->shippingAddress;
+                            $requestData['order']['shipping_address'] = [
+                                'line_1' => $shippingAddr->streetAddress1 ?? "",
+                                'line_2' => $shippingAddr->streetAddress2 ?? "",
+                                'line_3' => $shippingAddr->streetAddress3 ?? "",
+                                'city' => $shippingAddr->city ?? "",
+                                'postal_code' => $shippingAddr->postalCode ?? "",
+                                'state' => $shippingAddr->state ?? "",
+                                'country' => $shippingAddr->countryCode ?? "",
+                                'type' => $shippingAddr->type ?? AddressType::SHIPPING
+                            ];
+                            if(property_exists($shippingAddr, 'phone') && !empty($shippingAddr->phone)) {
+                                $requestData['order']['shipping_address']['phone'] = $shippingAddr->phone;
+                            }
+                        }
+                        
+                        // Shipping phone 
+                        if ($builder->hostedPaymentData->payer && $builder->hostedPaymentData->payer->shippingPhone) {
+                            $shippingPhone = $builder->hostedPaymentData->payer->shippingPhone;
+                            $requestData['order']['shipping_phone'] = [
+                                'country_code' => $shippingPhone->countryCode ?? null,
+                                'subscriber_number' => $shippingPhone->number ?? null
+                            ];
+                        }
+                    }
+                    
+                    // Notifications
+                    if ($builder->hostedPaymentData->notifications) {
+                        $requestData['notifications'] = [
+                            'return_url' => $builder->hostedPaymentData->notifications->returnUrl,
+                            'status_url' => $builder->hostedPaymentData->notifications->statusUrl,
+                            'cancel_url' => $builder->hostedPaymentData->notifications->cancelUrl ?? ""
+                        ];
+                    }
+                    
+                    //Configuration for iframe callbacks
+                    if (!empty($builder->hostedPaymentData->HPPDisplayConfiguration)) {
+                        $requestData['display_configuration'] = $builder->hostedPaymentData->HPPDisplayConfiguration;
+                    }
+                    
+                    // Hosted payment page functionality   
+                    if (!empty($builder->hostedPaymentData->function)) {
+                        $requestData['function'] = $builder->hostedPaymentData->function;
+                    }
+                    
+                    //Referrer URL for hosted payment page
+                    if (!empty($builder->hostedPaymentData->referrerUrl)) {
+                        $requestData['referrer_url'] = $builder->hostedPaymentData->referrerUrl;
+                    }
+                    
+                    //IP address and subnet mask for hosted payment page
+                    if (!empty($builder->hostedPaymentData->ipAddress)) {
+                        $requestData['ip_address'] = $builder->hostedPaymentData->ipAddress;
+                        if (!empty($builder->hostedPaymentData->ipSubnetMask)) {
+                            $requestData['ip_subnet_mask'] = $builder->hostedPaymentData->ipSubnetMask;
+                        }
+                    }
+                    
+                    //App email and app IDs for credential exchange functionality
+                    if (!empty($builder->hostedPaymentData->appEmail)) {
+                        $requestData['app_email'] = $builder->hostedPaymentData->appEmail;
+                    }
+                    
+                    if (!empty($builder->hostedPaymentData->appIds)) {
+                        $requestData['app_ids'] = $builder->hostedPaymentData->appIds;
+                    }
+                }
                 break;
             default:
                 return '';
@@ -303,9 +533,9 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $request['initiator'] = !empty($storedCredential->initiator) ?
             EnumMapping::mapStoredCredentialInitiator(GatewayProvider::GP_API, $storedCredential->initiator) : null;
         $request['stored_credential'] = [
-            'model' => !empty($storedCredential->type) ? strtoupper($storedCredential->type) : null,
-            'reason' => !empty($storedCredential->reason) ? strtoupper($storedCredential->reason) : null,
-            'sequence' => !empty($storedCredential->sequence) ? strtoupper($storedCredential->sequence) : null
+            'model' => !empty($storedCredential->type) ? strtoupper((string) $storedCredential->type) : null,
+            'reason' => !empty($storedCredential->reason) ? strtoupper((string) $storedCredential->reason) : null,
+            'sequence' => !empty($storedCredential->sequence) ? strtoupper((string) $storedCredential->sequence) : null
         ];
     }
 

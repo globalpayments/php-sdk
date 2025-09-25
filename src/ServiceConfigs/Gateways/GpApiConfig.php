@@ -22,7 +22,7 @@ class GpApiConfig extends GatewayConfig
     public $appKey;
 
     /**
-     * @var $accessTokenInfo AccessTokenInfo
+     * @var AccessTokenInfo $accessTokenInfo
      */
     public $accessTokenInfo;
     /**
@@ -89,12 +89,6 @@ class GpApiConfig extends GatewayConfig
      * @var string
      */
     public string $statusUrl;
-
-    /**
-     * transaction account name used for recurring operation
-     * @var string
-     */
-    public string $transactionAccountName;
 
     public IAccessTokenProvider $accessTokenProvider;
 

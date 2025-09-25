@@ -265,49 +265,4 @@ class PayerTest extends TestCase
         $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
         $this->assertNotNull($transaction->bnplResponse->redirectUrl);
     }
-
-    public function gpApiRecurringConfig()
-    {
-        $config = new GpApiConfig();
-        $config->appId = 'DgRZQ6DAwWtwl6tVGBS6EgnsfVG5SiXh';
-        $config->appKey = 'cayFg03gE0Ei7TLB';
-        $config->merchantId = 'MER_7e3e2c7df34f42819b3edee31022ee3f';
-        $config->transactionAccountName = 'transaction_processing';
-        return $config;
-    }
-
-    /** GPAPI Recurring Operation with MerchantID **/
-    public function testGpApiRecurringOperationWithMerchantId()
-    {
-        // Use your config
-        $config = $this->gpApiRecurringConfig();
-        ServicesContainer::configureService($config);
-
-        // Tokenize card
-        $card = new CreditCardData();
-        $card->number = "4012001038488884";
-        $card->expMonth = '12';
-        $card->expYear = '2030';
-        $card->cvn = "123";
-        $card->cardHolderName = "James Mason";
-        $tokenizeResponse = $this->card->tokenize()->execute();
-        $this->assertNotNull($tokenizeResponse);
-        $card->token = is_object($tokenizeResponse) ? $tokenizeResponse->token : $tokenizeResponse;
-
-        // Build Customer with payment method
-        $this->newCustomer->addPaymentMethod($card->token, $card);
-
-        // Create payer
-        $payer = $this->newCustomer->create();
-        $this->assertNotNull($payer->id);
-        $this->assertEquals($this->newCustomer->firstName, $payer->firstName);
-        $this->assertEquals($this->newCustomer->lastName, $payer->lastName);
-        $this->assertNotNull($payer->paymentMethods);
-
-        // Validate payment methods token included in payer
-        $tokens = [$card->token];
-        foreach ($payer->paymentMethods as $method) {
-            $this->assertContains($method->id, $tokens);
-        }
-    }
 }

@@ -23,6 +23,7 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Utils\Logging\ProtectSensitiveData;
 use GlobalPayments\Api\Utils\StringUtils;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 
 class GpApiManagementRequestBuilder implements IRequestBuilder
 {
@@ -115,6 +116,22 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                 $verb = 'POST';
                 $payload['amount'] = StringUtils::toNumeric($builder->amount);
                 $payload['currency_conversion'] = !empty($builder->dccRateData) ? $this->getDccRate($builder->dccRateData) : null;
+                  
+                if ( $builder->paymentMethod instanceof TransactionReference ) {
+                    $apmResponse = $builder->paymentMethod->alternativePaymentResponse;
+                    if ( !empty($apmResponse) &&
+                        $apmResponse->providerName == strtolower(AlternativePaymentType::BLIK) 
+                    ) {
+                        $payload = [
+                            'payment_method' => [
+                                'apm' => [
+                                    'provider' => $apmResponse->providerName,
+                                    'redirect_url' => $apmResponse->redirectUrl
+                                ]
+                            ]
+                        ];
+                    }
+                }
                 break;
             case TransactionType::REVERSAL:
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/reversal';

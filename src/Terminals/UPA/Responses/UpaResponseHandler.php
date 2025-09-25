@@ -14,28 +14,15 @@ class UpaResponseHandler extends TerminalResponse
 
     private function checkResponse(array $commandResult): void
     {
-        $cmdResult = $commandResult['cmdResult'] ?? ($commandResult['data']['cmdResult'] ?? null);
-        if (!empty($cmdResult['result']) && $cmdResult['result'] === 'Failed') {
-            $errorCode = $cmdResult['errorCode'] ?? '';
-            $errorMessage = $cmdResult['errorMessage'] ?? '';
-            $host = $commandResult['data']['host'] ?? [];
-            $gatewayResponseCode = $host['gatewayResponseCode'] ?? '';
-            $gatewayResponseMessage = $host['gatewayResponseMessage'] ?? '';
-            $issuerResponseCode = $host['responseCode'] ?? '';
-            $issuerResponseMessage = $host['responseText'] ?? '';
-            $fullMessage = sprintf(
-                'Unexpected Gateway Response: %s - %s | GatewayResponseCode: %s | GatewayResponseMessage: %s | IssuerResponseCode: %s | IssuerResponseMessage: %s',
-                $errorCode,
-                $errorMessage,
-                $gatewayResponseCode,
-                $gatewayResponseMessage,
-                $issuerResponseCode,
-                $issuerResponseMessage
-            );
+        if (!empty($commandResult['result']) && $commandResult['result'] === 'Failed') {
             throw new GatewayException(
-                $fullMessage,
-                $errorCode,
-                $errorMessage
+                sprintf(
+                    'Unexpected Gateway Response: %s - %s',
+                    $commandResult['errorCode'],
+                    $commandResult['errorMessage']
+                ),
+                $commandResult['errorCode'],
+                $commandResult['errorMessage']
             );
         }
     }
@@ -46,7 +33,7 @@ class UpaResponseHandler extends TerminalResponse
         if (empty($firstNodeData['cmdResult'])) {
             throw new MessageException(self::INVALID_RESPONSE_FORMAT);
         }
-        $this->checkResponse($firstNodeData);
+        $this->checkResponse($firstNodeData['cmdResult']);
         if ($this->isGpApiResponse($response)) {
             $this->status = $response['status'] ?? null;
             $this->transactionId = $response['id'] ?? null;
