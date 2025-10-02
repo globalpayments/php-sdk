@@ -3,7 +3,12 @@
 </a>
 
 # Changelog
-## Latest Version v13.3.6 (09/11/25)
+## Latest Version v13.3.7 (10/02/25)
+### Enhancements:
+- [Portico]  Implemented conditional clerkId mapping for Credit card transactions
+- [Macroscope] Fix 3DS critical security vulnerability
+
+## v13.3.6 (09/11/25)
 ### Enhancements:
 - [UPA] Return all UPA error response properties
 - [Macroscope] Reverted security fixes from v13.3.1 and v13.3.3

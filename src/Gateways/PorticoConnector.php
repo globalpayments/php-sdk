@@ -124,6 +124,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
      */
     public $developerId;
 
+    /** @var string */
+    public string $clerkId;
+
     /**
      * Version number for the application, as given during certification
      *
@@ -616,7 +619,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         $transaction->appendChild($block1);
 
-        $response = $this->doTransaction($this->buildEnvelope($xml, $transaction, $builder->clientTransactionId));
+        $response = $this->doTransaction(
+            $this->buildEnvelope($xml, $transaction, $builder->clientTransactionId, $builder)
+        );
         return $this->mapResponse($response, $builder, $this->buildEnvelope($xml, $transaction));
     }
 
@@ -984,7 +989,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             }
         }
 
-        $response = $this->doTransaction($this->buildEnvelope($xml, $transaction));
+        $response = $this->doTransaction(
+            $this->buildEnvelope($xml, $transaction, null, $builder)
+        );
         return $this->mapResponse($response, $builder, $this->buildEnvelope($xml, $transaction));
     }
     public function processReport(ReportBuilder $builder)
@@ -1268,7 +1275,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 }
             }
         }
-        $response = $this->doTransaction($this->buildEnvelope($xml, $transaction));
+        $response = $this->doTransaction(
+            $this->buildEnvelope($xml, $transaction, null, $builder)
+        );
         return $this->mapReportResponse($response, $builder);
     }
 
@@ -1280,7 +1289,13 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
      *
      * @return DOMElement
      */
-    protected function buildEnvelope(DOMDocument $xml, DOMElement $transaction, $clientTransactionId = null)
+    protected function buildEnvelope
+    (
+        DOMDocument $xml, 
+        DOMElement $transaction, 
+        $clientTransactionId = null, 
+        $builder = null
+    ) : string|false
     {
         $soapEnvelope = $xml->createElement('soapenv:Envelope');
         $soapEnvelope->setAttribute(
@@ -1329,6 +1344,10 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $header->appendChild(
                 $xml->createElement('DeveloperID', $this->developerId)
             );
+        }
+        $clerkId = !empty($this->clerkId) ? $this->clerkId : (($builder && !empty($builder->clerkId)) ? $builder->clerkId : null);
+        if (!empty($clerkId)) {
+            $header->appendChild($xml->createElement('ClerkID', $clerkId));
         }
         if (!empty($this->versionNumber)) {
             $header->appendChild(
@@ -1674,8 +1693,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $summary->cardType = (string)$item->CardType;
         }
 
-        if (isset($item) && isset($item->ClerkId)) {
-            $summary->clerkId = (string)$item->ClerkId;
+        if (isset($item) && isset($item->ClerkID)) {
+            $summary->clerkId = (string)$item->ClerkID;
         }
 
         if (isset($item) && isset($item->ClientTxnId)) {

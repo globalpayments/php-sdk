@@ -619,4 +619,39 @@ class CreditTest extends TestCase
         $this->assertNotNull($reportingServiceResponse);
         $this->assertFalse(isset($reportingServiceResponse->amountIndicator));
     }
+
+    public function testCreditSaleWithClerkIdLogs()
+    {
+        $response = $this->card->charge(15)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->withClerkId('12345')
+            ->execute();
+
+        $reportResponse = ReportingService::transactionDetail($response->transactionId)
+            ->execute();
+
+        $filename = 'portico-logs/log_' . date('Y-m-d') . '.txt';
+        $xml = file_get_contents($filename);
+
+        $this->assertEquals('12345', $reportResponse->clerkId, 'ClerkID should be present in transaction detail report');
+        $this->assertStringContainsString('<ClerkID>12345</ClerkID>', $xml, 'ClerkID should be present in XML log');
+    }
+
+    public function testCreditSaleWithoutClerkIdLogs()
+    {
+        $response = $this->card->charge(15)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $reportResponse = ReportingService::transactionDetail($response->transactionId)
+            ->execute();
+
+        $filename = 'portico-logs/log_' . date('Y-m-d') . '.txt';
+        $xml = file_get_contents($filename);
+
+        $this->assertEmpty($reportResponse->clerkId, 'ClerkID should NOT be present in transaction detail report');
+        $this->assertStringNotContainsString('<ClerkId>', $xml, 'ClerkId (lowercase d) should NOT be present in XML log');
+    }
 }

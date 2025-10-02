@@ -537,6 +537,9 @@ class AuthorizationBuilder extends TransactionBuilder
     /** @var ?array */
     public $bills;
 
+    /** @var string */
+    public string $clerkId;
+
     /**
      * {@inheritdoc}
      *
