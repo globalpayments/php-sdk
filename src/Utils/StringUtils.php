@@ -110,4 +110,19 @@ class StringUtils
 
         return json_encode($value);
     }
+
+    /**
+     * Convert a boolean value to "YES" or "NO" string, used in HPP for GpAPI
+     * 
+     * @param mixed $value The value to convert
+     * @return string|null Returns "YES" for true, "NO" for false, or null if not a boolean
+     */
+    public static function boolToYesNo($value) : ?string
+    {
+        if (!is_bool($value)) {
+            return null;
+        }
+
+        return $value ? 'YES' : 'NO';
+    }
 }

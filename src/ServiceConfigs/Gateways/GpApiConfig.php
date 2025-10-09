@@ -22,7 +22,7 @@ class GpApiConfig extends GatewayConfig
     public $appKey;
 
     /**
-     * @var $accessTokenInfo AccessTokenInfo
+     * @var AccessTokenInfo $accessTokenInfo
      */
     public $accessTokenInfo;
     /**

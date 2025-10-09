@@ -3,7 +3,11 @@
 </a>
 
 # Changelog
-## Latest Version v13.3.8 (10/09/25)
+## Latest Version v13.3.9 (10/09/25)
+### Enhancements:
+- [GPAPI] Added Hosted Payment Pages (HPP) integration.
+
+## v13.3.8 (10/09/25)
 ### Enhancements:
 - [UPA] Added Surchagble Tippable Amount for UPA and MITC UPA
 - [Macroscope] Various high security updates

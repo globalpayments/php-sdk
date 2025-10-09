@@ -152,6 +152,24 @@ class HostedPaymentData
     /** @var HostedPaymentType */
     public $hostedPaymentType;
 
+    public $type;
+    public $name;
+    public $description;
+    public $reference;
+    public $expirationDate;
+    public $images;
+    public $shippingAmount;
+    public $order;
+    public $payer;
+    public $notifications;
+    public $HPPDisplayConfiguration;
+    public $function;
+    public $referrerUrl;
+    public $ipAddress;
+    public $ipSubnetMask;
+    public $appEmail;
+    public $appIds;
+
     /**
      * Instantiates a new `HostedPaymentData` object.
      *

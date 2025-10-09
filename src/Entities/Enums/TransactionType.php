@@ -67,4 +67,5 @@ class TransactionType extends Enum
     const TRANSFER_FUNDS = 288230376151711744; // 1 << 58
     const DEVICE_ORDER = 576460752303423488; // 1 << 59
     const GET_TOKEN_INFO = 4461637978905770969; // 1 << 60
+    const HOSTED_PAYMENT_PAGE = 8935141660703064064; // 1 << 61
 }

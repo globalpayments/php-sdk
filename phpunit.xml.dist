@@ -44,6 +44,20 @@
     <testsuite name="transactionapi">
         <directory>./test/Integration/Gateways/TransactionApiConnector/</directory>
     </testsuite>
+    <testsuite name="hpp">
+      <directory>./test/Unit/Entities/HPP/</directory>
+      <directory>./test/Unit/Builders/HPP/</directory>
+      <directory>./test/Unit/Services/HPP/</directory>
+      <file>./test/Integration/Gateways/GpApiConnector/HPPIntegrationTest.php</file>
+    </testsuite>
+    <testsuite name="hpp-unit">
+      <directory>./test/Unit/Entities/HPP/</directory>
+      <directory>./test/Unit/Builders/HPP/</directory>
+      <directory>./test/Unit/Services/HPP/</directory>
+    </testsuite>
+    <testsuite name="hpp-integration">
+      <file>./test/Integration/Gateways/GpApiConnector/HPPIntegrationTest.php</file>
+    </testsuite>
   </testsuites>
 </phpunit>
 <!-- vim: set ft=xml -->
