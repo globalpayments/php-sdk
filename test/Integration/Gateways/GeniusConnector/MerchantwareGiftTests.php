@@ -31,8 +31,8 @@ class MerchantwareGiftTests extends TestCase
     {
         $config = new GeniusConfig();
         $config->merchantName = 'Test Shane Logsdon';
-        $config->merchantSiteId = 'BKHV2T68';
-        $config->merchantKey = 'AT6AN-ALYJE-YF3AW-3M5NN-UQDG1';
+        $config->merchantSiteId = 'BKHV2T68'; #gitleaks:allow
+        $config->merchantKey = 'AT6AN-ALYJE-YF3AW-3M5NN-UQDG1'; #gitleaks:allow
         $config->gatewayProvider = GatewayProvider::GENIUS;
         $config->environment = Environment::TEST;
         return $config;

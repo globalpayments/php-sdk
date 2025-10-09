@@ -26,7 +26,7 @@ final class AutoSubstantiationTest extends TestCase
     protected function getConfig()
     {
         $config = new PorticoConfig();
-        $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
+        $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A'; #gitleaks:allow
         $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
         return $config;
     }

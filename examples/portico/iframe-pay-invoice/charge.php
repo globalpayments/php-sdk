@@ -11,7 +11,7 @@ $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 $_GET = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
 
 $config = new PorticoConfig();
-$config->secretApiKey = 'skapi_cert_MYl2AQAowiQAbLp5JesGKh7QFkcizOP2jcX9BrEMqQ';
+$config->secretApiKey = 'skapi_cert_MYl2AQAowiQAbLp5JesGKh7QFkcizOP2jcX9BrEMqQ'; #gitleaks:allow
 
 ServicesContainer::configureService($config);
 
@@ -40,7 +40,6 @@ try {
     echo "<br />Invoice Number: " . isset($invoiceNumber) ? htmlspecialchars($invoiceNumber) : "";
 
     // i'm running windows, so i had to update this:
-    //ini_set("SMTP", "my-mail-server");
 
     // sendEmail($_GET['EMAIL'], 'donotreply@e-hps.com', 'Successful Charge!', $body, true);
 } catch (Exception $e) {

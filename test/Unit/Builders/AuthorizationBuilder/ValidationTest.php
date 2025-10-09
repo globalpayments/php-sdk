@@ -145,7 +145,7 @@ class ValidationTest extends TestCase
     protected function getConfig()
     {
         $config = new PorticoConfig();
-        $config->secretApiKey = 'skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w';
+        $config->secretApiKey = 'skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w'; #gitleaks:allow
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':
                               'https://cert.api2.heartlandportico.com';

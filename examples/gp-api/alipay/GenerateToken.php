@@ -8,9 +8,9 @@ use GlobalPayments\Api\Services\GpApiService;
 
 class GenerateToken
 {
-    const APP_ID = 'bvKLJsu6vYC9zxX2BpOgNK95kbboP3Uw';
-    const APP_KEY = '7aH9QlA3yVFwpESQ';
-    const ACCOUNT_ID = 'TRA_1366cd0db8c14fffb130ab49be84d944';
+    const APP_ID = 'bvKLJsu6vYC9zxX2BpOgNK95kbboP3Uw'; #gitleaks:allow
+    const APP_KEY = '7aH9QlA3yVFwpESQ'; #gitleaks:allow
+    const ACCOUNT_ID = 'TRA_1366cd0db8c14fffb130ab49be84d944'; #gitleaks:allow
 
     private static $instance = null;
     private string $accessToken;

@@ -660,4 +660,31 @@ class UpaMicTests extends TestCase
         $this->assertEquals('00', $response->deviceResponseCode);
         $this->assertEquals('COMPLETE', $response->status);
     }
+
+    public function testCreditSaleWithTippableAmount()
+    {
+        $response = $this->device->sale(10)
+            ->withTippableAmount(1.0)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+    }
+
+    public function testCreditSaleWithTippableAmountGreaterThanBaseAmount()
+    {
+        try {
+            $this->device->sale(10)
+                ->withTippableAmount(15.0)
+                ->execute();
+            
+            $this->fail('Should throw: TIP005 - Tippable Amount is cannot be greater than Base Amount');
+        } catch (GatewayException $e) {
+            $this->assertEquals(
+                'TIP005', 
+                $e->responseCode, 
+                $e->responseMessage
+            );
+        }
+    }
 }

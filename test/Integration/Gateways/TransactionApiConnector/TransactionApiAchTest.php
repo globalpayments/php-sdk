@@ -34,9 +34,9 @@ class TransactionApiAchTest extends TestCase
     public function setUpConfigCA()
     {
         $config = new TransactionApiConfig();
-        $config->accountCredential = '800000052925:80039996:58xcGM3pbTtzcidVPY65XBqbB1EzWoD3';
-        $config->apiSecret         = 'lucQKkwz3W3RGzABkSWUVZj1Mb0Yx3E9chAA8ESUVAv';
-        $config->apiKey            = 'qeG6EWZOiAwk4jsiHzsh2BN8VkN2rdAs';
+        $config->accountCredential = '800000052925:80039996:58xcGM3pbTtzcidVPY65XBqbB1EzWoD3'; #gitleaks:allow
+        $config->apiSecret         = 'lucQKkwz3W3RGzABkSWUVZj1Mb0Yx3E9chAA8ESUVAv'; #gitleaks:allow
+        $config->apiKey            = 'qeG6EWZOiAwk4jsiHzsh2BN8VkN2rdAs'; #gitleaks:allow
         $config->apiVersion        = '2021-04-08';
         $config->apiPartnerName    = 'mobile_sdk';
         $config->country           = 'CA';
@@ -48,9 +48,9 @@ class TransactionApiAchTest extends TestCase
     public function setUpConfigUS()
     {
         $config = new TransactionApiConfig();
-        $config->accountCredential = '800000052925:80039990:n7j9rGFUml1Du7rcRs7XGYdJdVMmZKzh';
-        $config->apiSecret         = 'lucQKkwz3W3RGzABkSWUVZj1Mb0Yx3E9chAA8ESUVAv';
-        $config->apiKey            = 'qeG6EWZOiAwk4jsiHzsh2BN8VkN2rdAs';
+        $config->accountCredential = '800000052925:80039990:n7j9rGFUml1Du7rcRs7XGYdJdVMmZKzh'; #gitleaks:allow
+        $config->apiSecret         = 'lucQKkwz3W3RGzABkSWUVZj1Mb0Yx3E9chAA8ESUVAv'; #gitleaks:allow
+        $config->apiKey            = 'qeG6EWZOiAwk4jsiHzsh2BN8VkN2rdAs'; #gitleaks:allow
         $config->apiVersion        = '2021-04-08';
         $config->apiPartnerName    = 'php_mobile_sdk';
         $config->country           = 'US';

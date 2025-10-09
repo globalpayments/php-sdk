@@ -33,11 +33,11 @@ final class DirectMarketingMOTO_3 extends TestCase {
 
     public function getConfig() { 
         $config = new TransitConfig();
-        $config->merchantId = '887000003226';
+        $config->merchantId = '887000003226'; #gitleaks:allow
         $config->username = 'TA5622118';
-        $config->password = 'f8mapGqWrE^rVaA9';
+        $config->password = 'f8mapGqWrE^rVaA9'; #gitleaks:allow
         $config->deviceId = '88700000322601';
-        $config->transactionKey = '2HZFSJ98G4XEGHXGP31IRLLG8H3XAWB2';
+        $config->transactionKey = '2HZFSJ98G4XEGHXGP31IRLLG8H3XAWB2'; #gitleaks:allow
         $config->developerId = '003226G001';
         $config->gatewayProvider = GatewayProvider::TRANSIT;
         $config->acceptorConfig = new AcceptorConfig(); // might need to adjust this per transaction or per file

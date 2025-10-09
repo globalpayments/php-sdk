@@ -3,7 +3,12 @@
 </a>
 
 # Changelog
-## Latest Version v13.3.7 (10/02/25)
+## Latest Version v13.3.8 (10/09/25)
+### Enhancements:
+- [UPA] Added Surchagble Tippable Amount for UPA and MITC UPA
+- [Macroscope] Various high security updates
+
+## v13.3.7 (10/02/25)
 ### Enhancements:
 - [Portico]  Implemented conditional clerkId mapping for Credit card transactions
 - [Macroscope] Fix 3DS critical security vulnerability

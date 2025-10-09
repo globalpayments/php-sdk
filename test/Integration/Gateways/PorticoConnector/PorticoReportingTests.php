@@ -39,11 +39,11 @@ class PorticoReportingTests extends TestCase
     protected function getConfig()
     {
         $config = new PorticoConfig();
-        //$config->secretApiKey = 'skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw';
+        //$config->secretApiKey = 'skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw'; #gitleaks:allow
         /*$config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':
                               'https://cert.api2.heartlandportico.com';*/
-        $config->secretApiKey = 'skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w';
+        $config->secretApiKey = 'skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w'; #gitleaks:allow
         $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
         //$config->requestLogger = new SampleRequestLogger(new Logger('portico-logs'));
         $config->requestLogger = new SampleRequestLogger(new Logger('portico-logs'));

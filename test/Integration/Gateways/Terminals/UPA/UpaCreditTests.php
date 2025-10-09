@@ -143,7 +143,7 @@ class UpaCreditTests extends TestCase
         $refundResponse = $this->device->refund(1)
             ->withTransactionId($saleResponse->transactionId)
             ->execute();
-      
+
         $this->assertNotNull($refundResponse);
         $this->assertEquals('00', $refundResponse->deviceResponseCode);
     }
@@ -416,6 +416,33 @@ class UpaCreditTests extends TestCase
             var_dump($e->getMessage());
             var_dump($e->responseCode);
             var_dump($e->responseMessage);
+        }
+    }
+
+    public function testCreditSaleWithTippableAmount()
+    {
+        $response = $this->device->sale(10)
+            ->withTippableAmount(1.0)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+    }
+
+    public function testCreditSaleWithTippableAmountGreaterThanBaseAmount()
+    {
+        try {
+            $response = $this->device->sale(10)
+                ->withTippableAmount(15.0)
+                ->execute();
+
+            $this->fail('Should throw: TIP005 - Tippable Amount is cannot be greater than Base Amount');
+        } catch (GatewayException $e) {
+            $this->assertEquals(
+                'TIP005',
+                $e->responseCode,
+                $e->responseMessage
+            );
         }
     }
 }

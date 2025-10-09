@@ -97,7 +97,7 @@ class AchTest extends TestCase
     protected function getConfig()
     {
         $config = new PorticoConfig();
-        $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
+        $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A'; #gitleaks:allow
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':
                               'https://cert.api2.heartlandportico.com';
@@ -114,7 +114,7 @@ class AchTest extends TestCase
                 'routing_number'    => '122000030',
             ),
         );
-        $url = 'https://cert.api2-c.heartlandportico.com/Hps.Exchange.PosGateway.Hpf.v1/api/token?api_key=pkapi_cert_jKc1FtuyAydZhZfbB3';
+        $url = 'https://cert.api2-c.heartlandportico.com/Hps.Exchange.PosGateway.Hpf.v1/api/token?api_key=pkapi_cert_jKc1FtuyAydZhZfbB3'; #gitleaks:allow
         $options = array(
             'http' => array(
                 'header' => "Content-Type: application/json\r\n",

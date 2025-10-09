@@ -32,7 +32,7 @@ final class PorticoEcommerceTests extends TestCase
     protected function getConfig()
     {
         $config = new PorticoConfig();
-        $config->secretApiKey = 'skapi_cert_MTnHBQBkVnIApt5_DIG_OTix0zXDR-7UQMAx6focuA';
+        $config->secretApiKey = 'skapi_cert_MTnHBQBkVnIApt5_DIG_OTix0zXDR-7UQMAx6focuA'; #gitleaks:allow
         $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
         $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
         return $config;
@@ -41,8 +41,8 @@ final class PorticoEcommerceTests extends TestCase
     public function testEcomWithSecure3D_03DefaultVersionOne()
     {
         $ecom = new ThreeDSecure();
-        $ecom->cavv = 'XXXXf98AAajXbDRg3HSUMAACAAA=';
-        $ecom->xid = '0l35fwh1sys3ojzyxelu4ddhmnu5zfke5vst';
+        $ecom->cavv = 'XXXXf98AAajXbDRg3HSUMAACAAA='; #gitleaks:allow
+        $ecom->xid = '0l35fwh1sys3ojzyxelu4ddhmnu5zfke5vst'; #gitleaks:allow
         $ecom->eci = 5;
         $ecom->setVersion(Secure3dVersion::ONE);
         $this->card->threeDSecure = $ecom; 

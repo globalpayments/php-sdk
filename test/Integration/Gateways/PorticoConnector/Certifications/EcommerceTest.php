@@ -342,7 +342,7 @@ class EcommerceTest extends TestCase
     private function config()
     {
         $config = new PorticoConfig();
-        $config->secretApiKey = 'skapi_cert_MakSAgAB518A1HzUXBNfUeC6qBM57U7VueB4hAv8Tg';
+        $config->secretApiKey = 'skapi_cert_MakSAgAB518A1HzUXBNfUeC6qBM57U7VueB4hAv8Tg'; #gitleaks:allow
         $config->serviceUrl = ($this->enableCryptoUrl) ?
             'https://cert.api2-c.heartlandportico.com/' :
             'https://cert.api2.heartlandportico.com';
@@ -2068,7 +2068,7 @@ class EcommerceTest extends TestCase
     public function testGooglePay() : void
     {
         $walletConfig = new PorticoConfig();
-        $walletConfig->secretApiKey = 'skapi_cert_MVq4BQC5n3AAgd4M1Cvph2ud3CGaIclCgC7H_KxZaQ';        
+        $walletConfig->secretApiKey = 'skapi_cert_MVq4BQC5n3AAgd4M1Cvph2ud3CGaIclCgC7H_KxZaQ';  #gitleaks:allow      
         ServicesContainer::configureService($walletConfig, 'GooglePay');
 
         $card = new CreditCardData();
@@ -2088,7 +2088,7 @@ class EcommerceTest extends TestCase
     public function testGooglePayAuth() : void
     {
         $walletConfig = new PorticoConfig();
-        $walletConfig->secretApiKey = 'skapi_cert_MZ64BQBBoHAA5N2pWWCvZ7c1HTKDM2g_4HsnyC6rIQ';        
+        $walletConfig->secretApiKey = 'skapi_cert_MZ64BQBBoHAA5N2pWWCvZ7c1HTKDM2g_4HsnyC6rIQ'; #gitleaks:allow      
         ServicesContainer::configureService($walletConfig, 'GooglePay');
 
         $card = new CreditCardData();
@@ -2108,7 +2108,7 @@ class EcommerceTest extends TestCase
     public function testMasterCardSuptSale() : void
     {
         $walletConfig = new PorticoConfig();
-        $walletConfig->secretApiKey = 'skapi_cert_MVq4BQC5n3AAgd4M1Cvph2ud3CGaIclCgC7H_KxZaQ';        
+        $walletConfig->secretApiKey = 'skapi_cert_MVq4BQC5n3AAgd4M1Cvph2ud3CGaIclCgC7H_KxZaQ'; #gitleaks:allow    
         ServicesContainer::configureService($walletConfig, 'GooglePay');
 
         $card = new CreditCardData();

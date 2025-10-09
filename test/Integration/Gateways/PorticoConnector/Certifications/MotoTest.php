@@ -54,7 +54,7 @@ class MotoTest extends TestCase
     private function config()
     {
         $config = new PorticoConfig();
-        $config->secretApiKey = 'skapi_cert_MRCQAQBC_VQACBE0rFaZlbDDPieMGP06JDAtjyS7NQ';
+        $config->secretApiKey = 'skapi_cert_MRCQAQBC_VQACBE0rFaZlbDDPieMGP06JDAtjyS7NQ'; #gitleaks:allow
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':
                               'https://cert.api2.heartlandportico.com';

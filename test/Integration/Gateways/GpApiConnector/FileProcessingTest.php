@@ -25,8 +25,8 @@ class FileProcessingTest  extends TestCase
 
     public function setUpConfig(): GpApiConfig
     {
-        BaseGpApiTestConfig::$appId = 'fWkEqBHQNyLrWCAtp1vCWDbo10kf5jr6';
-        BaseGpApiTestConfig::$appKey = 'EkOH93AQKuGlj8Ty';
+        BaseGpApiTestConfig::$appId = 'fWkEqBHQNyLrWCAtp1vCWDbo10kf5jr6'; #gitleaks:allow
+        BaseGpApiTestConfig::$appKey = 'EkOH93AQKuGlj8Ty'; #gitleaks:allow
 
         $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
         $config->statusUrl = 'https://eo9faqlbl8wkwmx.m.pipedream.net/';

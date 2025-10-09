@@ -465,7 +465,7 @@ class PartnershipModeTest extends TestCase
         $address->countryCode = "US";
 
         $customer = new Customer();
-        $customer->key = "e193c21a-ce64-4820-b5b6-8f46715de931";
+        $customer->key = "e193c21a-ce64-4820-b5b6-8f46715de931"; #gitleaks:allow
         $customer->firstName = "James";
         $customer->lastName = "Mason";
         $customer->dateOfBirth = "1980-01-01";
@@ -483,7 +483,7 @@ class PartnershipModeTest extends TestCase
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         $fundsData = new FundsData();
-        $fundsData->recipientAccountId ='FMA_88f20a1a45814a1098873cd19bdc383d';
+        $fundsData->recipientAccountId ='FMA_88f20a1a45814a1098873cd19bdc383d'; #gitleaks:allow
         $transferAmount = '1';
         $transferReference = 'split identifier';
         $transferDescription = 'Split 1';

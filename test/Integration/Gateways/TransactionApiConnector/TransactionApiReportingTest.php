@@ -69,9 +69,9 @@ class TransactionApiReportingTest extends TestCase
     public function setUpConfig()
     {
         $this->config = new TransactionApiConfig();
-        $this->config->accountCredential = '800000052925:80039923:eWcWNJhfxiJ7QyEHSHndWk4VHKbSmSue';
-        $this->config->apiSecret         = 'lucQKkwz3W3RGzABkSWUVZj1Mb0Yx3E9chAA8ESUVAv';
-        $this->config->apiKey            = 'qeG6EWZOiAwk4jsiHzsh2BN8VkN2rdAs';
+        $this->config->accountCredential = '800000052925:80039923:eWcWNJhfxiJ7QyEHSHndWk4VHKbSmSue'; #gitleaks:allow
+        $this->config->apiSecret         = 'lucQKkwz3W3RGzABkSWUVZj1Mb0Yx3E9chAA8ESUVAv'; #gitleaks:allow 
+        $this->config->apiKey            = 'qeG6EWZOiAwk4jsiHzsh2BN8VkN2rdAs'; #gitleaks:allow
         $this->config->apiVersion        = '2021-04-08';
         $this->config->apiPartnerName    = 'mobile_sdk';
         $this->config->country           = 'US';

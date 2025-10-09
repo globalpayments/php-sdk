@@ -13,9 +13,9 @@ $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 $_GET = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
 
 $config = new PorticoConfig();
-$config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
+$config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A'; #gitleaks:allow  
 $config->versionNumber = '0000';
-$config->developerId = '000000';
+$config->developerId = '000000'; #gitleaks:allow  
 
 ServicesContainer::configureService($config);
 
@@ -30,7 +30,7 @@ $eCheck->accountNumber = $_POST['check_accountnumber'];
 $eCheck->routingNumber = $_POST['check_routingnumber'];
 $eCheck->checkType = $_POST['check_type'];
 $eCheck->secCode = SecCode::WEB;
-$eCheck->accountType = $_POST['account_type'];
+$eCheck->accountType = $_POST['account_type']; 
 $eCheck->entryMode = EntryMethod::MANUAL;
 $eCheck->checkHolderName = 'John Doe';
 

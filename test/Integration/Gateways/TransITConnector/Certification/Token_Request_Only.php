@@ -23,7 +23,7 @@ final class Token_Request_Only extends TestCase {
         $config->username = 'TA5622118';
         $config->password = 'f8mapGqWrE^rVaA9';
         $config->deviceId = '88700000322601';
-        $config->transactionKey = '2HZFSJ98G4XEGHXGP31IRLLG8H3XAWB2';
+        $config->transactionKey = '2HZFSJ98G4XEGHXGP31IRLLG8H3XAWB2'; #gitleaks:allow
         $config->developerId = '003226G001';
         $config->acceptorConfig = new AcceptorConfig();
         $config->acceptorConfig->operatingEnvironment = OperatingEnvironment::ON_MERCHANT_PREMISES_ATTENDED;

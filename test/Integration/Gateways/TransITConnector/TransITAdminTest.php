@@ -25,9 +25,9 @@ class TransITAdminTest extends TestCase
         $config = new TransitConfig();
         $config->merchantId = '887000003226';
         $config->username = 'TA5622118';
-        $config->password = 'f8mapGqWrE^rVaA9';
+        $config->password = 'f8mapGqWrE^rVaA9'; #gitleaks:allow
         $config->deviceId = '88700000322602';
-        $config->transactionKey = '2HZFSJ98G4XEGHXGP31IRLLG8H3XAWB2';
+        $config->transactionKey = '2HZFSJ98G4XEGHXGP31IRLLG8H3XAWB2'; #gitleaks:allow
         $config->developerId = '003226G001';
         $config->gatewayProvider = GatewayProvider::TRANSIT;
         $config->acceptorConfig = new AcceptorConfig();
@@ -76,11 +76,11 @@ class TransITAdminTest extends TestCase
         $config = new TransitConfig();
         $config->merchantId = '887000003226';
         $config->username = 'TA5622118';
-        $config->password = 'f8mapGqWrE^rVaA9';
+        $config->password = 'f8mapGqWrE^rVaA9'; #gitleaks:allow
         $config->deviceId = '88700000322602';
         $config->developerId = '003226G001';
          //TransactionKey needs to be disabled. Throw 'Invalid Transaction Key' when key is not in active state
-        $config->transactionKey = 'F508Z7TIGFORSTDYJQLMK9NGFFPBIXV0';
+        $config->transactionKey = 'F508Z7TIGFORSTDYJQLMK9NGFFPBIXV0'; #gitleaks:allow
         $config->acceptorConfig = new AcceptorConfig();
         $config->gatewayProvider = GatewayProvider::TRANSIT;
         

@@ -47,11 +47,11 @@ class CreditTest extends TestCase
     protected function getConfig()
     {
         $config = new PorticoConfig();
-        /*$config->secretApiKey = 'skapi_cert_MY5OAAAQrmIF_IZDKbr1ecycRr7n1Q1SxNkVgzDhwg';
+        /*$config->secretApiKey = 'skapi_cert_MY5OAAAQrmIF_IZDKbr1ecycRr7n1Q1SxNkVgzDhwg'; #gitleaks:allow
         $config->serviceUrl = ($this->enableCryptoUrl) ?
                               'https://cert.api2-c.heartlandportico.com/':
                               'https://cert.api2.heartlandportico.com';*/
-        $config->secretApiKey = 'skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w';
+        $config->secretApiKey = 'skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w'; #gitleaks:allow
         $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
         $config->developerId = '002914';
         $config->versionNumber = '3026';
@@ -309,7 +309,7 @@ class CreditTest extends TestCase
     public function testCreditSaleWithCOF()
     {
         $tempConfig = new PorticoConfig();
-        $tempConfig->secretApiKey = 'skapi_cert_MakSAgAB518A1HzUXBNfUeC6qBM57U7VueB4hAv8Tg';
+        $tempConfig->secretApiKey = 'skapi_cert_MakSAgAB518A1HzUXBNfUeC6qBM57U7VueB4hAv8Tg'; #gitleaks:allow
         ServicesContainer::configureService($tempConfig, 'justusingthishere');
 
         $card = new CreditCardData();

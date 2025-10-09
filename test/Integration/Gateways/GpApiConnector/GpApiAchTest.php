@@ -69,7 +69,7 @@ class GpApiAchTest extends TestCase
         $this->address->countryCode = "US";
 
         $this->customer = new Customer();
-        $this->customer->key = "e193c21a-ce64-4820-b5b6-8f46715de931";
+        $this->customer->key = "e193c21a-ce64-4820-b5b6-8f46715de931"; #gitleaks:allow
         $this->customer->firstName = "James";
         $this->customer->lastName = "Mason";
         $this->customer->dateOfBirth = "1980-01-01";

@@ -74,7 +74,7 @@ final class RecurringTest extends TestCase
     private function config()
     {
         $config = new PorticoConfig();
-        $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
+        $config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A'; #gitleaks:allow
         $config->serviceUrl = ($this->enableCryptoUrl) ?
             'https://cert.api2-c.heartlandportico.com/' :
             'https://cert.api2.heartlandportico.com';
@@ -673,7 +673,7 @@ final class RecurringTest extends TestCase
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://cert.api2-c.heartlandportico.com/Hps.Exchange.PosGateway.Hpf.v1/api/token?api_key=pkapi_cert_jKc1FtuyAydZhZfbB3',
+            CURLOPT_URL => 'https://cert.api2-c.heartlandportico.com/Hps.Exchange.PosGateway.Hpf.v1/api/token?api_key=pkapi_cert_jKc1FtuyAydZhZfbB3', #gitleaks:allow
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,

@@ -37,9 +37,9 @@ final class Ecommerce_3 extends TestCase
         $config = new TransitConfig();
         $config->merchantId = '887000003226';
         $config->username = 'TA5622118';
-        $config->password = 'Hrcb^619';
+        $config->password = 'Hrcb^619'; #gitleaks:allow
         $config->deviceId = '88700000322601';
-        $config->transactionKey = '57ZL83P6A2V8KGI49QWK017C7WXG03O8';
+        $config->transactionKey = '57ZL83P6A2V8KGI49QWK017C7WXG03O8'; #gitleaks:allow
         $config->developerId = '003226G001';
         $config->gatewayProvider = GatewayProvider::TRANSIT;
         $config->acceptorConfig = new AcceptorConfig(); // might need to adjust this per transaction or per file
@@ -444,7 +444,7 @@ final class Ecommerce_3 extends TestCase
         $threeDeeInfo->eci = 5;
         $threeDeeInfo->secureCode = '12345678901234567890123456789012';
         $threeDeeInfo->authenticationType = '21';
-        $threeDeeInfo->directoryServerTransactionId = 'c272b04f-6e7b-43a2-bb78-90f4fb94aa25';
+        $threeDeeInfo->directoryServerTransactionId = 'c272b04f-6e7b-43a2-bb78-90f4fb94aa25'; #gitleaks:allow
         $threeDeeInfo->ucafIndicator = UcafIndicator::FULLY_AUTHENTICATED;
         $threeDeeInfo->setVersion(Secure3dVersion::TWO);
 
@@ -498,7 +498,7 @@ final class Ecommerce_3 extends TestCase
     public function test27MC3DS_V2_2 () {
         $threeDeeInfo = new ThreeDSecure();
         $threeDeeInfo->eci = 5;
-        $threeDeeInfo->authenticationValue = 'ODQzNjgwNjU0ZjM3N2JmYTg0NTM=';
+        $threeDeeInfo->authenticationValue = 'ODQzNjgwNjU0ZjM3N2JmYTg0NTM='; #gitleaks:allow
         $threeDeeInfo->authenticationType = '24';
         $threeDeeInfo->directoryServerTransactionId = 'c272b04f-6e7b-43a2-bb78-90f4fb94aa25';
         $threeDeeInfo->ucafIndicator = UcafIndicator::MERCHANT_RISK_BASED;

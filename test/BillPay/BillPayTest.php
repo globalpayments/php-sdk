@@ -1267,7 +1267,7 @@ class BillPayTest extends TestCase
         $ach->bankName = "Regions";
         // need to use diff token everytime
         // use this link 'https://staging.heartlandpaymentservices.net/QuickPayWeb/'
-        $ach->token = "2BC7D494-E803-4296-81A5-72C565D33F09";
+        $ach->token = "2BC7D494-E803-4296-81A5-72C565D33F09"; #gitleaks:allow
 
         /** @var Transaction */
         $result = $ach->charge($bill->getAmount())

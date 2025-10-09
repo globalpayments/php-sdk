@@ -30,7 +30,7 @@ class MerchantwareTest extends TestCase
         $this->address->postalCode = '02110';
 
         $this->applePay = new CreditCardData();
-        $this->applePay->token = 'ew0KCSJ2ZXJzaW9uIjogIkVDX3YxIiwNCgkiZ==';
+        $this->applePay->token = 'ew0KCSJ2ZXJzaW9uIjogIkVDX3YxIiwNCgkiZ=='; #gitleaks:allow 
         $this->applePay->mobileType = MobilePaymentMethodType::APPLEPAY;
 
         $this->card = TestCards::visaManual();
@@ -48,7 +48,7 @@ class MerchantwareTest extends TestCase
         // $config->merchantKey = '5U6HL-J7GHG-28AX1-G5KQH-AEH0G';
         $config->merchantName = 'Test Shane Logsdon';
         $config->merchantSiteId = 'BKHV2T68';
-        $config->merchantKey = 'AT6AN-ALYJE-YF3AW-3M5NN-UQDG1';
+        $config->merchantKey = 'AT6AN-ALYJE-YF3AW-3M5NN-UQDG1'; #gitleaks:allow
         // $config->registerNumber = '35';
         // $config->terminalId = '3';
         $config->gatewayProvider = GatewayProvider::GENIUS;

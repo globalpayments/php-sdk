@@ -16,7 +16,7 @@ ini_set('display_errors', 1);
 if (!empty($_GET)) {
 
     $config = new PorticoConfig();
-    $config->secretApiKey = 'skapi_cert_MT2PAQB-9VQA5Z1mOXQbzZcH6O5PpdhjWtFhMBoL4A';
+    $config->secretApiKey = 'skapi_cert_MT2PAQB-9VQA5Z1mOXQbzZcH6O5PpdhjWtFhMBoL4A'; #gitleaks:allow
 
     ServicesContainer::configureService($config);
 
@@ -35,13 +35,13 @@ if (!empty($_GET)) {
             ->execute();
 
 } else {
-    $orderNumber = str_shuffle('abcdefghijklmnopqrstuvwxyz');
+    $orderNumber = str_shuffle('abcdefghijklmnopqrstuvwxyz'); #gitleaks:allow
     //$apiIdentifier = 'Merchant-uatmerchant-Key';
     //$orgUnitId = '55ef3e43f723aa431c9969ae';
     //$apiKey = 'ac848959-f878-4f62-a0a2-4b2a648446c3';
-    $apiIdentifier = '579bc985da529378f0ec7d0e';
-    $orgUnitId = '5799c3c433fadd4cf427d01a';
-    $apiKey = 'a32ed153-3759-4302-a314-546811590b43';
+    $apiIdentifier = '579bc985da529378f0ec7d0e'; #gitleaks:allow
+    $orgUnitId = '5799c3c433fadd4cf427d01a'; #gitleaks:allow
+    $apiKey = 'a32ed153-3759-4302-a314-546811590b43'; #gitleaks:allow
 
     $data = array(
         'jti' => str_shuffle('abcdefghijklmnopqrstuvwxyz'),
@@ -90,7 +90,7 @@ if (!empty($_GET)) {
 
     // Configure account
     GlobalPayments.configure({
-        publicApiKey: "pkapi_cert_P6dRqs1LzfWJ6HgGVZ"
+        publicApiKey: "pkapi_cert_P6dRqs1LzfWJ6HgGVZ" //gitleaks:allow
     });
 
     // Create Form

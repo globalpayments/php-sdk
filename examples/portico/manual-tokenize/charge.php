@@ -11,7 +11,7 @@ $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 $_GET = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
 
 $config = new PorticoConfig();
-$config->secretApiKey = 'skapi_cert_MYl2AQAowiQAbLp5JesGKh7QFkcizOP2jcX9BrEMqQ';
+$config->secretApiKey = 'skapi_cert_MYl2AQAowiQAbLp5JesGKh7QFkcizOP2jcX9BrEMqQ'; #gitleaks:allow
 $config->serviceUrl = 'https://cert.api2.heartlandportico.com';
 
 ServicesContainer::configureService($config);
@@ -40,7 +40,7 @@ try {
 
     echo "Transaction Id: " . $response->transactionId;
     $invoiceNumber = htmlspecialchars($invoiceNumber);
-    echo "<br />Invoice Number: " . $invoiceNumber ? $invoiceNumber : "";
+    echo "<br />Invoice Number: " . $invoiceNumber ? $invoiceNumber : ""; #gitleaks:allow
 
     // i'm running windows, so i had to update this:
     //ini_set("SMTP", "my-mail-server");

@@ -11,8 +11,8 @@ $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 $_GET = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
 
 $config = new PorticoConfig();
-$config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A';
-ServicesContainer::configureService($config);
+$config->secretApiKey = 'skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A'; #gitleaks:allow
+ServicesContainer::configureService($config); #gitleaks:allow
 
 $card = new CreditCardData();
 $card->token = $_GET['token_value'];
@@ -39,7 +39,7 @@ try {
     // i'm running windows, so i had to update this:
     //ini_set("SMTP", "my-mail-server");
 
-    sendEmail($_GET['EMAIL'], 'donotreply@e-hps.com', 'Successful Charge!', $body, true);
+    sendEmail($_GET['EMAIL'], 'donotreply@e-hps.com', 'Successful Charge!', $body, true); #gitleaks:allow
 } catch (Exception $e) {
     echo 'Failure: ' . $e->getMessage();
     exit;

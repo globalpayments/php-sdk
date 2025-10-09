@@ -1,6 +1,6 @@
 // Configure account
 GlobalPayments.configure({
-    publicApiKey: "pkapi_cert_P6dRqs1LzfWJ6HgGVZ"
+    publicApiKey: "pkapi_cert_P6dRqs1LzfWJ6HgGVZ" //gitleaks:allow
   });
   
   // Create Form

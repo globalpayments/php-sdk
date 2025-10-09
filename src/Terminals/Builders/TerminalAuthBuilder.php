@@ -31,6 +31,12 @@ class TerminalAuthBuilder extends TerminalBuilder
 
     public $cashBackAmount;
 
+    /**
+     * 
+     * @var string|int|float
+     */
+    public string|int|float $tippableAmount;
+
     public $currency;
 
     public $customerCode;
@@ -157,6 +163,17 @@ class TerminalAuthBuilder extends TerminalBuilder
     public function withCashBack($amount)
     {
         $this->cashBackAmount = $amount;
+        return $this;
+    }
+
+    /**
+     * 
+     * @param string|int|float $tippableAmount 
+     * @return $this 
+     */
+    public function withTippableAmount(string|int|float $tippableAmount) : TerminalAuthBuilder
+    {
+        $this->tippableAmount = $tippableAmount;
         return $this;
     }
 

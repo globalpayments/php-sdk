@@ -8,8 +8,8 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\ServicesContainer;
 
 $config = new PorticoConfig();
-$config->secretApiKey = 'skapi_cert_MVq4BQC5n3AAgd4M1Cvph2ud3CGaIclCgC7H_KxZaQ'; // 777703754644
-ServicesContainer::configureService($config);
+$config->secretApiKey = 'skapi_cert_MVq4BQC5n3AAgd4M1Cvph2ud3CGaIclCgC7H_KxZaQ'; #gitleaks:allow
+ServicesContainer::configureService($config); #gitleaks:allow
 
 $card = new CreditCardData();
 $card->token = $_POST['paymentReference'];

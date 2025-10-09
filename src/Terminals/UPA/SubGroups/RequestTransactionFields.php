@@ -42,6 +42,15 @@ class RequestTransactionFields implements IRequestSubGroup
      */
     public $cashBackAmount = null;
 
+    /**
+     * This field represents the transaction amount eligible for tipping.
+     * If provided, UPA will use tippableAmount as the base for tip calculation
+     * If the tippableAmount field is not available, the baseAmount will be used for tip calculation.
+     * 
+     * @var string|int|float
+     */
+    public $tippableAmount = null;
+
     /* The initial amount authorized on the original preauth transaction. */
     public $preAuthAmount = null;
     
@@ -173,6 +182,11 @@ class RequestTransactionFields implements IRequestSubGroup
         
         if (isset($builder->cashBackAmount)) {
             $this->cashBackAmount = sprintf('%06.2f', $builder->cashBackAmount);
+        }
+
+        if ($builder->transactionType === TransactionType::SALE 
+            && isset($builder->tippableAmount)) {
+            $this->tippableAmount = sprintf('%08.2f', $builder->tippableAmount);
         }
         
         if (isset($builder->taxAmount)) {
