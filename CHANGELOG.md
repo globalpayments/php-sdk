@@ -9,7 +9,7 @@
 - [UPA] Add DebitTest class for all supported transactions.
 - [UPA] Add new SI missing commands : BalanceInquiry, DeleteSAF, InjectCarouselLogo and RemoveCarouselLogo.
 
-## Latest Version v13.3.9 (10/09/25)
+## v13.3.9 (10/09/25)
 ### Enhancements:
 - [GPAPI] Added Hosted Payment Pages (HPP) integration.
 
