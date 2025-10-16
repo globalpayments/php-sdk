@@ -13,7 +13,7 @@ class ApiException extends \Exception
      */
     public function __construct(
         $message,
-        \Exception $innerException = null
+        ?\Exception $innerException = null
     ) {
         parent::__construct($message, 0, $innerException);
     }

@@ -9,7 +9,7 @@ class TerminalLogManagement implements ILogManagement
 
     public string $logLocation;
 
-    public function __construct(string $targetFile = null)
+    public function __construct(?string $targetFile = null)
     {
         if (!empty($targetFile)) {
             $this->logLocation = $targetFile;

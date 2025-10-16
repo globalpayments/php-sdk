@@ -2,27 +2,34 @@
 
 namespace GlobalPayments\Api\Terminals\UPA;
 
-use GlobalPayments\Api\Utils\ArrayUtils;
 use GlobalPayments\Api\Entities\Enums\{
-    PaymentMethodType, TransactionModifier, TransactionType
+    PaymentMethodType, 
+    TransactionModifier, 
+    TransactionType
 };
-use GlobalPayments\Api\Entities\Exceptions\{ApiException,
+use GlobalPayments\Api\Entities\Exceptions\{
+    ApiException,
     ArgumentException,
     MessageException,
-    UnsupportedTransactionException};
-use GlobalPayments\Api\Terminals\{
-    DeviceInterface, TerminalUtils, DeviceResponse
+    UnsupportedTransactionException
 };
-use GlobalPayments\Api\Terminals\Abstractions\{IBatchCloseResponse,
+use GlobalPayments\Api\Terminals\{
+    DeviceInterface, 
+    TerminalUtils, 
+    DeviceResponse
+};
+use GlobalPayments\Api\Terminals\Abstractions\{
+    IBatchCloseResponse,
     IDeviceScreen,
     ISAFResponse,
     ISignatureResponse,
-    ITerminalReport};
-use Symfony\Component\Console\Terminal;
-use GlobalPayments\Api\Terminals\Builders\{
-    TerminalAuthBuilder, TerminalManageBuilder, TerminalReportBuilder
+    ITerminalReport
 };
-
+use GlobalPayments\Api\Terminals\Builders\{
+    TerminalAuthBuilder, 
+    TerminalManageBuilder, 
+    TerminalReportBuilder
+};
 use GlobalPayments\Api\Terminals\Enums\{
     BatchReportType,
     DebugLevel,
@@ -44,12 +51,14 @@ use GlobalPayments\Api\Terminals\Entities\{
 };
 
 use GlobalPayments\Api\Terminals\UPA\Entities\{
-    SignatureData, POSData
+    SignatureData, 
+    POSData,
+    TokenInfo
 };
 use GlobalPayments\Api\Terminals\UPA\Entities\Enums\{
-    UpaMessageId, UpaSearchCriteria
+    UpaMessageId, 
+    UpaSearchCriteria
 };
-
 use GlobalPayments\Api\Terminals\UPA\Responses\{
     SignatureResponse,
     UDScreenResponse,
@@ -58,6 +67,7 @@ use GlobalPayments\Api\Terminals\UPA\Responses\{
     TerminalSetupResponse,
     UpaSAFResponse
 };
+use GlobalPayments\Api\Utils\ArrayUtils;
 
 /**
  * Heartland payment application implementation of device messages
@@ -517,6 +527,123 @@ class UpaInterface extends DeviceInterface
         return new TransactionResponse($rawResponse);
     }
 
+    public function injectCarouselLogo(UDData $data) : DeviceResponse
+    {
+        if (empty($data->fileName) || empty($data->localFile)) {
+            throw new MessageException(
+                "Mandatory fields missing! Please check the properties: fileName, fileContent"
+            );
+        }
+
+        // Validate the FileName using regex
+        if (!preg_match('/^[^\\\\\/:*?"<>|]+\.[a-zA-Z0-9]+$/', $data->fileName)) {
+            throw new UnsupportedTransactionException(
+                "FileName must include a file extension and must not contain a file path."
+            );
+        }
+
+        if (mime_content_type($data->localFile) != 'text/html') {
+            $encodedFile = base64_encode(file_get_contents($data->localFile));
+            $fileContent = 'data:' . mime_content_type($data->localFile) . ';base64,' . $encodedFile; 
+        } else {
+            $fileContent = trim(preg_replace('/\s+/', ' ', file_get_contents($data->localFile)));
+        }
+
+        $dataParam['params'] = [
+            'fileName' => $data->fileName,
+            'content' => $fileContent
+        ];
+
+        $message = TerminalUtils::buildUPAMessage(
+            UpaMessageId::INJECTCAROUSELLOGO,
+            $this->upaController->requestIdProvider->getRequestId(),
+            $this->ecrId,
+            ArrayUtils::array_remove_empty($dataParam)
+        );
+
+        $rawResponse = $this->upaController->send($message, UpaMessageId::INJECTCAROUSELLOGO);
+
+        return new TransactionResponse($rawResponse);
+    }
+
+    public function removeCarouselLogo(UDData $data) : DeviceResponse
+    {
+        if (empty($data->fileName)) {
+            throw new MessageException(
+                "Mandatory fields missing! Please check the properties: fileName"
+            );
+        }
+
+         // Validate the FileName using regex
+         if (!preg_match('/^[^\\\\\/:*?"<>|]+\.[a-zA-Z0-9]+$/', $data->fileName)) {
+            throw new UnsupportedTransactionException(
+                "FileName must include a file extension and must not contain a file path."
+            );
+        }
+    
+        $dataParam['params'] = [
+            'fileName' => $data->fileName
+        ];
+    
+        $message = TerminalUtils::buildUPAMessage(
+            UpaMessageId::REMOVECAROUSELLOGO,
+            $this->upaController->requestIdProvider->getRequestId(),
+            $this->ecrId,
+            ArrayUtils::array_remove_empty($dataParam)
+        );
+
+        $rawResponse = $this->upaController->send($message, UpaMessageId::REMOVECAROUSELLOGO);
+              
+        return new TransactionResponse($rawResponse);
+    }
+
+    public function manageToken(TokenInfo $tokenInfo) : DeviceResponse
+    {
+        $dataParam['params'] = [
+            'tokenValue' => $tokenInfo->token,
+            'expiryMonth' => $tokenInfo->expiryMonth,
+            'expiryYear' => $tokenInfo->expiryYear
+        ];
+
+        $message = TerminalUtils::buildUPAMessage(
+            UpaMessageId::MANAGETOKEN,
+            $this->upaController->requestIdProvider->getRequestId(),
+            $this->ecrId,
+            $dataParam
+        );
+       
+        $rawResponse = $this->upaController->send($message, UpaMessageId::MANAGETOKEN);
+
+        return new TransactionResponse($rawResponse);
+    }
+
+    public function deleteSAF(String $referenceNumber, String $transactionNumber) : DeviceResponse
+    {
+        if ($transactionNumber != null || $referenceNumber != null) {
+            $params = [
+                'transaction' => []
+            ];
+        
+            if ($transactionNumber != null) {
+                $params['transaction']['tranNo'] = $transactionNumber;
+            }
+        
+            if ($referenceNumber != null) {
+                $params['transaction']['referenceNumber'] = $referenceNumber;
+            }
+        }
+        $message = TerminalUtils::buildUPAMessage(
+            UpaMessageId::DELETE_SAF,
+            $this->upaController->requestIdProvider->getRequestId(),
+            $this->ecrId,
+            $params
+        );
+    
+        $rawResponse = $this->upaController->send($message, UpaMessageId::DELETE_SAF);
+    
+        return new TransactionResponse($rawResponse);
+    }
+
     public function saveConfigFile(UpaConfigContent $upaConfigContent): DeviceResponse
     {
         if (
@@ -534,7 +661,7 @@ class UpaInterface extends DeviceInterface
             'length' => $upaConfigContent->length,
             'reinitialize' => $upaConfigContent->reinitialize
         ];
-        
+
         $message = TerminalUtils::buildUPAMessage(
             UpaMessageId::SAVE_CONFIG_FILE,
             $this->upaController->requestIdProvider->getRequestId(),
@@ -580,7 +707,7 @@ class UpaInterface extends DeviceInterface
             $this->ecrId,
         );
         $rawResponse = $this->upaController->send($message, UpaMessageId::GET_BATTERY_PERCENTAGE);
-                
+
         return new TransactionResponse($rawResponse);
     }
 

@@ -29,12 +29,13 @@ class GpEcomMapping
 {
     /**
      * Deserializes the gateway's XML response
-     *
-     * @param string $rawResponse The XML response
-     *
-     * @return Transaction
+     * 
+     * @param mixed $root 
+     * @param null|array $acceptedCodes 
+     * @return Transaction 
+     * @throws GatewayException 
      */
-    public static function mapResponse($root, array $acceptedCodes = null)
+    public static function mapResponse($root, ?array $acceptedCodes = null)
     {
         $result = new Transaction();
         self::checkResponse($root, $acceptedCodes);
@@ -405,7 +406,14 @@ class GpEcomMapping
         return $summary;
     }
 
-    protected static function checkResponse($root, array $acceptedCodes = null)
+    /**
+     * 
+     * @param mixed $root 
+     * @param null|array $acceptedCodes 
+     * @return void 
+     * @throws GatewayException 
+     */
+    protected static function checkResponse($root, ?array $acceptedCodes = null)
     {
         if ($acceptedCodes === null) {
             $acceptedCodes = [ "00" ];

@@ -75,12 +75,12 @@ class BillingBuilder extends TransactionBuilder
      * {@inheritdoc}
      *
      * @param TransactionType $type Request transaction type
-     * @param IPaymentMethod $paymentMethod Request payment method
+     * @param null|IPaymentMethod $paymentMethod Request payment method
      *
      * @return
      */
     // CHECK
-    public function __construct($type, IPaymentMethod $paymentMethod = null)
+    public function __construct($type, ?IPaymentMethod $paymentMethod = null)
     {
         parent::__construct($type, $paymentMethod);
         $this->withPaymentMethod($paymentMethod);
@@ -91,11 +91,11 @@ class BillingBuilder extends TransactionBuilder
     /**
      * Set the request payment method
      *
-     * @param IPaymentMethod $paymentMethod Request payment method
+     * @param null|IPaymentMethod $paymentMethod Request payment method
      *
      * @return BillingBuilder
      */
-    public function withPaymentMethod(IPaymentMethod $paymentMethod = null)
+    public function withPaymentMethod(?IPaymentMethod $paymentMethod = null)
     {
         $this->paymentMethod = $paymentMethod;
 

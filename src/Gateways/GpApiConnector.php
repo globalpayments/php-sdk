@@ -305,24 +305,23 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
     {
         // TODO: Implement serializeRequest() method.
     }
-
+    
     /**
-     * @param string $verb
-     * @param string $endpoint
-     * @param null $data
-     * @param array|null $queryStringParams
-     * @param string|null $idempotencyKey
-     *
-     * @return string
-     *
-     * @throws GatewayException
+     * 
+     * @param string $verb 
+     * @param string $endpoint 
+     * @param string|null $data 
+     * @param array|null $queryStringParams 
+     * @param null|string $idempotencyKey 
+     * @return string 
+     * @throws GatewayException 
      */
     public function doTransaction(
         $verb,
         $endpoint,
         $data = null,
-        array $queryStringParams = null,
-        string $idempotencyKey = null
+        ?array $queryStringParams = null,
+        ?string $idempotencyKey = null
     ) {
         if (empty($this->accessToken)) {
             $this->signIn();

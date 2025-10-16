@@ -295,7 +295,13 @@ class PayPlanConnector extends RestGateway implements IRecurringService
     #endregion
 
     #region Build Entities
-    protected function buildCustomer($request, Customer $customer = null)
+    /**
+     * 
+     * @param mixed $request 
+     * @param null|Customer $customer 
+     * @return mixed 
+     */
+    protected function buildCustomer($request, ?Customer $customer = null)
     {
         if ($customer === null) {
             return $request;

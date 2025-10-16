@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Gateways;
 
+use Exception;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Utils\ArrayUtils;
 
@@ -11,21 +12,22 @@ abstract class RestGateway extends Gateway
     {
         parent::__construct('application/json');
     }
-
+    
     /**
-     * @param string $verb
-     * @param string $endpoint
-     * @param string|null $data
-     * @param array<string,string>|null $queryStringParams
-     *
-     * @return string
-     * @throws GatewayException
+     * 
+     * @param mixed $verb 
+     * @param mixed $endpoint 
+     * @param mixed $data 
+     * @param null|array $queryStringParams 
+     * @return string 
+     * @throws Exception 
+     * @throws GatewayException 
      */
     protected function doTransaction(
         $verb,
         $endpoint,
         $data = null,
-        array $queryStringParams = null
+        ?array $queryStringParams = null
     ) {
         if ($this->isGpApi() || $this->isTransactionApi()) {
             if (!empty($data)) {

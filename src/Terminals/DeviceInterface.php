@@ -2,47 +2,47 @@
 
 namespace GlobalPayments\Api\Terminals;
 
-use GlobalPayments\Api\Entities\Enums\{
-    PaymentMethodType,
-    TransactionType
-};
-use GlobalPayments\Api\Entities\Exceptions\{
-    NotImplementedException,
-    UnsupportedTransactionException
-};
-use GlobalPayments\Api\Terminals\Abstractions\{
-    IBatchCloseResponse,
-    IDeviceInterface,
-    IDeviceScreen,
-    IDeviceUpdatable,
-    ISAFResponse,
-    ISignatureResponse,
-    ITerminalReport
-};
-use GlobalPayments\Api\Terminals\Builders\{
-    TerminalAuthBuilder,
-    TerminalManageBuilder,
-    TerminalReportBuilder
-};
 use GlobalPayments\Api\Terminals\Entities\{
-    GenericData,
-    MessageLines,
-    PrintData,
-    PromptData,
-    PromptMessages,
+    GenericData, 
+    MessageLines, 
+    PrintData, 
+    PromptData, 
+    PromptMessages, 
     ScanData,
     UDData,
     UpaConfigContent
 };
+use GlobalPayments\Api\Terminals\UPA\Entities\TokenInfo;
+use GlobalPayments\Api\Entities\Enums\{
+    PaymentMethodType, 
+    TransactionType
+};
+use GlobalPayments\Api\Entities\Exceptions\{
+    NotImplementedException, 
+    UnsupportedTransactionException
+};
+use GlobalPayments\Api\Terminals\Abstractions\{
+    IBatchCloseResponse, 
+    IDeviceScreen, 
+    ISAFResponse, 
+    ISignatureResponse, 
+    ITerminalReport, 
+    IDeviceInterface
+};
+use GlobalPayments\Api\Terminals\Builders\{
+    TerminalAuthBuilder, 
+    TerminalManageBuilder, 
+    TerminalReportBuilder
+};
 use GlobalPayments\Api\Terminals\Enums\{
-    BatchReportType,
-    CurrencyType,
-    DeviceConfigType,
-    DisplayOption,
+    BatchReportType, 
+    CurrencyType, 
+    DeviceConfigType, 
+    DisplayOption, 
     PromptType
 };
 use GlobalPayments\Api\Terminals\UPA\Entities\{
-    POSData,
+    POSData, 
     SignatureData
 };
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
@@ -186,6 +186,26 @@ abstract class DeviceInterface implements IDeviceInterface
     }
 
     public function communicationCheck() : DeviceResponse
+    {
+        throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
+    }
+
+    public function injectCarouselLogo(UDData $uddata) : DeviceResponse
+    {
+        throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
+    }
+
+    public function removeCarouselLogo(UDData $uddata): DeviceResponse
+    {
+        throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
+    }
+
+    public function manageToken(TokenInfo $tokenInfo): DeviceResponse
+    {
+        throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
+    }
+
+    public function deleteSAF(String $referenceNumber, String $transactionNumber) : DeviceResponse
     {
         throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
     }

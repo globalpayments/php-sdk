@@ -2,28 +2,24 @@
 
 namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals\UPA;
 
-use GlobalPayments\Api\Terminals\Abstractions\{
-    IDeviceInterface, 
-    IDeviceResponse, 
-    ISAFResponse
-};
 use GlobalPayments\Api\Terminals\Entities\{
     PrintData, 
     PromptMessages, 
     ScanData, 
-    UDData, 
+    UDData,
     UpaConfigContent
 };
+use GlobalPayments\Api\Terminals\UPA\Entities\TokenInfo;
 use GlobalPayments\Api\Terminals\Enums\{
     ConnectionModes, 
-    DebugLevel, 
-    DebugLogsOutput, 
     DeviceConfigType, 
     DeviceType, 
     DisplayOption, 
-    LogFileIndicator, 
     UDFileTypes, 
-    Reinitialize
+    LogFileIndicator,
+    Reinitialize,
+    DebugLevel,
+    DebugLogsOutput
 };
 use GlobalPayments\Api\Terminals\UPA\Entities\{
     CancelParameters, 
@@ -35,6 +31,11 @@ use GlobalPayments\Api\Terminals\UPA\Responses\{
     TerminalSetupResponse, 
     TransactionResponse, 
     UDScreenResponse
+};
+use GlobalPayments\Api\Terminals\Abstractions\{
+    IDeviceInterface, 
+    IDeviceResponse, 
+    ISAFResponse
 };
 use GlobalPayments\Api\Services\DeviceService;
 use GlobalPayments\Api\Terminals\ConnectionConfig;
@@ -61,7 +62,7 @@ class UpaAdminTests extends TestCase
     protected function getConfig(): ConnectionConfig
     {
         $config = new ConnectionConfig();
-        $config->ipAddress = '192.168.8.181';
+        $config->ipAddress = '192.168.110.111';
         $config->port = '8081';
         $config->deviceType = DeviceType::UPA_VERIFONE_T650P;
         $config->connectionMode = ConnectionModes::TCP_IP;
@@ -411,7 +412,77 @@ class UpaAdminTests extends TestCase
         $this->assertEquals('00', $response->deviceResponseCode);
         $this->assertEquals('Success', $response->status);
     }
-     
+
+    public function testInjectCarouselLogo()
+    {
+        $data = new UDData();
+        $data->fileName = "brand_logo_test.png";
+        $data->localFile = __DIR__ . '\samples\brand_logo_test.png';
+
+        $this->device->ecrId = '1';
+        /** @var TransactionResponse $response */
+        $response = $this->device->injectCarouselLogo($data);
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('Success', $response->status);
+    }
+
+    public function testRemoveCarouselLogo()
+    {
+        $data = new UDData();
+        $data->fileName = "brand_logo_test.png";
+        $data->localFile = __DIR__ . "\samples\brand_logo_test.png";
+
+        $this->device->ecrId = '1';
+        /** @var TransactionResponse $response */
+        $response = $this->device->removeCarouselLogo($data);
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('Success', $response->status);
+    }
+
+    public function testfor_ManageToken_WithInvalidToken()
+    {
+        $token = "cdfcdfcdfhg";
+
+        $tokenInfo = new TokenInfo();
+        $tokenInfo->token = $token;
+        $tokenInfo->expiryMonth = "12";
+        $tokenInfo->expiryYear = "2026";
+        
+        $this->device->ecrId = '13';
+
+        /** @var  TransactionResponse $response */
+        $response = $this->device->manageToken($tokenInfo);
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('Success', $response->status);
+        $this->assertEquals('Success', $response->gatewayResponseMessage);
+    }
+
+    public function test_deleteSAF_withReferenceNo()
+    {
+        /** @var ISAFResponse $response */
+        $response = $this->device->deleteSAF("P0000013", "");
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('Success', $response->status);
+    }
+
+    public function testDeleteSAF_withReferenceNo_And_TransactionNo()
+    {
+        /** @var ISAFResponse $response */
+        $response = $this->device->deleteSAF("P0000022", "0080");
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->deviceResponseCode);
+        $this->assertEquals('Success', $response->status);
+    }
+
     public function testSaveConfigFile()
     {
         $upaConfig = new UpaConfigContent();
@@ -456,4 +527,5 @@ class UpaAdminTests extends TestCase
         $this->assertEquals('Success', $response->status);
         $this->assertEquals('GetBatteryPercentage', $response->command);
     }
+
 }

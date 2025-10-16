@@ -96,7 +96,14 @@ class ElementTree
         return new Element($this->doc, $child, $this->namespaces);
     }
 
-    private function subElementInt(Element $parent, string $tagName, int $value = null): ?Element
+    /**
+     * 
+     * @param Element $parent 
+     * @param string $tagName 
+     * @param null|int $value 
+     * @return null|Element 
+     */
+    private function subElementInt(Element $parent, string $tagName, ?int $value = null): ?Element
     {
         if ($value == null || $value == 0) {
             return null;
@@ -105,7 +112,14 @@ class ElementTree
         return $this->subElement($parent, $tagName)->text($value . "");
     }
 
-    private function subElementString(Element $parent, string $tagName, string $value = null): ?Element
+    /**
+     * 
+     * @param Element $parent 
+     * @param string $tagName 
+     * @param null|string $value 
+     * @return null|Element 
+     */
+    private function subElementString(Element $parent, string $tagName, ?string $value = null): ?Element
     {
         if ($value == null || $value === "") {
             return null;
@@ -113,7 +127,14 @@ class ElementTree
         return $this->subElement($parent, $tagName)->text($value);
     }
 
-    private function subElementEnum(Element $parent, string $tagName, Enum $value = null): ?Element
+    /**
+     * 
+     * @param Element $parent 
+     * @param string $tagName 
+     * @param null|Enum $value 
+     * @return null|Element 
+     */
+    private function subElementEnum(Element $parent, string $tagName, ?Enum $value = null): ?Element
     {
         if ($value == null) {
             return null;
@@ -122,7 +143,14 @@ class ElementTree
         return $this->subElement($parent, $tagName, (string)Enum::getKey($value));
     }
 
-    private function subElementFloat(Element $parent, string $tagName, float $value = null): ?Element
+    /**
+     * 
+     * @param Element $parent 
+     * @param string $tagName 
+     * @param null|float $value 
+     * @return null|Element 
+     */
+    private function subElementFloat(Element $parent, string $tagName, ?float $value = null): ?Element
     {
         if ($value === null) {
             return null;

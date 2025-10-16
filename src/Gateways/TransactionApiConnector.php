@@ -136,7 +136,7 @@ class TransactionApiConnector extends RestGateway implements IPaymentGateway
         $verb,
         $endpoint,
         $data = null,
-        array $queryStringParams = null
+        ?array $queryStringParams = null
     ) {
         if (empty($this->accessToken)) {
             $this->signIn();

@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Gateways;
 
+use Exception;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\IRequestLogger;
 use GlobalPayments\Api\Entities\IWebProxy;
@@ -73,23 +74,21 @@ abstract class Gateway
     {
         return [];
     }
-
+    
     /**
-     * Uses cURL to communicate with the gateway service
-     *
-     * @param string $verb
-     * @param string $endpoint
-     * @param string|null $data
-     * @param array<string,string>|null $queryStringParams
-     *
-     * @throws \Exception
-     * @return GatewayResponse
+     * 
+     * @param mixed $verb 
+     * @param mixed $endpoint 
+     * @param mixed $data 
+     * @param null|array $queryStringParams 
+     * @return GatewayResponse 
+     * @throws Exception 
      */
     protected function sendRequest(
         $verb,
         $endpoint,
         $data = null,
-        array $queryStringParams = null
+        ?array $queryStringParams = null
     ) {
         try {
             $queryString = !empty($queryStringParams) ? "?" . http_build_query($queryStringParams) : '';

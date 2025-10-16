@@ -110,6 +110,12 @@ class TerminalAuthBuilder extends TerminalBuilder
     public ?string $merchantDecision;
     public ?string $language;
     public HostData $hostData;
+    public ?string $directMarketInvoiceNumber;
+    public ?int $directMarketShipMonth;
+    public ?int $directMarketShipDay;
+
+    /** @var mixed The amount previously authorized for a pre-auth transaction */
+    public $preAuthAmount;
 
     /**
      *
@@ -457,6 +463,48 @@ class TerminalAuthBuilder extends TerminalBuilder
     public function withHostData(HostData $hostData) : TerminalAuthBuilder
     {
         $this->hostData = $hostData;
+        return $this;
+    }
+
+     /**
+     * Set the pre-auth amount for incremental or completion transactions.
+     *
+     * @param mixed $preAuthAmount
+     * @return TerminalManageBuilder
+     */
+    public function withPreAuthAmount($preAuthAmount)
+    {
+        $this->preAuthAmount = $preAuthAmount;
+        return $this;
+    }
+
+    public function withTokenRequest($tokenRequest)
+    {
+        $this->tokenRequest = $tokenRequest;
+        return $this;
+    }
+
+    public function withTokenValue($tokenValue)
+    {
+        $this->tokenValue = $tokenValue;
+        return $this;
+    }
+
+    public function withDirectMarketInvoiceNumber($directMarketInvoiceNumber)
+    {
+        $this->directMarketInvoiceNumber = $directMarketInvoiceNumber;
+        return $this;
+    }
+
+    public function withDirectMarketShipMonth($directMarketShipMonth)
+    {
+        $this->directMarketShipMonth = $directMarketShipMonth;
+        return $this;
+    }
+
+    public function withDirectMarketShipDay($directMarketShipDay)
+    {
+        $this->directMarketShipDay = $directMarketShipDay;
         return $this;
     }
 }

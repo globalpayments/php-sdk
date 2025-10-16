@@ -33,18 +33,19 @@ class ServicesContainer
     private static $instance;
 
     private static $configurations = array();
-
+    
     /**
-     * ServicesContainer constructor.
-     *
-     * @param IPaymentGateway $gateway
-     * @param IRecurringService $recurring
-     * @param IInstallmentService $installmentService
+     * ServicesContainer constructor
+     * 
+     * @param null|IPaymentGateway $gateway 
+     * @param null|IRecurringService $recurring 
+     * @param null|IInstallmentService $installmentService 
+     * @return void 
      */
     public function __construct(
-        IPaymentGateway $gateway = null, 
-        IRecurringService $recurring = null, 
-        IInstallmentService $installmentService = null
+        ?IPaymentGateway $gateway = null, 
+        ?IRecurringService $recurring = null, 
+        ?IInstallmentService $installmentService = null
     ) {
         $this->gateway = $gateway;
         $this->recurring = $recurring;

@@ -2,33 +2,34 @@
 
 namespace GlobalPayments\Api\Terminals\Abstractions;
 
-use GlobalPayments\Api\Entities\Enums\{
-    PaymentMethodType,
-    TransactionType
-};
-use GlobalPayments\Api\Terminals\Builders\{
-    TerminalAuthBuilder,
-    TerminalManageBuilder,
-    TerminalReportBuilder
-};
 use GlobalPayments\Api\Terminals\Entities\{
-    GenericData,
-    MessageLines,
-    PrintData,
-    PromptData,
-    PromptMessages,
-    ScanData,
+    GenericData, 
+    MessageLines, 
+    PrintData, 
+    PromptData, 
+    PromptMessages, 
+    ScanData, 
     UDData,
     UpaConfigContent
 };
+use GlobalPayments\Api\Terminals\UPA\Entities\TokenInfo;
+use GlobalPayments\Api\Entities\Enums\{
+    PaymentMethodType, 
+    TransactionType
+};
+use GlobalPayments\Api\Terminals\Builders\{
+    TerminalAuthBuilder, 
+    TerminalManageBuilder, 
+    TerminalReportBuilder
+};
 use GlobalPayments\Api\Terminals\Enums\{
-    BatchReportType,
-    DeviceConfigType,
-    DisplayOption,
+    BatchReportType, 
+    DeviceConfigType, 
+    DisplayOption, 
     PromptType
 };
 use GlobalPayments\Api\Terminals\UPA\Entities\{
-    POSData,
+    POSData, 
     SignatureData
 };
 use GlobalPayments\Api\Terminals\DeviceResponse;
@@ -124,6 +125,14 @@ interface IDeviceInterface
      * @return DeviceResponse
      */
     public function communicationCheck() : DeviceResponse;
+
+    public function injectCarouselLogo(UDData $uddata) : DeviceResponse;
+
+    public function removeCarouselLogo(UDData $uddata) : DeviceResponse;
+
+    public function manageToken(TokenInfo $tokenInfo) : DeviceResponse;
+
+    public function deleteSAF(String $referenceNumber, String $transactionNumber) : DeviceResponse;
 
     public function saveConfigFile(UpaConfigContent $upaConfigContent) : DeviceResponse;
 

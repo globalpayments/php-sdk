@@ -12,6 +12,7 @@ use GlobalPayments\Api\Entities\Enums\{
     TransactionType,
     Region
 };
+use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use GlobalPayments\Api\ServiceConfigs\Gateways\TransactionApiConfig;
 use GlobalPayments\Api\Utils\{CountryUtils, StringUtils, AmountUtils};
 
@@ -78,14 +79,18 @@ class TransactionApiAuthorizationRequestBuilder implements IRequestBuilder
     }
 
     /**
-     * @param BaseBuilder $builder
-     * @param TransactionApiConfig $config
-     * @param String $additionalSlug
-     *
-     * @return array
+     * 
+     * @param BaseBuilder $builder 
+     * @param null|TransactionApiConfig $config 
+     * @param string $additionalSlug 
+     * @return array 
+     * @throws ArgumentException 
      */
-    private function createFromAuthorizationBuilder(BaseBuilder $builder, TransactionApiConfig $config = null, String $additionalSlug = "")
-    {
+    private function createFromAuthorizationBuilder(
+        BaseBuilder $builder,
+        ?TransactionApiConfig $config = null,
+        String $additionalSlug = ""
+    ) {
         $requestBody = [];
         if (empty($additionalSlug)) {
             $requestBody['reference_id'] = 'REF' . str_shuffle('abcdefg123212');

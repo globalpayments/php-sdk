@@ -34,11 +34,11 @@ class RecurringBuilder extends TransactionBuilder
 
     /**
      * @param TransactionType $type
-     * @param IRecurringEntity $entity
+     * @param null|IRecurringEntity $entity
      *
      * @return
      */
-    public function __construct($type, IRecurringEntity $entity = null)
+    public function __construct($type, ?IRecurringEntity $entity = null)
     {
         parent::__construct($type);
 

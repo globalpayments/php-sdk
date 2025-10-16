@@ -550,7 +550,7 @@ class SearchCriteriaBuilder
     /** END FRAUD MANAGEMENT search criteria */
 
 
-    public function __construct(ReportBuilder $reportBuilder = null)
+    public function __construct(?ReportBuilder $reportBuilder = null)
     {
         $this->reportBuilder = $reportBuilder;
     }

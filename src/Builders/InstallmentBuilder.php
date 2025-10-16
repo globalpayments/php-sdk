@@ -23,11 +23,11 @@ class InstallmentBuilder extends TransactionBuilder
 
     /**
      * @param TransactionType $type
-     * @param IInstallmentEntity $entity
+     * @param null|IInstallmentEntity $entity
      *
      * @return
      */
-    public function __construct($type, IInstallmentEntity $entity = null)
+    public function __construct($type, ?IInstallmentEntity $entity = null)
     {
         parent::__construct($type);
 

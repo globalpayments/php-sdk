@@ -17,6 +17,9 @@ class TerminalManageBuilder extends TerminalBuilder
     public $terminalRefNumber;
     public string $taxType;
 
+    /** @var mixed The amount previously authorized for a pre-auth transaction */
+    public $preAuthAmount;
+
     /** @var string Indicates whether the sale is exempted from Tax or not */
     public string $taxExempt;
 
@@ -176,5 +179,17 @@ class TerminalManageBuilder extends TerminalBuilder
         )
             ->with(TransactionModifier::INCREMENTAL)
             ->check('transactionId')->isNotNull();
+    }
+
+    /**
+     * Set the pre-auth amount for incremental or completion transactions.
+     *
+     * @param mixed $preAuthAmount
+     * @return TerminalManageBuilder
+     */
+    public function withPreAuthAmount($preAuthAmount)
+    {
+        $this->preAuthAmount = $preAuthAmount;
+        return $this;
     }
 }

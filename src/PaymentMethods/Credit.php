@@ -11,7 +11,7 @@ use GlobalPayments\Api\Entities\Enums\{
     PaymentMethodUsageMode,
     TransactionType
 };
-use GlobalPayments\Api\Entities\Exceptions\BuilderException;
+use GlobalPayments\Api\Entities\Exceptions\{ApiException, BuilderException};
 use GlobalPayments\Api\PaymentMethods\Interfaces\{
     IAuthable,
     IPaymentMethod,
@@ -299,7 +299,13 @@ abstract class Credit implements
         return true;
     }
 
-    public function getTokenInformation(string $configName = null): Transaction
+    /**
+     * 
+     * @param null|string $configName 
+     * @return Transaction 
+     * @throws ApiException 
+     */
+    public function getTokenInformation(?string $configName = null): Transaction
     {
         $authBuilder = new AuthorizationBuilder(TransactionType::GET_TOKEN_INFO, $this);
 

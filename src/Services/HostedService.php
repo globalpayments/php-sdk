@@ -48,11 +48,11 @@ class HostedService
      * Creates an authorization builder with type
      * `TransactionType::CREDIT_AUTH`
      *
-     * @param float|string|nullCardUtils $amount Amount to authorize
+     * @param null|float|string|nullCardUtils $amount Amount to authorize
      *
      * @return AuthorizationBuilder
      */
-    public function authorize(string|float $amount = null)
+    public function authorize(null|string|float $amount = null)
     {
         return (new AuthorizationBuilder(TransactionType::AUTH))
             ->withAmount($amount);
