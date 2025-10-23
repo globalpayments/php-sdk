@@ -55,6 +55,11 @@ class PaxTerminalResponse extends PaxBaseResponse implements IDeviceResponseHand
     public $paymentType;
     public $transactionNumber;
 
+    // Debug properties
+    public $debugLevel;
+    public $debugFileContents;
+    public $debugFileLength;
+
     // EMV
     /*
      * The preferred name of the EMV application selected on the EMV card

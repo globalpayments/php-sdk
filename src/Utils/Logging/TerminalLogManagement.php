@@ -8,6 +8,7 @@ class TerminalLogManagement implements ILogManagement
 {
 
     public string $logLocation;
+    public bool $enableConsoleOutput = false;
 
     public function __construct(?string $targetFile = null)
     {

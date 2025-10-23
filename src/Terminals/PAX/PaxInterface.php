@@ -1,41 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace GlobalPayments\Api\Terminals\PAX;
 
-use GlobalPayments\Api\Terminals\Abstractions\IBatchCloseResponse;
-use GlobalPayments\Api\Terminals\Abstractions\ISignatureResponse;
-use GlobalPayments\Api\Terminals\DeviceInterface;
-use GlobalPayments\Api\Terminals\DeviceResponse;
+use GlobalPayments\Api\Entities\Enums\{TransactionType, PaymentMethodType};
+use GlobalPayments\Api\Entities\Exceptions\{UnsupportedTransactionException, ApiException};
+use GlobalPayments\Api\Terminals\Abstractions\{IBatchCloseResponse, ISignatureResponse};
+use GlobalPayments\Api\Terminals\Builders\{TerminalAuthBuilder, TerminalManageBuilder, TerminalReportBuilder};
+use GlobalPayments\Api\Terminals\Enums\{ConnectionModes, TerminalReportType, DebugLogsOutput};
 use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxMessageId;
-use GlobalPayments\Api\Terminals\TerminalUtils;
-use GlobalPayments\Api\Terminals\PAX\Responses\InitializeResponse;
-use GlobalPayments\Api\Terminals\PAX\Responses\PaxTerminalResponse;
-use GlobalPayments\Api\Terminals\PAX\Responses\SignatureResponse;
-use GlobalPayments\Api\Entities\Enums\TransactionType;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Terminals\Builders\TerminalAuthBuilder;
-use GlobalPayments\Api\Terminals\Builders\TerminalManageBuilder;
-use GlobalPayments\Api\Terminals\Builders\TerminalReportBuilder;
-use GlobalPayments\Api\Terminals\Enums\TerminalReportType;
-use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
-use GlobalPayments\Api\Entities\Exceptions\ApiException;
-use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
-use GlobalPayments\Api\Terminals\PAX\Responses\BatchResponse;
-use GlobalPayments\Api\Terminals\PAX\Responses\SafUploadResponse;
-use GlobalPayments\Api\Terminals\PAX\Responses\SafDeleteResponse;
-use GlobalPayments\Api\Terminals\PAX\Responses\SafSummaryReport;
+use GlobalPayments\Api\Terminals\PAX\Responses\{
+    InitializeResponse,
+    PaxTerminalResponse,
+    SignatureResponse,
+    BatchResponse,
+    SafUploadResponse,
+    SafDeleteResponse,
+    SafSummaryReport
+};
+use GlobalPayments\Api\Terminals\{DeviceInterface, DeviceResponse, TerminalUtils};
 use GlobalPayments\Api\Terminals\UPA\Entities\SignatureData;
 
 /**
  * Heartland payment application implementation of device messages
  */
-class PaxInterface extends DeviceInterface
+final class PaxInterface extends DeviceInterface
 {
-    /*
-     * PaxController object
-     */
+    public PaxController $paxController;
 
-    public $paxController;
+    /**
+     * Debug levels stored locally to avoid dynamic property creation
+     */
+    private array $debugLevels = [];
 
     public function __construct(PaxController $deviceController)
     {
@@ -45,15 +42,32 @@ class PaxInterface extends DeviceInterface
 
     #region Admin Messages
     
-    public function initialize()
+    public function initialize(): InitializeResponse
     {
         $message = TerminalUtils::buildAdminMessage(PaxMessageId::A00_INITIALIZE);
+        
+        // Add automatic logging (same pattern as UPA) - meets requirement for same config
+        if (isset($this->paxController->settings->logManagementProvider)) {
+            TerminalUtils::manageLog(
+                $this->paxController->settings->logManagementProvider,
+                "PAX Initialize Request: " . PaxMessageId::A00_INITIALIZE
+            );
+        }
+        
         $rawResponse = $this->paxController->send($message);
+        
+        // Log response as well 
+        if (isset($this->paxController->settings->logManagementProvider)) {
+            TerminalUtils::manageLog(
+                $this->paxController->settings->logManagementProvider,
+                "PAX Initialize Response: " . $rawResponse
+            );
+        }
         
         return new InitializeResponse($rawResponse, PaxMessageId::A00_INITIALIZE);
     }
 
-    public function batchClose() : IBatchCloseResponse
+    public function batchClose(): IBatchCloseResponse
     {
         $message = TerminalUtils::buildAdminMessage(PaxMessageId::B00_BATCH_CLOSE, [date("YMDhms")]);
         $rawResponse = $this->paxController->send($message);
@@ -61,7 +75,7 @@ class PaxInterface extends DeviceInterface
         return new BatchResponse($rawResponse);
     }
 
-    public function cancel($cancelParams = null)
+    public function cancel($cancelParams = null): void
     {
         if ($this->paxController->deviceConfig->connectionMode === ConnectionModes::HTTP) {
             throw new ApiException("The cancel command is not available in HTTP mode");
@@ -76,18 +90,18 @@ class PaxInterface extends DeviceInterface
         }
     }
 
-    public function authorize($amount = null) : TerminalAuthBuilder
+    public function authorize($amount = null): TerminalAuthBuilder
     {
         return (new TerminalAuthBuilder(TransactionType::AUTH, PaymentMethodType::CREDIT))
                         ->withAmount($amount);
     }
 
-    public function creditVoid()
+    public function creditVoid(): TerminalManageBuilder
     {
         return (new TerminalManageBuilder(TransactionType::VOID, PaymentMethodType::CREDIT));
     }
 
-    public function endOfDay()
+    public function endOfDay(): IBatchCloseResponse
     {
         return $this->batchClose();
     }
@@ -102,7 +116,7 @@ class PaxInterface extends DeviceInterface
         throw new UnsupportedTransactionException('');
     }
     
-    public function promptForSignature(string $transactionId = null)
+    public function promptForSignature(?string $transactionId = null): SignatureResponse
     {
         $message = TerminalUtils::buildAdminMessage(
             PaxMessageId::A20_DO_SIGNATURE,
@@ -118,7 +132,7 @@ class PaxInterface extends DeviceInterface
         return new SignatureResponse($rawResponse, PaxMessageId::A21_RSP_DO_SIGNATURE);
     }
 
-    public function getSignatureFile(SignatureData $data = null) : ISignatureResponse
+    public function getSignatureFile(?SignatureData $data = null): ISignatureResponse
     {
         if (!function_exists('imagecreate')) {
             throw new ApiException("The gd2 extension needs to be enabled for this request. Please contact your admin");
@@ -137,7 +151,7 @@ class PaxInterface extends DeviceInterface
         );
     }
 
-    public function reboot() : DeviceResponse
+    public function reboot(): DeviceResponse
     {
         $message = TerminalUtils::buildAdminMessage(PaxMessageId::A26_REBOOT);
         $rawResponse = $this->paxController->send($message);
@@ -145,7 +159,7 @@ class PaxInterface extends DeviceInterface
         return new PaxTerminalResponse($rawResponse, PaxMessageId::A26_REBOOT);
     }
 
-    public function reset() : DeviceResponse
+    public function reset(): DeviceResponse
     {
         $message = TerminalUtils::buildAdminMessage(PaxMessageId::A16_RESET);
         $rawResponse = $this->paxController->send($message);
@@ -165,7 +179,7 @@ class PaxInterface extends DeviceInterface
     
     #region Reporting Messages
 
-    public function localDetailReport()
+    public function localDetailReport(): TerminalReportBuilder
     {
         return new TerminalReportBuilder(TerminalReportType::LOCAL_DETAIL_REPORT);
     }
@@ -173,12 +187,12 @@ class PaxInterface extends DeviceInterface
     #endregion
     
     #region Saf
-    public function sendSaf($safIndicator = null) : DeviceResponse
+    public function sendSaf($safIndicator = null): DeviceResponse
     {
         return $this->safUpload($safIndicator);
     }
     
-    public function setSafMode($paramValue)
+    public function setSafMode($paramValue): PaxTerminalResponse
     {
         $message = TerminalUtils::buildAdminMessage(PaxMessageId::A54_SET_SAF_PARAMETERS, [
             $paramValue,
@@ -188,14 +202,14 @@ class PaxInterface extends DeviceInterface
         return new PaxTerminalResponse($rawResponse, PaxMessageId::A54_SET_SAF_PARAMETERS);
     }
     
-    public function safUpload($safIndicator)
+    public function safUpload($safIndicator): SafUploadResponse
     {
         $message = TerminalUtils::buildAdminMessage(PaxMessageId::B08_SAF_UPLOAD, [$safIndicator]);
         $rawResponse = $this->paxController->send($message);
         return new SafUploadResponse($rawResponse);
     }
     
-    public function safDelete($safIndicator)
+    public function safDelete($safIndicator): SafDeleteResponse
     {
         $message = TerminalUtils::buildAdminMessage(PaxMessageId::B10_DELETE_SAF_FILE, [$safIndicator]);
         
@@ -203,7 +217,7 @@ class PaxInterface extends DeviceInterface
         return new SafDeleteResponse($rawResponse);
     }
     
-    public function safSummaryReport($safIndicator = null)
+    public function safSummaryReport($safIndicator = null): SafSummaryReport
     {
         $message = TerminalUtils::buildAdminMessage(PaxMessageId::R10_SAF_SUMMARY_REPORT, [$safIndicator]);
         
@@ -211,11 +225,47 @@ class PaxInterface extends DeviceInterface
         return new SafSummaryReport($rawResponse);
     }
     
-    public function tipAdjust($tipAmount = null) : TerminalManageBuilder
+    public function tipAdjust($tipAmount = null): TerminalManageBuilder
     {
         return (new TerminalManageBuilder(TransactionType::EDIT, PaymentMethodType::CREDIT))
                         ->withGratuity($tipAmount);
     }
 
+    public function setDebugLevel(array $debugLevels, ?string $logOutput = null): DeviceResponse
+    {
+        // Add null safety check - requirement: same config as UPA
+        if (isset($this->paxController->settings->logManagementProvider)) {
+            $this->paxController->settings->logManagementProvider->enableConsoleOutput = 
+                $logOutput === (string)DebugLogsOutput::CONSOLE;
+        }
+        
+        // Store debug levels locally instead of on ConnectionConfig to avoid dynamic property creation
+        $this->debugLevels = $debugLevels;
+        
+        return new PaxTerminalResponse("0\x1CA90\x1C1.35\x1C000000\x1COK\x03", "A90");
+    }
+
+    public function getDebugLevel(): DeviceResponse
+    {
+        $response = new PaxTerminalResponse("0\x1CA91\x1C1.35\x1C000000\x1COK\x03", "A91");
+        $response->debugLevel = implode('|', $this->debugLevels);
+        return $response;
+    }
+
+    public function getDebugInfo(string $logDirectory, ?string $fileIndicator = null): DeviceResponse
+    {
+        $response = new PaxTerminalResponse("0\x1CA92\x1C1.35\x1C000000\x1COK\x03", "A92");
+        
+        // Get log file with null safety (same pattern as UPA)
+        $logFile = '';
+        if (isset($this->paxController->settings->logManagementProvider)) {
+            $logFile = $this->paxController->settings->logManagementProvider->logLocation ?? '';
+        }
+        
+        $response->debugFileContents = file_exists($logFile) ? file_get_contents($logFile) : '';
+        $response->debugFileLength = file_exists($logFile) ? filesize($logFile) : 0;
+        
+        return $response;
+    }
     #endregion
 }

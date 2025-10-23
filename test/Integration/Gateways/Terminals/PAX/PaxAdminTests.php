@@ -4,11 +4,14 @@ namespace GlobalPayments\Api\Tests\Integration\Gateways\Terminals\PAX;
 
 use GlobalPayments\Api\Terminals\ConnectionConfig;
 use GlobalPayments\Api\Terminals\Enums\ConnectionModes;
+use GlobalPayments\Api\Terminals\Enums\DebugLevel;
+use GlobalPayments\Api\Terminals\Enums\DebugLogsOutput;
 use GlobalPayments\Api\Terminals\Enums\DeviceType;
 use GlobalPayments\Api\Services\DeviceService;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Tests\Integration\Gateways\Terminals\RequestIdProvider;
 use GlobalPayments\Api\Terminals\Enums\SafMode;
+use GlobalPayments\Api\Utils\Logging\TerminalLogManagement;
 
 class PaxAdminTests extends TestCase
 {
@@ -28,12 +31,13 @@ class PaxAdminTests extends TestCase
     protected function getConfig()
     {
         $config = new ConnectionConfig();
-        $config->ipAddress = '192.168.42.219';
+        $config->ipAddress = '192.168.0.184';
         $config->port = '10009';
         $config->deviceType = DeviceType::PAX_S300;
         $config->connectionMode = ConnectionModes::TCP_IP;
         $config->timeout = 30;
         $config->requestIdProvider = new RequestIdProvider();
+        $config->logManagementProvider = new TerminalLogManagement('pax_admin_test.log');
 
         return $config;
     }
@@ -94,5 +98,15 @@ class PaxAdminTests extends TestCase
         
         $this->assertNotNull($response);
         $this->assertEquals('OK', $response->deviceResponseText);
+    }
+
+     public function testLogging(): void
+    {
+        $this->device->setDebugLevel([DebugLevel::PACKETS], DebugLogsOutput::FILE);
+        $this->device->initialize();
+        
+        $this->assertFileExists('pax_admin_test.log');
+        $logContents = file_get_contents('pax_admin_test.log');
+        $this->assertStringContainsString('A00', $logContents);
     }
 }

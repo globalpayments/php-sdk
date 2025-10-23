@@ -3,7 +3,11 @@
 </a>
 
 # Changelog
-## Latest Version v13.4.0 (10/16/25)
+## Latest Version v13.4.1 (10/23/25)
+### Enhancements:
+- Resolved Terminal logging issue
+
+## v13.4.0 (10/16/25)
 ### Enhancements:
 - Updates for enhanced PHP8.4 compatability
 - [UPA] Add DebitTest class for all supported transactions.
