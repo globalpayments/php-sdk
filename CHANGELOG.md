@@ -3,7 +3,11 @@
 </a>
 
 # Changelog
-## Latest Version v13.4.1 (10/23/25)
+## Latest Version v14.0.0 (11/06/25)
+### Enhancements:
+- [Rebrand] Replace Heartland branding with Global Payments
+
+## v13.4.1 (10/23/25)
 ### Enhancements:
 - Resolved Terminal logging issue
 
@@ -315,7 +319,7 @@ ds_trans_reference,value)
 
 ## v8.0.1 (05/30/23)
 #### Bug Fixes:
-- Portico/Heartland: fix 'AllowDup' flag not included with some CreditReturn transactions
+- Portico/Global Payments: fix 'AllowDup' flag not included with some CreditReturn transactions
 
 ## v8.0.0 (05/23/23)
 #### Enhancements:
@@ -331,7 +335,7 @@ ds_trans_reference,value)
 - Updates on unit tests for: PayLink, 3DS1 and RiskAssessment
 
 #### Bug Fixes:
-- Portico/Heartland: fix to allow CreditAuth transaction type with wallet data
+- Portico/Global Payments: fix to allow CreditAuth transaction type with wallet data
 
 ## v7.0.2 (05/02/23)
 #### Enhancements:
@@ -341,7 +345,7 @@ ds_trans_reference,value)
 
 ## v7.0.1 (04/04/23)
 #### Enhancements:
-- Portico/Heartland: improvements to transaction request building logic
+- Portico/Global Payments: improvements to transaction request building logic
 - GP-API: Unit tests update on fraud management and APMs
 - GP-ECOM: Unit test update on 3DS
 
@@ -359,11 +363,11 @@ ds_trans_reference,value)
 
 ## v6.1.6 (03/07/23)
 #### Bug Fixes:
-- Portico/Heartland: fix 'withStartDate()' reporting method
+- Portico/Global Payments: fix 'withStartDate()' reporting method
 
 #### Enhancements:
-- Portico/Heartland: improvements to GooglePay and ApplePay token handling
-- Portico/Heartland: simple GooglePay example added
+- Portico/Global Payments: improvements to GooglePay and ApplePay token handling
+- Portico/Global Payments: simple GooglePay example added
 
 ## v6.1.5 (02/28/23)
 #### Bug Fixes:

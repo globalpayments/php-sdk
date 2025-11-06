@@ -338,7 +338,7 @@ class TestAccountData
             $deviceData->quantity = 1;
 
             if ($withAttr) {
-                $deviceData->attributes->name = "Heartland.AMD.OfficeKey";
+                $deviceData->attributes->name = "GlobalPayments.AMD.OfficeKey";
                 $deviceData->attributes->value = "123456";
             }
             $deviceList->append($deviceData);
@@ -386,7 +386,7 @@ class TestAccountData
             $deviceData->quantity = 1;
 
             if ($withAttr) {
-                $deviceData->attributes->name = "Heartland.AMD.OfficeKey";
+                $deviceData->attributes->name = "GlobalPayments.AMD.OfficeKey";
                 $deviceData->attributes->value = "123456";
             }
             $deviceList->append($deviceData);

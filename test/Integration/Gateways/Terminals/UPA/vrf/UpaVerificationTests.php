@@ -307,7 +307,7 @@ class UpaVerificationTests extends TestCase
     
     /**
      * Objective    Confirm support of EMV PIN Debit sale
-     * Test Card    EMV PIN Debit Card (not provided by Heartland)
+     * Test Card    EMV PIN Debit Card (not provided by GlobalPayments)
      * Procedure
      *      1. Select Sale function and Select Debit for the card type OR select DEBIT function. For the test
      *         amount, use $10.00
@@ -405,7 +405,7 @@ class UpaVerificationTests extends TestCase
     
     /**
      * Objective    Transactions: Gift Balance Inquiry, Gift Load, Gift Sale/Redeem, Gift Replace
-     * Test Card    Heartland Test Gift Cards
+     * Test Card    GlobalPayments Test Gift Cards
      * Procedure
      *      1. Gift Balance Inquiry
      *          a. Should respond with a balance amount of $10
@@ -562,7 +562,7 @@ class UpaVerificationTests extends TestCase
     
     /**
      * Objective    Apply a surcharge to a transaction. You will need to make sure that you have worked with
-     *              the Heartland team to set a surcharge amount for all qualifying transactions.
+     *              the GlobalPayments team to set a surcharge amount for all qualifying transactions.
      * Test Card    EMV Mastercard // I used and configured EMV Amex for surcharge
      * Procedure
      *      1. Process a Credit Sale transaction for $50.00 with a 3.5% surcharge

@@ -21,7 +21,7 @@ if (!empty($_GET)) {
     ServicesContainer::configureService($config);
 
     $card = new CreditCardData();
-    $card->token = $_GET['heartlandToken'];
+    $card->token = $_GET['globalPaymentsToken'];
 
     $secureEcommerce = new EcommerceInfo();
     $secureEcommerce->paymentDataSource = $_GET['cardType'];
@@ -65,7 +65,7 @@ if (!empty($_GET)) {
         <div id="cardCvv"></div>
         <div id="submit"></div>
         <input type="hidden" id="cardinalToken" name="cardinalToken">
-        <input type="hidden" id="heartlandToken" name="heartlandToken">
+        <input type="hidden" id="globalPaymentsToken" name="globalPaymentsToken">
         <input type="hidden" id="cavv" name="cavv">
         <input type="hidden" id="eciflag" name="eciflag">
         <input type="hidden" id="enrolled" name="enrolled">
@@ -138,7 +138,7 @@ if (!empty($_GET)) {
                 'height': '50px',
                 'width': '100% !important'
             },
-            '#heartland-field': {
+            '#globalpayments-field': {
                 'font-family': 'sans-serif',
                 'box-sizing': 'border-box',
                 'display': 'block',
@@ -157,28 +157,28 @@ if (!empty($_GET)) {
                 'transition': 'border-color ease-in-out .15s,box-shadow ease-in-out .15s',
                 'width': '100%'
             },
-            '#heartland-field[name=submit]': {
+            '#globalpayments-field[name=submit]': {
                 'background-color': '#36b46e',
                 'font-family': 'sans-serif',
                 'text-transform': 'uppercase',
                 'color': '#ffffff',
                 'border': '0px solid transparent'
             },
-            '#heartland-field[name=submit]:focus': {
+            '#globalpayments-field[name=submit]:focus': {
                 'color': '#ffffff',
                 'background-color': '#258851',
                 'outline': 'none'
             },
-            '#heartland-field[name=submit]:hover': {
+            '#globalpayments-field[name=submit]:hover': {
                 'background-color': '#258851'
             },
-            '#heartland-field-wrapper #heartland-field:focus': {
+            '#globalpayments-field-wrapper #globalpayments-field:focus': {
                 'border': '1px solid #3989e3',
                 'outline': 'none',
                 'box-shadow': 'none',
                 'height': '50px'
             },
-            'heartland-field-wrapper #heartland-field': {
+            'globalpayments-field-wrapper #globalpayments-field': {
                 'height': '50px'
             },
             'input[type=submit]': {
@@ -206,65 +206,65 @@ if (!empty($_GET)) {
                 'background-color': '#337ab7',
                 'border-color': '#2e6da4'
             },
-            '#heartland-field[placeholder]': {
+            '#globalpayments-field[placeholder]': {
                 'letter-spacing': '3px'
             },
-            '#heartland-field[name=cardCvv]': {
+            '#globalpayments-field[name=cardCvv]': {
                 'background': 'transparent url(https://github.com/hps/heartland-php/blob/master/examples/end-to-end/assets/images/cvv1.png?raw=true) no-repeat right',
                 'background-size': '63px 40px',
             },
-            'input#heartland-field[name=cardNumber]': {
+            'input#globalpayments-field[name=cardNumber]': {
                 'background': 'transparent url(https://github.com/hps/heartland-php/blob/master/examples/end-to-end/assets/images/ss-inputcard-blank@2x.png?raw=true) no-repeat right',
                 'background-size': '55px 35px'},
-            '#heartland-field.invalid.card-type-visa': {
+            '#globalpayments-field.invalid.card-type-visa': {
                 'background': 'transparent url(https://github.com/hps/heartland-php/blob/master/examples/end-to-end/assets/images/ss-saved-visa@2x.png?raw=true) no-repeat right',
                 'background-size': '83px 88px',
                 'background-position-y': '-44px'
             },
-            '#heartland-field.valid.card-type-visa': {
+            '#globalpayments-field.valid.card-type-visa': {
                 'background': 'transparent url(https://github.com/hps/heartland-php/blob/master/examples/end-to-end/assets/images/ss-saved-visa@2x.png?raw=true) no-repeat right top',
                 'background-size': '82px 86px'
             },
-            '#heartland-field.invalid.card-type-discover': {
+            '#globalpayments-field.invalid.card-type-discover': {
                 'background': 'transparent url(https://github.com/hps/heartland-php/blob/master/examples/end-to-end/assets/images/ss-saved-discover@2x.png?raw=true) no-repeat right',
                 'background-size': '85px 90px',
                 'background-position-y': '-44px'
             },
-            '#heartland-field.valid.card-type-discover': {
+            '#globalpayments-field.valid.card-type-discover': {
                 'background': 'transparent url(https://github.com/hps/heartland-php/blob/master/examples/end-to-end/assets/images/ss-saved-discover@2x.png?raw=true) no-repeat right',
                 'background-size': '85px 90px',
                 'background-position-y': '1px'
             },
-            '#heartland-field.invalid.card-type-amex': {
+            '#globalpayments-field.invalid.card-type-amex': {
                 'background': 'transparent url(https://github.com/hps/heartland-php/blob/master/examples/end-to-end/assets/images/ss-savedcards-amex@2x.png?raw=true) no-repeat right',
                 'background-size': '50px 90px',
                 'background-position-y': '-44px'
             },
-            '#heartland-field.valid.card-type-amex': {
+            '#globalpayments-field.valid.card-type-amex': {
                 'background': 'transparent url(https://github.com/hps/heartland-php/blob/master/examples/end-to-end/assets/images/ss-savedcards-amex@2x.png?raw=true) no-repeat right top',
                 'background-size': '50px 90px'
             },
-            '#heartland-field.invalid.card-type-mastercard': {
+            '#globalpayments-field.invalid.card-type-mastercard': {
                 'background': 'transparent url(https://github.com/hps/heartland-php/blob/master/examples/end-to-end/assets/images/ss-saved-mastercard.png?raw=true) no-repeat right',
                 'background-size': '62px 105px',
                 'background-position-y': '-52px'
             },
-            '#heartland-field.valid.card-type-mastercard': {
+            '#globalpayments-field.valid.card-type-mastercard': {
                 'background': 'transparent url(https://github.com/hps/heartland-php/blob/master/examples/end-to-end/assets/images/ss-saved-mastercard.png?raw=true) no-repeat right',
                 'background-size': '62px 105px',
                 'background-position-y': '-1px'
             },
-            '#heartland-field.invalid.card-type-jcb': {
+            '#globalpayments-field.invalid.card-type-jcb': {
                 'background': 'transparent url(https://github.com/hps/heartland-php/blob/master/examples/end-to-end/assets/images/ss-saved-jcb@2x.png?raw=true) no-repeat right',
                 'background-size': '55px 94px',
                 'background-position-y': '-44px'
             },
-            '#heartland-field.valid.card-type-jcb': {
+            '#globalpayments-field.valid.card-type-jcb': {
                 'background': 'transparent url(https://github.com/hps/heartland-php/blob/master/examples/end-to-end/assets/images/ss-saved-jcb@2x.png?raw=true) no-repeat right top',
                 'background-size': '55px 94px',
                 'background-position-y': '2px'
             },
-            'input#heartland-field[name=cardNumber]::-ms-clear': {
+            'input#globalpayments-field[name=cardNumber]::-ms-clear': {
                 'display': 'none'
             }
         },
@@ -286,7 +286,7 @@ if (!empty($_GET)) {
             form.appendChild(token);
 
             // document.getElementById('cardinalToken').value = resp.cardinal.token_value;
-            document.getElementById('heartlandToken').value = resp.paymentReference;
+            document.getElementById('globalPaymentsToken').value = resp.paymentReference;
             document.getElementById('cardType').value = resp.details.cardType;
             cca();
         });

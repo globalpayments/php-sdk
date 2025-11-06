@@ -6,7 +6,7 @@ class DeviceAttributeInfo
 {
     /**
      * Name of attribute item which is specific to Portico devices for AMD.
-     * The value of this item is passed to Heartland for
+     * The value of this item is passed to GlobalPayments for
      * equipment boarding.
      *
      * @var string

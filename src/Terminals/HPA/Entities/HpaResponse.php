@@ -3,7 +3,7 @@
 namespace GlobalPayments\Api\Terminals\HPA\Entities;
 
 /**
- * Heartland Payment Application response data
+ * Global Payments Application response data
  */
 class HpaResponse
 {

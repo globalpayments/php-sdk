@@ -7,9 +7,9 @@
  *
  * @category Authentication
  * @package  HPS
- * @author   Heartland Payment Systems <entapp_devportal@e-hps.com>
- * @license  Custom https://github.com/hps/heartland-php/blob/master/LICENSE.txt
- * @link     https://developer.heartlandpaymentsystems.com
+ * @author   Global Payments Systems <entapp_devportal@e-hps.com>
+ * @license  Custom https://github.com/globalpayments/php-sdk/blob/master/LICENSE.txt
+ * @link     https://developer.globalpay.com
  */
 
 class JWT

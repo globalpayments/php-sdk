@@ -70,7 +70,7 @@ use GlobalPayments\Api\Terminals\UPA\Responses\{
 use GlobalPayments\Api\Utils\ArrayUtils;
 
 /**
- * Heartland payment application implementation of device messages
+ * Global Payments application implementation of device messages
  */
 class UpaInterface extends DeviceInterface
 {

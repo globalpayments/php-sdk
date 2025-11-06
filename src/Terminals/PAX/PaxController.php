@@ -42,7 +42,7 @@ use GlobalPayments\Api\Terminals\PAX\Responses\PaxLocalReportResponse;
 use GlobalPayments\Api\Terminals\PAX\Responses\EBTResponse;
 
 /*
- * Main controller class for Heartland payment application
+ * Main controller class for Global Payments application
  *
  */
 

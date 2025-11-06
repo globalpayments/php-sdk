@@ -12,7 +12,7 @@ use GlobalPayments\Api\Entities\Exceptions\UnsupportedTransactionException;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Terminals\DeviceResponse;
 /**
- * Heartland payment application implementation of device messages
+ * Global Payments application implementation of device messages
  */
 class HpaInterface extends DeviceInterface
 {

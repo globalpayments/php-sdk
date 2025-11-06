@@ -23,7 +23,7 @@ use GlobalPayments\Api\Terminals\{DeviceInterface, DeviceResponse, TerminalUtils
 use GlobalPayments\Api\Terminals\UPA\Entities\SignatureData;
 
 /**
- * Heartland payment application implementation of device messages
+ * Global Payments application implementation of device messages
  */
 final class PaxInterface extends DeviceInterface
 {
