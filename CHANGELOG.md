@@ -3,7 +3,11 @@
 </a>
 
 # Changelog
-## Latest Version v14.0.0 (11/06/25)
+## Latest Version v14.0.1 (11/13/25)
+### Enhancements:
+- [GPAPI] Added ContractReference field in Stored Credential
+
+## v14.0.0 (11/06/25)
 ### Enhancements:
 - [Rebrand] Replace Heartland branding with Global Payments
 

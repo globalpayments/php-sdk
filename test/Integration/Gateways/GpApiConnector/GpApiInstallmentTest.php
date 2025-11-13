@@ -95,19 +95,20 @@ class GpApiInstallmentTest extends TestCase
         $this->storeCredentials->type = StoredCredentialType::INSTALLMENT;
         $this->storeCredentials->sequence = StoredCredentialSequence::SUBSEQUENT;
         $this->storeCredentials->reason = StoredCredentialReason::INCREMENTAL;
+        $this->storeCredentials->contract_reference = "testshraddha";
 
         $this->visaCard = new CreditCardData();
-        $this->visaCard->number = "4915669522406071";
-        $this->visaCard->expMonth = 04;
-        $this->visaCard->expYear = 2026;
-        $this->visaCard->cvn = "123";
+        $this->visaCard->number = "4395840190010011";
+        $this->visaCard->expMonth = 12;
+        $this->visaCard->expYear = 2027;
+        $this->visaCard->cvn = "840";
         $this->visaCard->cardPresent = false;
         $this->visaCard->readerPresent = false;
 
         $this->masterCard = new CreditCardData();
-        $this->masterCard->number = "5579083004810368";
+        $this->masterCard->number = "5120350100064537";
         $this->masterCard->expMonth = 12;
-        $this->masterCard->expYear = 2026;
+        $this->masterCard->expYear = 2027;
         $this->masterCard->cvn = "123";
         $this->masterCard->cardPresent = false;
         $this->masterCard->readerPresent = false;
@@ -274,6 +275,40 @@ class GpApiInstallmentTest extends TestCase
     }
 
     /** END Reporting Test Cases **/
+
+    /** START Contract Reference Test Cases **/
+
+    public function testContractReference_Visa_Sandbox()
+    {
+        ServicesContainer::configureService($this->setUpConfigSandbox());
+        $response = $this->visaCard->charge($this->amount)
+            ->withCurrency($this->currency)
+            ->withAddress($this->address)
+            ->withInstallment($this->installment)
+            ->withStoredCredential($this->storeCredentials)
+            ->withAllowDuplicates(true)
+            ->execute();
+
+            $this->assertNotNull($response);
+            $this->assertEquals('SUCCESS', $response->responseCode);
+    }
+
+    public function testContractReference_MC_Sandbox()
+    {
+        ServicesContainer::configureService($this->setUpConfigSandbox());
+        $response = $this->masterCard->charge($this->amount)
+            ->withCurrency($this->currency)
+            ->withAddress($this->address)
+            ->withInstallment($this->installment)
+            ->withStoredCredential($this->storeCredentials)
+            ->withAllowDuplicates(true)
+            ->execute();
+
+            $this->assertNotNull($response);
+            $this->assertEquals('SUCCESS', $response->responseCode);
+    }
+
+    /** END Contract Reference Test Cases **/
  
     public function setUpConfig(): GpApiConfig
     {
@@ -288,6 +323,21 @@ class GpApiInstallmentTest extends TestCase
         $config->accessTokenInfo->transactionProcessingAccountID = 'TRA_ba4aa4dd3cd1426e9eecba3abbd2053c';
         $config->accessTokenInfo->merchantManagementAccountID = 'MER_e3b91f1af988437f85d000eb272b777d';
 
+        $config->requestLogger = new RequestConsoleLogger();
+        return $config;
+    }
+
+    public function setUpConfigSandbox(): GpApiConfig
+    {
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $config->country = 'MX';
+        $config->appId = '4gPqnGBkppGYvoE5UX9EWQlotTxGUDbs';
+        $config->appKey = 'FQyJA5VuEQfcji2M';
+        $config->serviceUrl = 'https://apis.sandbox.globalpay.com/ucp';
+        $config->accessTokenInfo = new AccessTokenInfo();
+        $config->accessTokenInfo->riskAssessmentAccountName = 'transaction_processing';
+        $config->accessTokenInfo->transactionProcessingAccountName = 'transaction_processing';
+       
         $config->requestLogger = new RequestConsoleLogger();
         return $config;
     }

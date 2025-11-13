@@ -272,6 +272,14 @@ class AuthorizationBuilder extends TransactionBuilder
     public $invoiceNumber;
 
     /**
+     * Request contract reference
+     *
+     * @internal
+     * @var string
+     */
+    public $contractReference;
+
+    /**
      * Request should request Level II
      *
      * @internal

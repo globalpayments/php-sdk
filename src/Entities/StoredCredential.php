@@ -26,4 +26,9 @@ class StoredCredential
      * @var string
      */
     public $cardBrandTransactionId;
+
+    /**
+     * @var string
+     */
+    public $contract_reference;
 }

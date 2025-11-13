@@ -448,7 +448,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $requestBody['country'] = $config->country;
         $requestBody['payment_method'] = $this->createPaymentMethodParam($builder, $config);
         if (!empty($builder->storedCredential)) {
-            $this->setRequestStoredCredentials($builder->storedCredential, $requestBody);
+            $this->setRequestStoredCredentials($builder->storedCredential, $requestBody, $builder);
         }
 
         return $requestBody;
@@ -512,7 +512,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             $this->setNotificationUrls($requestBody);
         }
         if (!empty($builder->storedCredential)) {
-            $this->setRequestStoredCredentials($builder->storedCredential, $requestBody);
+            $this->setRequestStoredCredentials($builder->storedCredential, $requestBody, $builder, $config);
         }
 
         if (!empty($builder->dccRateData)) {
@@ -528,7 +528,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         return $requestBody;
     }
 
-    private function setRequestStoredCredentials(StoredCredential $storedCredential, &$request)
+    private function setRequestStoredCredentials(StoredCredential $storedCredential, &$request, $builder = null, $config = null)
     {
         $request['initiator'] = !empty($storedCredential->initiator) ?
             EnumMapping::mapStoredCredentialInitiator(GatewayProvider::GP_API, $storedCredential->initiator) : null;
@@ -537,11 +537,21 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             'reason' => !empty($storedCredential->reason) ? strtoupper((string) $storedCredential->reason) : null,
             'sequence' => !empty($storedCredential->sequence) ? strtoupper((string) $storedCredential->sequence) : null
         ];
+        
+        // Add contract reference if provided in StoredCredential and both currency is MXN and country is MX (Mexico)
+         if (
+            !empty($storedCredential->contract_reference)
+            && (!empty($builder->currency) && strtoupper($builder->currency) === 'MXN')
+            && (!empty($config->country) && strtoupper($config->country) === 'MX')
+        ) {
+            $request['stored_credential']['contract_reference'] = $storedCredential->contract_reference;
+        }
     }
 
     /**
      * Sets the information related to the payer
      *
+     * 
      * @param AuthorizationBuilder $builder
      * @return mixed
      */
