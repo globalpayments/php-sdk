@@ -3,7 +3,11 @@
 </a>
 
 # Changelog
-## Latest Version v14.0.1 (11/13/25)
+## Latest Version v14.0.2 (11/20/25)
+### Enhancements:
+- [GPAPI] Enable GP-API access using Portico credentials
+
+## v14.0.1 (11/13/25)
 ### Enhancements:
 - [GPAPI] Added ContractReference field in Stored Credential
 
