@@ -20,7 +20,7 @@
     "ext-intl": "*",
     "ext-mbstring": "*",
     "ext-fileinfo": "*",
-    "symfony/process": "7.1.8"
+    "symfony/process": "^7.1"
   },
   "require-dev": {
     "phpunit/phpunit": "^7.5 || ^8.5 || ~9.4",
