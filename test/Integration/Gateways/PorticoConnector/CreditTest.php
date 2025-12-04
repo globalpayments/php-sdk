@@ -20,6 +20,7 @@ use GlobalPayments\Api\Tests\Data\TestCards;
 use GlobalPayments\Api\Utils\Logging\{SampleRequestLogger, Logger};
 use SebastianBergmann\RecursionContext\InvalidArgumentException;
 use PHPUnit\Framework\ExpectationFailedException;
+use GlobalPayments\Api\Entities\Enums\EmvChipCondition;
 
 class CreditTest extends TestCase
 {
@@ -110,6 +111,40 @@ class CreditTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->responseCode);
+    }
+
+    public function testCreditSaleChipSuccess()
+    {
+        $response = $this->card->charge(17)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->withChipCondition(EmvChipCondition::CHIP_FAILED_PREV_SUCCESS)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode);
+
+        $filename = 'portico-logs/log_' . date('Y-m-d') . '.txt';
+        $xml = file_get_contents($filename);
+
+        $this->assertStringContainsString('<EMVChipCondition>CHIP_FAILED_PREV_SUCCESS</EMVChipCondition>', $xml, 'EMVChipCondition should be present in XML log');
+    }
+
+    public function testCreditSaleChipFailed()
+    {
+        $response = $this->card->charge(18)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->withChipCondition(EmvChipCondition::CHIP_FAILED_PREV_FAILED)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode);
+
+        $filename = 'portico-logs/log_' . date('Y-m-d') . '.txt';
+        $xml = file_get_contents($filename);
+
+        $this->assertStringContainsString('<EMVChipCondition>CHIP_FAILED_PREV_FAILED</EMVChipCondition>', $xml, 'EMVChipCondition should be present in XML log');
     }
 
     public function testCreditOfflineAuth()

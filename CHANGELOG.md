@@ -2,10 +2,14 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-# Changelog
-## Latest Version v14.0.2 (11/20/25)
+## Latest Version v14.0.3 (12/04/25)
 ### Enhancements:
+- [Portico] Add EMVChipCondition element support
 - [GPAPI] Enable GP-API access using Portico credentials
+
+## v14.0.2 (11/20/25)
+### Enhancements:
+- [Portico] Bug fix cert endpoint ignored when using production credentials
 
 ## v14.0.1 (11/13/25)
 ### Enhancements:

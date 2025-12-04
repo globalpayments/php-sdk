@@ -224,6 +224,14 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             $block1->appendChild($xml->createElement('Amt', $builder->amount));
         }
 
+        if (!empty($builder->emvChipCondition)) {
+            $emvDataElement = $xml->createElement('EMVData');
+            $emvDataElement->appendChild(
+                $xml->createElement('EMVChipCondition', $builder->emvChipCondition)
+            );
+            $block1->appendChild($emvDataElement);
+        }
+
         if ($builder->gratuity !== null) {
             $block1->appendChild(
                 $xml->createElement('GratuityAmtInfo', $builder->gratuity)
@@ -301,7 +309,6 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 if (!empty($builder->categoryIndicator)) {
                     $cardOnFileData->appendChild($xml->createElement('CategoryInd', $builder->categoryIndicator));
                 }
-
                 $block1->appendChild($cardOnFileData);
             }
 
@@ -619,9 +626,9 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
 
         $transaction->appendChild($block1);
 
-        $response = $this->doTransaction(
-            $this->buildEnvelope($xml, $transaction, $builder->clientTransactionId, $builder)
-        );
+        $xmlRequest = $this->buildEnvelope($xml, $transaction, $builder->clientTransactionId, $builder);
+
+        $response = $this->doTransaction($xmlRequest);
         return $this->mapResponse($response, $builder, $this->buildEnvelope($xml, $transaction));
     }
 

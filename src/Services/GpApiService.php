@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 
 namespace GlobalPayments\Api\Services;
 
@@ -12,16 +13,20 @@ use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 
 class GpApiService
 {
-    public static function generateTransactionKey(GpApiConfig $config)
+    public static function generateTransactionKey(GpApiConfig $config): AccessTokenInfo
     {
         if (!isset($config->accessTokenProvider)) {
             $config->accessTokenProvider = new GpApiSessionInfo();
         }
+        
         $gateway = new GpApiConnector($config);
+        
         if (empty($gateway->serviceUrl)) {
-            $gateway->serviceUrl = ($config->environment == Environment::PRODUCTION) ?
-                ServiceEndpoints::GP_API_PRODUCTION : ServiceEndpoints::GP_API_TEST;
+            $gateway->serviceUrl = !empty($config->serviceUrl) ? $config->serviceUrl :
+                (($config->environment == Environment::PRODUCTION) ?
+                    ServiceEndpoints::GP_API_PRODUCTION : ServiceEndpoints::GP_API_TEST);
         }
+        
         $gateway->requestLogger = $config->requestLogger;
         $gateway->webProxy = $config->webProxy;
         $gateway->dynamicHeaders = $config->dynamicHeaders;

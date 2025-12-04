@@ -1,8 +1,8 @@
 <?php
 
+declare(strict_types=1);
 
 namespace GlobalPayments\Api\ServiceConfigs\Gateways;
-
 
 use GlobalPayments\Api\ConfiguredServices;
 use GlobalPayments\Api\Entities\Enums\Environment;
@@ -17,85 +17,88 @@ use GlobalPayments\Api\Gateways\IAccessTokenProvider;
 
 class GpApiConfig extends GatewayConfig
 {
-    //GP-API
     public $appId;
     public $appKey;
-
+    public $siteId;
+    public $licenseId;
+    public $deviceId;
+    public $username;
+    public $password;
+    public $secretApiKey;
+    
     /**
-     * @var AccessTokenInfo $accessTokenInfo
-     */
+     * @var AccessTokenInfo
+    */
     public $accessTokenInfo;
+    
     /**
-     * Country from which the transaction is done from
-     * @var $country string
-     */
+     * @var string
+    */
     public $country = 'US';
 
     /**
-     * Transaction channel for GP-API
-     * Can be CP (Card Present) or CNP (Card Not Present)
-     *
-     * @var $channel string
-     */
+     * @var string
+    */
     public $channel;
 
     /**
-     * The time left in seconds before the token expires
      * @var int
-     */
+    */
     public $secondsToExpire;
 
     /**
-     * The time interval set for when the token will expire
-     */
+     * @var string
+    */
     public $intervalToExpire;
 
     /**
      * @var string
-     */
+    */
     public $methodNotificationUrl;
 
     /**
      * @var string
-     */
+    */
     public $challengeNotificationUrl;
 
     /**
      * @var string
-     */
+    */
     public $merchantContactUrl;
 
     /**
      * @var array
-     */
+    */
     public $permissions;
 
     /**
      * @var string
-     */
+    */
     public $gatewayProvider;
 
-    /** @var string */
+    /**
+     * @var string
+    */
     public $merchantId;
 
     /**
-     * Property used for terminal configuration
      * @var string
-     */
+    */
     public $deviceCurrency;
 
     /**
-     * The endpoint where the merchant will receive a notification from the API for a specific action/resource (webhook)
      * @var string
-     */
+    */
     public string $statusUrl;
 
     /**
-     * transaction account name used for recurring operation
      * @var string
-     */
+    */
     public string $transactionAccountName;
 
+    /**
+     * @var IAccessTokenProvider
+    */
     public IAccessTokenProvider $accessTokenProvider;
 
     public function __construct()
@@ -133,14 +136,30 @@ class GpApiConfig extends GatewayConfig
         $services->setSecure3dProvider(Secure3dVersion::TWO, $gateway);
     }
 
-    public function validate()
+    public function validate(): void
     {
         parent::validate();
-        if (
-            empty($this->accessTokenInfo) &&
-            (empty($this->appId) || empty($this->appKey))
-        ) {
-            throw new ConfigurationException('AccessTokenInfo or AppId and AppKey cannot be null');
+        
+        if (!empty($this->accessTokenInfo)) {
+            return;
+        }
+        
+        $hasGpApiCredentials = !empty($this->appId) && !empty($this->appKey);
+        $hasPorticoCredentials = !empty($this->deviceId) && !empty($this->siteId) && 
+            !empty($this->licenseId) && !empty($this->username) && !empty($this->password);
+        $hasSecretApiKey = !empty($this->secretApiKey);
+        
+        if (!$hasGpApiCredentials && !$hasPorticoCredentials && !$hasSecretApiKey) {
+            throw new ConfigurationException(
+                'AccessTokenInfo or (AppId and AppKey) or (Portico 5-point credentials: deviceId, siteId, licenseId, username, password) or SecretApiKey must be provided'
+            );
+        }
+        
+        if ((!empty($this->deviceId) || !empty($this->siteId) || !empty($this->licenseId) || 
+             !empty($this->username) || !empty($this->password)) && !$hasPorticoCredentials) {
+            throw new ConfigurationException(
+                'When using Portico credentials, all 5 fields must be provided: deviceId, siteId, licenseId, username, and password'
+            );
         }
     }
 }
