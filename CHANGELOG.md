@@ -2,7 +2,11 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version v14.0.3 (12/04/25)
+## Latest Version v14.0.4 (12/11/25)
+### Enhancements:
+- Remove Symfony Process component dependency
+
+## Version v14.0.3
 ### Enhancements:
 - [Portico] Add EMVChipCondition element support
 - [GPAPI] Enable GP-API access using Portico credentials
