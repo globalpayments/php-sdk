@@ -71,9 +71,6 @@ class RequestTransactionFields implements IRequestSubGroup
     
     public $referenceNumber = null;
     
-    //Health Card related fields
-    public $cardIsHSAFSA = null;
-    
     public $prescriptionAmount = null;
     
     public $clinicAmount = null;
@@ -249,11 +246,6 @@ class RequestTransactionFields implements IRequestSubGroup
         
         if (!empty($autoSubstantiation->getVisionSubTotal())) {
             $this->visionOpticalAmount = sprintf('%06.2f', $autoSubstantiation->getVisionSubTotal());
-        }
-        
-        if ($this->prescriptionAmount > 0 || $this->clinicAmount > 0 || $this->dentalAmount > 0
-            || $this->visionOpticalAmount > 0) {
-            $this->cardIsHSAFSA = 1;
         }
     }
 }
