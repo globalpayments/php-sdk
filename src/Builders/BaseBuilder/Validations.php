@@ -35,6 +35,7 @@ class Validations
      */
     public function of($type, $modifier = TransactionModifier::NONE)
     {
+        $type = (string) $type;
         if (!array_key_exists($type, $this->rules)) {
             $this->rules[$type] = [];
         }
