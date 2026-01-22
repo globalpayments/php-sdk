@@ -22,10 +22,10 @@ abstract class Debit implements
     IEncryptable,
     IPinProtected
 {
-    public $encryptionData;
-    public $paymentMethodType = PaymentMethodType::DEBIT;
-    public $pinBlock;
-    public $cardType = 'Unknown';
+    public mixed $encryptionData = null;
+    public mixed $paymentMethodType = PaymentMethodType::DEBIT;
+    public ?string $pinBlock = null;
+    public string $cardType = 'Unknown';
 
     /**
      * Adds value to the payment method

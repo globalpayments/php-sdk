@@ -15,7 +15,7 @@ class ProtectSensitiveData
                 new MaskedValueCollection()))->hideValue($key, $value, $unmaskedLastChars, $unmaskedFirstChars);
     }
 
-    public static function hideValues(array $list, $unmaskedLastChars = 0, $unmaskedFirstChars = 0) : array
+    public static function hideValues(array $list, int $unmaskedLastChars = 0, int $unmaskedFirstChars = 0) : array
     {
         foreach ($list as $key => $value) {
             if(empty(self::$hideValueCollection)) {

@@ -9,14 +9,14 @@ use GlobalPayments\Api\Terminals\Abstractions\ITerminalReport;
 abstract class DeviceResponse implements IDeviceResponse, IBatchCloseResponse, ITerminalReport
 {
     /** @var string */
-    public $status;
+    public ?string $status = null;
     /** @var string */
-    public $command;
+    public ?string $command = null;
     /** @var string */
-    public $version;
+    public ?string $version = null;
     /** @var string */
-    public $deviceResponseCode;
+    public ?string $deviceResponseCode = null;
     /** @var string */
-    public $deviceResponseText;
-    public ?string $referenceNumber;
+    public ?string $deviceResponseText = null;
+    public ?string $referenceNumber = null;
 }

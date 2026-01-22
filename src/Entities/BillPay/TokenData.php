@@ -21,7 +21,7 @@ class TokenData
         return $this->lastUsedDateUTC;
     }
 
-    public function setLastUsedDateUTC(DateTime $lastUsedDateUTC)
+    public function setLastUsedDateUTC(DateTime $lastUsedDateUTC): void
     {
         $this->lastUsedDateUTC = $lastUsedDateUTC;
     }
@@ -31,7 +31,7 @@ class TokenData
         return $this->isExpired;
     }
 
-    public function setExpired(bool $isExpired)
+    public function setExpired(bool $isExpired): bool
     {
         return $this->isExpired = $isExpired;
     }
@@ -41,7 +41,7 @@ class TokenData
         return $this->sharedTokenWithGroup;
     }
 
-    public function setSharedTokenWithGroup(bool $sharedTokenWithGroup)
+    public function setSharedTokenWithGroup(bool $sharedTokenWithGroup): bool
     {
         return $this->sharedTokenWithGroup = $sharedTokenWithGroup;
     }
@@ -52,7 +52,7 @@ class TokenData
         return $this->merchants;
     }
 
-    public function setMerchants($merchants)
+    public function setMerchants(?array $merchants): void
     {
         $this->merchants = $merchants;
     }

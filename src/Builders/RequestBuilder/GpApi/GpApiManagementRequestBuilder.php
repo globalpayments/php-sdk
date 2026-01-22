@@ -36,7 +36,7 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
      * @param $builder
      * @return bool
      */
-    public static function canProcess($builder = null)
+    public static function canProcess(?BaseBuilder $builder = null): bool
     {
         if ($builder instanceof ManagementBuilder) {
             return true;
@@ -51,7 +51,7 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
      *
      * @return GpApiRequest|null
      */
-    public function buildRequest(BaseBuilder $builder, $config)
+    public function buildRequest(BaseBuilder $builder, mixed $config): ?GpApiRequest
     {
         $payload = null;
 
@@ -334,8 +334,8 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
         ];
     }
 
-    public function buildRequestFromJson($jsonRequest, $config)
+    public function buildRequestFromJson(mixed $jsonRequest, mixed $config): mixed
     {
-        // TODO: Implement buildRequestFromJson() method.
+        throw new \GlobalPayments\Api\Entities\Exceptions\NotImplementedException();
     }
 }

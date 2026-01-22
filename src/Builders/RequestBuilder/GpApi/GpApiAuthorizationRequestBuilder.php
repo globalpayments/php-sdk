@@ -55,7 +55,7 @@ use GlobalPayments\Api\Utils\Logging\ProtectSensitiveData;
 class GpApiAuthorizationRequestBuilder implements IRequestBuilder
 {
     /** @var AuthorizationBuilder */
-    private $builder;
+    private mixed $builder = null;
 
     private array $maskedValues = [];
 
@@ -64,7 +64,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
      *
      * @return bool
      */
-    public static function canProcess($builder = null)
+    public static function canProcess(?BaseBuilder $builder = null): bool
     {
         if ($builder instanceof AuthorizationBuilder) {
             return true;
@@ -78,7 +78,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
      * @param GpApiConfig $config
      * @return GpApiRequest|string
      */
-    public function buildRequest(BaseBuilder $builder, $config)
+    public function buildRequest(BaseBuilder $builder, mixed $config): mixed
     {
         $this->builder = $builder;
         $requestData = null;
@@ -1127,8 +1127,9 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         ];
     }
 
-    public function buildRequestFromJson($jsonRequest, $config)
+    public function buildRequestFromJson(mixed $jsonRequest, mixed $config): mixed
     {
-        // TODO: Implement buildRequestFromJson() method.
+        throw new \GlobalPayments\Api\Entities\Exceptions\NotImplementedException();
     }
 }
+

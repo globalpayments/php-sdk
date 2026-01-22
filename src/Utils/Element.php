@@ -13,7 +13,7 @@ class Element
      /** 
      * @var DOMDocument
      * */ 
-     private $doc;
+     private DOMDocument $doc;
 
      /**
       * @var DOMElement
@@ -25,7 +25,7 @@ class Element
      */
      private array $namespaces;
 
-     public function __construct($doc, ?DOMElement $element, array $namespaces) {
+     public function __construct(DOMDocument $doc, ?DOMElement $element, array $namespaces) {
           $this->doc = $doc;
           $this->element = $element;
           $this->namespaces = $namespaces;
@@ -51,7 +51,7 @@ class Element
           return new Element($doc, $node, $namespaces);
      }
 
-     public function get($tagName)
+     public function get(?string $tagName): ?Element
      {
           $node = $this->element->getElementsByTagName($tagName)->item(0);
           return Element::fromNode($this->doc, $node, $this->namespaces);
@@ -83,7 +83,7 @@ class Element
           }
      }
 
-     public function getAll(string $tagName)
+     public function getAll(string $tagName): array
      {
           $elements = [];
 
@@ -143,7 +143,7 @@ class Element
           return $merchants;
      }
 
-     public function getAccountHolderData($tagName)
+     public function getAccountHolderData(?string $tagName): array
      {
           $xpath = new DOMXPath($this->doc);
 
@@ -204,7 +204,7 @@ class Element
           return null;
      }
 
-     public function getBool($tagName): bool
+     public function getBool(?string $tagName): bool
      {
           $xpath = new DOMXPath($this->doc);
 
@@ -221,7 +221,7 @@ class Element
           return false;
      }
 
-     public function getFloat($tagName): ?float
+     public function getFloat(?string $tagName): ?float
      {
           $xpath = new DOMXPath($this->doc);
 
@@ -237,7 +237,7 @@ class Element
           return null;
      }
 
-     public function getDateTime($tagName): ?DateTime
+     public function getDateTime(?string $tagName): ?DateTime
      {
           $xpath = new DOMXPath($this->doc);
 

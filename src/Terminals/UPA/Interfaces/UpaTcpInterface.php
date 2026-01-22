@@ -18,21 +18,21 @@ class UpaTcpInterface implements IDeviceCommInterface
     /*
      * TCP fsockopen connection object
      */
-    private $tcpConnection = null;
+    private mixed $tcpConnection = null;
     
     /*
      * Device configuration details ConnectionConfig object
      *
      */
-    public $deviceDetails;
+    public ?ConnectionConfig $deviceDetails = null;
     
     /*
      * Device request type
      *
      */
-    private $requestType;
+    private ?string $requestType = null;
     
-    private $nakCount = 0;
+    private int $nakCount = 0;
     
     /*
      * @param ConnectionConfig object $config device configuration details

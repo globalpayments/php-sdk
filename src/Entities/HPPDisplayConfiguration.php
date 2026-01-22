@@ -15,7 +15,7 @@ class HPPDisplayConfiguration
      *
      * @var string
      */
-    public $iframe_dimensions_domain;
+    public string $iframe_dimensions_domain;
     
     /**
      * Domain for posting back transaction responses.
@@ -24,7 +24,7 @@ class HPPDisplayConfiguration
      *
      * @var string|null
      */
-    public $iframe_response_domain;
+    public ?string $iframe_response_domain = null;
     
     /**
      * Create a new HPPDisplayConfiguration instance.

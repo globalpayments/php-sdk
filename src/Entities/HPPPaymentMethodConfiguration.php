@@ -32,7 +32,7 @@ class HPPPaymentMethodConfiguration
     public function __construct(
         HPPAuthenticationConfiguration $config = new HPPAuthenticationConfiguration(),
         HPPApmConfiguration $apm = new HPPApmConfiguration(),
-        HPPStorageModes|string $storageMode = HPPStorageModes::PROMPT,
+        HPPStorageModes|string|null $storageMode = HPPStorageModes::PROMPT,
         ?array $digitalWallets = null
     )
     {

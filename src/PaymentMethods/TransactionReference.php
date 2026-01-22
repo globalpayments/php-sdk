@@ -15,7 +15,7 @@ class TransactionReference implements IPaymentMethod
      *
      * @var PaymentMethodType
      */
-    public $paymentMethodType = PaymentMethodType::REFERENCE;
+    public mixed $paymentMethodType = PaymentMethodType::REFERENCE;
 
     /**
      * Previous transaction's authorization code
@@ -24,39 +24,39 @@ class TransactionReference implements IPaymentMethod
      *
      * @var string
      */
-    public $authCode;
+    public ?string $authCode = null;
 
     /**
      * Previous authorization's transaction ID
      *
      * @var string
      */
-    public $transactionId;
+    public ?string $transactionId = null;
 
     /**
      * Previous authorization's transaction ID
      *
      * @var string
      */
-    public $clientTransactionId;
+    public ?string $clientTransactionId = null;
 
     /**
      * Previous authorization's creditsale ID
      *
      * @var string
      */
-    public $creditsaleId;
+    public ?string $creditsaleId = null;
 
-    public $orderId;
+    public ?string $orderId = null;
 
     /** @var AlternativePaymentResponse $alternativePaymentResponse */
-    public $alternativePaymentResponse;
+    public ?AlternativePaymentResponse $alternativePaymentResponse = null;
 
     /** @var BNPLResponse $bnplResponse */
-    public $bnplResponse;
+    public ?BNPLResponse $bnplResponse = null;
 
     /** @var TransferFundsAccountCollection */
-    public $transfersFundsAccount;
+    public ?TransferFundsAccountCollection $transfersFundsAccount = null;
 
     /** @return PaymentMethodType */
     function getPaymentMethodType()

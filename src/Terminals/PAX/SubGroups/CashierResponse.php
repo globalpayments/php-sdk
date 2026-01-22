@@ -8,8 +8,8 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class CashierResponse implements IResponseSubGroup
 {
 
-    public $clerkId;
-    public $shiftId;
+    public ?string $clerkId = null;
+    public ?string $shiftId = null;
 
     public function __construct($messageReader)
     {

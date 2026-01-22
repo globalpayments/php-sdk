@@ -17,11 +17,11 @@ use GlobalPayments\Api\Utils\GenerationUtils;
 class UpaMicInterface implements IDeviceCommInterface
 {
     /** @var ITerminalConfiguration */
-    private $config;
+    private ITerminalConfiguration $config;
     /** @var GpApiConfig */
-    private $gatewayConfig;
+    private ?GpApiConfig $gatewayConfig = null;
     /** @var GpApiConnector */
-    private $connector;
+    private ?GpApiConnector $connector = null;
 
     public function __construct(ITerminalConfiguration $config)
     {

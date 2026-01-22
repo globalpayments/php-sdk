@@ -34,7 +34,7 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var string|float
      */
-    public $amount;
+    public string|float|null $amount = null;
 
     /**
      * Request authorization amount
@@ -42,7 +42,7 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var string|float
      */
-    public $authAmount;
+    public string|float|null $authAmount = null;
 
     /**
      * Card Brand
@@ -50,13 +50,13 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var string
      */
-    public $cardType;
+    public ?string $cardType = null;
 
     /**
      *
      * @var CommercialData
      */
-    public $commercialData;
+    public mixed $commercialData = null;
 
     /**
      * Request convenienceAmount;
@@ -64,7 +64,7 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var float
      */
-    public $convenienceAmount;
+    public ?float $convenienceAmount = null;
 
     /**
      * Request currency
@@ -72,7 +72,7 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var string
      */
-    public $currency;
+    public ?string $currency = null;
 
     /**
      * Request customer ID
@@ -80,7 +80,7 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var string|float
      */
-    public $customerId;
+    public string|float|null $customerId = null;
 
     /**
      * Request ipAddress
@@ -88,13 +88,13 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var string|float
      */
-    public $customerIpAddress;
+    public string|float|null $customerIpAddress = null;
 
     /**
      * @internal
      * @var string
      */
-    public $description;
+    public ?string $description = null;
 
     /**
      * Request gratuity
@@ -102,7 +102,7 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var string|float
      */
-    public $gratuity;
+    public string|float|null $gratuity = null;
 
     /**
      * Request invoice number
@@ -110,7 +110,7 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var string|float
      */
-    public $invoiceNumber;
+    public string|float|null $invoiceNumber = null;
 
     /**
      * Original Transaction Type
@@ -118,7 +118,7 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var TransactionType
      */
-    public $originalTransactionType;
+    public mixed $originalTransactionType = null;
 
     /**
      * Request purchase order number
@@ -126,13 +126,13 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var string|float
      */
-    public $poNumber;
+    public string|float|null $poNumber = null;
 
     /**
      * @internal
      * @var ReasonCode
      */
-    public $reasonCode;
+    public mixed $reasonCode = null;
 
     /**
      * Request tax amount
@@ -140,7 +140,7 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var string|float
      */
-    public $taxAmount;
+    public string|float|null $taxAmount = null;
 
     /**
      * Request tax type
@@ -148,7 +148,7 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var TaxType
      */
-    public $taxType;
+    public mixed $taxType = null;
 
     /**
      * Previous request's transaction reference
@@ -156,7 +156,7 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var IPaymentMethod
      */
-    public $paymentMethod;
+    public mixed $paymentMethod = null;
 
     /**
      * Previous request's transaction reference
@@ -164,41 +164,41 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var string
      */
-    public $alternativePaymentType;
+    public ?string $alternativePaymentType = null;
 
     /**
      * Dispute id
      *
      * @var int
      */
-    public $disputeId;
+    public ?int $disputeId = null;
     /**
      * Array with DisputeDocument objects
      *
      * @var array
      */
-    public $disputeDocuments;
+    public ?array $disputeDocuments = null;
 
     /**
      * @internal
      * @var string
      */
-    public $payerAuthenticationResponse;
+    public ?string $payerAuthenticationResponse = null;
 
     /**
      * @var string $idempotencyKey
      */
-    public $idempotencyKey;
+    public ?string $idempotencyKey = null;
 
     /**
      * @var string
      */
-    public $batchReference;
+    public ?string $batchReference = null;
 
     /**
      * @var ?array
      */
-    public $bills;
+    public ?array $bills = null;
 
     /**
      * Request dynamic descriptor
@@ -206,33 +206,30 @@ class ManagementBuilder extends TransactionBuilder
      * @internal
      * @var string
      */
-    public $dynamicDescriptor;
+    public ?string $dynamicDescriptor = null;
 
     /**
      * @var ECheck
      */
-    public $bankTransferDetails;
+    public mixed $bankTransferDetails = null;
 
     /** @var DccRateData */
-    public $dccRateData;
+    public mixed $dccRateData = null;
 
     /** @var LodgingData */
-    public $lodgingData;
+    public mixed $lodgingData = null;
 
     /** @var string */
-    public $tagData;
-
-    /** @var TransactionApiData */
-    public $transactionData;
+    public ?string $tagData = null;
 
     /** @var PaymentMethodUsageMode */
-    public $paymentMethodUsageMode;
+    public mixed $paymentMethodUsageMode = null;
 
     /** @var string */
-    public $reference;
+    public ?string $reference = null;
 
     /** @var FundsData */
-    public $fundsData;
+    public mixed $fundsData = null;
 
     public float $surchargeAmount;
 

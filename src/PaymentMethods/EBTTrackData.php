@@ -11,23 +11,23 @@ use GlobalPayments\Api\Utils\CardUtils;
 
 class EBTTrackData extends EBT implements ITrackData, IEncryptable
 {
-    public $discretionaryData;
+    public ?string $discretionaryData = null;
     /**
      * @var EncryptionData $encryptionData
      */
-    public $encryptionData;
+    public ?EncryptionData $encryptionData = null;
     /**
      * @var EntryMethod $entryMethod
      */
-    protected $value;
-    public $expire;
-    public $pan;
-    public $purchaseDeviceSequenceNumber;
+    protected ?string $value = null;
+    public ?string $expire = null;
+    public ?string $pan = null;
+    public ?string $purchaseDeviceSequenceNumber = null;
     /**
      * @var TrackNumber $trackNumber
      */
-    public $trackNumber;
-    protected $trackData;
+    public mixed $trackNumber = null;
+    protected ?string $trackData = null;
 
     public function __get($property)
     {

@@ -16,7 +16,7 @@ use GlobalPayments\Api\Terminals\Genius\Responses\MitcResponse;
 
 class GeniusInterface extends DeviceInterface
 {
-    public $geniusController;
+    public GeniusController $geniusController;
 
     public function __construct(GeniusController $deviceController)
     {

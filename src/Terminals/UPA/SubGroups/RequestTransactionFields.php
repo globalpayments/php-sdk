@@ -14,19 +14,19 @@ class RequestTransactionFields implements IRequestSubGroup
     /*
      * The initial amount before adding any additional amount like tax, tips etc.
      */
-    public $baseAmount = null;
+    public float|int|string|null $baseAmount = null;
     
     /*
      * The amount that merchants charge for tax processing. If this is included as an
      * input parameter, tax amount will not be prompted during the Sale transaction.
      */
-    public $taxAmount = null;
+    public float|int|string|null $taxAmount = null;
     
     /*
      * Tip amount for the transaction. If this is included as an input parameter, tip amount will not be prompted 
      * during the Sale transaction.
      */
-    public $tipAmount = null;
+    public float|int|string|null $tipAmount = null;
     
     /*
      * Indicates whether the sale is exempted from Tax or not. Possible Values:0 or 1
@@ -34,13 +34,13 @@ class RequestTransactionFields implements IRequestSubGroup
      * If this is included as an input parameter, the tax exempt screen will not be prompted 
      * during the Sale transaction.
      */
-    public $taxIndicator = null;
+    public int|string|null $taxIndicator = null;
     
     /*
      * Cash back amount for PIN Debit Transactions. If this is included as an input
      * parameter, cash back amount will not be prompted during the Sale transaction.
      */
-    public $cashBackAmount = null;
+    public float|int|string|null $cashBackAmount = null;
 
     /**
      * This field represents the transaction amount eligible for tipping.
@@ -49,41 +49,38 @@ class RequestTransactionFields implements IRequestSubGroup
      * 
      * @var string|int|float
      */
-    public $tippableAmount = null;
+    public float|int|string|null $tippableAmount = null;
 
     /* The initial amount authorized on the original preauth transaction. */
-    public $preAuthAmount = null;
+    public float|int|string|null $preAuthAmount = null;
     
     /*
      * Indicates the Invoice number. If this is included as an input parameter, invoice number 
      * will not be prompted during the Sale transaction.
      */
-    public $invoiceNbr = null;
+    public ?string $invoiceNbr = null;
     
     /*
      * The reference number of the transaction to be voided.
      */
-    public $tranNo = null;
+    public ?string $tranNo = null;
     
-    public $totalAmount = null;
+    public float|int|string|null $totalAmount = null;
     
-    public $amount = null;
+    public float|int|string|null $amount = null;
     
     public $referenceNumber = null;
     
-    public $prescriptionAmount = null;
+    public float|int|string|null $clinicAmount = null;
     
-    public $clinicAmount = null;
+    public float|int|string|null $dentalAmount = null;
     
-    public $dentalAmount = null;
-    
-    public $visionOpticalAmount = null;
+    public float|int|string|null $visionOpticalAmount = null;
 
     public ?int $processCPC = null;
 
-    /** The new authorized amount of the transaction. This is required only when reversing a
-    partially authorized transaction. If not specified, the full original amount will be reversed. */
-    public ?string $authorizedAmount;
+    /** The new authorized amount of the transaction. This is required only when reversing a partially authorized transaction. If not specified, the full original amount will be reversed. */
+    public ?string $authorizedAmount = null;
 
     /**
      * Indicates the mode of card reading

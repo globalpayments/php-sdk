@@ -8,7 +8,7 @@ use GlobalPayments\Api\Terminals\PAX\SubGroups\HostResponse;
 class SafDeleteResponse extends PaxTerminalResponse
 {
 
-    public $safDeletedCount;
+    public ?int $safDeletedCount = null;
 
     public function __construct($rawResponse)
     {

@@ -20,7 +20,7 @@ class HpaInterface extends DeviceInterface
      * HpaController object
      */
 
-    public $hpaController;
+    public HpaController $hpaController;
 
     public function __construct(HpaController $deviceController)
     {

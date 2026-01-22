@@ -30,100 +30,100 @@ use GlobalPayments\Api\Entities\Exceptions\BuilderException;
  */
 class PayFacBuilder extends BaseBuilder
 {
-    public $transactionType;
-    public $transactionModifier;
-    public $bankAccountData;
-    public $beneficialOwnerData;
-    public $businessData;
-    public $significantOwnerData;
-    public $threatRiskData;
-    public $userPersonalData;
-    public $creditCardInformation;
+    public mixed $transactionType = null;
+    public mixed $transactionModifier = null;
+    public mixed $bankAccountData = null;
+    public mixed $beneficialOwnerData = null;
+    public mixed $businessData = null;
+    public mixed $significantOwnerData = null;
+    public mixed $threatRiskData = null;
+    public mixed $userPersonalData = null;
+    public mixed $creditCardInformation = null;
     /**
      * @var BankAccountData
      */
-    public $achInformation;
-    public $mailingAddressInformation;
-    public $secondaryBankInformation;
-    public $grossBillingInformation;
-    public $accountNumber;
-    public $password;
-    public $accountPermissions;
-    public $negativeLimit;
-    public $renewalAccountData;
+    public mixed $achInformation = null;
+    public mixed $mailingAddressInformation = null;
+    public mixed $secondaryBankInformation = null;
+    public mixed $grossBillingInformation = null;
+    public ?string $accountNumber = null;
+    public ?string $password = null;
+    public mixed $accountPermissions = null;
+    public ?string $negativeLimit = null;
+    public mixed $renewalAccountData = null;
     /** @var UploadDocumentData */
-    public $uploadDocumentData;
-    public $singleSignOnData;
-    public $amount;
-    public $receivingAccountNumber;
-    public $allowPending;
-    public $ccAmount;
-    public $requireCCRefund;
-    public $transNum;
-    public $flashFundsPaymentCardData;
-    public $externalId;
-    public $sourceEmail;
-    public $deviceDetails;
-    public $deviceData;
+    public mixed $uploadDocumentData = null;
+    public mixed $singleSignOnData = null;
+    public string|float|null $amount = null;
+    public ?string $receivingAccountNumber = null;
+    public ?bool $allowPending = null;
+    public string|float|null $ccAmount = null;
+    public ?bool $requireCCRefund = null;
+    public ?string $transNum = null;
+    public mixed $flashFundsPaymentCardData = null;
+    public ?string $externalId = null;
+    public ?string $sourceEmail = null;
+    public mixed $deviceDetails = null;
+    public mixed $deviceData = null;
 
     /** @var string */
-    public $description;
+    public ?string $description = null;
 
     /** @var string */
-    public $gatewayTransactionId;
+    public ?string $gatewayTransactionId = null;
 
     /** @var string */
-    public $globaltransId;
+    public ?string $globaltransId = null;
 
     /** @var string */
-    public $globalTransSource;
+    public ?string $globalTransSource = null;
 
     /** @var string */
-    public $cardBrandTransactionId;
+    public ?string $cardBrandTransactionId = null;
 
     /**
      * @var array<Product>
      */
-    public $productData = [];
+    public array $productData = [];
 
     /**
      * @var PersonList
      */
-    public $personsData;
+    public mixed $personsData = null;
 
     /**
      * @var integer
      */
-    public $page;
+    public ?int $page = null;
 
     /**
      * @var integer
      */
-    public $pageSize;
+    public ?int $pageSize = null;
 
     /**
      * @var PaymentStatistics
      */
-    public $paymentStatistics;
+    public mixed $paymentStatistics = null;
 
     /**
      * @var StatusChangeReason
      */
-    public $statusChangeReason;
+    public mixed $statusChangeReason = null;
 
     /** @var User */
-    public $userReference;
+    public mixed $userReference = null;
 
     /**
      * @var array
      */
-    public $paymentMethodsFunctions;
+    public ?array $paymentMethodsFunctions = null;
 
     /** @var string */
-    public $idempotencyKey;
+    public ?string $idempotencyKey = null;
 
     /** @var AddressCollection */
-    public $addresses;
+    public mixed $addresses = null;
 
     /**
      * Required for partners ordering Portico devices. Valid values:
@@ -132,7 +132,7 @@ class PayFacBuilder extends BaseBuilder
      *
      * @var string
      */
-    public $timezone;
+    public ?string $timezone = null;
 
     /** @var PaymentMethodName */
     public string $paymentMethodName;

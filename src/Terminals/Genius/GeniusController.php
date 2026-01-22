@@ -30,10 +30,10 @@ class GeniusController extends DeviceController
      * 
      * @var MitcGateway
      */
-    public $mitcGateway;
+    public ?MitcGateway $mitcGateway = null;
 
     /** @var GeniusInterface */
-    private $device;
+    private ?GeniusInterface $device = null;
     
     public function __construct(ConnectionConfig $config)
     {

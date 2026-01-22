@@ -7,81 +7,81 @@ namespace GlobalPayments\Api\Terminals\HPA\Entities;
  */
 class HpaResponse
 {
-    public $versionNumber;
-    public $ecrId;
-    public $sipId;
-    public $deviceId;
-    public $response;
-    public $multipleMessage;
-    public $resultCode;
-    public $resultText;
-    public $responseData;
-    public $requestId;
-    public $isStoredResponse;
+    public ?string $versionNumber = null;
+    public ?string $ecrId = null;
+    public ?string $sipId = null;
+    public ?string $deviceId = null;
+    public ?string $response = null;
+    public ?string $multipleMessage = null;
+    public ?string $resultCode = null;
+    public ?string $resultText = null;
+    public ?string $responseData = null;
+    public ?string $requestId = null;
+    public ?bool $isStoredResponse = null;
     
     // Internal
-    public $status;
-    public $command;
-    public $version;
+    public ?string $status = null;
+    public ?string $command = null;
+    public ?string $version = null;
     
     // Functional
-    public $responseCode;
-    public $responseText;
-    public $gatewayResponseMessage;
-    public $transactionId;
-    public $terminalRefNumber;
-    public $token;
-    public $signatureStatus;
-    public $signatureData;
+    public ?string $responseCode = null;
+    public ?string $responseText = null;
+    public ?string $gatewayResponseMessage = null;
+    public ?string $transactionId = null;
+    public ?string $terminalRefNumber = null;
+    public ?string $token = null;
+    public ?string $signatureStatus = null;
+    public mixed $signatureData = null;
     
     // Transactional
-    public $transactionType;
-    public $maskedCardNumber;
-    public $entryMethod;
-    public $authorizationCode;
-    public $approvalCode;
-    public $transactionAmount;
-    public $balanceAmountDue;
-    public $cardHolderName;
-    public $cardBIN;
-    public $cardPresent;
-    public $expirationDate;
-    public $tipAmount;
-    public $cashBackAmount;
-    public $avsResponseCode;
-    public $avsResponseText;
-    public $cvvResponseCode;
-    public $cvvResponseText;
-    public $taxExempt;
-    public $taxExemptId;
-    public $ticketNumber;
-    public $paymentType;
-    public $transactionTime;
-    public $cardType;
-    public $referenceNumber;
-    public $partialApproval;
+    public ?string $transactionType = null;
+    public ?string $maskedCardNumber = null;
+    public ?string $entryMethod = null;
+    public ?string $authorizationCode = null;
+    public ?string $approvalCode = null;
+    public float|int|string|null $transactionAmount = null;
+    public float|int|string|null $balanceAmountDue = null;
+    public ?string $cardHolderName = null;
+    public ?string $cardBIN = null;
+    public ?bool $cardPresent = null;
+    public ?string $expirationDate = null;
+    public float|int|string|null $tipAmount = null;
+    public float|int|string|null $cashBackAmount = null;
+    public ?string $avsResponseCode = null;
+    public ?string $avsResponseText = null;
+    public ?string $cvvResponseCode = null;
+    public ?string $cvvResponseText = null;
+    public ?bool $taxExempt = null;
+    public ?string $taxExemptId = null;
+    public ?string $ticketNumber = null;
+    public ?string $paymentType = null;
+    public ?string $transactionTime = null;
+    public ?string $cardType = null;
+    public ?string $referenceNumber = null;
+    public ?bool $partialApproval = null;
     
     //EOD
-    public $reversal;
-    public $emvOfflineDecline;
-    public $transactionCertificate;
-    public $attachment;
-    public $sendSAF;
-    public $batchClose;
-    public $heartBeat;
-    public $eMVPDL;
+    public ?string $reversal = null;
+    public ?string $emvOfflineDecline = null;
+    public ?string $transactionCertificate = null;
+    public ?string $attachment = null;
+    public ?string $sendSAF = null;
+    public ?string $batchClose = null;
+    public ?string $heartBeat = null;
+    public ?string $eMVPDL = null;
     
     //EBT
     
     /*
      * EBT transaction type (EBT FoodStamp or Cash Benefits)
      */
-    public $ebtType;
+    public ?string $ebtType = null;
     
     /*
-     * This element is used to inform the POS whether the receipt should print “PIN VERIFIED”
+     * This element is used to inform the POS whether the receipt should print "PIN VERIFIED"
      */
-    public $pinVerified;
+    public ?bool $pinVerified = null;
             
     //EMV
     /*
@@ -90,7 +90,7 @@ class HpaResponse
      *
      * Conditional If transaction is EMV
      */
-    public $emvApplicationId;
+    public ?string $emvApplicationId = null;
     
     /*
      * This element is the preferred Name of the Application
@@ -98,7 +98,7 @@ class HpaResponse
      *
      * Conditional If transaction is EMV
      */
-    public $emvApplicationName;
+    public ?string $emvApplicationName = null;
     
     /*
      * For EMV transactions this element provides the Transaction Verification Results (TVR) register.
@@ -106,28 +106,28 @@ class HpaResponse
      *
      * Conditional If transaction is EMV
      */
-    public $emvTerminalVerificationResults;
+    public ?string $emvTerminalVerificationResults = null;
     
     /*
      * For EMV transactions this element provides the Transaction Status Information tag (TSI)
      *
      * Conditional If transaction is EMV
      */
-    public $emvCardHolderVerificationMethod;
+    public ?string $emvCardHolderVerificationMethod = null;
     
     /*
      * For EMV transactions this element provides the cryptogram type (TC, AAR, AAC, or ARQC)
      *
      * Conditional If transaction is EMV
      */
-    public $emvCryptogramType;
+    public ?string $emvCryptogramType = null;
     
     /*
      * For EMV transactions this element provides the cryptogram
      *
      * Conditional If transaction is EMV
      */
-    public $emvCryptogram;
+    public ?string $emvCryptogram = null;
     
     //Gifts
     
@@ -138,15 +138,15 @@ class HpaResponse
      * Value may range from 0 to 9999999, for example, $12.34 would be sent as 1234
      *
      */
-    public $availableBalance;
+    public float|int|string|null $availableBalance = null;
     
     //Send File
     /*
      * Maximum number of characters of file data in hexadecimal ASCII format that
      * can be sent in each subsequent request
      */
-    public $maxDataSize;
+    public ?int $maxDataSize = null;
     
     //Get last Response
-    public $lastResponse;
+    public ?string $lastResponse = null;
 }

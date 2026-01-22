@@ -9,7 +9,7 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 
 class PaxBaseResponse extends TerminalResponse
 {
-    public $messageId;
+    public mixed $messageId = null;
 
     public function __construct($rawResponse, $messageId)
     {

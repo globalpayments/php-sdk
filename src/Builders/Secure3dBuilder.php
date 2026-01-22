@@ -28,62 +28,62 @@ use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 class Secure3dBuilder extends SecureBuilder
 {
     /** @var string */
-    public $applicationId;
+    public ?string $applicationId = null;
     /** @var AuthenticationRequestType */
-    public $authenticationRequestType;
+    public mixed $authenticationRequestType = null;
     /** @var ChallengeRequestIndicator */
-    public $challengeRequestIndicator;
+    public mixed $challengeRequestIndicator = null;
     /** @var DecoupledFlowRequest */
-    public $decoupledFlowRequest;
+    public mixed $decoupledFlowRequest = null;
     /** @var integer */
-    public $decoupledFlowTimeout;
+    public ?int $decoupledFlowTimeout = null;
     /** @var string */
-    public $decoupledNotificationUrl;
+    public ?string $decoupledNotificationUrl = null;
     /** @var string */
-    public $encodedData;
+    public ?string $encodedData = null;
     /** @var string */
-    public $ephemeralPublicKey;
+    public ?string $ephemeralPublicKey = null;
     /** @var int */
-    public $maximumTimeout;
+    public ?int $maximumTimeout = null;
     /** @var MerchantDataCollection */
-    public $merchantData;
+    public mixed $merchantData = null;
     /** @var MessageCategory */
-    public $messageCategory;
+    public mixed $messageCategory = null;
     /** @var AuthenticationRequestType */
-    public $merchantInitiatedRequestType;
+    public mixed $merchantInitiatedRequestType = null;
     /** @var MessageVersion */
-    public $messageVersion;
+    public mixed $messageVersion = null;
     /** @var MethodUrlCompletion */
-    public $methodUrlCompletion;
+    public mixed $methodUrlCompletion = null;
     /** @var string */
-    public $payerAuthenticationResponse;
+    public ?string $payerAuthenticationResponse = null;
     /** @var SdkInterface */
-    public $sdkInterface;
+    public mixed $sdkInterface = null;
     /** @var string */
-    public $sdkTransactionId;
+    public ?string $sdkTransactionId = null;
     /** @var array<SdkUiType> */
-    public $sdkUiTypes;
+    public ?array $sdkUiTypes = null;
     /** @var ThreeDSecure */
-    public $threeDSecure;
+    public mixed $threeDSecure = null;
 
     /** @var TransactionModifier */
-    public $transactionModifier = TransactionModifier::NONE;
+    public mixed $transactionModifier = TransactionModifier::NONE;
 //    /** @var Secure3dVersion */
 //    public $version;
     /** @var string */
-    public $whitelistStatus;
+    public ?string $whitelistStatus = null;
     /**
      * @var bool
      */
-    public $enableExemptionOptimization;
+    public ?bool $enableExemptionOptimization = null;
 
     /** @var MobileData */
-    public $mobileData;
+    public mixed $mobileData = null;
 
     /**
      * @var StoredCredential
      */
-    public $storedCredential;
+    public mixed $storedCredential = null;
 
     public function __construct($transactionType)
     {

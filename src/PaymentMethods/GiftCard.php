@@ -35,14 +35,14 @@ class GiftCard implements
      *
      * @var PaymentMethodType
      */
-    public $paymentMethodType = PaymentMethodType::GIFT;
+    public mixed $paymentMethodType = PaymentMethodType::GIFT;
 
     /**
      * Payment method PIN
      *
      * @var string
      */
-    public $pin;
+    public ?string $pin = null;
 
     /**
      * Payment method value
@@ -50,7 +50,7 @@ class GiftCard implements
      * @internal
      * @var string
      */
-    public $value;
+    public ?string $value = null;
 
     /**
      * Payment method value type
@@ -58,7 +58,7 @@ class GiftCard implements
      * @internal
      * @var string
      */
-    public $valueType;
+    public ?string $valueType = null;
 
     /**
      * Payment method value types

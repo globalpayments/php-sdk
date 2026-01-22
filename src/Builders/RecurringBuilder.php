@@ -12,25 +12,25 @@ class RecurringBuilder extends TransactionBuilder
      * @internal
      * @var string
      */
-    public $key;
+    public ?string $key = null;
 
     /**
      * @internal
      * @var string
      */
-    public $orderId;
+    public ?string $orderId = null;
 
     /**
      * @internal
      * @var IRecurringEntity
      */
-    public $entity;
+    public mixed $entity = null;
 
     /**
      * @internal
      * @var array<string,string>
      */
-    public $searchCriteria;
+    public ?array $searchCriteria = null;
 
     /**
      * @param TransactionType $type

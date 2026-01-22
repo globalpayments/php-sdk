@@ -11,14 +11,12 @@ use GlobalPayments\Api\ConfiguredServices;
 
 class TransitConfig extends GatewayConfig
 {
-    /** @var GatewayProvider */
-    public $gatewayProvider;
-    public $deviceId;
-    public $developerId;
-    public $merchantId;
-    public $transactionKey;
-    public $username;
-    public $password;
+    public ?string $deviceId = null;
+    public ?string $developerId = null;
+    public ?string $merchantId = null;
+    public ?string $transactionKey = null;
+    public ?string $username = null;
+    public ?string $password = null;
 
     public function __construct()
     {

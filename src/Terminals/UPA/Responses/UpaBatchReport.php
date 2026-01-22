@@ -4,11 +4,11 @@ namespace GlobalPayments\Api\Terminals\UPA\Responses;
 class UpaBatchReport extends UpaResponseHandler
 {
     
-    public $merchantName;
+    public ?string $merchantName = null;
     
-    public $batchSummary;
+    public ?array $batchSummary = null;
     
-    public $batchTransactions;
+    public ?array $batchTransactions = null;
     
     public function __construct($jsonResponse)
     {

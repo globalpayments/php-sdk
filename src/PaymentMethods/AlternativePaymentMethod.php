@@ -29,14 +29,14 @@ class AlternativePaymentMethod implements
     IEncryptable,
     IPinProtected
 {
-    public $paymentMethodType = PaymentMethodType::APM;
+    public mixed $paymentMethodType = PaymentMethodType::APM;
     
     /**
      * Specifies the payment method
      *
      * @var string
      */
-    public $alternativePaymentMethodType;
+    public mixed $alternativePaymentMethodType = null;
     
     /**
      * The endpoint to which the customer should be redirected after a payment has been attempted or
@@ -44,7 +44,7 @@ class AlternativePaymentMethod implements
      *
      * @var string
      */
-    public $returnUrl;
+    public ?string $returnUrl = null;
 
     /**
      * The endpoint which will receive payment-status messages.
@@ -54,50 +54,50 @@ class AlternativePaymentMethod implements
      *
      * @var string
      */
-    public $statusUpdateUrl;
+    public ?string $statusUpdateUrl = null;
 
     /**
      * The customer will be redirected back to your notifications.cancel_url in case the transaction is canceled
      *
      * @var string
      */
-    public $cancelUrl;
+    public ?string $cancelUrl = null;
 
     /**
      * Enables dynamic values to be sent for each transaction.
      *
      * @var string
      */
-    public $descriptor;
+    public ?string $descriptor = null;
 
     /**
      * 2 character country code, must adhere to ISO 3166-2.
      *
      * @var string
      */
-    public $country;
+    public ?string $country = null;
 
     /**
      * The name of the account holder.
      *
      * @var string
      */
-    public $accountHolderName;
+    public ?string $accountHolderName = null;
 
     /**
      * The reference from the payment provider: from PayPal etc
      * @var string
      */
-    public $providerReference;
+    public ?string $providerReference = null;
 
     /**
      * Accepted values ENABLE/DISABLE
      * @var string
      */
-    public $addressOverrideMode;
+    public ?string $addressOverrideMode = null;
 
     /** @var BankList */
-    public $bank;
+    public mixed $bank = null;
     
     public function __construct($alternativePaymentMethodType)
     {

@@ -24,53 +24,51 @@ use GlobalPayments\Api\Terminals\UPA\UpaController;
 class ConnectionConfig extends Configuration implements ITerminalConfiguration
 {
     /** @var DeviceType */
-    public $deviceType;
+    public mixed $deviceType = null;
 
     /** @var ConnectionModes */
-    public $connectionMode;
+    public mixed $connectionMode = null;
 
     /** @var BaudRate */
-    public $baudRate;
+    public mixed $baudRate = null;
 
     /** @var Parity */
-    public $parity;
+    public mixed $parity = null;
 
     /** @var StopBits */
-    public $stopBits;
+    public mixed $stopBits = null;
 
     /** @var DataBits */
-    public $dataBits;
+    public mixed $dataBits = null;
 
     /** @var string */
-    public $ipAddress;
+    public ?string $ipAddress = null;
 
     /** @var string */
-    public $port;
-    
-    public $timeout;
+    public ?string $port = null;
 
     /**
      * Used only for Genius devices that connect via "Meet In The Cloud"
      * 
      * @var Genius\ServiceConfigs\MitcConfig
      */
-    public $meetInTheCloudConfig;
+    public mixed $meetInTheCloudConfig = null;
     
     /*
      * Implementation of IRequestIdProvider to generate request id for each transaction
      */
     /** @var IRequestIdProvider */
-    public $requestIdProvider;
+    public ?IRequestIdProvider $requestIdProvider = null;
     
     /*
      * Implementation of ILogManagement to generate logs for each transaction
      */
-    public $logManagementProvider;
+    public mixed $logManagementProvider = null;
 
     /** @var GatewayConfig */
-    public $gatewayConfig;
+    public ?GatewayConfig $gatewayConfig = null;
 
-    private $configName;
+    private ?string $configName = null;
 
     public function setConfigName(string $configName) : void
     {
@@ -251,7 +249,7 @@ class ConnectionConfig extends Configuration implements ITerminalConfiguration
 
     public function getTimeout(): int
     {
-        // TODO: Implement getTimeout() method.
+        return $this->timeout;
     }
 
     public function getGatewayConfig(): GatewayConfig

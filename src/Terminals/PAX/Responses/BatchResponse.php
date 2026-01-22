@@ -9,13 +9,13 @@ use GlobalPayments\Api\Terminals\PAX\SubGroups\HostResponse;
 
 class BatchResponse extends PaxTerminalResponse implements IBatchCloseResponse
 {
-    public $totalCount;
-    public $totalAmount;
-    public $timeStamp;
-    public $tid;
-    public $mid;
-    public $batchNumber;
-    public $sequenceNumber;
+    public ?string $totalCount = null;
+    public float|int|string|null $totalAmount = null;
+    public ?string $timeStamp = null;
+    public ?string $tid = null;
+    public ?string $mid = null;
+    public ?string $batchNumber = null;
+    public ?string $sequenceNumber = null;
     
     public function __construct($rawResponse)
     {

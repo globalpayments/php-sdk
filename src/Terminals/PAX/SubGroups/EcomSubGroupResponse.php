@@ -7,17 +7,17 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class EcomSubGroupResponse implements IResponseSubGroup
 {
 
-    public $ecomMode;
+    public ?string $ecomMode = null;
 
-    public $transactionType;
+    public ?string $transactionType = null;
 
-    public $secureType;
+    public ?string $secureType = null;
 
-    public $orderNumber;
+    public ?string $orderNumber = null;
 
-    public $installments;
+    public string|int|null $installments = null;
 
-    public $currentInstallment;
+    public string|int|null $currentInstallment = null;
 
     public function __construct($messageReader)
     {

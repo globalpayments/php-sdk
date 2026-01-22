@@ -2,11 +2,15 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
+## Latest Version v14.1.0 (01/22/26)
+### Enhancements:
+- [PHP8] Add PHP 8 type declarations to class properties for improved type safety
+
 ## Latest Version v14.0.5 (01/08/26)
 ### Enhancements:
 - [UPA] Remove HSA/FSA parameter support (removed in UPA v1.60)
 
-## v14.0.4 (12/11/25)
+## Latest Version v14.0.4 (12/11/25)
 ### Enhancements:
 - Remove Symfony Process component dependency
 

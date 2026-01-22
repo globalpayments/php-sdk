@@ -4,12 +4,12 @@ namespace GlobalPayments\Api\Utils;
 
 class TlvData
 {
-    private $tag;
-    private $length;
-    private $value;
-    private $description;
+    private ?string $tag = null;
+    private ?string $length = null;
+    private ?string $value = null;
+    private ?string $description = null;
 
-    public function __construct($tag, $length, $value, $description = null)
+    public function __construct(?string $tag, ?string $length, ?string $value, ?string $description = null)
     {
         $this->tag = $tag;
         $this->length = $length;
@@ -17,27 +17,27 @@ class TlvData
         $this->description = $description;
     }
 
-    public function getTag()
+    public function getTag(): ?string
     {
         return $this->tag;
     }
 
-    public function getValue()
+    public function getValue(): ?string
     {
         return $this->value;
     }
 
-    public function getLength()
+    public function getLength(): ?string
     {
         return $this->length;
     }
 
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function getBinaryValue()
+    public function getBinaryValue(): string
     {
         $sb = '';
         $bytes = StringUtils::bytesFromHex($this->value);
@@ -48,7 +48,7 @@ class TlvData
         return $sb;
     }
 
-    public function getFullValue()
+    public function getFullValue(): string
     {
         return sprintf("%s%s%s", $this->tag, $this->length, $this->value);
     }

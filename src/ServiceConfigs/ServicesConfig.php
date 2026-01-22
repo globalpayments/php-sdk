@@ -2,25 +2,30 @@
 
 namespace GlobalPayments\Api\ServiceConfigs;
 
+use GlobalPayments\Api\ConfiguredServices;
+
 class ServicesConfig
 {
     /** @var GatewayConfig */
-    public $gatewayConfig;
+    public mixed $gatewayConfig = null;
 
     /** @var ConnectionConfig */
-    public $deviceConnectionConfig;
+    public mixed $deviceConnectionConfig = null;
 
     /** @var TableServiceConfig */
-    public $tableServiceConfig;
+    public mixed $tableServiceConfig = null;
 
     /** @var PayrollConfig */
-    public $payrollConfig;
+    public mixed $payrollConfig = null;
 
     /** @var BoardingConfig */
-    public $boardingConfig;
+    public mixed $boardingConfig = null;
 
     /** @var int */
-    public $timeout;
+    public ?int $timeout = null;
+
+    /** @var bool */
+    public ?bool $validated = null;
 
     public function validate()
     {
@@ -38,6 +43,19 @@ class ServicesConfig
 
         if (!empty($this->payrollConfig)) {
             $this->payrollConfig->validate();
+        }
+
+        $this->validated = true;
+    }
+
+    public function configureContainer(ConfiguredServices $services)
+    {
+        if (!empty($this->gatewayConfig)) {
+            $this->gatewayConfig->configureContainer($services);
+        }
+
+        if (!empty($this->deviceConnectionConfig)) {
+            $this->deviceConnectionConfig->configureContainer($services);
         }
     }
 }

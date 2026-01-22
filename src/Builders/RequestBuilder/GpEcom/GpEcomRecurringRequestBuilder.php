@@ -25,7 +25,7 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
      *
      * @return bool
      */
-    public static function canProcess($builder = null)
+    public static function canProcess(?BaseBuilder $builder = null): bool
     {
         if ($builder instanceof RecurringBuilder) {
             return true;
@@ -40,7 +40,7 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
      *
      * @return Request
      */
-    public function buildRequest(BaseBuilder $builder, $config)
+    public function buildRequest(BaseBuilder $builder, mixed $config): Request
     {
         /** @var RecurringBuilder $builder */
         $xml = new DOMDocument();
@@ -374,8 +374,8 @@ class GpEcomRecurringRequestBuilder implements IRequestBuilder
         );
     }
 
-    public function buildRequestFromJson($jsonRequest, $config)
+    public function buildRequestFromJson(mixed $jsonRequest, mixed $config): mixed
     {
-        // TODO: Implement buildRequestFromJson() method.
+        throw new \GlobalPayments\Api\Entities\Exceptions\NotImplementedException();
     }
 }

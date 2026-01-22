@@ -8,46 +8,46 @@ class BillingResponse
      * Indicates if the action was successful
      * @var bool 
      */
-    protected $isSuccessful;
+    protected ?bool $isSuccessful = null;
 
     /**
      * The response code from the Billing Gateway
      * @var string
      */
-    protected $responseCode;
+    protected ?string $responseCode = null;
 
     /**
      * The response message from the Billing Gateway
      * @var ?string
      */
-    protected $responseMessage;
+    protected ?string $responseMessage = null;
 
-    public function isSuccessful()
+    public function isSuccessful(): ?bool
     {
         return $this->isSuccessful;
     }
 
-    public function getResponseCode()
+    public function getResponseCode(): ?string
     {
         return $this->responseCode;
     }
 
-    public function getResponseMessage()
+    public function getResponseMessage(): ?string
     {
         return $this->responseMessage;
     }
 
-    public function setIsSuccessful(bool $isSuccessful)
+    public function setIsSuccessful(bool $isSuccessful): void
     {
         $this->isSuccessful = $isSuccessful;
     }
 
-    public function setResponseCode(string $responseCode)
+    public function setResponseCode(string $responseCode): void
     {
         $this->responseCode = $responseCode;
     }
 
-    public function setResponseMessage(?string $responseMessage)
+    public function setResponseMessage(?string $responseMessage): void
     {
         $this->responseMessage = $responseMessage;
     }

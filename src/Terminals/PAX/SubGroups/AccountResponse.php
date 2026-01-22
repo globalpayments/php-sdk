@@ -10,27 +10,27 @@ use GlobalPayments\Api\Terminals\Enums\TerminalCardType;
 class AccountResponse implements IResponseSubGroup
 {
 
-    public $accountNumber;
+    public ?string $accountNumber = null;
 
-    public $entryMode;
+    public ?string $entryMode = null;
 
-    public $expireDate;
+    public ?string $expireDate = null;
 
-    public $ebtType;
+    public ?string $ebtType = null;
 
-    public $voucherNumber;
+    public ?string $voucherNumber = null;
 
-    public $newAccountNumber;
+    public ?string $newAccountNumber = null;
 
-    public $cardType;
+    public ?string $cardType = null;
 
-    public $cardHolder;
+    public ?string $cardHolder = null;
 
-    public $cvdApprovalCode;
+    public ?string $cvdApprovalCode = null;
 
-    public $cvdMessage;
+    public ?string $cvdMessage = null;
 
-    public $cardPresent;
+    public ?string $cardPresent = null;
 
     public function __construct($messageReader)
     {

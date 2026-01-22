@@ -13,18 +13,18 @@ use GlobalPayments\Api\Entities\Enums\Environment;
 class MitcConfig
 {
     // 6 unique values provided during onboarding:
-    public $xWebId;
-    public $terminalId;
-    public $authKey;
-    public $apiSecret;
-    public $apiKey;
-    public $targetDevice;
+    public ?string $xWebId = null;
+    public ?string $terminalId = null;
+    public ?string $authKey = null;
+    public ?string $apiSecret = null;
+    public ?string $apiKey = null;
+    public ?string $targetDevice = null;
 
     /**
      * 
      * @var Environment|string
      */
-    public $environment = Environment::PRODUCTION;
+    public mixed $environment = Environment::PRODUCTION;
 
     /**
      * Required
@@ -34,7 +34,7 @@ class MitcConfig
      * 
      * @var string
      */
-    public $appName = "PHP SDK";
+    public string $appName = "PHP SDK";
 
     /**
      * Optional
@@ -43,7 +43,7 @@ class MitcConfig
      * 
      * @var string
      */
-    public $appVersion = "";
+    public string $appVersion = "";
 
     /**
      * Optional
@@ -56,7 +56,7 @@ class MitcConfig
      * 
      * @var string
      */
-    public $requestId = "";
+    public string $requestId = "";
 
     /** 
      * Required
@@ -69,7 +69,7 @@ class MitcConfig
      * 
      * @var string
      */
-    public $region = "US";
+    public string $region = "US";
 
     /**
      * Optional
@@ -78,7 +78,7 @@ class MitcConfig
      * 
      * @var bool
      */
-    public $allowKeyEntry;
+    public ?bool $allowKeyEntry = null;
 
     public function __construct(
         string $xWebId,

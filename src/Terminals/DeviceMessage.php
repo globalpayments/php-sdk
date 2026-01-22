@@ -7,16 +7,16 @@ use GlobalPayments\Api\Terminals\Abstractions\IDeviceMessage;
 class DeviceMessage implements IDeviceMessage
 {
     /** @var bool */
-    public $keepAlive;
+    public ?bool $keepAlive = null;
 
     /** @var bool */
-    public $awaitResponse;
+    public ?bool $awaitResponse = null;
 
     /** @var array<byte> */
-    private $buffer;
+    private array $buffer = [];
 
     /** @var array  */
-    private $jsonRequest;
+    private array $jsonRequest = [];
 
     public function __construct(array $buffer)
     {

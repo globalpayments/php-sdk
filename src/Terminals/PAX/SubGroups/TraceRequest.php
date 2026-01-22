@@ -8,17 +8,17 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class TraceRequest implements IRequestSubGroup
 {
 
-    public $referenceNumber;
-    public $invoiceNumber;
-    public $authCode;
-    public $transactionNumber;
-    public $timeStamp;
-    public $ecrTransactionId;
-    public $clientTransactionId;
-    public $ps2000;
-    public $originalAuthResponse;
-    public $originalTraceNumber;
-    public $cardBrandTransactionId;
+    public ?string $referenceNumber = null;
+    public ?string $invoiceNumber = null;
+    public ?string $authCode = null;
+    public ?string $transactionNumber = null;
+    public ?string $timeStamp = null;
+    public ?string $ecrTransactionId = null;
+    public ?string $clientTransactionId = null;
+    public ?string $ps2000 = null;
+    public ?string $originalAuthResponse = null;
+    public ?string $originalTraceNumber = null;
+    public ?string $cardBrandTransactionId = null;
     
     public function getElementString()
     {

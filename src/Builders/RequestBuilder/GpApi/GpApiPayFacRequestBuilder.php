@@ -35,7 +35,7 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
     /**
      * @var PayFacBuilder
      */
-    private $builder;
+    private mixed $builder = null;
     private GpApiConfig $config;
 
     private array $maskedValues = [];
@@ -45,7 +45,7 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
      *
      * @return bool
      */
-    public static function canProcess($builder = null)
+    public static function canProcess(?BaseBuilder $builder = null): bool
     {
         if ($builder instanceof PayFacBuilder) {
             return true;
@@ -59,7 +59,7 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
      * @param GpApiConfig $config
      * @return GpApiRequest|string
      */
-    public function buildRequest(BaseBuilder $builder, $config)
+    public function buildRequest(BaseBuilder $builder, mixed $config): mixed
     {
         /** @var PayFacBuilder $builder */
         $this->builder = $builder;
@@ -387,9 +387,9 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
         );
     }
 
-    public function buildRequestFromJson($jsonRequest, $config)
+    public function buildRequestFromJson(mixed $jsonRequest, mixed $config): mixed
     {
-        // TODO: Implement buildRequestFromJson() method.
+        throw new \GlobalPayments\Api\Entities\Exceptions\NotImplementedException();
     }
 
     public function validate($transactionType, PayFacBuilder $builder)

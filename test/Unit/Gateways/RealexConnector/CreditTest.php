@@ -3,7 +3,7 @@
 namespace GlobalPayments\Api\Tests\Unit\Gateways\GpEcomConnector;
 
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
-use GlobalPayments\Api\ServicesConfig;
+use GlobalPayments\Api\ServiceConfigs\ServicesConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
@@ -12,7 +12,7 @@ class CreditTest extends TestCase
 {
     protected $card;
 
-    public function setup()
+    public function setUp(): void
     {
         $card = new CreditCardData();
         $card->number = '4111111111111111';

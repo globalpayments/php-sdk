@@ -2,8 +2,8 @@
 
 namespace GlobalPayments\Api\Tests\Unit\Entities\HPP;
 
-use GlobalPayments\Api\Entities\{HPPPaymentMethodConfiguration};
-use GlobalPayments\Api\Entities\Enums\{HPPStorageModes};
+use GlobalPayments\Api\Entities\{HPPPaymentMethodConfiguration, HPPAuthenticationConfiguration, HPPApmConfiguration};
+use GlobalPayments\Api\Entities\Enums\{HPPStorageModes, ChallengeRequestIndicator};
 use PHPUnit\Framework\TestCase;
 
 class HPPPaymentMethodConfigurationTest extends TestCase

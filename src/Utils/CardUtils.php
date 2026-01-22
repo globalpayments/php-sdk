@@ -17,10 +17,10 @@ use GlobalPayments\Api\Utils\Logging\ProtectSensitiveData;
 
 class CardUtils
 {
-    private static $trackOnePattern = "/%?[B0]?([\d]+)\\^[^\\^]+\\^([\\d]{4})([^?]+)?/";
-    private static $trackTwoPattern = "/;?([\d]+)=([\d]{4})([^?]+)?/";
+    private static string $trackOnePattern = "/%?[B0]?([\d]+)\\^[^\\^]+\\^([\\d]{4})([^?]+)?/";
+    private static string $trackTwoPattern = "/;?([\d]+)=([\d]{4})([^?]+)?/";
 
-    private static $fleetBinMap = [
+    private static array $fleetBinMap = [
         'Visa' => [
             '448460' => '448611',
             '448613' => '448615',
@@ -51,7 +51,7 @@ class CardUtils
      *
      * @var array
      */
-    private static $cardTypes = [
+    private static array $cardTypes = [
         'Visa' => '/^4/',
         'MC' => '/^(?:5[1-6]|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)/',
         'Amex' => '/^3[47]/',
@@ -107,7 +107,7 @@ class CardUtils
      *
      * @return string
      */
-    public static function getCardType($number)
+    public static function getCardType(string $number): string
     {
         $number = str_replace(
             [' ', '-'],
@@ -130,7 +130,7 @@ class CardUtils
         return $rvalue;
     }
     
-    public static function isFleet($cardType, $pan)
+    public static function isFleet(?string $cardType, ?string $pan): bool
     {
         if (!empty($pan)) {
             $compareValue = substr($pan, 0, 6);
@@ -219,7 +219,7 @@ class CardUtils
         return $card;
     }
 
-    public static function getCvvIndicator($cvnPresenceIndicator)
+    public static function getCvvIndicator($cvnPresenceIndicator): string
     {
         switch ($cvnPresenceIndicator) {
             case 1:

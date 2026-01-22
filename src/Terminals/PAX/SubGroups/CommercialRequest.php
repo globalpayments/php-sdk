@@ -8,10 +8,10 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class CommercialRequest implements IRequestSubGroup
 {
 
-    public $poNumber;
-    public $customerCode;
-    public $taxExempt;
-    public $taxExemptId;
+    public ?string $poNumber = null;
+    public ?string $customerCode = null;
+    public ?bool $taxExempt = null;
+    public ?string $taxExemptId = null;
     
     public function getElementString()
     {

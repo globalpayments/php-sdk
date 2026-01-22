@@ -21,14 +21,14 @@ class PaxHttpInterface implements IDeviceCommInterface
      *
      */
 
-    public $deviceDetails;
+    public ?ConnectionConfig $deviceDetails = null;
 
 
     /*
      * Device request type
      *
      */
-    private $requestType;
+    private ?string $requestType = null;
 
     /*
      * @param ConnectionConfig object $config device configuration details

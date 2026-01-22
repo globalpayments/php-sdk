@@ -8,7 +8,7 @@ use GlobalPayments\Api\Terminals\Enums\DisplayOption;
 class SignatureData
 {
     /** @var DisplayOption */
-    public $displayOption;
+    public mixed $displayOption = null;
 
     public PromptMessages $prompts;
 }

@@ -14,26 +14,26 @@ class RequestParamFields implements IRequestSubGroup
     /*
      * ID of the clerk if in retail mode, and ID of the server if in restaurant mode.
      */
-    public $clerkId = null;
+    public ?string $clerkId = null;
     
     /*
      * When enabled create token request is sent to Portico to generate a token for a cardholder
      * 
      * Possible values: 0 or 1
      */
-    public $tokenRequest = null;
+    public int|string|null $tokenRequest = null;
     
     /*
      * Token returned previously by the host.
      */
-    public $tokenValue = null;
+    public ?string $tokenValue = null;
 
     /*
      *Card On File Indicator
      */
-    public $cardOnFileIndicator = null;
+    public ?string $cardOnFileIndicator = null;
 
-    public $cardBrandTransId = null;
+    public ?string $cardBrandTransId = null;
 
     public ?string $invoiceNbr = null;
     /** @var string|null Indicates the Direct Market Invoice number */

@@ -12,49 +12,49 @@ class Bill
      * The name of the bill type
      * @var ?string
      */
-    protected $billType;
+    protected ?string $billType = null;
 
     /**
      * The first bill identifier
      * @var ?string
      */
-    protected $identifier1;
+    protected ?string $identifier1 = null;
 
     /**
      * The second identifier
      * @var ?string
      */
-    protected $identifier2;
+    protected ?string $identifier2 = null;
 
      /**
      * The third identifier
      * @var ?string
      */
-    protected $identifier3;
+    protected ?string $identifier3 = null;
 
      /**
      * The fourth identifier
      * @var ?string
      */
-    protected $identifier4;
+    protected ?string $identifier4 = null;
 
     /**
      * The amount to apply to the bill
      * @var ?string
      */
-    protected ?string $amount;
+    protected ?string $amount = null;
 
     /**
      * The Customer information for the bill
      * @var Customer
      */
-    protected $customer;
+    protected ?Customer $customer = null;
 
     /**
      * The Presentment Status of the bill
      * @var BillPresentment
      */
-    protected $billPresentment;
+    protected ?string $billPresentment = null;
 
     /**
      * The date the bill is due
@@ -62,76 +62,76 @@ class Bill
      * @internal
      * @var DateTime
      */
-    public $dueDate;
+    public ?DateTime $dueDate = null;
 
-    public function getBillType() {
+    public function getBillType(): ?string {
         return $this->billType;
     }
 
-    public function getIdentifier1() {
+    public function getIdentifier1(): ?string {
         return $this->identifier1;
     }
 
-    public function getIdentifier2() {
+    public function getIdentifier2(): ?string {
         return $this->identifier2;
     }
 
-    public function getIdentifier3() {
+    public function getIdentifier3(): ?string {
         return $this->identifier3;
     }
 
-    public function getIdentifier4() {
+    public function getIdentifier4(): ?string {
         return $this->identifier4;
     }
 
-    public function getAmount() {
+    public function getAmount(): ?string {
         return $this->amount;
     }
 
-    public function getCustomer() {
+    public function getCustomer(): ?Customer {
         return $this->customer;
     }
 
-    public function getBillPresentment() 
+    public function getBillPresentment(): ?string
     {
         return $this->billPresentment;
     }
 
-    public function getDueDate(): DateTime
+    public function getDueDate(): ?DateTime
     {
         return $this->dueDate;
     }
 
-    public function setBillType(string $billType)
+    public function setBillType(string $billType): void
     {
         $this->billType = $billType;
     }
-    public function setIdentifier1(string $identifier1)
+    public function setIdentifier1(string $identifier1): void
     {
         $this->identifier1 = $identifier1;
     }
     
-    public function setIdentifier2(string $identifier2)
+    public function setIdentifier2(string $identifier2): void
     {
         $this->identifier2 = $identifier2;
     }
 
-    public function setIdentifier3(string $identifier3)
+    public function setIdentifier3(string $identifier3): void
     {
         $this->identifier3 = $identifier3;
     }
 
-    public function setIdentifier4(string $identifier4)
+    public function setIdentifier4(string $identifier4): void
     {
         $this->identifier4 = $identifier4;
     }
 
-    public function setAmount(string $amount)
+    public function setAmount(string $amount): void
     {
         $this->amount = $amount;
     }
 
-    public function setCustomer(Customer $customer)
+    public function setCustomer(Customer $customer): void
     {
         $this->customer = $customer;
     }
@@ -139,12 +139,12 @@ class Bill
     /**
      * @param BillPresentment $billPresentment
      */
-    public function setBillPresentment($billPresentment)
+    public function setBillPresentment(string $billPresentment): void
     {
         $this->billPresentment = $billPresentment;
     }
 
-    public function setDueDate(DateTime $dueDate)
+    public function setDueDate(DateTime $dueDate): void
     {
         $this->dueDate = $dueDate;
     }

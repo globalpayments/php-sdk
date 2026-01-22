@@ -53,7 +53,7 @@ class RequestBuilderFactory
         ]
     ];
 
-    public function getRequestBuilder(BaseBuilder $builder, $gatewayProvider)
+    public function getRequestBuilder(BaseBuilder $builder, string $gatewayProvider): ?object
     {
         if (!isset(self::$processes[$gatewayProvider])) {
             return null;

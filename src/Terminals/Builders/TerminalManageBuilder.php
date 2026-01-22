@@ -10,26 +10,26 @@ use GlobalPayments\Api\Terminals\TerminalResponse;
 
 class TerminalManageBuilder extends TerminalBuilder
 {
-    public $amount;
-    public $currency;
-    public $gratuity;
-    public $transactionId;
-    public $terminalRefNumber;
-    public string $taxType;
+    public float|int|string|null $amount = null;
+    public ?string $currency = null;
+    public float|int|string|null $gratuity = null;
+    public ?string $transactionId = null;
+    public ?string $terminalRefNumber = null;
+    public ?string $taxType = null;
 
     /** @var mixed The amount previously authorized for a pre-auth transaction */
-    public $preAuthAmount;
+    public mixed $preAuthAmount = null;
 
     /** @var string Indicates whether the sale is exempted from Tax or not */
-    public string $taxExempt;
+    public ?string $taxExempt = null;
 
     /** @var string Purchase Order to be sent to the host */
-    public string $orderId;
+    public ?string $orderId = null;
 
     /** @var string The amount that merchants charge for tax processing.  */
-    public string $taxAmount;
+    public float|int|string|null $taxAmount = null;
 
-    public LodgingData $lodgingData;
+    public ?LodgingData $lodgingData = null;
 
     /**
      * {@inheritdoc}

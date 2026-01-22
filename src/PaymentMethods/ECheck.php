@@ -23,38 +23,38 @@ class ECheck implements
     IVerifyable,
     ITokenizable
 {
-    public $accountNumber;
-    public $accountType;
-    public $achVerify;
-    public $birthYear;
-    public $branchTransitNumber;
-    public $checkHolderName;
-    public $checkNumber;
-    public $checkType;
-    public $checkVerify;
-    public $driversLicenseNumber;
-    public $driversLicenseState;
-    public $entryMode;
-    public $financialInstitutionNumber;
-    public $micrNumber;
-    public $paymentMethodType = PaymentMethodType::ACH;
-    public $phoneNumber;
-    public $routingNumber;
-    public $secCode;
-    public $ssnLast4;
-    public $token;
-    public $checkReference;
-    public $merchantNotes;
-    public $bankName;
+    public ?string $accountNumber = null;
+    public mixed $accountType = null;
+    public ?bool $achVerify = null;
+    public string|int|null $birthYear = null;
+    public ?string $branchTransitNumber = null;
+    public ?string $checkHolderName = null;
+    public ?string $checkNumber = null;
+    public mixed $checkType = null;
+    public ?bool $checkVerify = null;
+    public ?string $driversLicenseNumber = null;
+    public ?string $driversLicenseState = null;
+    public mixed $entryMode = null;
+    public ?string $financialInstitutionNumber = null;
+    public ?string $micrNumber = null;
+    public mixed $paymentMethodType = PaymentMethodType::ACH;
+    public ?string $phoneNumber = null;
+    public ?string $routingNumber = null;
+    public ?string $secCode = null;
+    public ?string $ssnLast4 = null;
+    public ?string $token = null;
+    public ?string $checkReference = null;
+    public ?string $merchantNotes = null;
+    public ?string $bankName = null;
     /**
      * @var Address
      */
-    public $bankAddress;
+    public ?Address $bankAddress = null;
 
     /**
      * @var Customer
      */
-    public $customer;
+    public ?Customer $customer = null;
 
     /**
      * Authorizes the payment method and captures the entire authorized amount

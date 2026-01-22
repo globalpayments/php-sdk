@@ -7,55 +7,55 @@ class Credentials
     /**
      * @var string|null
      */
-    protected $apiKey;
+    protected ?string $apiKey = null;
 
     /**
      * @var string
      */
-    protected $merchantName;
+    protected ?string $merchantName = null;
 
     /**
      * @var string
      */
-    protected $password;
+    protected ?string $password = null;
 
     /**
      * @var string
      */
-    protected $userName;
+    protected ?string $userName = null;
 
-    public function getApiKey() {
+    public function getApiKey(): ?string {
         return $this->apiKey;
     }
 
-    public function setApiKey($apiKey)
+    public function setApiKey(?string $apiKey): void
     {
         $this->apiKey = $apiKey;
     }
 
-    public function getMerchantName() {
+    public function getMerchantName(): ?string {
         return $this->merchantName;
     }
 
-    public function setMerchantName(string $merchantName)
+    public function setMerchantName(string $merchantName): void
     {
         $this->merchantName = $merchantName;
     }
 
-    public function getPassword() {
+    public function getPassword(): ?string {
         return $this->password;
     }
 
-    public function setPassword(string $password)
+    public function setPassword(string $password): void
     {
         $this->password = $password;
     }
 
-    public function getUsername() {
+    public function getUsername(): ?string {
         return $this->userName;
     }
 
-    public function setUsername(string $userName)
+    public function setUsername(string $userName): void
     {
         $this->userName = $userName;
     }

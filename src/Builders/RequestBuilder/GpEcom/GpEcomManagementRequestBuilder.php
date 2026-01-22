@@ -21,7 +21,7 @@ class GpEcomManagementRequestBuilder extends GpEcomRequestBuilder implements IRe
      * @param $builder
      * @return bool
      */
-    public static function canProcess($builder = null)
+    public static function canProcess(?BaseBuilder $builder = null): bool
     {
         if ($builder instanceof ManagementBuilder) {
             return true;
@@ -36,7 +36,7 @@ class GpEcomManagementRequestBuilder extends GpEcomRequestBuilder implements IRe
      *
      * @return Request
      */
-    public function buildRequest(BaseBuilder $builder, $config)
+    public function buildRequest(BaseBuilder $builder, mixed $config): Request
     {
         /** @var ManagementBuilder $builder */
         $xml = new DOMDocument();
@@ -174,8 +174,8 @@ class GpEcomManagementRequestBuilder extends GpEcomRequestBuilder implements IRe
         return new Request('', 'POST', $xml->saveXML($request));
     }
 
-    public function buildRequestFromJson($jsonRequest, $config)
+    public function buildRequestFromJson(mixed $jsonRequest, mixed $config): mixed
     {
-        // TODO: Implement buildRequestFromJson() method.
+        throw new \GlobalPayments\Api\Entities\Exceptions\NotImplementedException();
     }
 }

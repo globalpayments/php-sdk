@@ -42,55 +42,55 @@ abstract class Credit implements
     /**
      * @var string
      */
-    public $bankName;
+    public ?string $bankName = null;
 
     /**
      * The card type of the manual entry data.
      */
-    public $cardType;
+    public ?string $cardType = null;
 
     /**
      * The authentication value use to verify the validity of the digit wallet transaction.
      *
      * @var string
      */
-    public $cryptogram;
+    public ?string $cryptogram = null;
 
     /**
      * Electronic commerce indicator
      *
      * @var string
      */
-    public $eci;
+    public ?string $eci = null;
 
-    public $encryptionData;
+    public mixed $encryptionData = null;
 
     /** @var EntryMethod|ManualEntryMethod */
-    public $entryMethod;
+    public mixed $entryMethod = null;
 
     /** @var bool */
-    public $isFleet;
+    public ?bool $isFleet = null;
 
     /**
      * The type of mobile device used in `TransactionModifier.Encrypted_Mobile`
      * transactions.
      */
-    public $mobileType;
+    public mixed $mobileType = null;
 
-    public $paymentMethodType = PaymentMethodType::CREDIT;
+    public mixed $paymentMethodType = PaymentMethodType::CREDIT;
 
 
     // maybe change the name of the below var
 
 
     /** @var PaymentDataSourceType */
-    public $paymentSource;
+    public mixed $paymentSource = null;
 
     /**
      * Secure 3d Data attached to the card
      * @var ThreeDSecure
      */
-    public $threeDSecure;
+    public ?ThreeDSecure $threeDSecure = null;
 
     /**
      * The token value representing the card.
@@ -98,7 +98,7 @@ abstract class Credit implements
      * For `TransactionModifier.Encrypted_Mobile` transactions, this value is the
      * encrypted payload from the mobile payment scheme.
      */
-    public $token;
+    public ?string $token = null;
 
     /**
      * Authorizes the payment method

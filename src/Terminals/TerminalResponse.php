@@ -7,93 +7,93 @@ use GlobalPayments\Api\Terminals\Enums\ApplicationCryptogramType;
 abstract class TerminalResponse extends DeviceResponse
 {
     /** @var string */
-    public $responseCode;
+    public ?string $responseCode = null;
 
     /** @var string */
-    public $responseText;
+    public ?string $responseText = null;
 
     /** @var string */
-    public $transactionId;
+    public ?string $transactionId = null;
 
     /** @var string */
-    public $terminalRefNumber;
+    public ?string $terminalRefNumber = null;
 
     /** @var string */
-    public $token;
+    public ?string $token = null;
 
     /** @var string */
-    public $signatureStatus;
+    public ?string $signatureStatus = null;
 
-    public $signatureData;
+    public mixed $signatureData = null;
     /** @var string */
-    public $transactionType;
+    public ?string $transactionType = null;
     /** @var string */
-    public $maskedCardNumber ;
+    public ?string $maskedCardNumber = null;
     /** @var string */
-    public $entryMethod;
+    public ?string $entryMethod = null;
     /** @var string */
-    public $authorizationCode;
+    public ?string $authorizationCode = null;
     /** @var string */
-    public $approvalCode ;
+    public ?string $approvalCode = null;
     /** @var double */
-    public $transactionAmount ;
+    public float|int|string|null $transactionAmount = null;
     /** @var double */
-    public $amountDue ;
+    public float|int|string|null $amountDue = null;
     /** @var double */
-    public $balanceAmount ;
+    public float|int|string|null $balanceAmount = null;
     /** @var string */
-    public $cardHolderName ;
+    public ?string $cardHolderName = null;
     /** @var string Indicates the type of card used for the transaction. */
-    public ?string $cardType;
+    public ?string $cardType = null;
     /** @var string|null Possible Values: Credit */
-    public ?string $cardGroup;
+    public ?string $cardGroup = null;
     /** @var string */
-    public $cardBIN ;
+    public ?string $cardBIN = null;
     /** @var bool */
-    public $cardPresent;
+    public ?bool $cardPresent = null;
     /** @var string */
-    public $expirationDate;
+    public ?string $expirationDate = null;
     /** @var double */
-    public $tipAmount ;
+    public float|int|string|null $tipAmount = null;
     /** @var double */
-    public $cashBackAmount;
+    public float|int|string|null $cashBackAmount = null;
     /** @var string */
-    public $avsResponseCode ;
+    public ?string $avsResponseCode = null;
     /** @var string */
-    public $avsResponseText;
+    public ?string $avsResponseText = null;
     /** @var string */
-    public $cvvResponseCode;
+    public ?string $cvvResponseCode = null;
     /** @var string */
-    public $cvvResponseText;
+    public ?string $cvvResponseText = null;
     /** @var bool */
-    public $taxExempt;
+    public ?bool $taxExempt = null;
     /** @var string */
-    public $taxExemptId;
+    public ?string $taxExemptId = null;
     /** @var string */
-    public $ticketNumber;
+    public ?string $ticketNumber = null;
     /** @var string */
-    public $paymentType ;
+    public ?string $paymentType = null;
     /** @var string */
-    public $applicationPreferredName ;
+    public ?string $applicationPreferredName = null;
     /** @var string */
-    public $applicationLabel;
+    public ?string $applicationLabel = null;
     /** @var string */
-    public $applicationId ;
+    public ?string $applicationId = null;
     /** @var ApplicationCryptogramType */
-    public $applicationCryptogramType ;
+    public mixed $applicationCryptogramType = null;
     /** @var string */
-    public $applicationCryptogram;
+    public ?string $applicationCryptogram = null;
     /** @var string */
-    public $cardHolderVerificationMethod;
+    public ?string $cardHolderVerificationMethod = null;
     /** @var string */
-    public $terminalVerificationResults;
+    public ?string $terminalVerificationResults = null;
 
     /** @var double */
-    public $merchantFee ;
+    public float|int|string|null $merchantFee = null;
 
-    public ?string $ecrId;
+    public ?string $ecrId = null;
 
-    public string $requestId;
+    public ?string $requestId = null;
 
     /**
      * Indicator if the POS should expect another response message. Possible Values: 0 or 1

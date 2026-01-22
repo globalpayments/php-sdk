@@ -9,19 +9,19 @@ use GlobalPayments\Api\Terminals\PAX\SubGroups\HostResponse;
 class SafUploadResponse extends PaxTerminalResponse
 {
 
-    public $totalCount;
+    public ?int $totalCount = null;
 
-    public $totalAmount;
+    public float|int|string|null $totalAmount = null;
 
-    public $timeStamp;
+    public ?int $timeStamp = null;
 
-    public $safUploadedCount;
+    public ?int $safUploadedCount = null;
 
-    public $safUploadedAmount;
+    public float|int|string|null $safUploadedAmount = null;
 
-    public $safFailedCount;
+    public ?int $safFailedCount = null;
 
-    public $safFailedTotal;
+    public ?int $safFailedTotal = null;
 
     public function __construct($rawResponse)
     {

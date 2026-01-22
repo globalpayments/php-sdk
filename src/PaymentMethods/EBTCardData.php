@@ -12,70 +12,70 @@ class EBTCardData extends EBT implements ICardData
      *
      * @var string
      */
-    public $approvalCode;
+    public ?string $approvalCode = null;
 
     /**
      * Card number
      *
      * @var string
      */
-    public $number;
+    public ?string $number = null;
 
     /**
      * Card expiration month
      *
      * @var string
      */
-    public $expMonth;
+    public string|int|null $expMonth = null;
 
     /**
      * Card expiration year
      *
      * @var string|float
      */
-    public $expYear;
+    public string|int|null $expYear = null;
 
     /**
      * Card verification number
      *
      * @var string|float
      */
-    public $cvn;
+    public string|int|null $cvn = null;
 
     /**
      * CVN presence indicator
      *
      * @var CvnPresenceIndicator
      */
-    public $cvnPresenceIndicator;
+    public mixed $cvnPresenceIndicator = null;
 
     /**
      * Card holder name
      *
      * @var string
      */
-    public $cardHolderName;
+    public ?string $cardHolderName = null;
 
     /**
      * Card present
      *
      * @var bool
      */
-    public $cardPresent;
+    public ?bool $cardPresent = null;
 
     /**
      * Card reader present
      *
      * @var bool
      */
-    public $readerPresent;
+    public ?bool $readerPresent = null;
 
     /**
      * Card serial number
      *
      * @var string
      */
-    public $serialNumber;
+    public ?string $serialNumber = null;
 
     /**
      * Instantiates a new credit card

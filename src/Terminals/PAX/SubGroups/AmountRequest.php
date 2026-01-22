@@ -8,12 +8,12 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class AmountRequest implements IRequestSubGroup
 {
 
-    public $transactionAmount;
-    public $tipAmount;
-    public $cashBackAmount;
-    public $merchantFee;
-    public $taxAmount;
-    public $fuelAmount;
+    public float|int|string|null $transactionAmount = null;
+    public float|int|string|null $tipAmount = null;
+    public float|int|string|null $cashBackAmount = null;
+    public float|int|string|null $merchantFee = null;
+    public float|int|string|null $taxAmount = null;
+    public float|int|string|null $fuelAmount = null;
     
     public function getElementString()
     {

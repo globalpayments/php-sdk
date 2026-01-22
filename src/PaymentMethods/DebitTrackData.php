@@ -7,14 +7,14 @@ use GlobalPayments\Api\Utils\CardUtils;
 
 class DebitTrackData extends Debit implements ITrackData
 {
-    public $entryMethod;
-    public $value;
-    public $discretionaryData;
-    public $expiry;
-    public $pan;
-    public $purchaseDeviceSequenceNumber;
-    public $trackNumber;
-    public $trackData;
+    public mixed $entryMethod = null;
+    public ?string $value = null;
+    public ?string $discretionaryData = null;
+    public ?string $expiry = null;
+    public ?string $pan = null;
+    public ?string $purchaseDeviceSequenceNumber = null;
+    public mixed $trackNumber = null;
+    public ?string $trackData = null;
 
     public function setTrackData($value)
     {

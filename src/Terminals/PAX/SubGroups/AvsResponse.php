@@ -8,8 +8,8 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class AvsResponse implements IResponseSubGroup
 {
 
-    public $avsResponseCode;
-    public $avsResponseMessage;
+    public ?string $avsResponseCode = null;
+    public ?string $avsResponseMessage = null;
 
     public function __construct($messageReader)
     {

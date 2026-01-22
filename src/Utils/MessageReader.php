@@ -7,49 +7,49 @@ use GlobalPayments\Api\Utils\ReverseEnumMap;
 
 class MessageReader
 {
-    public $buffer;
-    public $position;
-    public $length = 0;
+    public ?string $buffer;
+    public int $position;
+    public int $length;
 
-    public function getLength()
+    public function getLength(): int
     {
         return $this->length;
     }
 
-    public function __construct($bytes)
+    public function __construct(?string $bytes)
     {
         $this->buffer = $bytes;
         $this->length = strlen($bytes);
         $this->position = 0;
     }
 
-    public function canRead()
+    public function canRead(): bool
     {
         return $this->position < $this->length;
     }
 
-    public function peek()
+    public function peek(): ?string
     {
         return $this->buffer[$this->position];
     }
 
-    public function readCode()
+    public function readCode(): ?string
     {
         return $this->readEnum(new ControlCodes());
     }
 
-    public function readEnum($enumType)
+    public function readEnum($enumType): ?string
     {
         $map = new ReverseEnumMap($enumType);
         return $map->get(ord($this->buffer[$this->position++]));
     }
 
-    public function readByte()
+    public function readByte(): ?string
     {
         return $this->buffer[$this->position++];
     }
 
-    public function readBytes($length)
+    public function readBytes(int $length): string
     {
         $rvalue = '';
 
@@ -64,12 +64,12 @@ class MessageReader
         return $rvalue;
     }
 
-    public function readChar()
+    public function readChar(): ?string
     {
         return $this->buffer[$this->position++];
     }
 
-    public function readString($length)
+    public function readString(int $length): string
     {
         $rvalue = "";
 
@@ -79,7 +79,7 @@ class MessageReader
         return $rvalue;
     }
 
-    public function readToCode($code, $removeCode = true)
+    public function readToCode(int $code, bool $removeCode = true): string
     {
         $rvalue = "";
         

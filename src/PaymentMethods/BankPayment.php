@@ -17,14 +17,14 @@ class BankPayment implements IPaymentMethod, IChargable
      *
      * @var string
      */
-    public $accountName;
+    public ?string $accountName = null;
 
     /**
      * Financial institution account number.
      *
      * @var string
      */
-    public $accountNumber;
+    public ?string $accountNumber = null;
 
     /**
      * A  SORT   Code   is a number code, which is used by British and Irish banks.
@@ -32,28 +32,28 @@ class BankPayment implements IPaymentMethod, IChargable
      *
      * @var string
      */
-    public $sortCode;
+    public ?string $sortCode = null;
 
     /**
      * The International Bank Account Number
      *
      * @var string
      */
-    public $iban;
+    public ?string $iban = null;
 
-    public $paymentMethodType = PaymentMethodType::BANK_PAYMENT;
-
-    /** @var string */
-    public $returnUrl;
+    public mixed $paymentMethodType = PaymentMethodType::BANK_PAYMENT;
 
     /** @var string */
-    public $statusUpdateUrl;
+    public ?string $returnUrl = null;
+
+    /** @var string */
+    public ?string $statusUpdateUrl = null;
 
     /** @var BankPaymentType */
-    public $bankPaymentType;
+    public mixed $bankPaymentType = null;
 
     /** @var array */
-    public $countries;
+    public ?array $countries = null;
 
     /**
      * This is a mandatory request used to initiate an Open Banking transaction,

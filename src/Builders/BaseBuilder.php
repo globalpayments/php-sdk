@@ -14,14 +14,14 @@ abstract class BaseBuilder
      *
      * @var Validations
      */
-    protected $validations;
+    protected mixed $validations = null;
 
     /**
      * Has builder been executed
      *
      * @var bool
      */
-    protected $executed;
+    protected ?bool $executed = null;
 
     /**
      * Instantiates a new builder

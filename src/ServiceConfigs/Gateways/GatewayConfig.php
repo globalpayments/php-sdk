@@ -8,22 +8,22 @@ use GlobalPayments\Api\Entities\Enums\GatewayProvider;
 abstract class GatewayConfig extends Configuration
 {
     /** @var AcceptorConfig */
-    public $acceptorConfig;
+    public mixed $acceptorConfig = null;
 
     /** @var GatewayProvider */
-    protected $gatewayProvider;
+    public mixed $gatewayProvider = null;
 
     /** @var string */
-    public $dataClientId;
+    public ?string $dataClientId = null;
 
     /** @var string */
-    public $dataClientSecret;
+    public ?string $dataClientSecret = null;
 
     /** @var string */
-    public $dataClientUserId;
+    public ?string $dataClientUserId = null;
 
     /** @var string */
-    public $dataClientSeviceUrl;
+    public ?string $dataClientSeviceUrl = null;
 
     public function __construct(GatewayProvider $provider)
     {

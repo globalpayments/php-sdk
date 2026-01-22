@@ -8,8 +8,8 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class CashierSubGroup implements IRequestSubGroup
 {
 
-    public $clerkId;
-    public $shiftId;
+    public ?string $clerkId = null;
+    public ?string $shiftId = null;
     
     public function getElementString()
     {

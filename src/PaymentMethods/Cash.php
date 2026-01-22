@@ -13,7 +13,7 @@ class Cash implements
     IChargable,
     IRefundable
 {
-    public $paymentMethodType = PaymentMethodType::CASH;
+    public mixed $paymentMethodType = PaymentMethodType::CASH;
 
     public function charge($amount = null)
     {

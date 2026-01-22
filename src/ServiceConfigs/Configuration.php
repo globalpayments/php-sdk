@@ -9,33 +9,33 @@ use GlobalPayments\Api\Entities\IWebProxy;
 abstract class Configuration
 {
     /** @var int */
-    public $timeout = 65000;
+    public int $timeout = 65000;
 
     /** @var Environment */
-    public $environment = Environment::TEST;
+    public mixed $environment = Environment::TEST;
 
     /** @var IRequestLogger */
-    public $requestLogger;
+    public mixed $requestLogger = null;
 
     /** @var string */
-    public $serviceUrl;
+    public ?string $serviceUrl = null;
 
     /** @var bool */
-    public $validated;
+    public ?bool $validated = null;
 
     /**
      * @var IWebProxy
      */
-    public $webProxy;
+    public mixed $webProxy = null;
 
     /** @var bool */
-    public $enableLogging;
+    public ?bool $enableLogging = null;
 
     /** @var bool */
-    public $forceGatewayTimeout;
+    public ?bool $forceGatewayTimeout = null;
 
     /** @var array */
-    public $dynamicHeaders = [];
+    public array $dynamicHeaders = [];
 
     abstract public function configureContainer(ConfiguredServices $services);
 

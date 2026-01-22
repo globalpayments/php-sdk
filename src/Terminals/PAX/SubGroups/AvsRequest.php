@@ -8,8 +8,8 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class AvsRequest implements IRequestSubGroup
 {
 
-    public $zipCode;
-    public $address;
+    public ?string $zipCode = null;
+    public ?string $address = null;
     
     public function getElementString()
     {

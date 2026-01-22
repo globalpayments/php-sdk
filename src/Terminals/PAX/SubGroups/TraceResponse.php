@@ -8,9 +8,9 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class TraceResponse implements IResponseSubGroup
 {
 
-    public $transactionNumber;
-    public $referenceNumber;
-    public $timeStamp;
+    public ?string $transactionNumber = null;
+    public ?string $referenceNumber = null;
+    public ?string $timeStamp = null;
 
     public function __construct($messageReader)
     {

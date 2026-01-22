@@ -14,24 +14,24 @@ abstract class ReportBuilder extends BaseBuilder
      * @internal
      * @var ReportType
      */
-    public $reportType;
+    public mixed $reportType = null;
 
     /**
      * @internal
      * @var TimeZoneConversion
      */
-    public $timeZoneConversion;
+    public mixed $timeZoneConversion = null;
 
 
     /**
      * @var integer
      */
-    public $page;
+    public ?int $page = null;
 
     /**
      * @var integer
      */
-    public $pageSize;
+    public ?int $pageSize = null;
 
     /**
      * @param ReportType $reportType

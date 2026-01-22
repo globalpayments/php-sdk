@@ -9,7 +9,7 @@ use GlobalPayments\Api\Terminals\Abstractions\IDeviceResponseHandler;
 
 class HpaEodResponse implements IDeviceResponseHandler, IBatchCloseResponse
 {
-    private $deviceResponse;
+    private ?HpaResponse $deviceResponse = null;
 
     public function mapResponse($gatewayMultipleResponse)
     {

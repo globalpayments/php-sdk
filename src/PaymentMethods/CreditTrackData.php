@@ -7,13 +7,13 @@ use GlobalPayments\Api\Utils\CardUtils;
 
 class CreditTrackData extends Credit implements ITrackData
 {
-    public $value;
-    public $discretionaryData;
-    public $expiry;
-    public $pan;
-    public $purchaseDeviceSequenceNumber;
-    public $trackNumber;
-    public $trackData;
+    public ?string $value = null;
+    public ?string $discretionaryData = null;
+    public ?string $expiry = null;
+    public ?string $pan = null;
+    public ?string $purchaseDeviceSequenceNumber = null;
+    public mixed $trackNumber = null;
+    public ?string $trackData = null;
 
     public function setTrackData($value)
     {

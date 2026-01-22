@@ -14,7 +14,7 @@ use GlobalPayments\Api\Utils\GenerationUtils;
 
 class GpEcomReportRequestBuilder implements IRequestBuilder
 {
-    public static function canProcess($builder = null)
+    public static function canProcess(?BaseBuilder $builder = null): bool
     {
         if ($builder instanceof TransactionReportBuilder) {
             return true;
@@ -29,7 +29,7 @@ class GpEcomReportRequestBuilder implements IRequestBuilder
      *
      * @return Request
      */
-    public function buildRequest(BaseBuilder $builder, $config)
+    public function buildRequest(BaseBuilder $builder, mixed $config): Request
     {
         $xml = new DOMDocument();
         $timestamp = GenerationUtils::generateTimestamp();
@@ -72,8 +72,8 @@ class GpEcomReportRequestBuilder implements IRequestBuilder
         }
     }
 
-    public function buildRequestFromJson($jsonRequest, $config)
+    public function buildRequestFromJson(mixed $jsonRequest, mixed $config): mixed
     {
-        // TODO: Implement buildRequestFromJson() method.
+        throw new \GlobalPayments\Api\Entities\Exceptions\NotImplementedException();
     }
 }

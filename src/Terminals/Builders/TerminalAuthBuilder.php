@@ -21,101 +21,101 @@ use GlobalPayments\Api\Terminals\TerminalResponse;
 class TerminalAuthBuilder extends TerminalBuilder
 {
 
-    public $address;
+    public mixed $address = null;
 
-    public $allowDuplicates;
+    public ?bool $allowDuplicates = null;
 
-    public $amount;
+    public float|int|string|null $amount = null;
 
-    public $authCode;
+    public ?string $authCode = null;
 
-    public $cashBackAmount;
+    public float|int|string|null $cashBackAmount = null;
 
     /**
      * 
      * @var string|int|float
      */
-    public string|int|float $tippableAmount;
+    public string|int|float|null $tippableAmount = null;
 
-    public $currency;
+    public ?string $currency = null;
 
-    public $customerCode;
+    public ?string $customerCode = null;
 
-    public $gratuity;
+    public float|int|string|null $gratuity = null;
 
-    public $invoiceNumber;
+    public ?string $invoiceNumber = null;
 
-    public $poNumber;
+    public ?string $poNumber = null;
 
-    public $requestMultiUseToken;
+    public ?bool $requestMultiUseToken = null;
 
-    public $signatureCapture;
+    public ?bool $signatureCapture = null;
 
-    public $taxAmount;
+    public float|int|string|null $taxAmount = null;
 
-    public $taxExempt;
+    public ?bool $taxExempt = null;
 
-    public $taxExemptId;
+    public ?string $taxExemptId = null;
 
-    public $transactionId;
+    public ?string $transactionId = null;
 
-    public $shiftId;
+    public ?string $shiftId = null;
 
-    public $taxType;
+    public mixed $taxType = null;
     
-    public $tokenRequest;
+    public mixed $tokenRequest = null;
     
-    public $tokenValue;
+    public ?string $tokenValue = null;
     
     /**
      * 
      * @var AutoSubstantiation
      */
-    public $autoSubstantiation;
+    public ?AutoSubstantiation $autoSubstantiation = null;
 
-    public ?string $terminalRefNumber;
+    public ?string $terminalRefNumber = null;
 
-    public LodgingData $lodgingData;
+    public ?LodgingData $lodgingData = null;
 
-    public \DateTime $shippingDate;
+    public ?\DateTime $shippingDate = null;
 
-    public int $processCPC;
+    public ?int $processCPC = null;
 
-    public bool $confirmAmount;
+    public ?bool $confirmAmount = null;
 
     /**
      * 
      * @var bool
      */
-    public $allowPartialAuth;
+    public ?bool $allowPartialAuth = null;
 
     /**
      * 
      * @var StoredCredentialInitiator
      */
-    public $transactionInitiator;
+    public mixed $transactionInitiator = null;
 
-    public bool $isQuickChip;
+    public ?bool $isQuickChip = null;
     public ?bool $hasCheckLuhn = null;
     public ?bool $hasSecurityCode = null;
     public array $cardTypeFilter = [];
-    public \DateTime $transactionDate;
+    public ?\DateTime $transactionDate = null;
     /** @var int Number of seconds for timeout */
-    public ?int $timeout;
+    public ?int $timeout = null;
     /** @var array<AcquisitionType> */
-    public array $acquisitionTypes;
-    public bool $displayTotalAmount;
+    public array $acquisitionTypes = [];
+    public ?bool $displayTotalAmount = null;
     /** @var string|PromptForManualEntryPassword  */
-    public ?string $promptForManualEntryPassword;
-    public ?string $merchantDecision;
-    public ?string $language;
-    public HostData $hostData;
-    public ?string $directMarketInvoiceNumber;
-    public ?int $directMarketShipMonth;
-    public ?int $directMarketShipDay;
+    public ?string $promptForManualEntryPassword = null;
+    public ?string $merchantDecision = null;
+    public ?string $language = null;
+    public ?HostData $hostData = null;
+    public ?string $directMarketInvoiceNumber = null;
+    public ?int $directMarketShipMonth = null;
+    public ?int $directMarketShipDay = null;
 
     /** @var mixed The amount previously authorized for a pre-auth transaction */
-    public $preAuthAmount;
+    public mixed $preAuthAmount = null;
 
     /**
      *

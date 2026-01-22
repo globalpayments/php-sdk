@@ -15,7 +15,7 @@ class RequestBuilderValidations
         $this->validations = $validations;
     }
 
-    public function validate($builder, $actionType)
+    public function validate(BaseBuilder $builder, string $actionType): void
     {
         array_map(
             [$this, 'maybeRunValidationKeyRules'],

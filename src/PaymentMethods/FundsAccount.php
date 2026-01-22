@@ -15,30 +15,30 @@ class FundsAccount implements IPaymentMethod
      * A unique identifier for the merchant account set by Global Payments
      * @var string
      */
-    public $accountId;
+    public ?string $accountId = null;
 
     /**
      * A meaningful label for the merchant account set by Global Payments
      * @var string
      */
-    public $accountName;
+    public ?string $accountName = null;
 
     /**
      * @var string
      */
-    public $merchantId;
+    public ?string $merchantId = null;
 
     /**
      * The merchant's account id that will be receiving the transfer
      * @var string
      */
-    public $recipientAccountId;
+    public ?string $recipientAccountId = null;
 
     /** @var string */
-    public $recipientMerchantId;
+    public ?string $recipientMerchantId = null;
 
     /** @var UsableBalanceMode */
-    public $usableBalanceMode;
+    public mixed $usableBalanceMode = null;
 
 
     public function transfer($amount)

@@ -11,35 +11,35 @@ class ValidationClause
      *
      * @var Validations
      */
-    public $parent;
+    public mixed $parent = null;
 
     /**
      * Target of this validation clause
      *
      * @var ValidationTarget
      */
-    public $target;
+    public mixed $target = null;
 
     /**
      * Validation clause is a precondition
      *
      * @var bool
      */
-    public $precondition;
+    public ?bool $precondition = null;
 
     /**
      * Callback to test a given property
      *
      * @var callable
      */
-    public $callback;
+    public mixed $callback = null;
 
     /**
      * Failed validation message
      *
      * @var string
      */
-    public $message;
+    public ?string $message = null;
 
     /**
      * Instantiates a new object

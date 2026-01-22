@@ -7,19 +7,19 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class HostResponse implements IResponseSubGroup
 {
 
-    public $hostResponseCode;
+    public ?string $hostResponseCode = null;
 
-    public $hostResponseMessage;
+    public ?string $hostResponseMessage = null;
 
-    public $authCode;
+    public ?string $authCode = null;
 
-    public $hostReferenceNumber;
+    public ?string $hostReferenceNumber = null;
 
-    public $traceNumber;
+    public ?string $traceNumber = null;
 
-    public $batchNumber;
+    public ?string $batchNumber = null;
 
-    public $cardBrandTransactionId;
+    public ?string $cardBrandTransactionId = null;
 
     public function __construct($messageReader)
     {

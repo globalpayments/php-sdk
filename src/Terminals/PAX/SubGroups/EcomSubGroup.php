@@ -8,12 +8,12 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class EcomSubGroup implements IRequestSubGroup
 {
 
-    public $ecomMode;
-    public $transactionType;
-    public $secureType;
-    public $orderNumber;
-    public $installments;
-    public $currentInstallment;
+    public ?string $ecomMode = null;
+    public ?string $transactionType = null;
+    public ?string $secureType = null;
+    public ?string $orderNumber = null;
+    public ?int $installments = null;
+    public ?int $currentInstallment = null;
     
     public function getElementString()
     {

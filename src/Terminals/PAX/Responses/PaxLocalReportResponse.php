@@ -8,10 +8,10 @@ use GlobalPayments\Api\Terminals\PAX\Entities\Enums\PaxMessageId;
 class PaxLocalReportResponse extends PaxTerminalResponse implements ITerminalReport
 {
 
-    public $totalReportRecords;
-    public $reportRecordNumber;
-    public $edcType;
-    public $originalTransactionType;
+    public ?string $totalReportRecords = null;
+    public ?string $reportRecordNumber = null;
+    public ?string $edcType = null;
+    public ?string $originalTransactionType = null;
 
     public function __construct($rawResponse)
     {

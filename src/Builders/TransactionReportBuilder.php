@@ -19,101 +19,89 @@ class TransactionReportBuilder extends ReportBuilder
     /**
      * @var string
      */
-    public $clientTransactionId;
+    public ?string $clientTransactionId = null;
     
     /**
      * @internal
      * @var string
      */
-    public $deviceId;
+    public ?string $deviceId = null;
 
     /**
      * @internal
      * @var \DateTime
      */
-    public $endDate;
+    public ?\DateTime $endDate = null;
 
     /**
      * @internal
      * @var \DateTime
      */
-    public $startDate;
+    public ?\DateTime $startDate = null;
 
     /**
      * @internal
      * @var string
      */
-    public $transactionId;
+    public ?string $transactionId = null;
 
     /**
      * @internal
      * @var string
      */
-    public $paymentType;
+    public ?string $paymentType = null;
 
     /**
      * @var TransactionSortProperty
      */
-    public $transactionOrderBy;
+    public ?TransactionSortProperty $transactionOrderBy = null;
 
     /**
      * @var DepositSortProperty
      */
-    public $depositOrderBy;
+    public ?DepositSortProperty $depositOrderBy = null;
 
     /**
      * @var DisputeSortProperty
      */
-    public $disputeOrderBy;
+    public ?DisputeSortProperty $disputeOrderBy = null;
 
     /**
      * @var  StoredPaymentMethodSortProperty
      */
-    public $storedPaymentMethodOrderBy;
+    public ?StoredPaymentMethodSortProperty $storedPaymentMethodOrderBy = null;
 
     /**
      * @var  ActionSortProperty
      */
-    public $actionOrderBy;
+    public ?ActionSortProperty $actionOrderBy = null;
 
     /** @var PayByLinkSortProperty */
-    public $payByLinkOrderBy;
+    public ?PayByLinkSortProperty $payByLinkOrderBy = null;
 
     /**
      * @var SortDirection
      */
-    public $order;
+    public ?SortDirection $order = null;
 
     /**
      * @internal
      * @var string
      */
-    public $transactionType;
+    public ?string $transactionType = null;
 
     /**
      * @internal
      * @var SearchCriteriaBuilder
      */
-    public $searchBuilder;
+    public ?SearchCriteriaBuilder $searchBuilder = null;
 
-    /**
-     * @internal
-     * @var ReportType
-     */
-    public $reportType;
-
-    public $transactionModifier = TransactionModifier::NONE;
-
-    /**
-     * @internal
-     * @var TimeZoneConversion
-     */
-    public $timeZoneConversion;
+    public string|int|null $transactionModifier = TransactionModifier::NONE;
 
     /**
      * @var int
      */
-    public $batchId;
+    public ?int $batchId = null;
 
     public function __construct($activity)
     {

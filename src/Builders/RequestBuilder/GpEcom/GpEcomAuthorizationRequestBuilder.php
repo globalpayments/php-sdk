@@ -35,7 +35,7 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder implements 
      *
      * @return bool
      */
-    public static function canProcess($builder = null)
+    public static function canProcess(?BaseBuilder $builder = null): bool
     {
         if ($builder instanceof AuthorizationBuilder) {
             return true;
@@ -49,7 +49,7 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder implements 
      * @param GpEcomConfig $config
      * @return Request
      */
-    public function buildRequest(BaseBuilder $builder, $config)
+    public function buildRequest(BaseBuilder $builder, mixed $config): mixed
     {
         /** @var AuthorizationBuilder $builder */
         //for google payment amount and currency is required
@@ -609,8 +609,8 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder implements 
         return $requestValues;
     }
 
-    public function buildRequestFromJson($jsonRequest, $config)
+    public function buildRequestFromJson(mixed $jsonRequest, mixed $config): mixed
     {
-        // TODO: Implement buildRequestFromJson() method.
+        throw new \GlobalPayments\Api\Entities\Exceptions\NotImplementedException();
     }
 }

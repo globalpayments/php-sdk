@@ -62,7 +62,7 @@ class BillPayService
      * @param array<Bill> $bills The collection of bills to load
      * @param string $configName The name of the registered configuration to retrieve. This defaults to 'default'
      */
-    public function loadBills(array $bills, string $configName = "default")
+    public function loadBills(array $bills, string $configName = "default"): void
     {
         $maxBillsPerUpload = 1000;
         $billCount = count($bills);
@@ -91,7 +91,7 @@ class BillPayService
      * 
      * @param string $configName The name of the registered configuration to retrieve. This defaults to 'default'
      */
-    public function clearBills(string $configName = "default")
+    public function clearBills(string $configName = "default"): mixed
     {
         $billingBuilder = new BillingBuilder(TransactionType::DELETE);
         
@@ -105,7 +105,7 @@ class BillPayService
      * 
      * @param string $configName The name of the registered configuration to retrieve. This defaults to 'default'
      */
-    public function commitPreloadedBills(string $configName = "default") 
+    public function commitPreloadedBills(string $configName = "default"): mixed
     {
         $billingBuilder = new BillingBuilder(TransactionType::ACTIVATE);
 

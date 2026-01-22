@@ -8,9 +8,9 @@ use GlobalPayments\Api\Terminals\PAX\SubGroups\HostResponse;
 class SafSummaryReport extends PaxTerminalResponse
 {
 
-    public $safTotalCount;
+    public ?int $safTotalCount = null;
 
-    public $safTotalAmount;
+    public ?int $safTotalAmount = null;
 
     public function __construct($rawResponse)
     {

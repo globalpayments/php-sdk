@@ -8,7 +8,7 @@ use GlobalPayments\Api\Terminals\Abstractions\IDeviceResponseHandler;
 
 class HpaDiagnosticReportResponse implements IDeviceResponseHandler
 {
-    private $deviceResponse;
+    private ?HpaResponse $deviceResponse = null;
 
     public function mapResponse($gatewayMultipleResponse)
     {

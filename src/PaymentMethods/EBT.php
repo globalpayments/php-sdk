@@ -29,16 +29,16 @@ abstract class EBT implements
     IPinProtected,
     IBalanceable
 {
-    public $paymentMethodType = PaymentMethodType::EBT;
-    public $pinBlock;
+    public mixed $paymentMethodType = PaymentMethodType::EBT;
+    public ?string $pinBlock = null;
 
     /**
      * @var EbtCardType $ebtCardType
      */
-    public $ebtCardType;
+    public mixed $ebtCardType = null;
 
     /** @var EntryMethod|ManualEntryMethod */
-    public $entryMethod;
+    public mixed $entryMethod = null;
 
     /**
      * Adds value to the payment method

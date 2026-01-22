@@ -46,4 +46,16 @@ class HPPApmConfiguration
         
         return $errors;
     }
+
+    /**
+     * Convert the APM configuration to an array
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return [
+            'shippingAddressEnabled' => $this->shippingAddressEnabled,
+            'addressOverride' => $this->addressOverride
+        ];
+    }
 }

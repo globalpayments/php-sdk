@@ -27,7 +27,7 @@ class RequestLodgingFields implements IRequestSubGroup
     /** @var int Indicates whether or not the customer has a preferred status */
     public int $preferredCustomer;
 
-    public $extraChargeTypes;
+    public mixed $extraChargeTypes = null;
     /** @var string Total extra charge amount information; this defines the portion of the total amount provided
      * as part of this request that was specifically for lodging extra charges */
     public string $extraChargeTotal;

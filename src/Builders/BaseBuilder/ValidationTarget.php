@@ -12,35 +12,35 @@ class ValidationTarget
      *
      * @var Validations
      */
-    public $parent;
+    public mixed $parent = null;
 
     /**
      * Validation type
      *
      * @var TransactionType
      */
-    public $type;
+    public mixed $type = null;
 
     /**
      * Validation modifier
      *
      * @var TransactionModifier
      */
-    public $modifier;
+    public mixed $modifier = null;
 
     /**
      * Property to validate
      *
      * @var string
      */
-    public $property;
+    public ?string $property = null;
 
     /**
      * Specified validations to test against the property's value
      *
      * @var ValidationClause
      */
-    public $clause;
+    public mixed $clause = null;
 
     /**
      * Instantiates a new object

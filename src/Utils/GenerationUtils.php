@@ -67,7 +67,7 @@ class GenerationUtils
      *
      * @return string The hash as a hex string
      */
-    public static function generateHash($secret, $toHash = null)
+    public static function generateHash(?string $secret, ?string $toHash = null): string
     {
         if ($toHash === null) {
             return sha1($secret);
@@ -81,8 +81,12 @@ class GenerationUtils
 
         return sha1($toHashSecondPass);
     }
-    public static function generateNewHash($secret, $toHash, $shaType = ShaHashType::SHA1)
-    {
+
+    public static function generateNewHash(
+        ?string $secret,
+        ?string $toHash,
+        string $shaType = ShaHashType::SHA1
+    ): string {
         //first pass hashes the String of required fields
         $toHashFirstPass = hash($shaType, $toHash);
 
@@ -98,7 +102,7 @@ class GenerationUtils
      *
      * @return string current timestamp in YYYYMMDDHHSS format
      */
-    public static function generateTimestamp()
+    public static function generateTimestamp(): string
     {
         $date = new DateTime();
 
@@ -118,7 +122,7 @@ class GenerationUtils
      *
      * @return string
      */
-    public static function generateOrderId()
+    public static function generateOrderId(): string
     {
         $uuid = self::getGuid();
         $mostSignificantBits = substr($uuid, 0, 8);
@@ -131,7 +135,7 @@ class GenerationUtils
         );
     }
 
-    public static function generateRecurringKey($key = null)
+    public static function generateRecurringKey(?string $key = null): string
     {
         if ($key !== null) {
             return $key;
@@ -141,7 +145,7 @@ class GenerationUtils
         return strtolower($uuid);
     }
 
-    public static function getGuid()
+    public static function getGuid(): string
     {
         if (function_exists('com_create_guid')) {
             return trim(com_create_guid(), '{}');
@@ -153,7 +157,7 @@ class GenerationUtils
         return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 
-    public static function convertArrayToJson($request, $hppVersion = '')
+    public static function convertArrayToJson(array $request, string $hppVersion = ''): string
     {
         if ($hppVersion != HppVersion::VERSION_2) {
             $request = array_map('base64_encode', $request);
@@ -161,7 +165,7 @@ class GenerationUtils
         return json_encode($request);
     }
 
-    public static function decodeJson($json, $returnArray = true, $hppVersion = '')
+    public static function decodeJson(?string $json, bool $returnArray = true, string $hppVersion = ''): mixed
     {
         if ($hppVersion != HppVersion::VERSION_2) {
             return array_map('base64_decode', json_decode($json, true));
@@ -169,7 +173,7 @@ class GenerationUtils
         return json_decode($json, $returnArray);
     }
 
-    public static function convertObjectToArray($object)
+    public static function convertObjectToArray(object $object): array
     {
         $reflectionClass = new ReflectionClass(get_class($object));
         $array = array();
@@ -184,7 +188,7 @@ class GenerationUtils
         return $array;
     }
 
-    public static function generateScheduleId()
+    public static function generateScheduleId(): string
     {
         $uuid = self::getGuid();
         $mostSignificantBits = substr($uuid, 0, 8);

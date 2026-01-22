@@ -23,7 +23,7 @@ class TransactionApiAuthorizationRequestBuilder implements IRequestBuilder
      *
      * @return bool
      */
-    public static function canProcess($builder = null)
+    public static function canProcess(?BaseBuilder $builder = null): bool
     {
         return $builder instanceof AuthorizationBuilder;
     }
@@ -33,7 +33,7 @@ class TransactionApiAuthorizationRequestBuilder implements IRequestBuilder
      * @param TransactionApiConfig $config
      * @return TransactionApiRequest|string
      */
-    public function buildRequest(BaseBuilder $builder, $config)
+    public function buildRequest(BaseBuilder $builder, mixed $config): TransactionApiRequest|string
     {
         $requestData    = null;
         $additionalSlug = "";
@@ -229,11 +229,11 @@ class TransactionApiAuthorizationRequestBuilder implements IRequestBuilder
      */
     private function buildTransactionData(BaseBuilder $builder, TransactionApiConfig $config, String $additionalSlug)
     {
-        if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::ACH) {
+        if (isset($builder->paymentMethod) && $builder->paymentMethod->paymentMethodType == PaymentMethodType::ACH) {
             return $this->buildAchTransactionData($builder, $config, $additionalSlug);
         }
 
-        if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::CREDIT) {
+        if (isset($builder->paymentMethod) && $builder->paymentMethod->paymentMethodType == PaymentMethodType::CREDIT) {
             return $this->buildCreditCardTransactionData($builder, $config, $additionalSlug);
         }
 
@@ -395,8 +395,8 @@ class TransactionApiAuthorizationRequestBuilder implements IRequestBuilder
         return [StringUtils::validateToNumber($phoneNumber), StringUtils::validateToNumber($phoneCountryCode)];
     }
 
-    public function buildRequestFromJson($jsonRequest, $config)
+    public function buildRequestFromJson(mixed $jsonRequest, mixed $config): mixed
     {
-        // TODO: Implement buildRequestFromJson() method.
+        throw new \GlobalPayments\Api\Entities\Exceptions\NotImplementedException();
     }
 }

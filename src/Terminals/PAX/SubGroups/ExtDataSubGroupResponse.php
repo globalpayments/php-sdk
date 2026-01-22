@@ -8,7 +8,7 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class ExtDataSubGroupResponse implements IResponseSubGroup
 {
 
-    public $details;
+    public array $details = [];
 
     public function __construct($messageReader)
     {

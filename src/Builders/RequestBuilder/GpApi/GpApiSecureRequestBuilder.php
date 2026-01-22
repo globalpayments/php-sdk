@@ -27,10 +27,10 @@ use GlobalPayments\Api\Utils\StringUtils;
 class GpApiSecureRequestBuilder implements IRequestBuilder
 {
     /** @var SecureBuilder */
-    private $builder;
+    private mixed $builder = null;
     private array $maskedValues = [];
 
-    public static function canProcess($builder = null)
+    public static function canProcess(?BaseBuilder $builder = null): bool
     {
         if ($builder instanceof SecureBuilder) {
             return true;
@@ -39,7 +39,7 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
         return false;
     }
 
-    public function buildRequest(BaseBuilder $builder, $config)
+    public function buildRequest(BaseBuilder $builder, mixed $config): GpApiRequest
     {
         if (!$builder instanceof SecureBuilder) {
             throw new BuilderException("Builder must me an instance of SecureBuilder!");
@@ -409,8 +409,8 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
         ];
     }
 
-    public function buildRequestFromJson($jsonRequest, $config)
+    public function buildRequestFromJson(mixed $jsonRequest, mixed $config): mixed
     {
-        // TODO: Implement buildRequestFromJson() method.
+        throw new \GlobalPayments\Api\Entities\Exceptions\NotImplementedException();
     }
 }

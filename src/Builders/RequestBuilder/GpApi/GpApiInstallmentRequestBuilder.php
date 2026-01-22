@@ -22,7 +22,7 @@ class GpApiInstallmentRequestBuilder implements IRequestBuilder
      * @param InstallmentBuilder $builder
      * @return bool
     */
-    public static function canProcess($builder = null) : bool
+    public static function canProcess(?BaseBuilder $builder = null) : bool
     {
         if ($builder instanceof InstallmentBuilder) {
             return true;
@@ -37,7 +37,7 @@ class GpApiInstallmentRequestBuilder implements IRequestBuilder
      *
      * @return Request
      */
-    public function buildRequest(BaseBuilder $builder, $config) : Request
+    public function buildRequest(BaseBuilder $builder, mixed $config) : GpApiRequest
     {
         switch ($builder->transactionType) {
             case TransactionType::CREATE:
@@ -86,5 +86,8 @@ class GpApiInstallmentRequestBuilder implements IRequestBuilder
      * @param mixed $jsonRequest
      * @param mixed $config
      */
-    public function buildRequestFromJson(mixed $jsonRequest, mixed $config){}
+    public function buildRequestFromJson(mixed $jsonRequest, mixed $config): mixed
+    {
+        throw new \GlobalPayments\Api\Entities\Exceptions\NotImplementedException();
+    }
 }

@@ -7,9 +7,9 @@ use GlobalPayments\Api\Gateways\GatewayResponse;
 
 interface IRequestLogger
 {
-    public function requestSent($verb, $endpoint, $headers, $queryStringParams, $data);
+    public function requestSent(string $verb, string $endpoint, array $headers, $queryStringParams, $data): void;
 
-    public function responseReceived(GatewayResponse $response);
+    public function responseReceived(GatewayResponse $response): void;
 
-    public function responseError(\Exception $e, $headers = '');
+    public function responseError(\Exception $e, mixed $headers = ''): void;
 }

@@ -9,19 +9,19 @@ class TokenInfo
      *
      * @var string
      */
-    public $token;
+    public ?string $token = null;
 
     /**
      * Gets or sets the expiry month of the token (MM format).
      *
      * @var string
      */
-    public $expiryMonth;
+    public ?string $expiryMonth = null;
 
     /**
      * Gets or sets the expiry year of the token (YYYY format).
      *
      * @var string
      */
-    public $expiryYear;
+    public ?string $expiryYear = null;
 }

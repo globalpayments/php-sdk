@@ -9,16 +9,13 @@ use GlobalPayments\Api\Gateways\GeniusConnector;
 
 class GeniusConfig extends GatewayConfig
 {
-    /** @var GatewayProvider */
-    public $gatewayProvider;
-
-    public $clearkId;
-    public $merchantName;
-    public $merchantSiteId;
-    public $merchantKey;
-    public $registerNumber;
-    public $dba;
-    public $terminalId;
+    public ?string $clearkId = null;
+    public ?string $merchantName = null;
+    public ?string $merchantSiteId = null;
+    public ?string $merchantKey = null;
+    public ?string $registerNumber = null;
+    public ?string $dba = null;
+    public ?string $terminalId = null;
 
     public function __construct()
     {

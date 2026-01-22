@@ -14,16 +14,16 @@ use stdClass;
  */
 class MitcGateway extends RestGateway
 {
-    private $accountCredentials;
-    public $allowKeyEntry;
-    private $apiKey;
-    private $apiSecret;
-    private $appName; // value determined by integrator
-    private $appVersion; // value determined by integrator
-    private $region;
-    private $requestId; // optional; use Version-4 UUID format
-    public $targetDevice;
-    public $terminalId;
+    private ?string $accountCredentials = null;
+    public ?bool $allowKeyEntry = null;
+    private ?string $apiKey = null;
+    private ?string $apiSecret = null;
+    private ?string $appName = null; // value determined by integrator
+    private ?string $appVersion = null; // value determined by integrator
+    private ?string $region = null;
+    private ?string $requestId = null; // optional; use Version-4 UUID format
+    public ?string $targetDevice = null;
+    public ?string $terminalId = null;
 
     public function __construct(ConnectionConfig $config)
     {

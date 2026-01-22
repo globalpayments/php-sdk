@@ -19,7 +19,7 @@ class ValidationTest extends TestCase
     protected $card;
     private $enableCryptoUrl = true;
 
-    public function setup()
+    public function setUp(): void
     {
         $card = new CreditCardData();
         $card->number = '4111111111111111';

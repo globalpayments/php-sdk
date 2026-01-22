@@ -10,26 +10,26 @@ class Bank
     /**
      * @var string
      */
-    public $code;
+    public ?string $code = null;
 
     /** @var BankList */
-    public $name;
+    public mixed $name = null;
 
     /** @var Address */
-    public $address;
+    public ?Address $address = null;
 
     /**
      * @var string
      */
-    public $identifierCode;
+    public ?string $identifierCode = null;
 
     /**
      * @var string
      */
-    public $iban;
+    public ?string $iban = null;
 
     /**
      * @var string
      */
-    public $accountNumber;
+    public ?string $accountNumber = null;
 }

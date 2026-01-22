@@ -55,7 +55,7 @@ abstract class DeviceInterface implements IDeviceInterface
     public ValidationRequest $validations;
 
     /** @var RequestIdProvider */
-    public $requestIdProvider;
+    public mixed $requestIdProvider = null;
 
     public ?string $ecrId = null;
 

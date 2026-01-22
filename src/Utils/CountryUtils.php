@@ -16,7 +16,7 @@ class CountryUtils
      * @param string $countryCode
      * @return bool
      */
-    public static function isCountry(Address $address, $countryCode)
+    public static function isCountry(Address $address, ?string $countryCode): bool
     {
         if (!is_null($address->countryCode)) {
             return $address->countryCode === $countryCode;
@@ -39,7 +39,7 @@ class CountryUtils
      *
      * @return string|null
      */
-    public static function getCountryByCode($countryCode)
+    public static function getCountryByCode(?string $countryCode): ?string
     {
         if (empty($countryCode)) {
             return null;
@@ -67,7 +67,7 @@ class CountryUtils
      *
      * @return string|null
      */
-    public static function getCountryCodeByCountry($country)
+    public static function getCountryCodeByCountry(?string $country): ?string
     {
         if (empty($country)) {
             return null;
@@ -114,7 +114,7 @@ class CountryUtils
      *
      * @return array|null
      */
-    public static function getCountryInfo($country)
+    public static function getCountryInfo(?string $country): ?array
     {
         if (empty($country)) {
             return null;
@@ -153,7 +153,7 @@ class CountryUtils
         }
     }
 
-    private static function fuzzyMatch($dict, $query, $significantMatch)
+    private static function fuzzyMatch(array $dict, ?string $query, int $significantMatch): mixed
     {
         $rvalue = $rkey = null;
         $matches = [];
@@ -178,7 +178,7 @@ class CountryUtils
         return $rkey;
     }
 
-    private static function fuzzyScore($term, $query)
+    private static function fuzzyScore(?string $term, ?string $query): int
     {
         if (empty($term) || empty($query)) {
             throw new ArgumentException("Strings must not be null");
@@ -209,14 +209,14 @@ class CountryUtils
         return $score;
     }
 
-    public static function getNumericCodeByCountry($country)
+    public static function getNumericCodeByCountry(?string $country): ?string
     {
         $countryInfo = self::getCountryInfo($country);
 
         return !empty($countryInfo['numeric']) ? $countryInfo['numeric'] : null;
     }
 
-    public static function getPhoneCodesByCountry($country)
+    public static function getPhoneCodesByCountry(?string $country): array
     {
         $countryInfo = self::getCountryInfo($country);
 

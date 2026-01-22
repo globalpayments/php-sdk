@@ -12,19 +12,19 @@ use GlobalPayments\Api\Gateways\BillPayProvider;
 class BillPayConfig extends Configuration 
 {
     /** @var string */
-    private $apiKey;
+    private ?string $apiKey = null;
 
     /** @var string */
-    private $merchantName;
+    private ?string $merchantName = null;
 
     /** @var string */
-    private $username;
+    private ?string $username = null;
 
     /** @var string */
-    private $password;
+    private ?string $password = null;
 
     /** @var bool */
-    private $useBillRecordLookup = false;
+    private bool $useBillRecordLookup = false;
 
     public function getApiKey() : string
     {

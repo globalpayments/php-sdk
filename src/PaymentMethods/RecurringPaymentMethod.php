@@ -36,54 +36,54 @@ class RecurringPaymentMethod extends RecurringEntity implements
      *
      * @var Address
      */
-    public $address;
+    public mixed $address = null;
 
     /**
      * The payment method's commercial indicator (Level II/III).
      *
      * @var string
      */
-    public $commercialIndicator;
+    public ?string $commercialIndicator = null;
 
     /**
      * The identifier of the payment method's customer.
      *
      * @var string
      */
-    public $customerKey;
+    public ?string $customerKey = null;
 
     /**
      * The payment method's expiration date.
      *
      * @var string
      */
-    public $expirationDate;
+    public ?string $expirationDate = null;
 
     /**
      * The name on the payment method account.
      *
      * @var string
      */
-    public $nameOnAccount;
+    public ?string $nameOnAccount = null;
 
     /**
      * The last four(4) digits of the Credit Card.
      *
      * @var string
      */
-    public $accountNumberLast4;
+    public ?string $accountNumberLast4 = null;
 
     /**
      * @var IPaymentMethod
      */
-    private $paymentMethod;
+    private mixed $paymentMethod = null;
 
     /**
      * Set to `PaymentMethodType::RECURRING` for internal methods.
      *
      * @var PaymentMethodType
      */
-    public $paymentMethodType = PaymentMethodType::RECURRING;
+    public mixed $paymentMethodType = PaymentMethodType::RECURRING;
 
     /**
      * The payment method type, `Credit Card` vs `ACH`.
@@ -92,7 +92,7 @@ class RecurringPaymentMethod extends RecurringEntity implements
      *
      * @var string
      */
-    public $paymentType;
+    public ?string $paymentType = null;
 
     /**
      * Indicates if the payment method is the default/preferred
@@ -100,46 +100,46 @@ class RecurringPaymentMethod extends RecurringEntity implements
      *
      * @var boolean
      */
-    public $preferredPayment;
+    public ?bool $preferredPayment = null;
 
     /**
      * The payment method status
      *
      * @var string
      */
-    public $status;
+    public ?string $status = null;
 
     /**
      * eCheck Sec Code value
      *
      * @var string
      */
-    public $secCode;
+    public ?string $secCode = null;
 
     /**
      * The payment method's tax type
      *
      * @var string
      */
-    public $taxType;
+    public ?string $taxType = null;
 
     /** @var ThreeDSecure */
-    public $threeDSecure;
+    public mixed $threeDSecure = null;
 
     /** @var string */
-    public $token;
+    public ?string $token = null;
     
     /**
      * Set the Card on File storage
      *
      * @var bool
      */
-    public $cardBrandTransactionId;
+    public ?string $cardBrandTransactionId = null;
 
     /**
      * @var StoredCredential
      */
-    public $storedCredential;
+    public ?StoredCredential $storedCredential = null;
 
     /**
      * @param string|IPaymentMethod $customerIdOrPaymentMethod

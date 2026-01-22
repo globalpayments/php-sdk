@@ -9,14 +9,14 @@ use GlobalPayments\Api\Utils\StringUtils;
 class SampleRequestLogger implements IRequestLogger
 {
     /** @var Logger $logger */
-    private $logger;
+    private Logger $logger;
 
     public function __construct(Logger $logger)
     {
         $this->logger = $logger;
     }
 
-    public function requestSent($verb, $endpoint, $headers, $queryStringParams, $data)
+    public function requestSent(string $verb, string $endpoint, array $headers, $queryStringParams, $data): void
     {
         $this->logger->info("Request/Response START");
         $this->logger->info("Request START");
@@ -27,7 +27,7 @@ class SampleRequestLogger implements IRequestLogger
         $this->logger->info("REQUEST END");
     }
 
-    public function responseReceived(GatewayResponse $response)
+    public function responseReceived(GatewayResponse $response): void
     {
         $this->logger->info("Response START");
         $this->logger->info("Status code: " . $response->statusCode);
@@ -44,7 +44,7 @@ class SampleRequestLogger implements IRequestLogger
         $this->logger->info("=============================================");
     }
 
-    public function responseError(\Exception $e, $headers = '')
+    public function responseError(\Exception $e, mixed $headers = ''): void
     {
         $this->logger->info("Exception START");
         $this->logger->info("Response headers: ", [$headers]);

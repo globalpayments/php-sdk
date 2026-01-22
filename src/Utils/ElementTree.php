@@ -172,7 +172,7 @@ class ElementTree
         }
     }
 
-    public function setDocument(DOMDocument $doc)
+    public function setDocument(DOMDocument $doc): void
     {
         $this->doc = $doc;
     }
@@ -199,7 +199,7 @@ class ElementTree
         }
     }
 
-    public function get($tagName)
+    public function get(?string $tagName): ?Element
     {
         $node = null;
 

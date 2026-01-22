@@ -279,25 +279,25 @@ class GpEcomMapping
         switch ($builder->transactionType) {
             case TransactionType::SALE:
             case TransactionType::AUTH:
-                if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::CREDIT) {
+                if ($builder->paymentMethod && $builder->paymentMethod->paymentMethodType == PaymentMethodType::CREDIT) {
                     if ($builder->transactionModifier === TransactionModifier::OFFLINE) {
                         return 'offline';
                     } elseif ($builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE) {
                         return 'auth-mobile';
                     }
-                } elseif ($builder->paymentMethod->paymentMethodType == PaymentMethodType::RECURRING) {
+                } elseif ($builder->paymentMethod && $builder->paymentMethod->paymentMethodType == PaymentMethodType::RECURRING) {
                     return (!empty($builder->recurringSequence) &&
                         $builder->recurringSequence == RecurringSequence::FIRST) ?
                         'auth' :
                         'receipt-in';
-                } elseif ($builder->paymentMethod->paymentMethodType == PaymentMethodType::APM) {
+                } elseif ($builder->paymentMethod && $builder->paymentMethod->paymentMethodType == PaymentMethodType::APM) {
                     return "payment-set";
                 }
                 return 'auth';
             case TransactionType::CAPTURE:
                 return 'settle';
             case TransactionType::VERIFY:
-                if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::RECURRING) {
+                if ($builder->paymentMethod && $builder->paymentMethod->paymentMethodType == PaymentMethodType::RECURRING) {
                     if (!empty($builder->transactionModifier) &&
                         $builder->transactionModifier === TransactionModifier::SECURE3D) {
                         return 'realvault-3ds-verifyenrolled';
@@ -306,12 +306,12 @@ class GpEcomMapping
                 }
                 return 'otb';
             case TransactionType::REFUND:
-                if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::CREDIT) {
+                if ($builder->paymentMethod && $builder->paymentMethod->paymentMethodType == PaymentMethodType::CREDIT) {
                     return 'credit';
                 }
                 return 'payment-out';
             case TransactionType::DCC_RATE_LOOKUP:
-                if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::CREDIT) {
+                if ($builder->paymentMethod && $builder->paymentMethod->paymentMethodType == PaymentMethodType::CREDIT) {
                     return "dccrate";
                 }
                 return "realvault-dccrate";

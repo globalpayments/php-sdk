@@ -9,9 +9,9 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class InitializeResponse extends PaxTerminalResponse
 {
 
-    public $serialNumber;
-    public $modelName;
-    public $osVersion;
+    public ?string $serialNumber = null;
+    public ?string $modelName = null;
+    public ?string $osVersion = null;
     
     public function __construct($rawResponse)
     {

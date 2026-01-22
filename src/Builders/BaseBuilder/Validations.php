@@ -12,7 +12,7 @@ class Validations
      *
      * @var array
      */
-    public $rules;
+    public ?array $rules = null;
 
     /**
      * Instantiates a new object

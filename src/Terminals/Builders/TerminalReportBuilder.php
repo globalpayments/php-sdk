@@ -14,22 +14,22 @@ class TerminalReportBuilder extends TerminalBuilder
      * @internal
      * @var TerminalReportType
      */
-    public $reportType;
+    public mixed $reportType = null;
 
     /**
      * 
      * @var TerminalSearchBuilder
      */
-    public $searchBuilder;
+    public ?TerminalSearchBuilder $searchBuilder = null;
 
     /**
      * @internal
      * @var TimeZoneConversion
      */
-    public $timeZoneConversion;
+    public mixed $timeZoneConversion = null;
 
     /** @var string */
-    public $transactionId;
+    public ?string $transactionId = null;
 
     /**
      * @param TerminalReportType $reportType

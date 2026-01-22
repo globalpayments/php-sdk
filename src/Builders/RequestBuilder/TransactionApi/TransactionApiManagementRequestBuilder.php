@@ -17,7 +17,7 @@ class TransactionApiManagementRequestBuilder implements IRequestBuilder
      * @param $builder
      * @return bool
      */
-    public static function canProcess($builder = null)
+    public static function canProcess(?BaseBuilder $builder = null): bool
     {
         if ($builder instanceof ManagementBuilder) {
             return true;
@@ -32,7 +32,7 @@ class TransactionApiManagementRequestBuilder implements IRequestBuilder
      *
      * @return TransactionApiRequest|null
      */
-    public function buildRequest(BaseBuilder $builder, $config)
+    public function buildRequest(BaseBuilder $builder, mixed $config): ?TransactionApiRequest
     {
         $payload = null;
         /**
@@ -157,8 +157,8 @@ class TransactionApiManagementRequestBuilder implements IRequestBuilder
         return new TransactionApiRequest($endpoint, $verb, $payload);
     }
 
-    public function buildRequestFromJson($jsonRequest, $config)
+    public function buildRequestFromJson(mixed $jsonRequest, mixed $config): mixed
     {
-        // TODO: Implement buildRequestFromJson() method.
+        throw new \GlobalPayments\Api\Entities\Exceptions\NotImplementedException();
     }
 }

@@ -17,74 +17,69 @@ use GlobalPayments\Api\Gateways\IAccessTokenProvider;
 
 class GpApiConfig extends GatewayConfig
 {
-    public $appId;
-    public $appKey;
-    public $siteId;
-    public $licenseId;
-    public $deviceId;
-    public $username;
-    public $password;
-    public $secretApiKey;
+    public ?string $appId = null;
+    public ?string $appKey = null;
+    public ?string $siteId = null;
+    public ?string $licenseId = null;
+    public ?string $deviceId = null;
+    public ?string $username = null;
+    public ?string $password = null;
+    public ?string $secretApiKey = null;
     
     /**
      * @var AccessTokenInfo
     */
-    public $accessTokenInfo;
+    public ?AccessTokenInfo $accessTokenInfo = null;
     
     /**
      * @var string
     */
-    public $country = 'US';
+    public string $country = 'US';
 
     /**
      * @var string
     */
-    public $channel;
+    public ?string $channel = null;
 
     /**
      * @var int
     */
-    public $secondsToExpire;
+    public ?int $secondsToExpire = null;
 
     /**
      * @var string
     */
-    public $intervalToExpire;
+    public ?string $intervalToExpire = null;
 
     /**
      * @var string
     */
-    public $methodNotificationUrl;
+    public ?string $methodNotificationUrl = null;
 
     /**
      * @var string
     */
-    public $challengeNotificationUrl;
+    public ?string $challengeNotificationUrl = null;
 
     /**
      * @var string
     */
-    public $merchantContactUrl;
+    public ?string $merchantContactUrl = null;
 
     /**
      * @var array
     */
-    public $permissions;
+    public ?array $permissions = null;
 
     /**
      * @var string
     */
-    public $gatewayProvider;
+    public ?string $merchantId = null;
 
     /**
      * @var string
     */
-    public $merchantId;
-
-    /**
-     * @var string
-    */
-    public $deviceCurrency;
+    public ?string $deviceCurrency = null;
 
     /**
      * @var string

@@ -18,63 +18,63 @@ class AcceptorConfig
      *
      * @var bool
      */
-    public $cardCaptureCapability;
+    public ?bool $cardCaptureCapability = null;
 
     /**
      * Used w/TransIT
      *
      * @var CardDataInputCapability
      */
-    public $cardDataInputCapability;
+    public mixed $cardDataInputCapability = null;
 
     /**
      * Used w/TransIT
      *
      * @var CardDataOutputCapability
      */
-    public $cardDataOutputCapability;
+    public mixed $cardDataOutputCapability = null;
 
     /**
      * Used w/TransIT; corresponding tag will default to eComm or Manual if this isn't used
      *
      * @var CardDataSource
      */
-    public $cardDataSource;
+    public mixed $cardDataSource = null;
 
     /**
      * Used w/TransIT
      *
      * @var CardHolderAuthenticationCapability
      */
-    public $cardHolderAuthenticationCapability;
+    public mixed $cardHolderAuthenticationCapability = null;
 
     /**
      * Used w/TransIT
      *
      * @var CardHolderAuthenticationEntity
      */
-    public $cardHolderAuthenticationEntity;
+    public mixed $cardHolderAuthenticationEntity = null;
 
     /**
      * Used w/TransIT
      *
      * @var OperatingEnvironment
      */
-    public $operatingEnvironment;
+    public mixed $operatingEnvironment = null;
 
     /**
      * Used w/TransIT
      *
      * @var PinCaptureCapability
      */
-    public $pinCaptureCapability;
+    public mixed $pinCaptureCapability = null;
 
     /**
      * Used w/TransIT
      *
      * @var TerminalOutputCapability
      */
-    public $terminalOutputCapability;
+    public mixed $terminalOutputCapability = null;
 
     public function __construct(
         $cardCaptureCapability = false,

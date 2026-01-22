@@ -13,7 +13,7 @@ abstract class TerminalBuilder extends TransactionBuilder
      * @internal
      * @var PaymentMethodType
      */
-    public $paymentMethodType;
+    public mixed $paymentMethodType = null;
 
     /**
      * Request Id used by the POS to uniquely identify transactions.
@@ -22,28 +22,28 @@ abstract class TerminalBuilder extends TransactionBuilder
      * @internal
      * @var int
      */
-    public $requestId;
+    public ?int $requestId = null;
 
     /*
      * ID of the clerk if in retail mode, and ID of the server if in restaurant mode
      * 
      * @var int
      */
-    public $clerkId;
+    public ?string $clerkId = null;
 
     /*
      * Card On File Indicator, C - Cardholder initiated transaction, M - Merchant initiated transaction
      *
      * @var int
      */
-    public $cardOnFileIndicator;
+    public ?string $cardOnFileIndicator = null;
 
     /*
      * Network Transaction Identifier
      *
      * @var int
      */
-    public $cardBrandTransId;
+    public ?string $cardBrandTransId = null;
 
     public ?string $ecrId = null;
 

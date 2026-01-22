@@ -10,7 +10,7 @@ use GlobalPayments\Api\Entities\TransactionApi\TransactionApiRequest;
 
 class TransactionApiReportRequestBuilder implements IRequestBuilder
 {
-    public static function canProcess($builder = null)
+    public static function canProcess(?BaseBuilder $builder = null): bool
     {
         return $builder instanceof TransactionReportBuilder;
     }
@@ -20,7 +20,7 @@ class TransactionApiReportRequestBuilder implements IRequestBuilder
      * @param TransactionApiConfig $config
      * @return TransactionApiRequest|null
      */
-    public function buildRequest(BaseBuilder $builder, $config)
+    public function buildRequest(BaseBuilder $builder, mixed $config): ?TransactionApiRequest
     {
         $queryParams = $payload = $endpoint = null;
         /**
@@ -75,8 +75,8 @@ class TransactionApiReportRequestBuilder implements IRequestBuilder
         return new TransactionApiRequest($endpoint, $verb, $payload, $queryParams);
     }
 
-    public function buildRequestFromJson($jsonRequest, $config)
+    public function buildRequestFromJson(mixed $jsonRequest, mixed $config): mixed
     {
-        // TODO: Implement buildRequestFromJson() method.
+        throw new \GlobalPayments\Api\Entities\Exceptions\NotImplementedException();
     }
 }

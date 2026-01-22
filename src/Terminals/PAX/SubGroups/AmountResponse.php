@@ -8,21 +8,21 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class AmountResponse implements IResponseSubGroup
 {
 
-    public $approvedAmount;
+    public float|int|string|null $approvedAmount = null;
 
-    public $amountDue;
+    public float|int|string|null $amountDue = null;
 
-    public $tipAmount;
+    public float|int|string|null $tipAmount = null;
 
-    public $cashBackAmount;
+    public float|int|string|null $cashBackAmount = null;
 
-    public $merchantFee;
+    public float|int|string|null $merchantFee = null;
 
-    public $taxAmount;
+    public float|int|string|null $taxAmount = null;
 
-    public $balance1;
+    public float|int|string|null $balance1 = null;
 
-    public $balance2;
+    public float|int|string|null $balance2 = null;
 
     public function __construct($messageReader)
     {

@@ -15,78 +15,73 @@ class TransactionApiConfig extends GatewayConfig
      * trsansaction apiKey
      * @var $apiKey string
      */
-    public $apiKey;
+    public ?string $apiKey = null;
 
     /**
      * trsansaction apiVersion
      * @var $apiVersion string
      */
-    public $apiVersion;
+    public ?string $apiVersion = null;
 
     /**
      * trsansaction apiPartnerName
      * @var $apiPartnerName string
      */
-    public $apiPartnerName;
+    public ?string $apiPartnerName = null;
 
     /**
      * trsansaction accountCredential
      * @var $accountCredential string
      */
-    public $accountCredential;
+    public ?string $accountCredential = null;
 
     /**
      * trsansaction apiSecret
      * @var $apiSecret string
      */
-    public $apiSecret;
+    public ?string $apiSecret = null;
 
     /**
      * Country from which the transaction is done from
      * @var $country string
      */
-    public $country;
+    public ?string $country = null;
 
     /**
      * The time left in seconds before the token expires
      * @var int
      */
-    public $secondsToExpire;
+    public ?int $secondsToExpire = null;
 
     /**
      * The time interval set for when the token will expire
      */
-    public $intervalToExpire;
+    public ?string $intervalToExpire = null;
 
     /**
      * @var string
      */
-    public $methodNotificationUrl;
+    public ?string $methodNotificationUrl = null;
 
     /**
      * @var string
      */
-    public $challengeNotificationUrl;
+    public ?string $challengeNotificationUrl = null;
 
     /**
      * @var string
      */
-    public $merchantContactUrl;
+    public ?string $merchantContactUrl = null;
 
     /**
      * @var array
      */
-    public $permissions;
+    public ?array $permissions = null;
 
     /**
      * @var string
      */
-    public $gatewayProvider;
-
-    /**
-     * @var string
-     */
-    public $merchantId;
+    public ?string $merchantId = null;
 
     public function __construct()
     {

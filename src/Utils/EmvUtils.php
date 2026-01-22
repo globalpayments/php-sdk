@@ -4,7 +4,7 @@ namespace GlobalPayments\Api\Utils;
 
 class EmvUtils
 {
-    public static $blackList = [
+    public static array $blackList = [
         "57" => "Track 2 Equivalent Data",
         "5A" => "Application Primary Account Number (PAN)",
         "99" => "Transaction PIN Data",
@@ -15,7 +15,7 @@ class EmvUtils
         "9F20" => "Track 2 Discretionary Data",
     ];
 
-    public static $knownTags = [
+    public static array $knownTags = [
         "4F" => "Application Dedicated File (ADF) Name",
         "50" => "Application Label",
         "6F" => "File Control Information (FCI) Template",
@@ -169,7 +169,7 @@ class EmvUtils
         "DF4D" => "Transaction Log Setting parameter31"
     ];
 
-    public static $dataTypes = [
+    public static array $dataTypes = [
         "82" => "b",
         "8E" => "b",
         "95" => "b",
@@ -185,7 +185,7 @@ class EmvUtils
      * @param false $verbose
      * @return EmvData|null
      */
-    public static function parseTagData($tagData, $verbose = false)
+    public static function parseTagData(?string $tagData, bool $verbose = false): ?EmvData
     {
         if (empty($tagData)) {
             return null;

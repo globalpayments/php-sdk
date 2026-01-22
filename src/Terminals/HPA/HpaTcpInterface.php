@@ -23,25 +23,25 @@ class HpaTcpInterface implements IDeviceCommInterface
      * TCP fsockopen connection object
      */
 
-    private $tcpConnection = null;
+    private mixed $tcpConnection = null;
     
     /*
      * Device configuration details ConnectionConfig object
      *
      */
-    public $deviceDetails;
+    public ?ConnectionConfig $deviceDetails = null;
     
     /*
      * Device final response HpaResponse object
      *
      */
-    public $deviceResponse;
+    public ?HpaResponse $deviceResponse = null;
     
     /*
      * Device request type
      *
      */
-    private $requestType;
+    private ?string $requestType = null;
 
     /*
      * @param ConnectionConfig object $config device configuration details

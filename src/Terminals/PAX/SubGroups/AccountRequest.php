@@ -8,12 +8,12 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class AccountRequest implements IRequestSubGroup
 {
 
-    public $accountNumber;
-    public $expd;
-    public $cvvCode;
-    public $ebtType;
-    public $voucherNumber;
-    public $dupOverrideFlag;
+    public ?string $accountNumber = null;
+    public ?string $expd = null;
+    public ?string $cvvCode = null;
+    public ?string $ebtType = null;
+    public ?string $voucherNumber = null;
+    public ?string $dupOverrideFlag = null;
     
     public function getElementString()
     {

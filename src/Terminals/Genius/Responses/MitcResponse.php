@@ -8,52 +8,52 @@ use GlobalPayments\Api\Terminals\TerminalResponse;
 class MitcResponse extends TerminalResponse
 {
     /** @var string */
-    public $invoiceNumber;
+    public ?string $invoiceNumber = null;
 
     /** @var string */
-    public $responseDateTime;
+    public ?string $responseDateTime = null;
 
     /** @var string */
-    public $gatewayResponseCode;
+    public ?string $gatewayResponseCode = null;
 
     /** @var string */
-    public $gatewayResponseMessage;
+    public ?string $gatewayResponseMessage = null;
 
     /** @var double */
-    public $authorizedAmount;
+    public float|int|string|null $authorizedAmount = null;
 
     /** @var string */
-    public $tokenResponseCode;
+    public ?string $tokenResponseCode = null;
 
     /** @var string */
-    public $tokenResponseMsg;
+    public ?string $tokenResponseMsg = null;
 
     /** @var string */
-    public $traceNumber;
+    public ?string $traceNumber = null;
 
     /** @var array */
-    public $icc;
+    public ?array $icc = null;
 
     /** @var string */
-    public $transactionCurrencyCode;
+    public ?string $transactionCurrencyCode = null;
 
     /** @var string */
-    public $tenderType;
+    public ?string $tenderType = null;
 
     /** @var string */
-    public $clientTransactionId;
+    public ?string $clientTransactionId = null;
 
     /** @var string */
-    public $expMonth;
+    public ?string $expMonth = null;
 
     /** @var string */
-    public $expYear;
+    public ?string $expYear = null;
 
     /** @var string */
-    public $postalCode;
+    public ?string $postalCode = null;
 
     /** @var string */
-    public $customerId;
+    public ?string $customerId = null;
 
     /**
      * 

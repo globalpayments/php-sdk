@@ -9,5 +9,5 @@ class CancelParameters
      * Display change after exiting the screen currently displayed (e.g. timeout
      * or cancel).
      */
-    public $displayOption;
+    public mixed $displayOption = null;
 }

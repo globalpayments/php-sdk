@@ -10,10 +10,10 @@ use GlobalPayments\Api\Terminals\Enums\DeviceType;
 
 class SignatureResponse extends PaxTerminalResponse implements ISignatureResponse
 {
-    public $totalLength;
-    public $responseLength;
-    public $signatureData;
-    private $deviceType;
+    public ?string $totalLength = null;
+    public ?string $responseLength = null;
+    public mixed $signatureData = null;
+    private mixed $deviceType = DeviceType::PAX_S300;
     
     public function __construct($rawResponse, $messageId, $deviceType = DeviceType::PAX_S300)
     {

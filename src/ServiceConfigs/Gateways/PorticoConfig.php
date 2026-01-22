@@ -13,25 +13,22 @@ use GlobalPayments\Api\Gateways\ProPayConnector;
 
 class PorticoConfig extends GatewayConfig
 {
-    /** @var GatewayProvider */
-    public $gatewayProvider = GatewayProvider::PORTICO;
-
     // Portico
-    public $siteId;
-    public $licenseId;
-    public $deviceId;
-    public $username;
-    public $password;
-    public $developerId;
-    public $versionNumber;
-    public $secretApiKey;
-    public $uniqueDeviceId;
+    public ?string $siteId = null;
+    public ?string $licenseId = null;
+    public ?string $deviceId = null;
+    public ?string $username = null;
+    public ?string $password = null;
+    public ?string $developerId = null;
+    public ?string $versionNumber = null;
+    public ?string $secretApiKey = null;
+    public ?string $uniqueDeviceId = null;
     
     //ProPay
-    public $certificationStr;
-    public $terminalId;
-    public $selfSignedCertLocation;
-    public $proPayUS = true;
+    public ?string $certificationStr = null;
+    public ?string $terminalId = null;
+    public ?string $selfSignedCertLocation = null;
+    public bool $proPayUS = true;
 
     public function getPayPlanEndpoint()
     {
@@ -47,12 +44,11 @@ class PorticoConfig extends GatewayConfig
     }
 
     // Common
-    public $curlOptions;
+    public ?array $curlOptions = null;
 
     /** @var Environment */
-    public $environment;
-    public $serviceUrl;
-    public $timeout;
+    public mixed $environment = null;
+    public ?string $serviceUrl = null;
 
     public function __construct()
     {

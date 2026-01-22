@@ -8,10 +8,10 @@ class SendFileData
     /*
      * Value from Enum SendFileType
      */
-    public $imageType;
+    public ?string $imageType = null;
     
     /*
      * Left justified text to display for each line item (Mandatory)
      */
-    public $imageLocation;
+    public ?string $imageLocation = null;
 }

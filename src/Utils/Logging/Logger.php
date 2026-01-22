@@ -9,7 +9,7 @@ class Logger
 {
     const INFO_LOG_LEVEL = 'info';
 
-    protected $options = array(
+    protected array $options = array(
         'extension' => 'txt',
         'dateFormat' => 'Y-m-d G:i:s.u',
         'filename' => false,
@@ -23,39 +23,54 @@ class Logger
      * Path to the log file
      * @var string
      */
-    private $logFilePath;
+    private ?string $logFilePath = null;
 
     /**
      * The number of lines logged in this instance's lifetime
      * @var int
      */
-    private $logLineCount = 0;
+    private int $logLineCount = 0;
 
     /**
      * This holds the file handle for this instance's log file
      * @var resource
      */
-    private $fileHandle;
+    private $fileHandle = null;
 
     /**
      * This holds the last line logged to the logger
      *  Used for unit tests
      * @var string
      */
-    private $lastLine = '';
+    private string $lastLine = '';
 
     /**
      * Octal notation for default permissions of the log file
      * @var integer
      */
-    private $defaultPermissions = 0777;
+    private int $defaultPermissions = 0777;
+
+    /**
+     * Log level priorities for formatting
+     * @var array
+     */
+    private array $logLevels = [
+        'emergency' => 0,
+        'alert' => 1,
+        'critical' => 2,
+        'error' => 3,
+        'warning' => 4,
+        'notice' => 5,
+        'info' => 6,
+        'debug' => 7
+    ];
 
     /**
      * Class constructor
      *
      * @param string $logDirectory File path to the logging directory
      */
-    public function __construct($logDirectory)
+    public function __construct(string $logDirectory)
     {
         $logDirectory = rtrim($logDirectory, DIRECTORY_SEPARATOR);
         if (!file_exists($logDirectory)) {
@@ -81,7 +96,7 @@ class Logger
     /**
      * @param string $stdOutPath
      */
-    public function setLogToStdOut($stdOutPath)
+    public function setLogToStdOut(string $stdOutPath): void
     {
         $this->logFilePath = $stdOutPath;
     }
@@ -89,7 +104,7 @@ class Logger
     /**
      * @param string $logDirectory
      */
-    public function setLogFilePath($logDirectory)
+    public function setLogFilePath(string $logDirectory): void
     {
         if ($this->options['filename']) {
             if (strpos($this->options['filename'], '.log') !== false || strpos($this->options['filename'],
@@ -108,7 +123,7 @@ class Logger
      *
      * @internal param resource $fileHandle
      */
-    public function setFileHandle($writeMode)
+    public function setFileHandle(string $writeMode): void
     {
         $this->fileHandle = fopen($this->logFilePath, $writeMode);
     }
@@ -129,7 +144,7 @@ class Logger
      *
      * @param string $dateFormat Valid format string for date()
      */
-    public function setDateFormat($dateFormat)
+    public function setDateFormat(string $dateFormat): void
     {
         $this->options['dateFormat'] = $dateFormat;
     }
@@ -142,7 +157,7 @@ class Logger
      * @param array $context
      * @return null
      */
-    public function log($level, $message, array $context = array())
+    public function log($level, string $message, array $context = array()): void
     {
         $message = $this->formatMessage($level, $message, $context);
         $this->write($message);
@@ -154,7 +169,7 @@ class Logger
      * @param string $message Line to write to the log
      * @return void
      */
-    public function write($message)
+    public function write(string $message): void
     {
         if (null !== $this->fileHandle) {
             if (fwrite($this->fileHandle, $message) === false) {
@@ -175,7 +190,7 @@ class Logger
      *
      * @return string
      */
-    public function getLogFilePath()
+    public function getLogFilePath(): ?string
     {
         return $this->logFilePath;
     }
@@ -185,7 +200,7 @@ class Logger
      *
      * @return string
      */
-    public function getLastLogLine()
+    public function getLastLogLine(): string
     {
         return $this->lastLine;
     }
@@ -198,7 +213,7 @@ class Logger
      * @param array $context The context
      * @return string
      */
-    protected function formatMessage($level, $message, $context)
+    protected function formatMessage($level, string $message, array $context): string
     {
         if ($this->options['logFormat']) {
             $parts = array(
@@ -234,7 +249,7 @@ class Logger
      *
      * @return string
      */
-    private function getTimestamp()
+    private function getTimestamp(): string
     {
         $originalTime = microtime(true);
         $micro = sprintf("%06d", ($originalTime - floor($originalTime)) * 1000000);
@@ -249,7 +264,7 @@ class Logger
      * @param array $context The Context
      * @return string
      */
-    protected function contextToString($context)
+    protected function contextToString(array $context): string
     {
         $export = '';
         foreach ($context as $key => $value) {
@@ -275,12 +290,12 @@ class Logger
      * @param string $indent What to use as the indent.
      * @return string
      */
-    protected function indent($string, $indent = '    ')
+    protected function indent(string $string, string $indent = '    '): string
     {
         return $indent . str_replace("\n", "\n" . $indent, $string);
     }
 
-    public function info($message, array $context = array())
+    public function info(string $message, array $context = array()): void
     {
         $this->log(self::INFO_LOG_LEVEL,$message, $context);
     }

@@ -7,25 +7,25 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class CheckResponse implements IResponseSubGroup
 {
 
-    public $saleType;
+    public ?string $saleType = null;
 
-    public $routingNumber;
+    public ?string $routingNumber = null;
 
-    public $accountNumber;
+    public ?string $accountNumber = null;
 
-    public $checkNumber;
+    public ?string $checkNumber = null;
 
-    public $checkType;
+    public ?string $checkType = null;
 
-    public $idType;
+    public ?string $idType = null;
 
-    public $idValue;
+    public ?string $idValue = null;
 
-    public $DOB;
+    public ?string $DOB = null;
 
-    public $phoneNumber;
+    public ?string $phoneNumber = null;
 
-    public $zipCode;
+    public ?string $zipCode = null;
 
     public function __construct($messageReader)
     {

@@ -20,56 +20,56 @@ class BillingBuilder extends TransactionBuilder
      * 
      * @var array<Bill>
      */
-    private $bills = array();
+    private array $bills = array();
 
     /**
      * Request BillingLoadType
      * 
      * @var BillingLoadType
      */
-    private $billingLoadType;
+    private mixed $billingLoadType = null;
 
     /**
      * Request HostedPaymentData
      * 
      * @var ?HostedPaymentData
      */
-    private $hostedPaymentData;
+    private mixed $hostedPaymentData = null;
 
     /**
      * Request orderId
      *
      * @var string
      */
-    private $orderId;
+    private ?string $orderId = null;
 
     /**
      * Request commit bills
      *
      * @var boolean
      */
-    private $commitBills;
+    private ?bool $commitBills = null;
 
     /**
      * Request clear bills
      *
      * @var boolean
      */
-    private $clearBills;
+    private ?bool $clearBills = null;
 
     /**
      * Request customer Data
      *
      * @var Customer
      */
-    private $customer;
+    private mixed $customer = null;
 
     /**
      * Request amount
      *
      * @var string|float
      */
-    private $amount;
+    private string|float|null $amount = null;
 
     /**
      * {@inheritdoc}

@@ -10,7 +10,7 @@ use NumberFormatter;
 class StringUtils
 {
 
-    public static function asPaddedAtEndString($inString, $toLength, $padChar)
+    public static function asPaddedAtEndString(?string $inString, int $toLength, string $padChar): string
     {
         $padStr = "";
         if (empty($inString)) {
@@ -26,7 +26,7 @@ class StringUtils
         return $inString . $padStr;
     }
 
-    public static function asPaddedAtFrontString($inString, $toLength, $padChar)
+    public static function asPaddedAtFrontString(?string $inString, int $toLength, string $padChar): string
     {
         $padStr = "";
         if (empty($inString)) {
@@ -42,7 +42,7 @@ class StringUtils
         return $padStr . $inString;
     }
 
-    public static function toNumeric($value)
+    public static function toNumeric($value): string
     {
         if (is_null($value)) {
             return "";
@@ -65,7 +65,7 @@ class StringUtils
      *
      * @return float|int
      */
-    public static function toAmount($str)
+    public static function toAmount(?string $str): float|int
     {
         if (empty($str)) {
             return 0;
@@ -81,7 +81,7 @@ class StringUtils
      *
      * @return mixed
      */
-    public static function validateToNumber($value)
+    public static function validateToNumber(?string $value): ?string
     {
         return preg_replace("/[^0-9]/", "", $value);
     }
@@ -90,7 +90,7 @@ class StringUtils
      * @param string $hexString
      * @return mixed
      */
-    public static function bytesFromHex($hexString)
+    public static function bytesFromHex(?string $hexString): ?string
     {
         return pack("H*" , strtolower($hexString));
     }
@@ -102,10 +102,10 @@ class StringUtils
         return (json_last_error() == JSON_ERROR_NONE);
     }
 
-    public static function boolToString($value)
+    public static function boolToString($value): ?string
     {
         if (!is_bool($value)) {
-            return;
+            return null;
         }
 
         return json_encode($value);

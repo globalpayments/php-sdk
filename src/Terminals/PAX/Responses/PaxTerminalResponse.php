@@ -22,93 +22,93 @@ use GlobalPayments\Api\Terminals\PAX\Entities\Enums\TerminalTransactionType;
 class PaxTerminalResponse extends PaxBaseResponse implements IDeviceResponseHandler
 {
     // Functional
-    public $responseCode;
-    public $responseText;
-    public $transactionId;
-    public $terminalRefNumber;
-    public $token;
-    public $signatureStatus;
-    public $signatureData;
-    public $hostReferenceNumber;
+    public ?string $responseCode = null;
+    public ?string $responseText = null;
+    public ?string $transactionId = null;
+    public ?string $terminalRefNumber = null;
+    public ?string $token = null;
+    public ?string $signatureStatus = null;
+    public mixed $signatureData = null;
+    public ?string $hostReferenceNumber = null;
     // Transactional
-    public $transactionType;
-    public $maskedCardNumber;
-    public $entryMethod;
-    public $authorizationCode;
-    public $approvalCode;
-    public $transactionAmount;
-    public $amountDue;
-    public $balanceAmount;
-    public $cardHolderName;
-    public $cardBIN;
-    public $cardPresent;
-    public $expirationDate;
-    public $tipAmount;
-    public $cashBackAmount;
-    public $avsResponseCode;
-    public $avsResponseText;
-    public $cvvResponseCode;
-    public $cvvResponseText;
-    public $taxExempt;
-    public $taxExemptId;
-    public $ticketNumber;
-    public $paymentType;
-    public $transactionNumber;
+    public ?string $transactionType = null;
+    public ?string $maskedCardNumber = null;
+    public ?string $entryMethod = null;
+    public ?string $authorizationCode = null;
+    public ?string $approvalCode = null;
+    public float|int|string|null $transactionAmount = null;
+    public float|int|string|null $amountDue = null;
+    public float|int|string|null $balanceAmount = null;
+    public ?string $cardHolderName = null;
+    public ?string $cardBIN = null;
+    public ?bool $cardPresent = null;
+    public ?string $expirationDate = null;
+    public float|int|string|null $tipAmount = null;
+    public float|int|string|null $cashBackAmount = null;
+    public ?string $avsResponseCode = null;
+    public ?string $avsResponseText = null;
+    public ?string $cvvResponseCode = null;
+    public ?string $cvvResponseText = null;
+    public ?bool $taxExempt = null;
+    public ?string $taxExemptId = null;
+    public ?string $ticketNumber = null;
+    public ?string $paymentType = null;
+    public ?string $transactionNumber = null;
 
     // Debug properties
-    public $debugLevel;
-    public $debugFileContents;
-    public $debugFileLength;
+    public ?string $debugLevel = null;
+    public ?string $debugFileContents = null;
+    public ?string $debugFileLength = null;
 
     // EMV
     /*
      * The preferred name of the EMV application selected on the EMV card
      */
-    public $applicationPreferredName;
+    public ?string $applicationPreferredName = null;
 
     /*
      * The aplication label from the EMV card
      */
-    public $applicationLabel;
+    public ?string $applicationLabel = null;
 
     /*
      * the AID (Application ID) of the selected application on the EMV card
      */
-    public $applicationId;
+    public ?string $applicationId = null;
 
     /*
      * The cryptogram type used during the transaction
      */
-    public $applicationCryptogramType;
+    public mixed $applicationCryptogramType = null;
 
     /*
      * The actual cryptogram value generated for the transaction
      */
-    public $applicationCryptogram;
+    public ?string $applicationCryptogram = null;
 
     /*
      * The results of the terminals attempt to verify the cards authenticity.
      */
-    public $terminalVerificationResults;
+    public ?string $terminalVerificationResults = null;
     
-    public $clerkId;
-    public $shiftId;
-    public $saleType;
-    public $routingNumber;
-    public $accountNumber;
-    public $checkNumber;
-    public $checkType;
-    public $idType;
-    public $idValue;
-    public $DOB;
-    public $phoneNumber;
-    public $zipCode;
-    public $merchantFee;
-    public $ebtType;
-    public $purchaseOrder;
-    public $customerCode;
-    public $merchantTaxId;
-    public $cardBrandTransactionId;
+    public ?string $clerkId = null;
+    public ?string $shiftId = null;
+    public ?string $saleType = null;
+    public ?string $routingNumber = null;
+    public ?string $accountNumber = null;
+    public ?string $checkNumber = null;
+    public ?string $checkType = null;
+    public ?string $idType = null;
+    public ?string $idValue = null;
+    public ?string $DOB = null;
+    public ?string $phoneNumber = null;
+    public ?string $zipCode = null;
+    public float|int|string|null $merchantFee = null;
+    public ?string $ebtType = null;
+    public ?string $purchaseOrder = null;
+    public ?string $customerCode = null;
+    public ?string $merchantTaxId = null;
+    public ?string $cardBrandTransactionId = null;
 
     public function __construct($rawResponse, $messageId)
     {

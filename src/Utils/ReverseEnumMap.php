@@ -6,7 +6,7 @@ use ReflectionClass;
 
 class ReverseEnumMap
 {
-    public $map;
+    public array $map = [];
 
     public function __construct($valueType)
     {
@@ -16,7 +16,7 @@ class ReverseEnumMap
         }
     }
 
-    public function get($value)
+    public function get($value): string
     {
         return isset($this->map[$value]) ? $this->map[$value] : '';
     }

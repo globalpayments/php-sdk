@@ -15,31 +15,28 @@ use GlobalPayments\Api\ConfiguredServices;
 
 class GpEcomConfig extends GatewayConfig
 {
-    /** @var GatewayProvider */
-    public $gatewayProvider;
-
-    public $accountId;
-    public $merchantId;
-    public $rebatePassword;
-    public $refundPassword;
-    public $sharedSecret;
-    public $channel;
-    public $hostedPaymentConfig;
+    public ?string $accountId = null;
+    public ?string $merchantId = null;
+    public ?string $rebatePassword = null;
+    public ?string $refundPassword = null;
+    public ?string $sharedSecret = null;
+    public ?string $channel = null;
+    public mixed $hostedPaymentConfig = null;
     /** @var ShaHashType */
-    public $shaHashType = ShaHashType::SHA1;
+    public mixed $shaHashType = ShaHashType::SHA1;
 
     // Secure 3D
-    public $challengeNotificationUrl;
-    public $methodNotificationUrl;
-    public $merchantContactUrl;
-    public $merchantNotificationUrl;
-    public $secure3dVersion;
+    public ?string $challengeNotificationUrl = null;
+    public ?string $methodNotificationUrl = null;
+    public ?string $merchantContactUrl = null;
+    public ?string $merchantNotificationUrl = null;
+    public mixed $secure3dVersion = null;
 
     /**
      * @deprecated  Property not used and it will be removed
      */
     //Open banking service
-    public $enableBankPayment = false;
+    public bool $enableBankPayment = false;
 
     public function __construct()
     {

@@ -28,9 +28,9 @@ use GlobalPayments\Api\Terminals\HPA\Requests\HpaSendFileRequest;
 
 class HpaController extends DeviceController
 {
-    public $device;
+    public ?HpaInterface $device = null;
 
-    private $builderData = null;
+    private TerminalManageBuilder|TerminalAuthBuilder|null $builderData = null;
 
     /*
      * Create interface based on connection mode TCP / HTTP

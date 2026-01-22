@@ -48,8 +48,8 @@ use GlobalPayments\Api\Terminals\PAX\Responses\EBTResponse;
 
 class PaxController extends DeviceController
 {
-    public $device;
-    public $deviceConfig;
+    public ?PaxInterface $device = null;
+    public ?ConnectionConfig $deviceConfig = null;
 
     /*
      * Create interface based on connection mode TCP / HTTP

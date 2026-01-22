@@ -13,24 +13,24 @@ class UserReportBuilder extends ReportBuilder
     /**
      * @var SortDirection
      */
-    public $order;
+    public mixed $order = null;
 
     /** @var MerchantAccountsSortProperty */
-    public $accountOrderBy;
+    public mixed $accountOrderBy = null;
 
     /**
      * @internal
      * @var string
      */
-    public $transactionType;
+    public ?string $transactionType = null;
 
     /**
      * @internal
      * @var SearchCriteriaBuilder
      */
-    public $searchBuilder;
+    public mixed $searchBuilder = null;
 
-    public $transactionModifier = TransactionModifier::NONE;
+    public mixed $transactionModifier = TransactionModifier::NONE;
 
     public function __construct($reportType)
     {

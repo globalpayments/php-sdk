@@ -8,10 +8,10 @@ use GlobalPayments\Api\Terminals\Enums\ControlCodes;
 class CommercialResponse implements IResponseSubGroup
 {
 
-    public $poNumber;
-    public $customerCode;
-    public $taxExempt;
-    public $taxExemptId;
+    public ?string $poNumber = null;
+    public ?string $customerCode = null;
+    public string|bool|null $taxExempt = null;
+    public ?string $taxExemptId = null;
 
     public function __construct($messageReader)
     {

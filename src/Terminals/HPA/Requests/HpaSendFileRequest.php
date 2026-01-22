@@ -9,7 +9,7 @@ use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 class HpaSendFileRequest
 {
 
-    public $deviceConfig;
+    public mixed $deviceConfig = null;
 
     public function __construct($deviceConfig)
     {

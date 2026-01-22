@@ -23,179 +23,179 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 abstract class SecureBuilder extends BaseBuilder
 {
     /** @var string|float */
-    private $amount;
+    private string|float|null $amount = null;
 
     /** @var string */
-    private $currency;
+    private ?string $currency = null;
 
     /** @var \DateTime */
-    private $orderCreateDate;
+    private mixed $orderCreateDate = null;
 
     /** @var OrderTransactionType */
-    private $orderTransactionType;
+    private mixed $orderTransactionType = null;
 
     /** @var string */
-    private $orderId;
+    private ?string $orderId = null;
 
     /** @var string */
-    private $referenceNumber;
+    private ?string $referenceNumber = null;
 
     /** @var bool */
-    private $addressMatchIndicator;
+    private ?bool $addressMatchIndicator = null;
 
     /** @var Address */
-    private $shippingAddress;
+    private mixed $shippingAddress = null;
 
     /** @var ShippingMethod */
-    private $shippingMethod;
+    private mixed $shippingMethod = null;
 
     /** @var bool */
-    private $shippingNameMatchesCardHolderName;
+    private ?bool $shippingNameMatchesCardHolderName = null;
 
     /** @var DateTime */
-    private $shippingAddressCreateDate;
+    private mixed $shippingAddressCreateDate = null;
 
     /** @var AgeIndicator */
-    public $shippingAddressUsageIndicator;
+    public mixed $shippingAddressUsageIndicator = null;
 
     /** @var float */
-    private $giftCardAmount;
+    private ?float $giftCardAmount = null;
 
     /** @var int */
-    private $giftCardCount;
+    private ?int $giftCardCount = null;
 
     /** @var string */
-    private $giftCardCurrency;
+    private ?string $giftCardCurrency = null;
 
     /** @var string */
-    private $deliveryEmail;
+    private ?string $deliveryEmail = null;
 
     /** @var DeliveryTimeFrame */
-    private $deliveryTimeframe;
+    private mixed $deliveryTimeframe = null;
 
     /** @var DateTime */
-    private $preOrderAvailabilityDate;
+    private mixed $preOrderAvailabilityDate = null;
 
     /** @var PreOrderIndicator */
-    private $preOrderIndicator;
+    private mixed $preOrderIndicator = null;
 
     /** @var ReorderIndicator */
-    private $reorderIndicator;
+    private mixed $reorderIndicator = null;
 
     /** @var string */
-    private $customerAccountId;
+    private ?string $customerAccountId = null;
     public ?string $customerEmail = null;
 
     /** @var AgeIndicator */
-    private $accountAgeIndicator;
+    private mixed $accountAgeIndicator = null;
 
     /** @var \DateTime */
-    private $accountChangeDate;
+    private mixed $accountChangeDate = null;
 
     /** @var \DateTime */
-    private $accountCreateDate;
+    private mixed $accountCreateDate = null;
 
     /** @var AgeIndicator */
-    private $accountChangeIndicator;
+    private mixed $accountChangeIndicator = null;
 
     /** @var \DateTime */
-    private $passwordChangeDate;
+    private mixed $passwordChangeDate = null;
 
     /** @var AgeIndicator */
-    private $passwordChangeIndicator;
+    private mixed $passwordChangeIndicator = null;
 
     /** @var array */
-    private $phoneList;
+    private ?array $phoneList = null;
 
     /** @var string */
-    private $homeCountryCode;
+    private ?string $homeCountryCode = null;
 
     /** @var string */
-    private $homeNumber;
+    private ?string $homeNumber = null;
 
     /** @var string */
-    private $workCountryCode;
+    private ?string $workCountryCode = null;
 
     /** @var string */
-    private $workNumber;
+    private ?string $workNumber = null;
 
     /** @var string */
-    private $mobileCountryCode;
+    private ?string $mobileCountryCode = null;
 
     /** @var string */
-    private $mobileNumber;
+    private ?string $mobileNumber = null;
 
     /** @var DateTime */
-    private $paymentAccountCreateDate;
+    private mixed $paymentAccountCreateDate = null;
 
     /** @var AgeIndicator */
-    private $paymentAgeIndicator;
+    private mixed $paymentAgeIndicator = null;
 
     /** @var bool */
-    private $previousSuspiciousActivity;
+    private ?bool $previousSuspiciousActivity = null;
 
     /** @var string|SuspiciousAccountActivity */
-    public $suspiciousAccountActivity;
+    public string|object|null $suspiciousAccountActivity = null;
 
     /** @var int */
-    private $numberOfPurchasesInLastSixMonths;
+    private ?int $numberOfPurchasesInLastSixMonths = null;
 
     /** @var int */
-    private $numberOfTransactionsInLast24Hours;
+    private ?int $numberOfTransactionsInLast24Hours = null;
 
     /** @var int */
-    private $numberOfAddCardAttemptsInLast24Hours;
+    private ?int $numberOfAddCardAttemptsInLast24Hours = null;
 
     /** @var int */
-    private $numberOfTransactionsInLastYear;
+    private ?int $numberOfTransactionsInLastYear = null;
 
     /** @var BrowserData */
-    private $browserData;
+    private mixed $browserData = null;
 
     /** @var string */
-    private $priorAuthenticationData;
+    private ?string $priorAuthenticationData = null;
 
     /** @var PriorAuthenticationMethod */
-    private $priorAuthenticationMethod;
+    private mixed $priorAuthenticationMethod = null;
 
     /** @var string */
-    private $priorAuthenticationTransactionId;
+    private ?string $priorAuthenticationTransactionId = null;
 
     /** @var \DateTime */
-    private $priorAuthenticationTimestamp;
+    private mixed $priorAuthenticationTimestamp = null;
 
     /** @var int */
-    private $maxNumberOfInstallments;
+    private ?int $maxNumberOfInstallments = null;
 
     /** @var \DateTime */
-    private $recurringAuthorizationExpiryDate;
+    private mixed $recurringAuthorizationExpiryDate = null;
 
     /** @var int */
-    private $recurringAuthorizationFrequency;
+    private ?int $recurringAuthorizationFrequency = null;
 
     /** @var string */
-    private $customerAuthenticationData;
+    private ?string $customerAuthenticationData = null;
 
     /** @var CustomerAuthenticationMethod */
-    private $customerAuthenticationMethod;
+    private mixed $customerAuthenticationMethod = null;
 
     /** @var \DateTime */
-    private $customerAuthenticationTimestamp;
+    private mixed $customerAuthenticationTimestamp = null;
 
     /** @var string */
-    public $idempotencyKey;
+    public ?string $idempotencyKey = null;
 
     /** @var AuthenticationSource */
-    protected $authenticationSource;
+    protected mixed $authenticationSource = null;
 
     /** @var IPaymentMethod */
-    public $paymentMethod;
+    public mixed $paymentMethod = null;
 
     /** @var TransactionType */
-    public $transactionType;
+    public mixed $transactionType = null;
 
     /** @var Address */
-    public $billingAddress;
+    public mixed $billingAddress = null;
 
 
     /**************************************GETTERS**************************************/

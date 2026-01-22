@@ -16,10 +16,10 @@ class BNPL implements
     IAuthable
 {
     /** @var PaymentMethodType */
-    public $paymentMethodType = PaymentMethodType::BNPL;
+    public mixed $paymentMethodType = PaymentMethodType::BNPL;
 
     /** @var BNPLType */
-    public $bnplType;
+    public mixed $bnplType = null;
 
     /**
      * The endpoint to which the customer should be redirected after a payment has been attempted or
@@ -27,7 +27,7 @@ class BNPL implements
      *
      * @var string
      */
-    public $returnUrl;
+    public ?string $returnUrl = null;
 
     /**
      * The endpoint which will receive payment-status messages.
@@ -37,14 +37,14 @@ class BNPL implements
      *
      * @var string
      */
-    public $statusUpdateUrl;
+    public ?string $statusUpdateUrl = null;
 
     /**
      * The customer will be redirected back to your notifications.cancel_url in case the transaction is canceled
      *
      * @var string
      */
-    public $cancelUrl;
+    public ?string $cancelUrl = null;
 
     public function __construct($bnplType)
     {

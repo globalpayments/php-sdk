@@ -11,7 +11,7 @@ class MitcManageBuilder extends TerminalManageBuilder
      * 
      * @var TransactionType
      */
-    public $followOnTransactionType;
+    public mixed $followOnTransactionType = null;
 
     /**
      * 

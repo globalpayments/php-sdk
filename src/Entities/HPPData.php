@@ -13,110 +13,110 @@ class HPPData
      * Type of HPP request, default is HPPTypes::HOSTED_PAYMENT_PAGE
      * @var HPPTypes
      */
-    public $type = HPPTypes::HOSTED_PAYMENT_PAGE;
+    public string $type = HPPTypes::HOSTED_PAYMENT_PAGE;
 
     /**
      * Name of the hosted payment page, will be shown on realcontrol
      * @var string
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * Description of the payment, will also be shown on realcontrol
      * @var string
      */
-    public $description;
+    public ?string $description = null;
 
     /**
      * Reference for the payment
      * @var string
      */
-    public $reference;
+    public ?string $reference = null;
 
     /**
      * Expiration date of the payment page
      * @var string
      */
-    public $expirationDate;
+    public ?string $expirationDate = null;
 
     /**
      * Payer details, consiting of payer information/addresses/phone numbers, but also used for active payer
      * @var PayerDetails
      */
-    public $payer;
+    public ?PayerDetails $payer = null;
 
     /**
      * Order information including amount, currency,transaction configuration, currncy_conversion_mode and 
      * allowed payment methods
      * @var HPPOrder
      */
-    public $order;
+    public ?HPPOrder $order = null;
 
     /**
      * Callback notifications URLs
      * @var HPPNotifications
      */
-    public $notifications;
+    public ?HPPNotifications $notifications = null;
 
     /**
      * Add an Image hosted payment page - Not currently working
      * @var array
      */
-    public $images;
+    public ?array $images = null;
 
     /**
      * Indicates if the shipping is chargeable, if set to true, shipping_amount must be provided
      * @var bool
      */
-    public $shippable = "NO";
+    public string $shippable = "NO";
 
     /**
      * Additional shipping fee when shippable is set to YES
      * @var string|null String representation of shipping amount
      */
-    public $shippingAmount = null;
+    public ?string $shippingAmount = null;
     
     /**
      * Function of the hosted payment page
      * @var HPPFunctions enum value
      */
-    public $function;
+    public ?string $function = null;
     
     /**
      * Display configuration for iframe callbacks
-     * @var array Configuration array with iframe settings
+     * @var array|HPPDisplayConfiguration|string Configuration array with iframe settings or URL string
      */
-    public $HPPDisplayConfiguration;
+    public array|HPPDisplayConfiguration|string|null $HPPDisplayConfiguration = null;
     
     /**
      * Referrer URL for the hosted payment page
      * @var string URL of the refer page
      */
-    public $referrerUrl;
+    public ?string $referrerUrl = null;
     
     /**
      * IP address information for non HOSTED_PAYMENT_PAGE types
      * @var string IP address of the page hosting the third-party page
      */
-    public $ipAddress;
+    public ?string $ipAddress = null;
     
     /**
      * IP subnet mask information for non HOSTED_PAYMENT_PAGE types
      * @var string|null Optional IP subnet mask
      */
-    public $ipSubnetMask;
+    public ?string $ipSubnetMask = null;
     
     /**
      * Email where app credentials should be sent, not used in hosted payment pages
      * @var string|null Email address for app credentials
      */
-    public $appEmail;
+    public ?string $appEmail = null;
     
     /**
      * App IDs for credential exchange functionality, not used in hosted payment pages
      * @var array|null Array of app IDs for EXCHANGE_APP_CREDENTIALS type
      */
-    public $appIds;
+    public ?array $appIds = null;
 
     /**
      * Constructor for HPPData - ensures required properties are set
@@ -200,5 +200,14 @@ class HPPData
         }
 
         return $errors;
+    }
+
+    /**
+     * Check if the hosted payment page data is valid
+     * @return bool True if valid, false otherwise
+     */
+    public function isValid(): bool
+    {
+        return empty($this->validate());
     }
 }
