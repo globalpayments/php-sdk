@@ -25,6 +25,6 @@ if (!$validation_result) {
 }
 $gateway_data = json_decode($_POST['gateway_response'] ?? '{}', true);
 echo "<h3>Gateway Response Data:</h3>";
-echo "<pre>" . print_r($gateway_data, true) . "</pre>";
+echo "<pre>" . htmlspecialchars(print_r($gateway_data, true), ENT_QUOTES, 'UTF-8') . "</pre>";
 ?>
 

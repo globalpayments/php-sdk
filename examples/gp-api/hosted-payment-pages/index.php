@@ -31,7 +31,9 @@ use GlobalPayments\Api\Entities\Enums\HPPAllowedPaymentMethods;
 use GlobalPayments\Api\Builders\Enums\HPPDisplayConfiguration;
 
 //This Demo page URL
-$demo_page_url = "https://".$_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+$demo_page_url = 'https://'
+    . htmlspecialchars($_SERVER['HTTP_HOST'], ENT_QUOTES, 'UTF-8')
+    . htmlspecialchars($_SERVER['REQUEST_URI'], ENT_QUOTES, 'UTF-8');
 
 // Configuration for the GPApiConfig
 $config = new GpApiConfig();
@@ -142,10 +144,9 @@ try{
     // Generate The HPP URL
 	->execute();
 	echo "<h2>Hosted Payment Page Created</h2>";
-	echo '<a target="_blank" href="'.$first_example->payByLinkResponse->url.'">Click here to pay</a>';
-	// echo "<pre>" . print_r($first_example->payByLinkResponse, true) . "</pre>";
-
-	// echo "<h2>Loaded in Iframe</h2>";
+	echo '<a target="_blank" href="'
+	    . htmlspecialchars($first_example->payByLinkResponse->url, ENT_QUOTES, 'UTF-8')
+	    . '">Click here to pay</a>';
 
 	// echo '<iframe src="'.$first_example->payByLinkResponse->url.'" width="100%" height="600px"></iframe>';
 	// echo "<pre>" . print_r($first_example->payByLinkResponse, true) . "</pre>";
@@ -241,10 +242,9 @@ try {
         )
         // Build the second example HPP URL
 		->execute();
-	echo '<a target="_blank" href="'.$second_example->payByLinkResponse->url.'">Click here to pay (With Active Payer)</a>';
-	// echo "<pre>" . print_r($second_example->payByLinkResponse, true) . "</pre>";
-
-	// echo "<h2>Second Example Loaded in Iframe</h2>";
+	echo '<a target="_blank" href="'
+	    . htmlspecialchars($second_example->payByLinkResponse->url, ENT_QUOTES, 'UTF-8')
+	    . '">Click here to pay (With Active Payer)</a>';
 	// echo '<iframe src="'.$second_example->payByLinkResponse->url.'" width="100%" height="600px"></iframe>';
 	
 } catch (\Exception $e) {
@@ -417,7 +417,9 @@ try {
         ->execute();
         
     echo "<h2>Third Example - Using all HPP Methods</h2>";
-    echo '<a target="_blank" href="'.$third_example->payByLinkResponse->url.'">Click here to pay (HPP All Methods)</a>';
+    echo '<a target="_blank" href="'
+        . htmlspecialchars($third_example->payByLinkResponse->url, ENT_QUOTES, 'UTF-8')
+        . '">Click here to pay (HPP All Methods)</a>';
     // echo "<pre>" . print_r($third_example->payByLinkResponse, true) . "</pre>";
     
     // echo "<h2>Third example loaded in Iframe (with display configuration)</h2>";
