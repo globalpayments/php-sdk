@@ -20,6 +20,9 @@ class BaseGpApiTestConfig
     const MITC_UPA_APP_ID = 'aCgePu6PqA8sDdkjLYgmrHs89JAXvbvO';
     const MITC_UPA_APP_KEY = 'DY0ZeWiUCHACK7dz';
 
+    const EU_APP_ID = 'QlI6DivlPcXboV1AAG3NGtf340bJO6A34SqUa5REJojQMzat';
+    const EU_APP_KEY = 'G3Gdx6biXAXgJJFaMnuLo0hlBCCMH18rCXnPzySl37nwctMAmrV1EykuXi6GQCrh';
+
     public static string $appId = self::APP_ID;
     public static string $appKey = self::APP_KEY; #gitleaks:allow
 

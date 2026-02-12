@@ -2,7 +2,11 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version v14.1.1 (01/29/26)
+## Latest Version v14.1.2 (02/12/26)
+### Enhancements:
+- [GPAPI] Add EU Data Residency Support
+
+## v14.1.1 (01/29/26)
 ### Enhancements:
 - [HIGH] Fixed XSS vulnerability by sanitizing HTTP headers in hosted payment page
 
@@ -74,7 +78,7 @@
 - [GP-API] - Include merchant ID for recurring operations
 
 ## v13.3.3 (07/29/25)
-### Enhancements:
+###rsion  Enhancements:
 - Security enhancements for some terminal loggers
 - [UPA] - Correct reference mapping
 

@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace GlobalPayments\Api\ServiceConfigs\Gateways;
 
 use GlobalPayments\Api\ConfiguredServices;
-use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\GatewayProvider;
-use GlobalPayments\Api\Entities\Enums\Secure3dVersion;
-use GlobalPayments\Api\Entities\Enums\ServiceEndpoints;
+use GlobalPayments\Api\Entities\Enums\{
+    DataResidency,
+    Environment,
+    GatewayProvider,
+    Secure3dVersion,
+    ServiceEndpoints
+};
 use GlobalPayments\Api\Entities\Exceptions\ConfigurationException;
-use GlobalPayments\Api\Entities\GpApi\GpApiSessionInfo;
-use GlobalPayments\Api\Gateways\GpApiConnector;
-use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
-use GlobalPayments\Api\Gateways\IAccessTokenProvider;
+use GlobalPayments\Api\Entities\GpApi\{AccessTokenInfo, GpApiSessionInfo};
+use GlobalPayments\Api\Gateways\{GpApiConnector, IAccessTokenProvider};
 
 class GpApiConfig extends GatewayConfig
 {
@@ -35,6 +36,11 @@ class GpApiConfig extends GatewayConfig
      * @var string
     */
     public string $country = 'US';
+
+    /**
+     * @var string
+    */
+    public string $dataResidency = DataResidency::NONE;
 
     /**
      * @var string
@@ -104,8 +110,13 @@ class GpApiConfig extends GatewayConfig
     public function configureContainer(ConfiguredServices $services)
     {
         if (empty($this->serviceUrl)) {
-            $this->serviceUrl = ($this->environment == Environment::PRODUCTION) ?
-                ServiceEndpoints::GP_API_PRODUCTION : ServiceEndpoints::GP_API_TEST;
+            if ($this->dataResidency == DataResidency::EU) {
+                $this->serviceUrl = ($this->environment == Environment::PRODUCTION) ?
+                    ServiceEndpoints::GP_API_PRODUCTION_EU : ServiceEndpoints::GP_API_TEST_EU;
+            } else {
+                $this->serviceUrl = ($this->environment == Environment::PRODUCTION) ?
+                    ServiceEndpoints::GP_API_PRODUCTION : ServiceEndpoints::GP_API_TEST;
+            }
         }
         if (!isset($accessTokenProvider)) {
             $this->accessTokenProvider = new GpApiSessionInfo();
