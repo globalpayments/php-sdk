@@ -118,6 +118,14 @@ class HPPData
      */
     public ?array $appIds = null;
 
+
+    /**
+     * Installments configuration for filtering installments plans on hosted payment pages
+     * @var InstallmentsConfiguration|null Configuration for installment payments
+     */
+    public $installments;
+
+
     /**
      * Constructor for HPPData - ensures required properties are set
      * 
@@ -183,7 +191,7 @@ class HPPData
             }
         }
 
-        // Payer, order and notifications validation
+        // Payer, order, installments and notifications validation
         if ($this->payer) {
             $payerErrors = $this->payer->validate();
             $errors = array_merge($errors, $payerErrors);
@@ -197,6 +205,11 @@ class HPPData
         if ($this->notifications) {
             $notificationErrors = $this->notifications->validate();
             $errors = array_merge($errors, $notificationErrors);
+        }
+
+        if ($this->installments) {
+            $installmentsErrors = $this->installments->validate();
+            $errors = array_merge($errors, $installmentsErrors);
         }
 
         return $errors;

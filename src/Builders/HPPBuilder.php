@@ -14,7 +14,9 @@ use GlobalPayments\Api\Entities\{
     Address,
     HPPDisplayConfiguration,
     PhoneNumber,
-    Transaction
+    Transaction,
+    InstallmentsConfiguration,
+    InstallmentsTerms
 };
 use GlobalPayments\Api\Entities\Enums\{
     PayByLinkType,
@@ -25,7 +27,8 @@ use GlobalPayments\Api\Entities\Enums\{
     ExemptStatus,
     HPPTypes,
     HPPFunctions,
-    TransactionType
+    TransactionType,
+    InstallmentsFundingMode
 };
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use GlobalPayments\Api\Services\HPPService;
@@ -433,6 +436,48 @@ class HPPBuilder extends AuthorizationBuilder
             }
             $this->HPPData->shippingAmount = $shippingAmount;
         }
+        return $this;
+    }
+
+    /**
+     * Filter installments payment options shown on the external HPP page
+     * 
+     * @param InstallmentsFundingMode|string $fundingMode The installments funding mode
+     * @param string $maxTimeUnitNumber The maximum number of installment months
+     * @param string|null $maxAmount Optional maximum amount for installments plans shown
+     * @throws ArgumentException When validation fails
+     * @return HPPBuilder this
+     */
+    public function withInstallments(
+        InstallmentsFundingMode|string $fundingMode,
+        string $maxTimeUnitNumber,
+        ?string $maxAmount = null
+    ): self
+    {
+        // Validate funding mode
+        if (empty($fundingMode)) {
+            throw new ArgumentException('Installments funding mode is required');
+        }
+
+        //ANY will result in an API error
+        if("ANY" === $fundingMode){
+            $fundingMode = "";
+        }
+
+        // Validate max time unit number
+        if (!is_numeric($maxTimeUnitNumber) || (int)$maxTimeUnitNumber <= 0) {
+            throw new ArgumentException('Max time unit number must be a positive integer');
+        }
+
+        // Validate max amount if provided
+        if ($maxAmount !== null && (!is_numeric($maxAmount) || (int)$maxAmount <= 0)) {
+            throw new ArgumentException('Max amount must be a positive integer in minor units');
+        }
+
+        // Create installments configuration
+        $terms = new InstallmentsTerms($maxTimeUnitNumber, $maxAmount);
+        $this->HPPData->installments = new InstallmentsConfiguration($fundingMode, $terms);
+
         return $this;
     }
 

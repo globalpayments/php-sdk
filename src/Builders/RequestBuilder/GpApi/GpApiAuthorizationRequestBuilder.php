@@ -426,6 +426,26 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     if (!empty($builder->hostedPaymentData->appIds)) {
                         $requestData['app_ids'] = $builder->hostedPaymentData->appIds;
                     }
+                    // Installments filtering configuration
+                    if (!empty($builder->hostedPaymentData->installments)) {
+                        $installments = $builder->hostedPaymentData->installments;
+                        $requestData['installment'] = [
+                            'funding_mode' => $installments->fundingMode
+                        ];
+
+                        // Add terms if available
+                        if (!empty($installments->terms)) {
+                            $requestData['installment']['terms'] = [];
+
+                            if (!empty($installments->terms->maxTimeUnitNumber)) {
+                                $requestData['installment']['terms']['max_time_unit_number'] = $installments->terms->maxTimeUnitNumber;
+                            }
+
+                            if (!empty($installments->terms->maxAmount)) {
+                                $requestData['installment']['terms']['max_amount'] = $installments->terms->maxAmount;
+                            }
+                        }
+                    }
                 }
                 break;
             default:

@@ -262,7 +262,7 @@ class AuthorizationBuilder extends TransactionBuilder
      * @internal
      * @var HostedPaymentData
      */
-    public mixed $hostedPaymentData = null;
+    public ?HostedPaymentData $hostedPaymentData = null;
 
     /**
      * Request invoice number

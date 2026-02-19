@@ -2,7 +2,11 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version v14.1.2 (02/12/26)
+## Latest Version v14.1.3 (02/19/26)
+### Enhancements:
+- [GPAPI] Added filtering options for installments on the Hosted Payment Page
+
+## v14.1.2 (02/12/26)
 ### Enhancements:
 - [GPAPI] Add EU Data Residency Support
 
