@@ -263,7 +263,9 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
                 $request->queryParams
             );
 
-            return GpApiMapping::mapInstallmentResponse($response, $builder->entity);
+            // For FETCH operations, create a new Installment entity
+            $installment = $builder->entity ?? new Installment();
+            return GpApiMapping::mapInstallmentResponse($response, $installment);
         }
 
         return null;

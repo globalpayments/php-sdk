@@ -34,4 +34,6 @@ class ReportType extends Enum
     const FIND_ACCOUNT_DETAIL = 268435456; // 1 << 28
     const BATCH_DETAIL = 536870912; // 1 << 29
     const OPEN_AUTH = 1073741824; // 1 << 30
+    const FIND_INSTALLMENTS_PAGED = 2147483648; // 1 << 31
+    const INSTALLMENT_DETAIL = 4294967296; // 1 << 32
 }

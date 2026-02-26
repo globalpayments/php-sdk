@@ -2,7 +2,11 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version v14.1.3 (02/19/26)
+## Latest Version v14.1.4 (02/26/26)
+### Enhancements:
+- [GPAPI] Implement Visa Installments (BNPL) for GP-API
+
+## v14.1.3 (02/19/26)
 ### Enhancements:
 - [GPAPI] Added filtering options for installments on the Hosted Payment Page
 
@@ -82,7 +86,7 @@
 - [GP-API] - Include merchant ID for recurring operations
 
 ## v13.3.3 (07/29/25)
-###rsion  Enhancements:
+###  Enhancements:
 - Security enhancements for some terminal loggers
 - [UPA] - Correct reference mapping
 

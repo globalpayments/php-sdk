@@ -171,6 +171,12 @@ class HostedPaymentData
     public $appIds;
 
     /**
+     * Visa installments configuration
+     * @var InstallmentData
+     */
+    public $installments;
+
+    /**
      * Instantiates a new `HostedPaymentData` object.
      *
      * @return

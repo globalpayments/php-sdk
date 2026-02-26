@@ -377,6 +377,21 @@ class SearchCriteriaBuilder
     /**
      * @var string
      */
+    public $installmentId;
+
+    /**
+     * @var string
+     */
+    public $installmentStatus;
+
+    /**
+     * @var string
+     */
+    public $installmentProgram;
+
+    /**
+     * @var string
+     */
     public $storedPaymentMethodStatus;
     
     /**

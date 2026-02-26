@@ -11,12 +11,27 @@ class InstallmentService
 {
     /**
      * @param IInstallmentEntity $entity
+     * @param string $configName
      * @return Installment
      */
-    public static function create(IInstallmentEntity $entity): Installment
+    public static function create(IInstallmentEntity $entity, string $configName = 'default'): Installment
     {
         $response = (new InstallmentBuilder(TransactionType::CREATE, $entity))
-            ->execute();
+            ->execute($configName);
         return $response;
+    }
+
+    /**
+     * Get installment details by ID
+     * 
+     * @param string $installmentId
+     * @param string $configName
+     * @return Installment
+     */
+    public static function get(string $installmentId, string $configName = 'default'): Installment
+    {
+        $builder = new InstallmentBuilder(TransactionType::FETCH);
+        $builder->installmentId = $installmentId;
+        return $builder->execute($configName);
     }
 }

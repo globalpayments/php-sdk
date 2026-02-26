@@ -40,7 +40,7 @@ class ReportingService
         return (new TransactionReportBuilder(ReportType::ACTIVITY));
     }
 
-    public static function transactionDetail(?string $transactionId)
+    public static function transactionDetail(?string $transactionId): TransactionReportBuilder
     {
         return (new TransactionReportBuilder(ReportType::TRANSACTION_DETAIL))
             ->withTransactionId($transactionId);
@@ -165,5 +165,30 @@ class ReportingService
     {
         return (new UserReportBuilder(ReportType::FIND_ACCOUNT_DETAIL))
             ->withAccountId($accountId);
+    }
+
+    /**
+     * Find installments with paging
+     * 
+     * @param int $page
+     * @param int $pageSize
+     * @return TransactionReportBuilder
+     */
+    public static function findInstallmentsPaged(int $page, int $pageSize): TransactionReportBuilder
+    {
+        return (new TransactionReportBuilder(ReportType::FIND_INSTALLMENTS_PAGED))
+            ->withPaging($page, $pageSize);
+    }
+
+    /**
+     * Get installment details by ID
+     * 
+     * @param string $installmentId
+     * @return TransactionReportBuilder
+     */
+    public static function installmentDetail(string $installmentId): TransactionReportBuilder
+    {
+        return (new TransactionReportBuilder(ReportType::INSTALLMENT_DETAIL))
+            ->withInstallmentId($installmentId);
     }
 }

@@ -1572,31 +1572,63 @@ class GpApiMapping
      */
     public static function mapInstallmentResponse($response, Installment $installment): Installment
     {
-        $installment->id = $response->id;
-        $installment->timeCreated = $response->time_created;
-        $installment->type = $response->type;
-        $installment->status = $response->status;
-        $installment->channel = $response->channel;
-        $installment->amount = $response->amount;
-        $installment->currency = $response->currency;
-        $installment->country = $response->country;
-        $installment->merchantId = $response->merchant_id;
-        $installment->merchantName = $response->merchant_name;
-        $installment->accountId = $response->account_id;
-        $installment->reference = $response->reference;
-        $installment->program = $response->program;
+        $installment->id = $response->id ?? null;
+        $installment->timeCreated = $response->time_created ?? null;
+        $installment->type = $response->type ?? null;
+        $installment->status = $response->status ?? null;
+        $installment->channel = $response->channel ?? null;
+        $installment->amount = $response->amount ?? null;
+        $installment->currency = $response->currency ?? null;
+        $installment->country = $response->country ?? null;
+        $installment->merchantId = $response->merchant_id ?? null;
+        $installment->merchantName = $response->merchant_name ?? null;
+        $installment->accountId = $response->account_id ?? null;
+        $installment->reference = $response->reference ?? null;
+        $installment->program = $response->program ?? null;
         
-        $installment->result = $response->payment_method->result;
-        $installment->entryMode = $response->payment_method->entry_mode;
-        $installment->message = $response->payment_method->message;
+        // Visa installment specific fields
+        if (!empty($response->funding_mode)) {
+            $installment->funding_mode = $response->funding_mode;
+        }
+        if (!empty($response->eligible_plans)) {
+            $installment->eligible_plans = $response->eligible_plans;
+        }
+        
+        // Map terms array from response
+        if (!empty($response->terms)) {
+            $installment->terms = $response->terms;
+        }
+        
+        if (!empty($response->payment_method)) {
+            // Only set these if they exist in the response
+            if (isset($response->payment_method->result)) {
+                $installment->result = $response->payment_method->result;
+            }
+            if (isset($response->payment_method->entry_mode)) {
+                $installment->entryMode = $response->payment_method->entry_mode;
+            }
+            if (isset($response->payment_method->message)) {
+                $installment->message = $response->payment_method->message;
+            }
 
-        $cardData = $response->payment_method->card;
-        $card = new Card();
-        $card->brand = $cardData->brand;
-        $card->maskedNumberLast4 = $cardData->masked_number_last4;
-        $card->authCode = $cardData->authcode;
-        $card->brandReference = $cardData->brand_reference;
-        $installment->card = $card;
+            if (!empty($response->payment_method->card)) {
+                $cardData = $response->payment_method->card;
+                $card = new Card();
+                if (isset($cardData->brand)) {
+                    $card->brand = $cardData->brand;
+                }
+                if (isset($cardData->masked_number_last4)) {
+                    $card->maskedNumberLast4 = $cardData->masked_number_last4;
+                }
+                if (isset($cardData->authcode)) {
+                    $card->authCode = $cardData->authcode;
+                }
+                if (isset($cardData->brand_reference)) {
+                    $card->brandReference = $cardData->brand_reference;
+                }
+                $installment->card = $card;
+            }
+        }
      
         if (!empty($response->action)) {
             $action = new Action();
@@ -1610,11 +1642,26 @@ class GpApiMapping
         }
 
         if (!empty($response->terms)) {
-            $terms = new Terms();
-            $terms->id = $response->Id;
-            $terms->timeUnit = $response->time_unit;
-            $terms->timeUnitNumbers = $response->time_unit_numbers;
-            $installment->terms = $terms;
+            // For installment query responses, terms is an array of plan objects
+            // For other responses, terms is a single Terms object
+            if (is_array($response->terms)) {
+                // Keep as array for installment query results
+                $installment->terms = $response->terms;
+            } else {
+                // Map as Terms entity for other cases
+                $terms = new Terms();
+                // Map both old and new field names for compatibility
+                $terms->id = $response->terms->id ?? $response->Id ?? null;
+                $terms->timeUnit = $response->terms->time_unit ?? $response->time_unit ?? null;
+                $terms->timeUnitNumbers = $response->terms->time_unit_numbers ?? $response->time_unit_numbers ?? null;
+                
+                // Visa installment specific term fields
+                $terms->time_unit = $response->terms->time_unit ?? null;
+                $terms->max_time_unit_number = $response->terms->max_time_unit_number ?? null;
+                $terms->max_amount = $response->terms->max_amount ?? null;
+                
+                $installment->terms = $terms;
+            }
         }
         return $installment;
     }

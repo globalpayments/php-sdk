@@ -185,6 +185,25 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $endpoint = GpApiRequest::PAYMENT_METHODS_ENDPOINT . '/' . $builder->searchBuilder->storedPaymentMethodId;
                 $verb = 'GET';
                 break;
+            case ReportType::INSTALLMENT_DETAIL:
+                $endpoint = GpApiRequest::INSTALLMENT_ENDPOINT . '/' . $builder->searchBuilder->installmentId;
+                $verb = 'GET';
+                break;
+            case ReportType::FIND_INSTALLMENTS_PAGED:
+                $endpoint = GpApiRequest::INSTALLMENT_ENDPOINT;
+                $verb = 'GET';
+                $this->addBasicParams($queryParams, $builder);
+                $queryParams['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
+                $queryParams['account_id'] = $config->accessTokenInfo->transactionProcessingAccountID;
+                $queryParams['from_time_created'] = !empty($builder->searchBuilder->startDate) ?
+                    $builder->searchBuilder->startDate->format('Y-m-d') : null;
+                $queryParams['to_time_created'] = !empty($builder->searchBuilder->endDate) ?
+                    $builder->searchBuilder->endDate->format('Y-m-d') : null;
+                $queryParams['id'] = $builder->searchBuilder->installmentId;
+                $queryParams['status'] = $builder->searchBuilder->installmentStatus;
+                $queryParams['program'] = $builder->searchBuilder->installmentProgram;
+                $queryParams['reference'] = $builder->searchBuilder->referenceNumber;
+                break;
             case ReportType::ACTION_DETAIL:
                 $endpoint = GpApiRequest::ACTIONS_ENDPOINT . '/' . $builder->searchBuilder->actionId;
                 $verb = 'GET';

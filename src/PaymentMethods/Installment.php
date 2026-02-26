@@ -77,8 +77,20 @@ class Installment implements IInstallmentEntity
      */
     public ?string $program = null;
 
+    /**
+     * Visa installment funding mode (e.g., 'MERCHANT', 'ISSUER')
+     * @var string
+     */
+    public ?string $funding_mode = null;
+
     /** @var Terms */
     public mixed $terms = null;
+
+    /**
+     * Eligible plans for Visa installments (can be string in request or array in response)
+     * @var string|array|null
+     */
+    public string|array|null $eligible_plans = null;
 
     /**
      * @var string

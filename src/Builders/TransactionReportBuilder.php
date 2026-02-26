@@ -261,6 +261,18 @@ class TransactionReportBuilder extends ReportBuilder
     }
 
     /**
+     * Sets the gateway installment id as criteria for the report.
+     *
+     * @param string $installmentId
+     * @return self
+     */
+    public function withInstallmentId(string $installmentId): self
+    {
+        $this->searchBuilder->installmentId = $installmentId;
+        return $this;
+    }
+
+    /**
      * Sets the gateway stored action id as criteria for the report.
      *
      * @param string $actionId
