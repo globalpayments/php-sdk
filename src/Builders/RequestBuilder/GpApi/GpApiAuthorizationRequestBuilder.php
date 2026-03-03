@@ -444,8 +444,11 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                         }
                     }
                     
-                    // Installments filtering configuration
-                    if (!empty($builder->hostedPaymentData->installments)) {
+                    // Installments filtering configuration (HPP installments filtering feature)
+                    if (
+                        !empty($builder->hostedPaymentData->installments) &&
+                        $builder->hostedPaymentData->installments instanceof \GlobalPayments\Api\Entities\InstallmentsConfiguration
+                    ) {
                         $installments = $builder->hostedPaymentData->installments;
                         $requestData['installment'] = [
                             'funding_mode' => $installments->fundingMode
@@ -563,6 +566,9 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             $installmentData = [];
             
             // Basic installment fields
+            if (!empty($builder->installment->id)) {
+                $installmentData['id'] = $builder->installment->id;
+            }
             if (!empty($builder->installment->reference)) {
                 $installmentData['reference'] = $builder->installment->reference;
             }

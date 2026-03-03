@@ -4,6 +4,12 @@ namespace GlobalPayments\Api\Entities;
 class InstallmentData
 {
     /**
+     * Installment ID (from installment query)
+     * @var string
+     */
+    public $id;
+
+    /**
      * @var string
      */
     public $program;
