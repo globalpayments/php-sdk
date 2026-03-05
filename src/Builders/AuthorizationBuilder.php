@@ -260,9 +260,9 @@ class AuthorizationBuilder extends TransactionBuilder
      * Request hosted payment data
      *
      * @internal
-     * @var HostedPaymentData
+     * @var HostedPaymentData|HPPData
      */
-    public ?HostedPaymentData $hostedPaymentData = null;
+    public HostedPaymentData|HPPData|null $hostedPaymentData = null;
 
     /**
      * Request invoice number
@@ -1310,7 +1310,7 @@ class AuthorizationBuilder extends TransactionBuilder
     /**
      * Set the hostedPaymentData
      *
-     * @param string $hostedPaymentData
+     * @param HostedPaymentData|HPPData $hostedPaymentData
      *
      * @return AuthorizationBuilder
      */
