@@ -2,7 +2,11 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version v14.1.6 (03/05/26)
+## Latest Version v14.1.7 (03/12/26)
+### Enhancements:
+- [GPAPI] Added Missing Parameters for Visa Installments and HPP Links
+
+## v14.1.6 (03/05/26)
 ### Enhancements:
 - [HIGH] Fixed hosted payment data union type
 

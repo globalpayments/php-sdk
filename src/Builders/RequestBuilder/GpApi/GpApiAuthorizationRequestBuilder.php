@@ -773,9 +773,14 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $paymentMethodContainer = $builder->paymentMethod;
         $paymentMethod = new PaymentMethod();
         $paymentMethod->entry_mode = $this->getEntryMode($builder, $config->channel);
+        $paymentMethod->usage_mode = $builder->paymentMethodUsageMode ?? null;
         $paymentMethod->name = $paymentMethodContainer instanceof AlternativePaymentMethod ?
             $paymentMethodContainer->accountHolderName : (!empty($paymentMethodContainer->cardHolderName) ?
                 $paymentMethodContainer->cardHolderName : null);
+        if (!empty($builder->customerData)) {
+            $paymentMethod->first_name = $builder->customerData->firstName ?? null;
+            $paymentMethod->last_name = $builder->customerData->lastName ?? null;
+        }
         $paymentMethod->narrative = !empty($builder->dynamicDescriptor) ? $builder->dynamicDescriptor : null;
         if ($paymentMethodContainer instanceof IEncryptable && !empty($paymentMethodContainer->encryptionData)) {
             /** @var EncryptionData $encryptionData */
@@ -916,6 +921,9 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
 
             if (is_null($paymentMethod->id)) {
                 $paymentMethod->card = CardUtils::generateCard($builder, GatewayProvider::GP_API, $this->maskedValues);
+                if ($paymentMethodContainer instanceof ICardData && !empty($paymentMethodContainer->number)) {
+                    $paymentMethod->card->brand = strtoupper((string)$paymentMethodContainer->getCardType());
+                }
             }
         } else {
             /* digital wallet */
@@ -965,7 +973,8 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             }
             $paymentMethod->card->brand_reference = $builder->cardBrandTransactionId;
         }
-        $paymentMethod->storage_mode = $builder->requestMultiUseToken == true ? 'ON_SUCCESS' : null;
+        $paymentMethod->storage_mode = $builder->paymentMethodStorageMode
+            ?? ($builder->requestMultiUseToken == true ? 'ON_SUCCESS' : null);
 
         return $paymentMethod;
     }

@@ -93,6 +93,12 @@ class Installment implements IInstallmentEntity
     public string|array|null $eligible_plans = null;
 
     /**
+     * Payment method usage mode for installment query requests
+     * @var string
+     */
+    public ?string $usage_mode = null;
+
+    /**
      * @var string
      */
     public ?string $result = null;

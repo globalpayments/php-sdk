@@ -25,6 +25,7 @@ class ServiceEndpoints extends Enum
     const PROPAY_PRODUCTION = "https://epay.propay.com/API/PropayAPI.aspx";
     const PROPAY_PRODUCTION_CANADIAN = "https://www.propaycanada.ca/API/PropayAPI.aspx";
     const GP_API_TEST = "https://apis.sandbox.globalpay.com/ucp";
+    const GP_API_TEST_BOIPA = "https://apis.sandbox.boipagateway.com/ucp";
     const GP_API_PRODUCTION = "https://apis.globalpay.com/ucp";
     const GP_API_TEST_EU = "https://apis.sandbox.eu.globalpay.com/ucp";
     const GP_API_PRODUCTION_EU = "https://apis.eu.globalpay.com/ucp";

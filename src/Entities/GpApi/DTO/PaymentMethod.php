@@ -8,6 +8,9 @@ class PaymentMethod
 {
     public $id;
     public $entry_mode;
+    public $first_name;
+    public $last_name;
+    public $usage_mode;
     /** @var $authentication Authentication */
     public $authentication;
     public $encryption;

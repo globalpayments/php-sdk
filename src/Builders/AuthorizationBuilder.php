@@ -514,6 +514,9 @@ class AuthorizationBuilder extends TransactionBuilder
     /** @var PaymentMethodUsageMode $paymentMethodUsageMode */
     public mixed $paymentMethodUsageMode = null;
 
+    /** @var string */
+    public ?string $paymentMethodStorageMode = null;
+
     /** @var PhoneNumber */
     public ?PhoneNumber $homePhone = null;
 
@@ -1517,6 +1520,20 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withPaymentMethodUsageMode(PaymentMethodUsageMode|string $value): self
     {
         $this->paymentMethodUsageMode = $value;
+
+        return $this;
+    }
+
+    /**
+     * Set the payment_method.storage_mode value for transaction requests
+     *
+     * @param string $value
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withPaymentMethodStorageMode(string $value): self
+    {
+        $this->paymentMethodStorageMode = $value;
 
         return $this;
     }

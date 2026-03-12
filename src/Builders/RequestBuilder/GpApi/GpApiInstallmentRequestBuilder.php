@@ -103,12 +103,19 @@ class GpApiInstallmentRequestBuilder implements IRequestBuilder
 
         $paymentMethod = new PaymentMethod();
         $paymentMethod->entry_mode = $installment->entity->entryMode;
+        $paymentMethod->usage_mode = $installment->entity->usage_mode ?? 'USE_CARD_NUMBER';
+
+        $cardBrand = null;
+        if (!empty($cardData?->number)) {
+            $cardBrand = strtoupper((string)$cardData->getCardType());
+        }
 
         $expMonth = $cardData->expMonth ?? '';
         $expYear = !empty($cardData->expYear) ?
             substr(str_pad($cardData->expYear, 4, '0', STR_PAD_LEFT), 2, 2) : '';
 
         $paymentMethod->card = (object) [
+                'brand' => $cardBrand,
                 'number' => $cardData->number ?? '',
                 'expiry_month' => $expMonth,
                 'expiry_year' => $expYear

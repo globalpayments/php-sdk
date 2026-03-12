@@ -6,6 +6,7 @@ namespace GlobalPayments\Api\Entities\GpApi\DTO;
 
 class Card
 {
+    public $brand;
     public $number;
     public $expiry_month;
     public $expiry_year;

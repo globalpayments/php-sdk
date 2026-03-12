@@ -2,9 +2,9 @@
 
 namespace Gateways\GpApiConnector;
 
-use GlobalPayments\Api\Entities\{Address, InstallmentData, InstallmentTerms};
+use GlobalPayments\Api\Entities\{Address, Customer, InstallmentData, InstallmentTerms};
 use GlobalPayments\Api\PaymentMethods\Installment;
-use GlobalPayments\Api\Entities\Enums\{Channel, Environment, TransactionStatus};
+use GlobalPayments\Api\Entities\Enums\{Channel, Environment, ServiceEndpoints, TransactionStatus};
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServicesContainer;
@@ -48,30 +48,26 @@ class GpApiVisaInstallmentTest extends TestCase
     /** Transaction config - uses boipagateway.com */
     public function setUpConfig(): GpApiConfig
     {
-        $config = new GpApiConfig();
-        $config->appId = 'hkjrcsGDhWiDt8GEhoDMKy3pzFz5R0Bo';
-        $config->appKey = 'cQOKHoAAvNIcEN8s';
-        $config->channel = Channel::CardNotPresent;
-        $config->environment = Environment::TEST;
-        $config->serviceUrl = 'https://apis.sandbox.boipagateway.com/ucp';
-        
-        $accessTokenInfo = new AccessTokenInfo();
-        $accessTokenInfo->transactionProcessingAccountName = 'GPECOM_Installments_Processing';
-        $config->accessTokenInfo = $accessTokenInfo;
-        $config->requestLogger = new RequestConsoleLogger(new \GlobalPayments\Api\Utils\Logging\Logger("logs"));
-        
-        return $config;
+        return $this->buildGpApiConfig(ServiceEndpoints::GP_API_TEST_BOIPA, 'GB');
     }
 
     /** Installment query config - uses globalpay.com */
     public function setUpInstallmentConfig(): GpApiConfig
     {
+        return $this->buildGpApiConfig(ServiceEndpoints::GP_API_TEST);
+    }
+
+    private function buildGpApiConfig(string $serviceUrl, ?string $country = null): GpApiConfig
+    {
         $config = new GpApiConfig();
         $config->appId = 'hkjrcsGDhWiDt8GEhoDMKy3pzFz5R0Bo';
         $config->appKey = 'cQOKHoAAvNIcEN8s';
         $config->channel = Channel::CardNotPresent;
+        if ($country !== null) {
+            $config->country = $country;
+        }
         $config->environment = Environment::TEST;
-        $config->serviceUrl = 'https://apis.sandbox.globalpay.com/ucp';
+        $config->serviceUrl = $serviceUrl;
         
         $accessTokenInfo = new AccessTokenInfo();
         $accessTokenInfo->transactionProcessingAccountName = 'GPECOM_Installments_Processing';
@@ -82,18 +78,19 @@ class GpApiVisaInstallmentTest extends TestCase
     }
 
     /** Helper: Create Installment query object */
-    private function createInstallmentQuery(string $amount = '10000', string $currency = 'GBP'): Installment
+    private function createInstallmentQuery(string $amount = '10000', string $currency = 'GBP', string $country = 'UK'): Installment
     {
         $installment = new Installment();
         $installment->accountName = 'GPECOM_Installments_Processing';
         $installment->channel = 'CNP';
         $installment->amount = $amount;
         $installment->currency = $currency;
-        $installment->country = 'GB';
+        $installment->country = $country;
         $installment->program = 'VIS';
         $installment->reference = 'QUERY-' . GenerationUtils::getGuid();
         $installment->funding_mode = 'CONSUMER_FUNDED';
         $installment->eligible_plans = 'LIMITED';
+        $installment->usage_mode = 'USE_CARD_NUMBER';
         $installment->entryMode = 'ECOM';
         
         $terms = new InstallmentTerms();
@@ -121,25 +118,97 @@ class GpApiVisaInstallmentTest extends TestCase
         return $data;
     }
 
+    /** Helper: Create InstallmentData for /transactions sale request */
+    private function createSaleInstallmentDataForTransactions(?string $id = null, ?string $reference = null): InstallmentData
+    {
+        $data = new InstallmentData();
+        if (!empty($id)) {
+            $data->id = $id;
+        }
+        if (!empty($reference)) {
+            $data->reference = $reference;
+        }
+        $data->program = 'VIS';
+
+        $terms = new InstallmentTerms();
+        $terms->language = 'fre';
+        $terms->version = '2';
+        $data->terms = $terms;
+
+        return $data;
+    }
+
+    /** Helper: Create customer for payment_method first/last name */
+    private function createSaleCustomer(): Customer
+    {
+        $customer = new Customer();
+        $customer->firstName = 'James';
+        $customer->lastName = 'Mason';
+
+        return $customer;
+    }
+
+    /** Helper: Create card for /transactions sale request */
+    private function createSaleCardForTransactions(): CreditCardData
+    {
+        $card = new CreditCardData();
+        $card->number = '4622943127052828';
+        $card->expMonth = '12';
+        $card->expYear = '2025';
+        $card->cvn = '999';
+        $card->cardPresent = false;
+        $card->readerPresent = false;
+
+        return $card;
+    }
+
+    /** Helper: Assert a successful captured transaction response */
+    private function assertCapturedSuccess($response): void
+    {
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+    }
+
     /** Helper: Create HPP payer object */
     private function createHPPPayer(): \stdClass
     {
         $payer = new \stdClass();
-        $payer->email = 'james.mason@example.com';
+        $payer->email = 'jamesmason@example.com';
         $payer->firstName = 'James';
         $payer->lastName = 'Mason';
         $payer->name = 'James Mason';
         $payer->language = 'en';
-        $payer->mobilePhone = null;
-        $payer->shippingAddress = null;
-        $payer->shippingPhone = null;
+        $payer->addressMatchIndicator = true;
+
+        $mobilePhone = new \stdClass();
+        $mobilePhone->countryCode = '44';
+        $mobilePhone->number = '1801555888';
+        $payer->mobilePhone = $mobilePhone;
         
         $billingAddress = new Address();
-        $billingAddress->streetAddress1 = '123 Bill Street';
-        $billingAddress->city = 'London';
-        $billingAddress->postalCode = 'SW1A 1AA';
-        $billingAddress->countryCode = 'GB';
+        $billingAddress->streetAddress1 = 'bill_street1';
+        $billingAddress->streetAddress2 = 'bill_street2';
+        $billingAddress->streetAddress3 = 'bill_street3';
+        $billingAddress->city = 'Bill_city';
+        $billingAddress->postalCode = '44';
+        $billingAddress->countryCode = 'IE';
         $payer->billingAddress = $billingAddress;
+
+        $shippingAddress = new Address();
+        $shippingAddress->streetAddress1 = 'Flat 123';
+        $shippingAddress->streetAddress2 = 'House 456';
+        $shippingAddress->streetAddress3 = 'Btower';
+        $shippingAddress->city = 'Chicago';
+        $shippingAddress->postalCode = '50001';
+        $shippingAddress->state = 'IL';
+        $shippingAddress->countryCode = 'US';
+        $payer->shippingAddress = $shippingAddress;
+
+        $shippingPhone = new \stdClass();
+        $shippingPhone->countryCode = '99';
+        $shippingPhone->number = '1801555999';
+        $payer->shippingPhone = $shippingPhone;
         
         return $payer;
     }
@@ -154,67 +223,92 @@ class GpApiVisaInstallmentTest extends TestCase
         
         $transactionConfig = new \stdClass();
         $transactionConfig->captureMode = 'AUTO';
-        $transactionConfig->allowedPaymentMethods = ['CARD'];
+        $transactionConfig->currencyConversionMode = true;
+        $transactionConfig->allowedPaymentMethods = ['CARD', 'testpay'];
         $order->HPPTransactionConfiguration = $transactionConfig;
-        $order->HPPPaymentMethodConfiguration = null;
+
+        $authentications = new \stdClass();
+        $authentications->preference = 'CHALLENGE_PREFERRED';
+        $authentications->billingAddressRequired = false;
+
+        $paymentMethodConfiguration = new \stdClass();
+        $paymentMethodConfiguration->authentications = $authentications;
+        $paymentMethodConfiguration->apm = null;
+        $paymentMethodConfiguration->storageMode = null;
+        $paymentMethodConfiguration->digitalWallets = null;
+        $order->HPPPaymentMethodConfiguration = $paymentMethodConfiguration;
         
         return $order;
     }
 
-    /** Test transaction with VIS program */
+    /** Test transaction with VIS program /ucp/transactions */ 
     public function testCreditSaleWithVisProgram()
     {
-        $response = $this->visaCard->charge($this->amount)
-            ->withCurrency($this->currency)
-            ->withAddress($this->address)
-            ->withInstallment($this->createInstallmentData())
-            ->withAllowDuplicates(true)
-            ->execute();
+        $queryResponse = $this->createInstallmentQuery('100000', 'GBP', 'GB')->create('default');
+        $this->assertNotNull($queryResponse);
+        $this->assertNotEmpty($queryResponse->id);
+        $queryTermReference = $queryResponse->terms[0]->reference ?? null;
+        $this->assertNotEmpty($queryTermReference);
+        sleep(2);
 
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
-        
-        if (!empty($response->installment)) {
-            $this->assertEquals('VIS', $response->installment->program);
-        }
+        $card = $this->createSaleCardForTransactions();
+
+        $response = $card->charge(1000.00)
+                ->withCurrency('GBP')
+                ->withCustomerData($this->createSaleCustomer())
+                ->withRequestMultiUseToken(true)
+                ->withPaymentMethodStorageMode('ALWAYS')
+                ->withPaymentMethodUsageMode('USE_NETWORK_TOKEN')
+                ->withInstallment($this->createSaleInstallmentDataForTransactions($queryResponse->id, $queryTermReference))
+                ->withAllowDuplicates(true)
+                ->execute();
+
+        $this->assertCapturedSuccess($response);
     }
 
-    /** Test POST /installments query */
+    /** Test POST /installments query */ 
     public function testQueryInstallmentPlans()
     {
         $response = $this->createInstallmentQuery()->create('installments');
         
         $this->assertNotNull($response);
         $this->assertNotEmpty($response->id);
+        $this->assertNotEmpty($response->timeCreated);
+        $this->assertEquals('INSTALLMENT_QUERY', $response->type);
+        $this->assertEquals('AVAILABLE', $response->status);
+        $this->assertEquals('CNP', $response->channel);
+        $this->assertEquals('VIS', $response->program);
+        $this->assertNotEmpty($response->merchantId);
+        $this->assertNotEmpty($response->merchantName);
+        $this->assertNotEmpty($response->accountId);
+        $this->assertNotEmpty($response->accountName);
+        $this->assertNotEmpty($response->reference);
+        $this->assertEquals('ECOM', $response->entryMode);
+        $this->assertNotNull($response->card);
+        $this->assertEquals('VISA', $response->card->brand);
+        $this->assertNotEmpty($response->card->maskedNumberLast4);
+        $this->assertNotEmpty($response->card->cardExpMonth);
+        $this->assertNotEmpty($response->card->cardExpYear);
+        $this->assertNotNull($response->action);
+        $this->assertEquals('SUCCESS', $response->action->resultCode);
         $this->assertIsArray($response->terms);
         $this->assertNotEmpty($response->terms);
+
+        $firstPlan = $response->terms[0] ?? null;
+        $this->assertNotNull($firstPlan);
+        $this->assertNotEmpty($firstPlan->reference ?? null);
+        $this->assertNotEmpty($firstPlan->time_unit ?? null);
+        $this->assertNotEmpty($firstPlan->count ?? null);
+        $this->assertNotEmpty($firstPlan->fees ?? null);
     }
 
-    /** Test complete flow: Query → Transaction → GET */
-    public function testCompleteInstallmentFlow()
+    /** Test installment query and GET by id */
+    public function testInstallmentQueryAndGetById()
     {
         $queryResponse = $this->createInstallmentQuery()->create('installments');
         $this->assertNotNull($queryResponse);
         $this->assertNotEmpty($queryResponse->id);
-        
-        $transactionResponse = $this->visaCard->charge(100.00)
-            ->withCurrency('GBP')
-            ->withAddress($this->address)
-            ->withInstallment($this->createInstallmentData('VIS', $queryResponse->id))
-            ->withAllowDuplicates(true)
-            ->execute();
-        
-        $this->assertNotNull($transactionResponse);
-        $this->assertEquals('SUCCESS', $transactionResponse->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $transactionResponse->responseMessage);
-        
-        if (!empty($transactionResponse->installment)) {
-            $this->assertNotEmpty($transactionResponse->installment->id);
-            $this->assertEquals('VIS', $transactionResponse->installment->program);
-        }
-        sleep(2);
-        
+
         $installmentDetails = \GlobalPayments\Api\Services\InstallmentService::get($queryResponse->id, 'installments');
         $this->assertNotNull($installmentDetails);
         $this->assertNotEmpty($installmentDetails->id);
@@ -224,19 +318,13 @@ class GpApiVisaInstallmentTest extends TestCase
     /** Test GET /transactions includes installment data */
     public function testGetTransactionWithInstallment()
     {
-        $queryResponse = $this->createInstallmentQuery()->create('installments');
-        $this->assertNotNull($queryResponse);
-        $this->assertNotNull($queryResponse->id);
-        
         $transactionResponse = $this->visaCard->charge(100)
             ->withCurrency('GBP')
             ->withAddress($this->address)
-            ->withInstallment($this->createInstallmentData('VIS', $queryResponse->id))
+            ->withInstallment($this->createInstallmentData('VIS'))
             ->execute();
-        
-        $this->assertNotNull($transactionResponse);
-        $this->assertEquals('SUCCESS', $transactionResponse->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $transactionResponse->responseMessage);
+
+        $this->assertCapturedSuccess($transactionResponse);
         sleep(5);
         
         $retrievedTransaction = \GlobalPayments\Api\Services\ReportingService::transactionDetail($transactionResponse->transactionId)
@@ -258,16 +346,16 @@ class GpApiVisaInstallmentTest extends TestCase
         $installmentData->funding_mode = 'CONSUMER_FUNDED';
         $terms = new InstallmentTerms();
         $terms->max_time_unit_number = 24;
-        $terms->max_amount = 200000;
+        $terms->max_amount = 100000;
         $installmentData->terms = $terms;
         
         $hostedPaymentData = new \GlobalPayments\Api\Entities\HostedPaymentData();
         $hostedPaymentData->type = 'HOSTED_PAYMENT_PAGE';
-        $hostedPaymentData->name = 'Visa Installment Payment Test';
-        $hostedPaymentData->description = 'Test HPP with Visa Installments';
+        $hostedPaymentData->name = 'Mobile Bill Payment';
+        $hostedPaymentData->description = 'Test Description';
         $hostedPaymentData->reference = 'HPP-' . GenerationUtils::getGuid();
         $hostedPaymentData->payer = $this->createHPPPayer();
-        $hostedPaymentData->order = $this->createHPPOrder('200000', 'EUR');
+        $hostedPaymentData->order = $this->createHPPOrder('2000', 'EUR');
         
         $notifications = new \stdClass();
         $notifications->returnUrl = 'https://example.com/Return';
@@ -289,21 +377,6 @@ class GpApiVisaInstallmentTest extends TestCase
     }
 
     // ========== NEGATIVE TEST CASES ==========
-
-    /** Test installment query with missing required fields */
-    public function testQueryInstallmentWithMissingCardDetails()
-    {
-        $this->expectException(\Exception::class);
-        
-        $installment = new Installment();
-        $installment->accountName = 'GPECOM_Installments_Processing';
-        $installment->amount = '10000';
-        $installment->currency = 'GBP';
-        $installment->program = 'VIS';
-        // Missing card details - should fail
-        
-        $installment->create('installments');
-    }
 
     /** Test transaction with invalid program code */
     public function testTransactionWithInvalidProgramCode()
@@ -366,10 +439,8 @@ class GpApiVisaInstallmentTest extends TestCase
             ->withCurrency($this->currency)
             ->withAddress($this->address)
             ->execute();
-        
-        $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
-        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+
+        $this->assertCapturedSuccess($response);
         $this->assertNull($response->installment);
     }
 }

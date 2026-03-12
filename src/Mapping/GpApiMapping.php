@@ -1583,6 +1583,7 @@ class GpApiMapping
         $installment->merchantId = $response->merchant_id ?? null;
         $installment->merchantName = $response->merchant_name ?? null;
         $installment->accountId = $response->account_id ?? null;
+        $installment->accountName = $response->account_name ?? null;
         $installment->reference = $response->reference ?? null;
         $installment->program = $response->program ?? null;
         
@@ -1607,6 +1608,9 @@ class GpApiMapping
             if (isset($response->payment_method->entry_mode)) {
                 $installment->entryMode = $response->payment_method->entry_mode;
             }
+            if (isset($response->payment_method->usage_mode)) {
+                $installment->usage_mode = $response->payment_method->usage_mode;
+            }
             if (isset($response->payment_method->message)) {
                 $installment->message = $response->payment_method->message;
             }
@@ -1619,6 +1623,12 @@ class GpApiMapping
                 }
                 if (isset($cardData->masked_number_last4)) {
                     $card->maskedNumberLast4 = $cardData->masked_number_last4;
+                }
+                if (isset($cardData->expiry_month)) {
+                    $card->cardExpMonth = $cardData->expiry_month;
+                }
+                if (isset($cardData->expiry_year)) {
+                    $card->cardExpYear = $cardData->expiry_year;
                 }
                 if (isset($cardData->authcode)) {
                     $card->authCode = $cardData->authcode;
