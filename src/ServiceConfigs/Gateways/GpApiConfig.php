@@ -105,6 +105,7 @@ class GpApiConfig extends GatewayConfig
     public function __construct()
     {
         $this->gatewayProvider = GatewayProvider::GP_API;
+        $this->accessTokenProvider = new \GlobalPayments\Api\Entities\GpApi\GpApiSessionInfo();
     }
 
     public function configureContainer(ConfiguredServices $services)

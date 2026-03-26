@@ -2,7 +2,11 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version v14.1.7 (03/12/26)
+## Latest Version v14.1.8 (03/26/26)
+### Enhancements:
+- [GPAPI] Added GET payers support
+
+### v14.1.7: (03/12/26)
 ### Enhancements:
 - [GPAPI] Added Missing Parameters for Visa Installments and HPP Links
 

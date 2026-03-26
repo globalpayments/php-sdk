@@ -310,4 +310,49 @@ class PayerTest extends TestCase
             $this->assertContains($method->id, $tokens);
         }
     }
+
+    public function testGetPayersList_GpApi()
+    {
+        /** @var \GlobalPayments\Api\Gateways\GpApiConnector $connector */
+        $connector = ServicesContainer::instance()->getClient('default');
+
+        $result = $connector->getPayersList();
+
+        $this->assertIsObject($result);
+        $this->assertObjectHasProperty('payers', $result);
+    }
+
+    public function testGetPayerById_InvalidId_GpApi()
+    {
+        /** @var \GlobalPayments\Api\Gateways\GpApiConnector $connector */
+        $connector = ServicesContainer::instance()->getClient('default');
+
+        $this->expectException(GatewayException::class);
+
+        $payerId = 'PYR_invalid_id_for_test';
+        $connector->getPayerById($payerId);
+    }
+
+    public function testGetPayersList_WithInvalidDateFormat_GpApi()
+    {
+        /** @var \GlobalPayments\Api\Gateways\GpApiConnector $connector */
+        $connector = ServicesContainer::instance()->getClient('default');
+
+        $this->expectException(GatewayException::class);
+
+        $connector->getPayersList([
+            'from_time_created' => 'invalid-date',
+            'to_time_created'   => 'invalid-date',
+        ]);
+    }
+
+    public function testGetPayerById_WithEmptyId_GpApi()
+    {
+        /** @var \GlobalPayments\Api\Gateways\GpApiConnector $connector */
+        $connector = ServicesContainer::instance()->getClient('default');
+
+        $this->expectException(GatewayException::class);
+
+        $connector->getPayerById('');
+    }
 }
