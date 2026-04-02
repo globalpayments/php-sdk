@@ -325,10 +325,9 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                         if ($order->HPPPaymentMethodConfiguration) {
                             $paymentMethodConfig = $order->HPPPaymentMethodConfiguration;
                             $requestData['order']['payment_method_configuration'] = [];
-                            // Authentications
                             if ($paymentMethodConfig->authentications) {
                                 $auth = $paymentMethodConfig->authentications;
-                                $requestData['order']['payment_method_configuration']['authentications'] = [
+                                $requestData['order']['payment_method_configuration']['authentication'] = [
                                     'preference' => $auth->preference ?? "CHALLENGE_PREFERRED",
                                     'exempt_status' => $auth->exemptStatus ?? "LOW_VALUE",
                                     'billing_address_required' => is_bool($auth->billingAddressRequired) 
