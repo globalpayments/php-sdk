@@ -81,21 +81,39 @@ class DataResidencyTest extends TestCase
     public function testNonGpApiNoDataResidency(): void
     {
         $config = new PorticoConfig();
-        
         $this->assertObjectNotHasProperty('dataResidency', $config);
-        
-        $reflection = new \ReflectionClass($config);
-        $properties = $reflection->getProperties();
-        
-        $hasDataResidency = false;
-        foreach ($properties as $property) {
-            if ($property->getName() === 'dataResidency') {
-                $hasDataResidency = true;
-                break;
-            }
-        }
-        
-        $this->assertFalse($hasDataResidency, 'PorticoConfig should not have dataResidency property');
+    }
+
+    /** Test DataResidency EU + QA environment routes to QA EU endpoint */
+    public function testDataResidencyEuQaRoutesToQaEuEndpoint(): void
+    {
+        $config = new GpApiConfig();
+        $config->appId = BaseGpApiTestConfig::EU_APP_ID;
+        $config->appKey = BaseGpApiTestConfig::EU_APP_KEY;
+        $config->environment = GpApiConfig::QA_ENVIRONMENT;
+        $config->channel = Channel::CardNotPresent;
+        $config->dataResidency = DataResidency::EU;
+
+        ServicesContainer::configureService($config, 'qa-eu-config');
+        $this->assertEquals(ServiceEndpoints::GP_API_QA_EU, $config->serviceUrl);
+    }
+
+    /** Test manually provided serviceUrl overrides residency/environment routing */
+    public function testManualServiceUrlOverridesRouting(): void
+    {
+        $customUrl = 'https://example.test/custom-gpapi-endpoint';
+
+        $config = new GpApiConfig();
+        $config->appId = BaseGpApiTestConfig::EU_APP_ID;
+        $config->appKey = BaseGpApiTestConfig::EU_APP_KEY;
+        $config->environment = GpApiConfig::QA_ENVIRONMENT;
+        $config->channel = Channel::CardNotPresent;
+        $config->dataResidency = DataResidency::EU;
+        $config->serviceUrl = $customUrl;
+
+        ServicesContainer::configureService($config, 'manual-service-url-config');
+
+        $this->assertEquals($customUrl, $config->serviceUrl);
     }
 }
 

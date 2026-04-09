@@ -18,6 +18,8 @@ use GlobalPayments\Api\Gateways\{GpApiConnector, IAccessTokenProvider};
 
 class GpApiConfig extends GatewayConfig
 {
+    public const QA_ENVIRONMENT = 'QA';
+
     public ?string $appId = null;
     public ?string $appKey = null;
     public ?string $siteId = null;
@@ -111,15 +113,9 @@ class GpApiConfig extends GatewayConfig
     public function configureContainer(ConfiguredServices $services)
     {
         if (empty($this->serviceUrl)) {
-            if ($this->dataResidency == DataResidency::EU) {
-                $this->serviceUrl = ($this->environment == Environment::PRODUCTION) ?
-                    ServiceEndpoints::GP_API_PRODUCTION_EU : ServiceEndpoints::GP_API_TEST_EU;
-            } else {
-                $this->serviceUrl = ($this->environment == Environment::PRODUCTION) ?
-                    ServiceEndpoints::GP_API_PRODUCTION : ServiceEndpoints::GP_API_TEST;
-            }
+            $this->serviceUrl = $this->resolveServiceUrl();
         }
-        if (!isset($accessTokenProvider)) {
+        if (!isset($this->accessTokenProvider)) {
             $this->accessTokenProvider = new GpApiSessionInfo();
         }
 
@@ -143,9 +139,36 @@ class GpApiConfig extends GatewayConfig
         $services->setSecure3dProvider(Secure3dVersion::TWO, $gateway);
     }
 
+    public function resolveServiceUrl(): string
+    {
+        if (!empty($this->serviceUrl)) {
+            return $this->serviceUrl;
+        }
+
+        if ($this->dataResidency == DataResidency::EU) {
+            if ($this->environment == Environment::PRODUCTION) {
+                return ServiceEndpoints::GP_API_PRODUCTION_EU;
+            }
+
+            return ($this->environment === self::QA_ENVIRONMENT) ?
+                ServiceEndpoints::GP_API_QA_EU : ServiceEndpoints::GP_API_TEST_EU;
+        }
+
+        return ($this->environment == Environment::PRODUCTION) ?
+            ServiceEndpoints::GP_API_PRODUCTION : ServiceEndpoints::GP_API_TEST;
+    }
+
     public function validate(): void
     {
         parent::validate();
+
+        if ($this->environment !== Environment::TEST &&
+            $this->environment !== Environment::PRODUCTION &&
+            $this->environment !== self::QA_ENVIRONMENT) {
+            throw new ConfigurationException(
+                'Environment must be one of TEST, PRODUCTION, or QA for GP API'
+            );
+        }
         
         if (!empty($this->accessTokenInfo)) {
             return;

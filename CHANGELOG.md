@@ -2,7 +2,13 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version v14.1.9 (04/02/26)
+## Latest Version v14.1.10 (04/08/26)
+### Enhancements:
+- [GPAPI] Add QA EU Data Residency Endpoint Support (Exclude MTLS)
+### Bug Fixes:
+- [GPAPI] Fixed expiry_month value incorrectly formatted in 'Verify' transactions using raw card data
+
+## v14.1.9 (04/02/26)
 ### Enhancements:
 - [HIGH] Fixed XSS vulnerability by sanitizing pay-by-link URL output in installments example
 - [GPAPI] Bug fix links authentication param

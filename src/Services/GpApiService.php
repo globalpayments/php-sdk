@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace GlobalPayments\Api\Services;
 
-use GlobalPayments\Api\Entities\Enums\Environment;
-use GlobalPayments\Api\Entities\Enums\ServiceEndpoints;
 use GlobalPayments\Api\Entities\GpApi\GpApiSessionInfo;
 use GlobalPayments\Api\Gateways\GpApiConnector;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
@@ -22,9 +20,7 @@ class GpApiService
         $gateway = new GpApiConnector($config);
         
         if (empty($gateway->serviceUrl)) {
-            $gateway->serviceUrl = !empty($config->serviceUrl) ? $config->serviceUrl :
-                (($config->environment == Environment::PRODUCTION) ?
-                    ServiceEndpoints::GP_API_PRODUCTION : ServiceEndpoints::GP_API_TEST);
+            $gateway->serviceUrl = $config->resolveServiceUrl();
         }
         
         $gateway->requestLogger = $config->requestLogger;
