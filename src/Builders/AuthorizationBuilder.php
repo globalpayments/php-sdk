@@ -560,7 +560,7 @@ class AuthorizationBuilder extends TransactionBuilder
      * @param TransactionType $type Request transaction type
      * @param ?IPaymentMethod $paymentMethod Request payment method
      */
-    public function __construct(TransactionType|string $type, ?IPaymentMethod $paymentMethod = null)
+    public function __construct(TransactionType|int $type, ?IPaymentMethod $paymentMethod = null)
     {
         parent::__construct($type, $paymentMethod);
         $this->withPaymentMethod($paymentMethod);

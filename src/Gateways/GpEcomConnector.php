@@ -198,16 +198,18 @@ class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringS
             throw new ApiException("Hosted configuration missing, Please check you configuration.");
         }
 
+        $transactionType = (string) $builder->transactionType;
+
         // check for right transaction types
-        if ($builder->transactionType !== TransactionType::SALE
-            && $builder->transactionType !== TransactionType::AUTH
-            && $builder->transactionType !== TransactionType::VERIFY
+        if ($transactionType !== (string) TransactionType::SALE
+            && $transactionType !== (string) TransactionType::AUTH
+            && $transactionType !== (string) TransactionType::VERIFY
         ) {
             throw new UnsupportedTransactionException("Only Charge and Authorize are supported through HPP.");
         }
 
         if ($builder->paymentMethod instanceof BankPayment &&
-            $builder->transactionType !== TransactionType::SALE) {
+            $transactionType !== (string) TransactionType::SALE) {
             throw new UnsupportedTransactionException("Only Charge is supported for Bank Payment through HPP.");
         }
 

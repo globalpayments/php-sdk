@@ -2,7 +2,12 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version v14.1.10 (04/08/26)
+## Latest Version v14.1.11 (04/16/26)
+### Bug Fixes:
+- [Portico] Fixed duplicate transaction error issue
+- [GP-ECOM] Fixed HPP transaction type strict string/int comparison causing false UnsupportedTransactionException
+
+## v14.1.10 (04/08/26)
 ### Enhancements:
 - [GPAPI] Add QA EU Data Residency Endpoint Support (Exclude MTLS)
 ### Bug Fixes:

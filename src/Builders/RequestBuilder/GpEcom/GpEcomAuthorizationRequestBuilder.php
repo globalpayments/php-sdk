@@ -65,6 +65,7 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder implements 
         $timestamp = isset($builder->timestamp) ? $builder->timestamp : GenerationUtils::generateTimestamp();
         $orderId = isset($builder->orderId) ? $builder->orderId : GenerationUtils::generateOrderId();
         $transactionType = GpEcomMapping::mapAuthRequestType($builder);
+        $builderTransactionType = (string) $builder->transactionType;
 
         // Build Request
         $request = $xml->createElement("request");
@@ -87,8 +88,13 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder implements 
         }
 
         // This needs to be figured out based on txn type and set to 0, 1 or MULTI
-        if ($builder->transactionType === TransactionType::SALE || $builder->transactionType == TransactionType::AUTH) {
-            $autoSettle = $builder->transactionType === TransactionType::SALE ? "1" : ($builder->multiCapture === true ? "MULTI" :"0");
+        if (
+            $builderTransactionType === (string) TransactionType::SALE ||
+            $builderTransactionType === (string) TransactionType::AUTH
+        ) {
+            $autoSettle = $builderTransactionType === (string) TransactionType::SALE
+                ? "1"
+                : ($builder->multiCapture === true ? "MULTI" : "0");
             $element = $xml->createElement("autosettle");
             $element->setAttribute("flag", $autoSettle);
             $request->appendChild($element);
@@ -280,7 +286,7 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder implements 
             }
             // issueno
             $hash = '';
-            if ($builder->transactionType === TransactionType::VERIFY) {
+            if ($builderTransactionType === (string) TransactionType::VERIFY) {
                 $hash = GenerationUtils::generateHash(
                     $config->sharedSecret,
                     implode('.', [
@@ -319,7 +325,7 @@ class GpEcomAuthorizationRequestBuilder extends GpEcomRequestBuilder implements 
             }
 
             $hash = '';
-            if ($builder->transactionType === TransactionType::VERIFY) {
+            if ($builderTransactionType === (string) TransactionType::VERIFY) {
                 if (!empty($builder->transactionModifier) &&
                     $builder->transactionModifier === TransactionModifier::SECURE3D) {
                     $hash = GenerationUtils::generateHash(

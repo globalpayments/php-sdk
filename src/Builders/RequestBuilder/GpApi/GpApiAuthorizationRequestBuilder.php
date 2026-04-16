@@ -108,7 +108,8 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $card = new Card();
                     $builderCard = $builder->paymentMethod;
                     $card->number = $builderCard->number;
-                    $card->expiry_month = (string) $builderCard->expMonth;
+                    $card->expiry_month = !empty($builderCard->expMonth) ?
+                        str_pad((string) $builderCard->expMonth, 2, '0', STR_PAD_LEFT) : null;
                     $card->expiry_year = !empty($builderCard->expYear) ?
                         substr(
                             str_pad((string) $builderCard->expYear, 4, '0', STR_PAD_LEFT),

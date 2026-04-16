@@ -1347,6 +1347,29 @@ class CreditCardNotPresentTest extends TestCase
         }
     }
 
+    /**
+     * As of v14.1.9 there was no logic to handle expiry_month formatting in the VERIFY
+     * requestMultiUseToken tokenization flow when a Card DTO was created manually, which
+     * caused transactions with a one-digit expiry_month (e.g. 9 instead of 09) to be
+     * rejected by the gateway for non-conforming expiry date values.
+     *
+     * This test demonstrates that this specific verify/tokenization scenario has now been corrected.
+     *
+     * @return void
+     */
+    public function testCardVerifyWithOneDigitExpMonth(): void
+    {
+        $card = $this->card;
+        $card->expMonth = 9;
+        $transaction = $card->verify()
+            ->withRequestMultiUseToken(true)
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertNotEmpty($transaction->token);
+    }
+
     public function testCardTokenizationThenUpdateWithoutUsageMode()
     {
         $tokenizedCard = new CreditCardData();
