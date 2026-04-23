@@ -509,7 +509,7 @@ class HPPBuilder extends AuthorizationBuilder
      * Execute the hosted payment page request
      * @param string $configName 
      * @throws ArgumentException When validation fails or when required fields are missing
-     * @return PayByLinkResponse Containing the HPP URL
+     * @return Transaction
      */
     public function execute(string $configName = 'default'): Transaction
     {

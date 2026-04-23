@@ -52,6 +52,33 @@ class TransITConnector extends XmlGateway implements IPaymentGateway
             throw new ConfigurationException('transactionKey/manifest is required for this transaction.');
         }
 
+        $requiresAmount = [
+            TransactionType::AUTH,
+            TransactionType::SALE,
+            TransactionType::REFUND,
+        ];
+        $transactionType = is_numeric($builder->transactionType)
+            ? (int) $builder->transactionType
+            : $builder->transactionType;
+        $normalizedAmount = $builder->amount;
+        if (is_string($normalizedAmount)) {
+            $normalizedAmount = trim($normalizedAmount);
+            if ($normalizedAmount === '') {
+                $normalizedAmount = null;
+            }
+        }
+
+        if (in_array($transactionType, $requiresAmount, true)) {
+            $amountMissing = $normalizedAmount === null
+                || !is_numeric($normalizedAmount)
+                || (float) $normalizedAmount <= 0;
+            if ($amountMissing) {
+                throw new \GlobalPayments\Api\Entities\Exceptions\BuilderException(
+                    'amount must be a positive numeric value for this transaction type.'
+                );
+            }
+        }
+
         $xml = new DOMDocument();
         $paymentMethod = $builder->paymentMethod;
         $commercialDataSubmitted = !empty($builder->commercialData);
@@ -85,8 +112,8 @@ class TransITConnector extends XmlGateway implements IPaymentGateway
             $cardDataInputMode = 'MAGNETIC_STRIPE_READER_INPUT';
         }
 
-        if (!empty($builder->amount)) {
-            $transaction->appendChild($xml->createElement('transactionAmount', AmountUtils::transitFormat($builder->amount)));
+        if (is_numeric($normalizedAmount) && (float) $normalizedAmount > 0) {
+            $transaction->appendChild($xml->createElement('transactionAmount', AmountUtils::transitFormat($normalizedAmount)));
         }
 
         if ($commercialDataSubmitted) { // has to come before card info
@@ -129,7 +156,10 @@ class TransITConnector extends XmlGateway implements IPaymentGateway
             $transaction->appendChild($xml->createElement('cardNumber', $paymentMethod->token != null ? $paymentMethod->token : $paymentMethod->number));
 
             if ($transaction->tagName != 'GetOnusToken') {
-                $transaction->appendChild($xml->createElement('expirationDate', $paymentMethod->getShortExpiry()));
+                $shortExpiry = $paymentMethod->getShortExpiry();
+                if ($shortExpiry !== null) {
+                    $transaction->appendChild($xml->createElement('expirationDate', $shortExpiry));
+                }
 
                 if (!empty($paymentMethod->cvn)) {
                     $transaction->appendChild($xml->createElement('cvv2', $paymentMethod->cvn));
@@ -364,7 +394,8 @@ class TransITConnector extends XmlGateway implements IPaymentGateway
         $transaction->appendChild($xml->createElement('maxPinLength', $this->acceptorConfig->pinCaptureCapability));
         $transaction->appendChild($xml->createElement('terminalCardCaptureCapability', $this->acceptorConfig->cardCaptureCapability ? 'CARD_CAPTURE_CAPABILITY' : 'NO_CAPABILITY'));
 
-        if ($paymentMethod->cardPresent) {
+        $isCardPresent = ($paymentMethod instanceof ITrackData) ? true : ($paymentMethod->cardPresent ?? false);
+        if ($isCardPresent) {
             $cardHolderPresentDetailValue = 'CARDHOLDER_PRESENT';
         } else {
             if ($this->acceptorConfig->cardDataSource === CardDataSource::MAIL) {
@@ -378,7 +409,7 @@ class TransITConnector extends XmlGateway implements IPaymentGateway
 
         $transaction->appendChild($xml->createElement('cardholderPresentDetail', $cardHolderPresentDetailValue));
 
-        if ($paymentMethod instanceof ITrackData || $paymentMethod->cardPresent) {
+        if ($isCardPresent) {
             $transaction->appendChild($xml->createElement('cardPresentDetail', 'CARD_PRESENT'));
         } else {
             $transaction->appendChild($xml->createElement('cardPresentDetail', 'CARD_NOT_PRESENT'));
@@ -395,7 +426,7 @@ class TransITConnector extends XmlGateway implements IPaymentGateway
         $transaction->appendChild($xml->createElement('cardholderAuthenticationEntity', $this->acceptorConfig->cardHolderAuthenticationEntity));
         $transaction->appendChild($xml->createElement('cardDataOutputCapability', $this->acceptorConfig->cardDataOutputCapability));
 
-        if ($transaction->tagName != "CardVerification") {
+        if ($transaction->tagName != "CardVerification" && $transaction->tagName != "BalanceInquiry") {
             $transaction->appendChild($xml->createElement('developerID', $this->developerId));
         }
 

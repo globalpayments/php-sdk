@@ -243,6 +243,34 @@ class AccessTokenTest extends TestCase
         $this->assertEquals('VERIFIED', $response->responseMessage);
     }
 
+    public function testGenerateRestrictedAccessToken(): void
+    {
+        $this->config->permissions = ["PMT_POST_Create_Single"];
+        $this->config->restrictedToken = true;
+
+        $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
+
+        $singleUseTokenResponse = $this->getSingleUsePaymentTokenDirectlyFromGateway($accessTokenInfo->accessToken);
+
+        // We can check for the truncated account_id value to verify this is functioning.
+        // The needle below is a portion that should exist in all truncated account_ids.
+        $this->assertStringContainsString('TKA_XXXXXXXXXXXXXXXXXXXXXXXXXXXX', $singleUseTokenResponse);
+    }
+
+    public function testGenerateUnrestrictedAccessToken(): void
+    {
+        $this->config->permissions = ["PMT_POST_Create_Single"];
+        $this->config->restrictedToken = false;
+
+        $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
+
+        $singleUseTokenResponse = $this->getSingleUsePaymentTokenDirectlyFromGateway($accessTokenInfo->accessToken);
+
+        // We can check that the account_id isn't truncated.
+        // The needle below is a portion that should exist in all truncated account_ids.
+        $this->assertStringNotContainsString('TKA_XXXXXXXXXXXXXXXXXXXXXXXXXXXX', $singleUseTokenResponse);
+    }
+
     private function assertAccessTokenResponse(AccessTokenInfo $accessTokenInfo): void
     {
         $this->assertNotNull($accessTokenInfo);
@@ -257,6 +285,51 @@ class AccessTokenTest extends TestCase
         $this->assertNotNull($accessTokenInfo->riskAssessmentAccountID);
         $this->assertNotNull($accessTokenInfo->disputeManagementAccountID);
         $this->assertNotNull($accessTokenInfo->dataAccountID);
+    }
+
+    /**
+     * Helper function to retrieve the raw response on a single-use payment token request
+     * 
+     * @param string $accessToken 
+     * @return string|bool 
+     */
+    private function getSingleUsePaymentTokenDirectlyFromGateway(string $accessToken)
+    {
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://apis.sandbox.globalpay.com/ucp/payment-methods',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 20,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => '{
+  "usage_mode": "SINGLE",
+  "reference": "merchant-ref-123",
+  "name": "James Mason",
+  "card": {
+    "number": "4263970000005262",
+    "expiry_month": "12",
+    "expiry_year": "30",
+    "cvv": "987"
+  }
+}',
+            CURLOPT_HTTPHEADER => array(
+                'accept:  application/json',
+                'X-GP-Version:  2021-03-22',
+                'Accept-Encoding:  gzip',
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $accessToken
+            ),
+        ));
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+        return $response;
     }
 
     public function setUpConfig(): GpApiConfig

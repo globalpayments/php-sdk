@@ -25,7 +25,8 @@ class GpApiSessionInfo implements IAccessTokenProvider
         $intervalToExpire = null,
         $permissions = [],
         $porticoCredentials = null,
-        $secretApiKey = null
+        $secretApiKey = null,
+        $restrictedToken = null
     ): GpApiRequest
     {
         $nonce = self::generateNonce();
@@ -81,7 +82,8 @@ class GpApiSessionInfo implements IAccessTokenProvider
             $secondsToExpire,
             $intervalToExpire,
             $permissions,
-            $credentials
+            $credentials,
+            $restrictedToken
         );
 
         return new GpApiRequest(GpApiRequest::ACCESS_TOKEN_ENDPOINT, 'POST', $requestBody);

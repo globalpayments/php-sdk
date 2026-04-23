@@ -54,6 +54,8 @@ class GpApiConfig extends GatewayConfig
     */
     public ?int $secondsToExpire = null;
 
+    public ?bool $restrictedToken = null;
+
     /**
      * @var string
     */

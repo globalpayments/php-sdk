@@ -314,11 +314,10 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                                 $requestData['order']['transaction_configuration']['capture_mode'] = $transactionConfig->captureMode;
                             }
                             
-                            // Add currency conversion mode if available
-                            if (!empty($transactionConfig->currencyConversionMode)) {
-                                $requestData['order']['transaction_configuration']['currency_conversion_mode'] = is_bool($transactionConfig->currencyConversionMode) 
-                                    ? StringUtils::boolToYesNo($transactionConfig->currencyConversionMode) 
-                                    : "NO";
+                            // Add currency conversion mode when explicitly configured.
+                            if (!is_null($transactionConfig->currencyConversionMode)) {
+                                $requestData['order']['transaction_configuration']['currency_conversion_mode'] =
+                                    StringUtils::boolToYesNo($transactionConfig->currencyConversionMode);
                             }
                         }
                         

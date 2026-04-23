@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Tests\Integration\Gateways\TransITConnector;
 
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Enums\GatewayProvider;
+use GlobalPayments\Api\Entities\Enums\TaxType;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\PaymentMethods\CreditTrackData;
 use GlobalPayments\Api\ServiceConfigs\AcceptorConfig;
@@ -14,7 +15,7 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 
-class CreditTest extends TestCase
+class TransITTests extends TestCase
 {
     protected $address;
     protected $card;
@@ -29,7 +30,7 @@ class CreditTest extends TestCase
         $this->address->streetAddress1 = '1 Federal Street';
         $this->address->postalCode = '02110';
 
-        $this->card = TestCards::masterCardManual();
+        $this->card = TestCards::transitVisaManual();
 
         $this->track = new CreditTrackData();
         $this->track->setValue('<E1050711%4012002000060016^VI TEST CREDIT^25121011803939600000?|LO04K0WFOmdkDz0um+GwUkILL8ZZOP6Zc4rCpZ9+kg2T3JBT4AEOilWTI|+++++++Dbbn04ekG|11;4012002000060016=25121011803939600000?|1u2F/aEhbdoPixyAPGyIDv3gBfF|+++++++Dbbn04ekG|00|||/wECAQECAoFGAgEH2wYcShV78RZwb3NAc2VjdXJlZXhjaGFuZ2UubmV0PX50qfj4dt0lu9oFBESQQNkpoxEVpCW3ZKmoIV3T93zphPS3XKP4+DiVlM8VIOOmAuRrpzxNi0TN/DWXWSjUC8m/PI2dACGdl/hVJ/imfqIs68wYDnp8j0ZfgvM26MlnDbTVRrSx68Nzj2QAgpBCHcaBb/FZm9T7pfMr2Mlh2YcAt6gGG1i2bJgiEJn8IiSDX5M2ybzqRT86PCbKle/XCTwFFe1X|>;');
@@ -55,6 +56,7 @@ class CreditTest extends TestCase
     {
         $response = $this->card->charge(10)
             ->withCurrency('USD')
+            ->withAddress($this->address)
             ->execute();
         
         $this->assertNotNull($response);
@@ -62,6 +64,7 @@ class CreditTest extends TestCase
 
         $adjust = $response->edit()
             ->withGratuity(1.05)
+            ->withTaxType(TaxType::NOT_USED)
             ->execute();
         
         $this->assertNotNull($adjust);
@@ -85,16 +88,35 @@ class CreditTest extends TestCase
         $response = $this->track->authorize(100)
             ->withCurrency('USD')
             ->withInvoiceNumber('1264')
-            ->withClientTransactionId('137149')
+            ->withClientTransactionId(uniqid('txn', true))
             ->execute();
 
         $this->assertNotNull($response);
         $this->assertEquals('00', $response->responseCode);
     }
-    
+
+    /**
+     * Tokenizes TestCards::transitVisaManual(), asserts the tokenization succeeded,
+     * and returns the resulting token-only CreditCardData ready for charging.
+     */
+    private function createTokenizedCard(): CreditCardData
+    {
+        $card = TestCards::transitVisaManual();
+        $token = $card->tokenize()->execute();
+        $this->assertNotNull($token);
+        $this->assertEquals('00', $token->responseCode);
+        $this->assertNotEmpty($token->token);
+
+        $tokenizedCard = new CreditCardData();
+        $tokenizedCard->token = $token->token;
+        return $tokenizedCard;
+    }
+
     public function testAuthorizeToken()
     {
-        $response = $this->tokenizedCard->authorize(10)
+        $tokenizedCard = $this->createTokenizedCard();
+
+        $response = $tokenizedCard->authorize(10)
             ->withCurrency('USD')
             ->withInvoiceNumber('1558')
             ->execute();
@@ -105,14 +127,8 @@ class CreditTest extends TestCase
         
     public function testTokenizedCardSale()
     {
-        $token = $this->card->tokenize()->execute();
-        $this->assertNotNull($token);
-        $this->assertEquals('00', $token->responseCode);
-        $this->assertNotNull($token->token);
-        
-        $tokenizedCard = new CreditCardData();
-        $tokenizedCard->token = $token->token;
-        
+        $tokenizedCard = $this->createTokenizedCard();
+
         $response = $tokenizedCard->charge(10)
             ->withCurrency('USD')
             ->execute();
@@ -169,12 +185,14 @@ class CreditTest extends TestCase
     
     public function testSaleToken()
     {
-        $response = $this->tokenizedCard->charge(1.29)
+        $tokenizedCard = $this->createTokenizedCard();
+
+        $response = $tokenizedCard->charge(1.29)
             ->withCurrency('USD')
             ->withCashBack(0)
             ->withConvenienceAmount(0)
             ->withInvoiceNumber('1559')
-            ->withClientTransactionId('166909')
+            ->withClientTransactionId(uniqid('txn', true))
             ->withAllowPartialAuth(false)
             ->withAllowDuplicates(false)
             ->execute();
@@ -278,48 +296,44 @@ class CreditTest extends TestCase
         $this->assertEquals('00', $response->responseCode);
     }
     
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     * @expectedExceptionMessage amount cannot be null for this transaction type.
-     */
     public function testAuthorizeWithoutAmount()
     {
+        $this->expectException(\GlobalPayments\Api\Entities\Exceptions\BuilderException::class);
+        $this->expectExceptionMessage('amount must be a positive numeric value for this transaction type.');
+
         $response = $this->card->authorize()
             ->withCurrency('USD')
             ->execute();
     }
     
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     * @expectedExceptionMessage amount cannot be null for this transaction type.
-     */
     public function testSaleWithoutAmount()
     {
+        $this->expectException(\GlobalPayments\Api\Entities\Exceptions\BuilderException::class);
+        $this->expectExceptionMessage('amount must be a positive numeric value for this transaction type.');
+
         $response = $this->card->charge()
             ->withCurrency('USD')
             ->execute();
     }
     
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\BuilderException
-     * @expectedExceptionMessage amount cannot be null for this transaction type.
-     */
     public function testRefundWithoutAmount()
     {
+        $this->expectException(\GlobalPayments\Api\Entities\Exceptions\BuilderException::class);
+        $this->expectExceptionMessage('amount must be a positive numeric value for this transaction type.');
+
         $response = $this->card->refund()
             ->withCurrency('USD')
             ->execute();
     }
     
-    /**
-     * @expectedException GlobalPayments\Api\Entities\Exceptions\ConfigurationException
-     * @expectedExceptionMessage deviceID is required for this configuration.
-     */
     public function testCredentialsError()
     {
+        $this->expectException(\GlobalPayments\Api\Entities\Exceptions\ConfigurationException::class);
+        $this->expectExceptionMessage('DeviceId cannot be null.');
+
         $config = new TransitConfig();
         $config->acceptorConfig = new AcceptorConfig();
-        
+
         ServicesContainer::configureService($config);
     }
 }

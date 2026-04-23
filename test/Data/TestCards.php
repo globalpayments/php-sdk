@@ -104,6 +104,18 @@ class TestCards
         return $data;
     }
 
+    public static function transitVisaManual($cardPresent = false, $readerPresent = false)
+    {
+        $data = new CreditCardData();
+        $data->number = '4012000098765439';
+        $data->expMonth = 12;
+        $data->expYear = self::validCardExpYear();
+        $data->cvn = '999';
+        $data->cardPresent = $cardPresent;
+        $data->readerPresent = $readerPresent;
+        return $data;
+    }
+
     public static function masterCardSeries2Manual($cardPresent = false, $readerPresent = false)
     {
         $data = new CreditCardData();

@@ -43,6 +43,7 @@ use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
 use GlobalPayments\Api\Entities\RecurringEntity;
 use GlobalPayments\Api\PaymentMethods\Installment;
 use GlobalPayments\Api\Builders\InstallmentBuilder;
+use GlobalPayments\Api\Utils\StringUtils;
 
 class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dProvider, IPayFacProvider, IFraudCheckService, IDeviceCloudService, IFileProcessingService
 {
@@ -527,7 +528,8 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
             $this->gpApiConfig->intervalToExpire,
             $this->gpApiConfig->permissions,
             $porticoCredentials,
-            $this->gpApiConfig->secretApiKey
+            $this->gpApiConfig->secretApiKey,
+            StringUtils::boolToYesNo($this->gpApiConfig->restrictedToken)
         );
 
         $response = parent::doTransaction($request->httpVerb, $request->endpoint, $request->requestBody);

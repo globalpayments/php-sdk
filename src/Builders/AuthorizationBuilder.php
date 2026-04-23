@@ -806,11 +806,11 @@ class AuthorizationBuilder extends TransactionBuilder
     /**
      * Set the request's balance inquiry type
      *
-     * @param string $balanceInquiryType Balance inquiry type
+     * @param InquiryType|string|null $balanceInquiryType Balance inquiry type
      *
      * @return AuthorizationBuilder
      */
-    public function withBalanceInquiryType(InquiryType|string $balanceInquiryType): self
+    public function withBalanceInquiryType(InquiryType|string|null $balanceInquiryType): self
     {
         $this->balanceInquiryType = $balanceInquiryType;
         return $this;

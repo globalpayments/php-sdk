@@ -11,6 +11,19 @@ class AccessTokenRequest implements \JsonSerializable
     public $secret;
     public $grant_type;
     public $seconds_to_expire;
+
+    /**
+     * Masks the account, merchant and app details that is returned in the response to a tokenisation request.
+     * 
+     * YES - A restricted access token will be created. Restricted access token is used when integrating
+     * with Drop-in UI or Hosted Fields to create a single-use payment token.
+     * 
+     * NO - A restricted access token will not be created.
+     * 
+     * @var ?string
+     */
+    public ?string $restricted_token;
+
     public $interval_to_expire;
     public $permissions;
     public $credentials;
@@ -23,7 +36,8 @@ class AccessTokenRequest implements \JsonSerializable
         $seconds_to_expire,
         $interval_to_expire,
         $permissions,
-        $credentials = null
+        $credentials = null,
+        ?string $restricted_token = null
     )
     {
         $this->app_id = $app_id;
@@ -34,6 +48,7 @@ class AccessTokenRequest implements \JsonSerializable
         $this->interval_to_expire = $interval_to_expire;
         $this->permissions = $permissions;
         $this->credentials = $credentials;
+        $this->restricted_token = $restricted_token;
     }
 
     public function jsonSerialize(): array
@@ -64,6 +79,10 @@ class AccessTokenRequest implements \JsonSerializable
         
         if (!empty($this->credentials)) {
             $data['credentials'] = $this->credentials;
+        }
+
+        if (!empty($this->restricted_token)) {
+            $data['restricted_token'] = $this->restricted_token;
         }
         
         return $data;
