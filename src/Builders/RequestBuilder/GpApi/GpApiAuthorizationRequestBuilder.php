@@ -543,7 +543,11 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         ) {
             $requestBody['payer'] = $this->setPayerInformation($builder);
         }
-        if ($builder->paymentMethod instanceof AlternativePaymentMethod || $builder->paymentMethod instanceof BNPL) {
+        if (
+            $builder->paymentMethod instanceof AlternativePaymentMethod ||
+            $builder->paymentMethod instanceof BNPL ||
+            !empty($builder->supplementaryData)
+        ) {
             $this->setOrderInformation($builder, $requestBody);
         }
         if ($builder->paymentMethod instanceof AlternativePaymentMethod ||
@@ -1128,9 +1132,21 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                 break;
         }
 
-        if (!empty($orderAmount)) {
-            $requestBody['amount'] = $orderAmount;
+        if (!empty($builder->supplementaryData) && is_array($builder->supplementaryData)) {
+            foreach ($builder->supplementaryData as $type => $fields) {
+                if ($type !== '' && !empty($fields)) {
+                    $order['supplementary_data'][] = [
+                        'type' => $type,
+                        'fields' => (array) $fields
+                    ];
+                }
+            }
         }
+
+        if (!empty($order['amount'])) {
+            $requestBody['amount'] = $order['amount'];
+        }
+
         if (!empty($requestBody['order'])) {
             $order = array_merge($requestBody['order'], $order);
         }

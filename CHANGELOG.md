@@ -2,7 +2,13 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version v14.1.12 (04/23/26)
+## Latest Version v14.1.13 (04/30/26)
+### Enhancements:
+- [GPAPI] Added Visa Direct AFT supplementary data support
+### Bug Fixes:
+- [GPAPI] Added QA and Prod EU Data Residency Endpoint Support 
+
+## v14.1.12 (04/23/26)
 ### Enhancements:
 - [HPP] Added DCC currency_conversion_mode support for explicit YES/NO serialization.
 - [GPAPI] Added ability to create 'restricted' access tokens
