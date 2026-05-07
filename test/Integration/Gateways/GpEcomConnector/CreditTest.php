@@ -142,7 +142,7 @@ class CreditTest extends TestCase
         $config->merchantId = 'heartlandgpsandbox';
         $config->accountId = 'api';
         $config->sharedSecret = 'secret';
-        $config->rebatePassword = 'rebate';
+        $config->rebatePassword = 'refund';
         $config->refundPassword = 'refund';
         $config->serviceUrl = 'https://api.sandbox.realexpayments.com/epage-remote.cgi';
         $config->requestLogger = new SampleRequestLogger(new Logger("logs"));

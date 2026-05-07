@@ -41,9 +41,9 @@ abstract class TransactionBuilder extends BaseBuilder
     /**
      * used w/TransIT gateway
      *
-     * @var int
+     * @var int|string|null
      */
-    public ?int $multiCaptureSequence = null;
+    public int|string|null $multiCaptureSequence = null;
 
     /**
      * used w/TransIT gateway

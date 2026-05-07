@@ -1567,13 +1567,15 @@ class AuthorizationBuilder extends TransactionBuilder
     /**
      * Set Remittance Reference
      *
-     * @param string $remittanceReferenceType
-     * @param string $remittanceReferenceValue
+     * @param RemittanceReferenceType|string|null $remittanceReferenceType
+     * @param string|null $remittanceReferenceValue
      *
      * @return AuthorizationBuilder
      */
-    public function withRemittanceReference(RemittanceReferenceType|string $remittanceReferenceType, string $remittanceReferenceValue): self
-    {
+    public function withRemittanceReference(
+        RemittanceReferenceType|string|null $remittanceReferenceType,
+        ?string $remittanceReferenceValue
+    ): self {
         $this->remittanceReferenceType = $remittanceReferenceType;
         $this->remittanceReferenceValue = $remittanceReferenceValue;
 

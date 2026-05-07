@@ -41,8 +41,8 @@ class Secure3dBuilder extends SecureBuilder
     public ?string $decoupledNotificationUrl = null;
     /** @var string */
     public ?string $encodedData = null;
-    /** @var string */
-    public ?string $ephemeralPublicKey = null;
+    /** @var array|object|string|null */
+    public array|object|string|null $ephemeralPublicKey = null;
     /** @var int */
     public ?int $maximumTimeout = null;
     /** @var MerchantDataCollection */
@@ -124,10 +124,30 @@ class Secure3dBuilder extends SecureBuilder
         return $this->encodedData;
     }
 
-    /** @return string */
-    public function getEphemeralPublicKey()
+    /**
+     * @return array|object|null
+     * @throws \UnexpectedValueException
+     */
+    public function getEphemeralPublicKey(): array|object|null
     {
-        return $this->ephemeralPublicKey;
+        $ephemeralPublicKey = $this->ephemeralPublicKey;
+        if (is_string($ephemeralPublicKey)) {
+            try {
+                $ephemeralPublicKey = json_decode($ephemeralPublicKey, false, 512, JSON_THROW_ON_ERROR);
+            } catch (\JsonException $e) {
+                throw new \UnexpectedValueException(
+                    'Ephemeral public key must contain valid JSON representing an object or array.',
+                    0,
+                    $e
+                );
+            }
+        }
+        if (!is_array($ephemeralPublicKey) && !is_object($ephemeralPublicKey) && $ephemeralPublicKey !== null) {
+            throw new \UnexpectedValueException(
+                'Ephemeral public key must be an array, object, null, or a JSON string representing an object or array.'
+            );
+        }
+        return $ephemeralPublicKey;
     }
 
     /** @return int */
@@ -362,7 +382,7 @@ class Secure3dBuilder extends SecureBuilder
     }
 
     /** @return Secure3dBuilder */
-    public function withEphemeralPublicKey($ephemeralPublicKey)
+    public function withEphemeralPublicKey(array|string|object|null $ephemeralPublicKey): self
     {
         $this->ephemeralPublicKey = $ephemeralPublicKey;
         return $this;

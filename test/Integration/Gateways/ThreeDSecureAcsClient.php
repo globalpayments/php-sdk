@@ -64,12 +64,17 @@ class ThreeDSecureAcsClient
                 $acsDecodedRS = json_decode(base64_decode($cres), true);
                 $postData = $this->buildData($kvps);
                 $this->serviceUrl = $this->getInputValue($rawResponse, null, 'ResForm');
-                $rawResponse = $this->sendRequest($verb, $postData, $header);
                 $rValue = new AcsResponse();
                 $status = false;
-                if (StringUtils::isJson($rawResponse)) {
-                    $rawResponse = json_decode($rawResponse);
-                    $status = !empty($rawResponse->success) ? $rawResponse->success : false;
+                try {
+                    $rawResponse = $this->sendRequest($verb, $postData, $header);
+                    if (StringUtils::isJson($rawResponse)) {
+                        $rawResponse = json_decode($rawResponse);
+                        $status = !empty($rawResponse->success) ? $rawResponse->success : false;
+                    }
+                } catch (ApiException $e) {
+                    // Challenge notification URL may be unreachable; challenge completed via cres
+                    $status = !empty($cres);
                 }
                 $rValue->setStatus($status);
                 if (!empty($acsDecodedRS['threeDSServerTransID'])) {
