@@ -52,37 +52,37 @@ class TransactionReportBuilder extends ReportBuilder
     public ?string $paymentType = null;
 
     /**
-     * @var TransactionSortProperty
+     * @var string
      */
-    public ?TransactionSortProperty $transactionOrderBy = null;
+    public ?string $transactionOrderBy = null;
 
     /**
-     * @var DepositSortProperty
+     * @var string
      */
-    public ?DepositSortProperty $depositOrderBy = null;
+    public ?string $depositOrderBy = null;
 
     /**
-     * @var DisputeSortProperty
+     * @var string
      */
-    public ?DisputeSortProperty $disputeOrderBy = null;
+    public ?string $disputeOrderBy = null;
 
     /**
-     * @var  StoredPaymentMethodSortProperty
+     * @var string
      */
-    public ?StoredPaymentMethodSortProperty $storedPaymentMethodOrderBy = null;
+    public ?string $storedPaymentMethodOrderBy = null;
 
     /**
-     * @var  ActionSortProperty
+     * @var string
      */
-    public ?ActionSortProperty $actionOrderBy = null;
+    public ?string $actionOrderBy = null;
 
-    /** @var PayByLinkSortProperty */
-    public ?PayByLinkSortProperty $payByLinkOrderBy = null;
+    /** @var string */
+    public ?string $payByLinkOrderBy = null;
 
     /**
-     * @var SortDirection
+     * @var string
      */
-    public ?SortDirection $order = null;
+    public ?string $order = null;
 
     /**
      * @internal

@@ -2,7 +2,11 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version v14.1.14 (05/07/26)
+## Latest Version v14.1.15 (05/14/26)
+### Bug Fixes:
+- [GPAPI] Fixed PHP 8.2 fatal error in ManagementBuilder paymentMethod inheritance.
+
+## v14.1.14 (05/07/26)
 ### Enhancements:
 - [GP-ECOM] Fixed strict type-cast issues in builders for enhanced type safety
 

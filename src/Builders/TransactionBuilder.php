@@ -29,7 +29,7 @@ abstract class TransactionBuilder extends BaseBuilder
      * @internal
      * @var IPaymentMethod
      */
-    public $paymentMethod = null;
+    public mixed $paymentMethod = null;
 
     /**
      * used w/TransIT gateway

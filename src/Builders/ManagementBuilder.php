@@ -154,14 +154,6 @@ class ManagementBuilder extends TransactionBuilder
      * Previous request's transaction reference
      *
      * @internal
-     * @var IPaymentMethod|null
-     */
-    public $paymentMethod = null;
-
-    /**
-     * Previous request's transaction reference
-     *
-     * @internal
      * @var string
      */
     public ?string $alternativePaymentType = null;
