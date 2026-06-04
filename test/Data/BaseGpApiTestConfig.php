@@ -14,6 +14,8 @@ class BaseGpApiTestConfig
 {
     const APP_ID = '4gPqnGBkppGYvoE5UX9EWQlotTxGUDbs';
     const APP_KEY = 'FQyJA5VuEQfcji2M';
+    const APAC_APP_ID = '16Br1RfjChBrsFnWlu7NGIp9LKm2MWWFyGg3SU3UfEl3voA2';
+    const APAC_APP_KEY = 'xV9wnRLmi8qPqvMZoxAH9S0RtoQlodCYuvCboVYUohW6DObtcrYL1uj4YOZilKyu';
     const PARTNER_SOLUTION_APP_ID = 'A1feRdMmEB6m0Y1aQ65H0bDi9ZeAEB2t';
     const PARTNER_SOLUTION_APP_KEY = '5jPt1OpB6LLitgi7';
 
@@ -73,5 +75,11 @@ class BaseGpApiTestConfig
         ServicesContainer::removeConfiguration();
         self::$appId = self::APP_ID;
         self::$appKey = self::APP_KEY;
+    }
+
+    public static function useApacCredentials(): void
+    {
+        self::$appId = self::APAC_APP_ID;
+        self::$appKey = self::APAC_APP_KEY;
     }
 }

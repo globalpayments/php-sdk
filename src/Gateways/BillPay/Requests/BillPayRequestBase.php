@@ -130,13 +130,13 @@ abstract class BillPayRequestBase
      * @param CreditCardData $card
      * @param float $amountToCharge
      * @param ?float $feeAmount
-     * @param ?EmvFallbackCondition $condition
-     * @param ?EmvLastChipRead $lastRead
+     * @param ?string $condition
+     * @param ?string $lastRead
      * @param ?Address $address
      */
     protected function buildClearTextCredit(Element $parent, CreditCardData $card, float $amountToCharge,
-                                            ?float $feeAmount = null, ?EmvFallbackCondition $condition = null,
-                                            ?EmvLastChipRead $lastRead = null, ?Address $address = null) 
+                                            ?float $feeAmount = null, ?string $condition = null,
+                                            ?string $lastRead = null, ?Address $address = null) 
     {
         $isEmvFallback = $condition !== null && $condition === EmvFallbackCondition::CHIP_READ_FAILURE;
         $isPreviousEmvFallback = $lastRead != null && $lastRead === EmvLastChipRead::FAILED;

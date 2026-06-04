@@ -393,8 +393,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
                 $block1->appendChild($accountInfo);
             } else {
                 $accountInfo = $xml->createElement('AccountInfo');
-                $accountInfo->appendChild($xml->createElement('CheckNumber', $builder->paymentMethod->checkNumber));
-                $accountInfo->appendChild($xml->createElement('MICRData', $builder->paymentMethod->micrNumber));
+                $accountInfo->appendChild($xml->createElement('CheckNumber', $builder->paymentMethod->checkNumber ?? ''));
+                $accountInfo->appendChild($xml->createElement('MICRData', $builder->paymentMethod->micrNumber ?? ''));
                 $accountInfo->appendChild(
                     $xml->createElement(
                         'AccountType',

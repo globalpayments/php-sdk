@@ -69,7 +69,7 @@ try {
         ->execute();
 
     echo "<h1>Hosted Payment Page with installments filtering</h1>";
-    echo '<p><a target="_blank" href="' . $response->payByLinkResponse->url . '">Click here to pay with installments</a></p>';
+    echo '<p><a target="_blank" href="' . htmlspecialchars($response->payByLinkResponse->url, ENT_QUOTES, 'UTF-8') . '">Click here to pay with installments</a></p>';
     
 } catch (Exception $e) {
     echo "Error creating hosted payment page: " . $e->getMessage();

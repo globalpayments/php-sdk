@@ -2,9 +2,18 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version v14.1.15 (05/14/26)
+## Latest Version v14.1.16 (05/28/26)
+### Enhancements:
+- [TransIT] Added a basic Transit/TSEP payment page example
+- [GPAPI] Added APAC GPAPI auth endpoint verification coverage
 ### Bug Fixes:
-- [GPAPI] Fixed PHP 8.2 fatal error in ManagementBuilder paymentMethod inheritance.
+- [Portico] Fix PHP 8 strict typing issues in authorization and management flows
+### Synk:
+- [High] Fixed XSS in HPP example by sanitizing the pay-by-link URL before rendering it in the HTML output
+
+## v14.1.15 (05/14/26)
+### Bug Fixes:
+- [GPAPI] Fixed PHP 8.2 fatal error in ManagementBuilder paymentMethod inheritance
 
 ## v14.1.14 (05/07/26)
 ### Enhancements:

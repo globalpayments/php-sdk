@@ -487,9 +487,10 @@ class AuthorizationBuilder extends TransactionBuilder
     public ?string $idempotencyKey = null;
 
     /**
-     * @var EmvLastChipRead $emvLastChipRead
+     * @var string|null $emvLastChipRead
+     * @see EmvLastChipRead
      */
-    public ?EmvLastChipRead $emvLastChipRead = null;
+    public ?string $emvLastChipRead = null;
 
     /**
      * @var string $paymentApplicationVersion
@@ -497,14 +498,17 @@ class AuthorizationBuilder extends TransactionBuilder
     public ?string $paymentApplicationVersion = null;
 
     /**
-     * @var EmvFallbackCondition $emvFallbackCondition
+     * @var string|null $emvFallbackCondition
+     * @see EmvFallbackCondition
      */
-    public ?EmvFallbackCondition $emvFallbackCondition = null;
+    public ?string $emvFallbackCondition = null;
 
     /**
-     * @var EmvLastChipRead $emvChipCondition
+     * @var string|null $emvChipCondition
+     * @see EmvChipCondition  Portico gateway chip condition values
+     * @see EmvLastChipRead   GP-API gateway chip read values
      */
-    public ?EmvLastChipRead $emvChipCondition = null;
+    public ?string $emvChipCondition = null;
 
     /**
      * @var float $surchargeAmount
@@ -543,14 +547,17 @@ class AuthorizationBuilder extends TransactionBuilder
     /** @var MerchantCategory */
     public mixed $merchantCategory = null;
 
-    /** @var string|CreditDebitIndicator */
-    public string $creditDebitIndicator;
+    /**
+     * @var string|null
+     * @see CreditDebitIndicator
+     */
+    public ?string $creditDebitIndicator = null;
 
     /** @var ?array */
     public ?array $bills = null;
 
-    /** @var string */
-    public string $clerkId;
+    /** @var string|null */
+    public ?string $clerkId = null;
 
     /** @var string */
     public ?string $shippingDate = null;
@@ -1461,11 +1468,13 @@ class AuthorizationBuilder extends TransactionBuilder
     }
 
     /**
-     * @param EmvFallbackCondition $condition
-     * @param EmvLastChipRead $lastRead
+     * @param string $condition
+     * @param string $lastRead
      * @param string $appVersion
+     * @see EmvFallbackCondition
+     * @see EmvLastChipRead
      */
-    public function withEmvFallbackData(EmvFallbackCondition|string $condition, EmvLastChipRead|string $lastRead, ?string $appVersion = null): self
+    public function withEmvFallbackData(string $condition, string $lastRead, ?string $appVersion = null): self
     {
         $this->emvFallbackCondition = $condition;
         $this->emvLastChipRead = $lastRead;
@@ -1474,9 +1483,11 @@ class AuthorizationBuilder extends TransactionBuilder
     }
 
     /**
-     * @param EmvLastChipRead $value
+     * @param string $value
+     * @see EmvLastChipRead
+     * @see EmvChipCondition
      */
-    public function withChipCondition(EmvLastChipRead|string $value): self
+    public function withChipCondition(string $value): self
     {
         $this->emvChipCondition = $value;
 
@@ -1492,17 +1503,18 @@ class AuthorizationBuilder extends TransactionBuilder
      */
     public function withClerkId(string|int $clerkId): self
     {
-        $this->clerkId = $clerkId;
+        $this->clerkId = (string) $clerkId;
         return $this;
     }
 
     /**
      * @param float $value
-     * @param string|CreditDebitIndicator $creditDebitIndicator
+     * @param string|null $creditDebitIndicator
+     * @see CreditDebitIndicator
      *
      * @return AuthorizationBuilder
      */
-    public function withSurchargeAmount(float $value, string|CreditDebitIndicator|null $creditDebitIndicator = null): self
+    public function withSurchargeAmount(float $value, ?string $creditDebitIndicator = null): self
     {
         $this->surchargeAmount = $value;
         $this->creditDebitIndicator = $creditDebitIndicator;
