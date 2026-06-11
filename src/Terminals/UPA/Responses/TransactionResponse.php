@@ -19,7 +19,6 @@ class TransactionResponse extends UpaResponseHandler implements IBatchCloseRespo
     public ?string $osVersion;
     public ?string $emvSdkVersion;
     public ?string $CTLSSdkVersion;
-    public string $requestId;
     public ?float $additionalTipAmount;
     public ?float $baseAmount;
     public ?float $taxAmount;
@@ -150,6 +149,33 @@ class TransactionResponse extends UpaResponseHandler implements IBatchCloseRespo
     public string $applicationAIP;
     public string $applicationIdentifier;
     public float $availableBalance;
+
+    /** @var string|null Redeem id retrieved by GPAPI for TYP flows. */
+    public ?string $redeemId = null;
+    /** @var string|null Redeem status for TYP flows. */
+    public ?string $redeemStatus = null;
+    /** @var string|null Currency amount redeemed for TYP flows. */
+    public ?string $currencyAmountRedeemed = null;
+    /** @var string|null Points redeemed for TYP flows. */
+    public ?string $pointsRedeemed = null;
+    /** @var string|null Discount amount redeemed for TYP flows. */
+    public ?string $discountAmountRedeemed = null;
+
+    /** @var string|null Redeem id returned for void/reversal TYP flows. */
+    public ?string $voidRedeemId = null;
+    /** @var string|null Redeem status returned for void/reversal TYP flows. */
+    public ?string $voidRedeemStatus = null;
+    /** @var string|null Currency amount voided/reversed for TYP flows. */
+    public ?string $voidCurrencyAmountRedeemed = null;
+    /**
+     * @var string|null Backward-compatible alias for typo key used in some terminal contracts.
+     * @deprecated Use $voidCurrencyAmountRedeemed instead. This property will be removed in a future release.
+     */
+    public ?string $voicCurrencyAmountRedeemed = null;
+    /** @var string|null Points voided/reversed for TYP flows. */
+    public ?string $voidPointsRedeemed = null;
+    /** @var string|null Discount amount voided/reversed for TYP flows. */
+    public ?string $voidDiscountAmountRedeemed = null;
 
     public function __construct($jsonResponse)
     {
@@ -339,7 +365,7 @@ class TransactionResponse extends UpaResponseHandler implements IBatchCloseRespo
                 }
 
             });
-            $debugLevel = rtrim($debugLevel, '|');
+            $debugLevel = rtrim((string)$debugLevel, '|');
         }
 
         $this->debugLevel = $debugLevel;
@@ -403,6 +429,20 @@ class TransactionResponse extends UpaResponseHandler implements IBatchCloseRespo
         $this->customHash = $host->customHash ?? null;
         $this->batchId = $host->batchId ?? null;
         $this->batchSeqNbr = $host->batchSeqNbr ?? null;
+
+        // Thank You Points (TYP) contract fields for Sale and Void/Reversal.
+        $this->redeemId = $host->redeemId ?? null;
+        $this->redeemStatus = $host->redeemStatus ?? null;
+        $this->currencyAmountRedeemed = $host->currencyAmountRedeemed ?? null;
+        $this->pointsRedeemed = $host->pointsRedeemed ?? null;
+        $this->discountAmountRedeemed = $host->discountAmountRedeemed ?? null;
+
+        $this->voidRedeemId = $host->voidRedeemId ?? null;
+        $this->voidRedeemStatus = $host->voidRedeemStatus ?? null;
+        $this->voidCurrencyAmountRedeemed = $host->voidCurrencyAmountRedeemed ?? ($host->voicCurrencyAmountRedeemed ?? null);
+        $this->voicCurrencyAmountRedeemed = $this->voidCurrencyAmountRedeemed;
+        $this->voidPointsRedeemed = $host->voidPointsRedeemed ?? null;
+        $this->voidDiscountAmountRedeemed = $host->voidDiscountAmountRedeemed ?? null;
     }
 
     private function hydratePaymentData(array $data): void

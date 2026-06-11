@@ -97,6 +97,8 @@ class ConnectionConfig extends Configuration implements ITerminalConfiguration
             case DeviceType::UPA_DEVICE:
             case DeviceType::UPA_SATURN_1000:
             case DeviceType::UPA_VERIFONE_T650P:
+            case DeviceType::UPA_VERIFONE_T650C:
+            case DeviceType::UPA_VERIFONE_T660:
                 $services->setDeviceController(new UpaController($this));
                 break;
             case DeviceType::PAX_ARIES8:

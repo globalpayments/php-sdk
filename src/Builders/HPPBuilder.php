@@ -397,20 +397,13 @@ class HPPBuilder extends AuthorizationBuilder
      *
      * @param bool $shippingAddressEnabled Whether shipping address passing will be activated for PayPal
      * @param bool $addressOverride Whether the shipping address can be changed by the customer on PayPal review page
-     * @throws ArgumentException When parameters are not boolean values
      * @return HPPBuilder this
      * 
      */
     public function withApm(bool $shippingAddressEnabled = true, bool $addressOverride = true): static
     {
-        // Validate parameters are boolean values
-        if (!is_bool($shippingAddressEnabled) || !is_bool($addressOverride)) {
-            throw new ArgumentException(
-                'Shipping address enabled and address override must be boolean values'
-            );
-        }
-        $this->apmConfig->shippingAddressEnabled = StringUtils::boolToYesNo($shippingAddressEnabled);
-        $this->apmConfig->addressOverride = StringUtils::boolToYesNo($addressOverride);
+        $this->apmConfig->shippingAddressEnabled = $shippingAddressEnabled;
+        $this->apmConfig->addressOverride = $addressOverride;
         return $this;
     }
    
@@ -509,7 +502,7 @@ class HPPBuilder extends AuthorizationBuilder
      * Execute the hosted payment page request
      * @param string $configName 
      * @throws ArgumentException When validation fails or when required fields are missing
-     * @return Transaction
+     * @return Transaction Containing the HPP URL
      */
     public function execute(string $configName = 'default'): Transaction
     {

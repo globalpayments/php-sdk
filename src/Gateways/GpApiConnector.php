@@ -26,6 +26,7 @@ use GlobalPayments\Api\Entities\GpApi\GpApiTokenResponse;
 use GlobalPayments\Api\Entities\GpApi\GpApiSessionInfo;
 use GlobalPayments\Api\Entities\GpApi\PagedResult;
 use GlobalPayments\Api\Entities\IRequestBuilder;
+use GlobalPayments\Api\Entities\Payer;
 use GlobalPayments\Api\Entities\Reporting\BaseSummary;
 use GlobalPayments\Api\Entities\Reporting\DepositSummary;
 use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
@@ -103,6 +104,50 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
             $request->endpoint
         );
         return $response;
+    }
+
+
+    /**
+     * Create a new payer in GPAPI
+     *
+     * @param array $payerDetails The payer details to create:
+     * @return Payer The created payer entity with generated ID
+     */
+    public function createPayer(array $payerDetails): Payer
+    {
+        if (empty($this->accessToken)) {
+            $this->signIn();
+        }
+        $requestBuilder = new \GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiPayerRequestBuilder();
+        $request = $requestBuilder::buildCreatePayerRequest($payerDetails);
+        $response = $this->doTransaction(
+            $request->httpVerb,
+            $request->endpoint,
+            $request->requestBody
+        );
+        return GpApiMapping::mapPayerResponse($response);
+    }
+
+    /**
+     * Update an existing payer in GPAPI
+     *
+     * @param string $payerId The unique identifier of the payer to update
+     * @param array $payerDetails The payer details to update:
+     * @return Payer The updated payer entity
+     */
+    public function editPayer(string $payerId, array $payerDetails): Payer
+    {
+        if (empty($this->accessToken)) {
+            $this->signIn();
+        }
+        $requestBuilder = new \GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiPayerRequestBuilder();
+        $request = $requestBuilder::buildEditPayerRequest($payerId, $payerDetails);
+        $response = $this->doTransaction(
+            $request->httpVerb,
+            $request->endpoint,
+            $request->requestBody
+        );
+        return GpApiMapping::mapPayerResponse($response);
     }
 
     public function supportsOpenBanking() : bool

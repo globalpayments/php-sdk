@@ -26,6 +26,10 @@ class TerminalSearchBuilder
     public ?string $ecrId = null;
     public ?string $reportOutput = null;
     public ?string $reportType = null;
+    public string|int|null $reportSubType = null;
+    public string|int|null $bothReports = null;
+    public string|int|null $clerkId = null;
+    public string|int|null $previousBatchReport = null;
     public ?string $batch = null;
 
     public function __construct($reportBuilder)

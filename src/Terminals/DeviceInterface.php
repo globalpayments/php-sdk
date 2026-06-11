@@ -85,7 +85,7 @@ abstract class DeviceInterface implements IDeviceInterface
         throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
     }
 
-    public function getSignatureFile(SignatureData $data = null) : ISignatureResponse
+    public function getSignatureFile(?SignatureData $data = null) : ISignatureResponse
     {
         throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
     }
@@ -105,7 +105,7 @@ abstract class DeviceInterface implements IDeviceInterface
         throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
     }
 
-    public function setDebugLevel(array $debugLevels,string $logOutput = null) : DeviceResponse
+    public function setDebugLevel(array $debugLevels, ?string $logOutput = null) : DeviceResponse
     {
         throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
     }
@@ -115,7 +115,7 @@ abstract class DeviceInterface implements IDeviceInterface
         throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
     }
 
-    public function getDebugInfo(string $logDirectory, string $fileIndicator = null) : DeviceResponse
+    public function getDebugInfo(string $logDirectory, ?string $fileIndicator = null) : DeviceResponse
     {
         throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
     }
@@ -137,9 +137,9 @@ abstract class DeviceInterface implements IDeviceInterface
 
     public function lineItem(
         string $leftText,
-        string $rightText = null,
-        string $runningLeftText = null,
-        string $runningRightText = null
+        ?string $rightText = null,
+        ?string $runningLeftText = null,
+        ?string $runningRightText = null
     ) : DeviceResponse
     {
         throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
@@ -150,7 +150,7 @@ abstract class DeviceInterface implements IDeviceInterface
         throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
     }
 
-    public function promptForSignature(string $transactionId = null)
+    public function promptForSignature(?string $transactionId = null)
     {
         throw new UnsupportedTransactionException(self::ERROR_MESSAGE);
     }
@@ -487,7 +487,15 @@ abstract class DeviceInterface implements IDeviceInterface
         );
     }
 
-    public function getBatchDetails(?string $batchId = null,bool $printReport = false, string|BatchReportType $reportType = null): ITerminalReport
+    public function getBatchDetails(
+        ?string $batchId = null,
+        bool $printReport = false,
+        string|BatchReportType|null $reportType = null,
+        string|int|null $reportSubType = null,
+        string|int|null $bothReports = null,
+        string|int|null $clerkId = null,
+        string|int|null $previousBatchReport = null
+    ): ITerminalReport
     {
         throw new UnsupportedTransactionException(
             "This method is not supported by the currently configured device."

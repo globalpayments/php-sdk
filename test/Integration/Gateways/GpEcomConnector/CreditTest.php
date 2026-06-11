@@ -7,6 +7,7 @@ use GlobalPayments\Api\Entities\Enums\CreditDebitIndicator;
 use GlobalPayments\Api\Entities\Enums\DccProcessor;
 use GlobalPayments\Api\Entities\Enums\DccRateType;
 use GlobalPayments\Api\Entities\Enums\RecurringSequence;
+use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpEcomConfig;
@@ -15,6 +16,7 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use GlobalPayments\Api\Utils\GenerationUtils;
 use GlobalPayments\Api\Utils\Logging\Logger;
+use GlobalPayments\Api\Utils\Logging\RequestConsoleLogger;
 use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 use PHPUnit\Framework\TestCase;
 
@@ -318,6 +320,53 @@ class CreditTest extends TestCase
         $this->assertEquals('00', $capture->responseCode, $capture->responseMessage);
     }
 
+    public function testVisaDirectAftAuth()
+    {
+        $config = $this->getConfig();
+        $config->requestLogger = new RequestConsoleLogger();
+        ServicesContainer::configureService($config);
+
+        $authorize = $this->card->authorize(10)
+            ->withCurrency('GBP')
+            ->withSupplementaryData('VisaDirect', $this->visaDirectFields())
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $this->assertNotNull($authorize);
+        $this->assertEquals('00', $authorize->responseCode, $authorize->responseMessage);
+    }
+
+    public function testVisaDirectAftAuthRequiresEightFields()
+    {
+        ServicesContainer::configureService($this->getConfig());
+
+        $this->expectException(BuilderException::class);
+        $this->expectExceptionMessage('VisaDirect supplementary data must contain 8 fields');
+
+        $this->card->authorize(10)
+            ->withCurrency('GBP')
+            ->withSupplementaryData('VisaDirect', array_slice($this->visaDirectFields(), 0, 7))
+            ->withAllowDuplicates(true)
+            ->execute();
+    }
+
+    public function testVisaDirectAftAuthFailsWithTooManyFields()
+    {
+        ServicesContainer::configureService($this->getConfig());
+
+        $this->expectException(BuilderException::class);
+        $this->expectExceptionMessage('VisaDirect supplementary data must contain 8 fields');
+
+        $fields = $this->visaDirectFields();
+        $fields[] = 'EXTRA_FIELD';
+
+        $this->card->authorize(10)
+            ->withCurrency('GBP')
+            ->withSupplementaryData('VisaDirect', $fields)
+            ->withAllowDuplicates(true)
+            ->execute();
+    }
+
     public function testCardBlockingPaymentRequest()
     {
         $cardTypesBlocked = new BlockedCardType();
@@ -328,9 +377,62 @@ class CreditTest extends TestCase
             ->withCurrency('USD')
             ->withBlockedCardType($cardTypesBlocked)
             ->execute();
-
         $this->assertNotNull($authorization);
         $this->assertEquals('00', $authorization->responseCode);
+    }
+
+    public function testVisaDirectAftAuthEcomChannel()
+    {
+        $config = $this->getConfigWithChannel('ECOM');
+        $config->requestLogger = new RequestConsoleLogger();
+        ServicesContainer::configureService($config);
+
+        $authorize = $this->card->authorize(10)
+            ->withCurrency('GBP')
+            ->withSupplementaryData('VisaDirect', $this->visaDirectFields())
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $this->assertNotNull($authorize);
+        $this->assertEquals('00', $authorize->responseCode, $authorize->responseMessage);
+    }
+
+    public function testVisaDirectAftAuthMotoChannel()
+    {
+        $config = $this->getConfigWithChannel('MOTO');
+        $config->requestLogger = new RequestConsoleLogger();
+        ServicesContainer::configureService($config);
+
+        $authorize = $this->card->authorize(10)
+            ->withCurrency('GBP')
+            ->withSupplementaryData('VisaDirect', $this->visaDirectFields())
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $this->assertNotNull($authorize);
+        $this->assertEquals('00', $authorize->responseCode, $authorize->responseMessage);
+    }
+
+    private function visaDirectFields(): array
+    {
+        return [
+            'REF123456',
+            '9876543210',
+            'John Smith',
+            '10 High Street',
+            'Nottingham',
+            'GBR',
+            '02',
+            '123456789',
+        ];
+    }
+
+    protected function getConfigWithChannel(string $channel): GpEcomConfig
+    {
+        $config = $this->getConfig();
+        $config->channel = $channel;
+
+        return $config;
     }
 
     public function testCreditChargeWithSurchargeAmount()

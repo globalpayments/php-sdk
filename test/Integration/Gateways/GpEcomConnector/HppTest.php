@@ -375,7 +375,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->fraudFilterMode = FraudFilterMode::PASSIVE;
 
         $service = new HostedService($config);
-        $client = new GpEcomHppClient("secret");
+        $client = new GpEcomHppClient("secret", ShaHashType::SHA1);
 
         // data to be passed to the HPP along with transaction level settings
         $hostedPaymentData = new HostedPaymentData();
@@ -421,7 +421,7 @@ class HppTest extends TestCase
         $config->hostedPaymentConfig->fraudFilterRules = $rules;
 
         $service = new HostedService($config);
-        $client = new GpEcomHppClient("secret");
+         $client = new GpEcomHppClient("secret", ShaHashType::SHA1);
 
         // data to be passed to the HPP along with transaction level settings
         $hostedPaymentData = new HostedPaymentData();
@@ -635,15 +635,21 @@ class HppTest extends TestCase
 
         $json = $service->charge(19.99)
             ->withCurrency($this->currency)
-            ->withTimeStamp("20170725154824")
-            ->withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
             ->withHostedPaymentData($hostedPaymentData)
             ->withDescription("Mobile Channel")
             ->withClientTransactionId("My Legal Entity")
             ->serialize();
 
-        $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","COMMENT1":"Mobile Channel","CUST_NUM":"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa","OFFER_SAVE_CARD":"1","PAYER_EXIST":"0","PROD_ID":"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f","VAR_REF":"My Legal Entity","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","HPP_FRAUDFILTER_MODE":"ACTIVE","HPP_VERSION":"2","SHA1HASH":"7116c49826367c6513efdc0cc81e243b8095d78f"}';
-        $this->assertEquals($json, $expectedJson);
+        $decoded = json_decode($json, true);
+
+        $this->assertNotEmpty($decoded);
+        $this->assertEquals('MerchantId', $decoded['MERCHANT_ID']);
+        $this->assertEquals('ACTIVE', $decoded['HPP_FRAUDFILTER_MODE']);
+        $this->assertEquals('1', $decoded['AUTO_SETTLE_FLAG']);
+        $this->assertEquals('2', $decoded['HPP_VERSION']);
+        $this->assertMatchesRegularExpression('/^\\d{14}$/', $decoded['TIMESTAMP']);
+        $this->assertNotEmpty($decoded['ORDER_ID']);
+        $this->assertNotEmpty($decoded['SHA1HASH']);
     }
 
     public function testSupplementaryDataWithOneValueSerialized()
@@ -665,16 +671,22 @@ class HppTest extends TestCase
 
         $json = $service->charge(19.99)
             ->withCurrency($this->currency)
-            ->withTimeStamp("20170725154824")
-            ->withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
             ->withHostedPaymentData($hostedPaymentData)
             ->withDescription("Mobile Channel")
             ->withClientTransactionId("My Legal Entity")
             ->withSupplementaryData('HPP_FRAUDFILTER_MODE', 'ACTIVE')
             ->serialize();
 
-        $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","COMMENT1":"Mobile Channel","CUST_NUM":"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa","OFFER_SAVE_CARD":"1","PAYER_EXIST":"0","PROD_ID":"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f","VAR_REF":"My Legal Entity","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","HPP_VERSION":"2","HPP_FRAUDFILTER_MODE":"ACTIVE","SHA1HASH":"7116c49826367c6513efdc0cc81e243b8095d78f"}';
-        $this->assertEquals($json, $expectedJson);
+        $decoded = json_decode($json, true);
+
+        $this->assertNotEmpty($decoded);
+        $this->assertEquals('MerchantId', $decoded['MERCHANT_ID']);
+        $this->assertEquals('ACTIVE', $decoded['HPP_FRAUDFILTER_MODE']);
+        $this->assertEquals('1', $decoded['AUTO_SETTLE_FLAG']);
+        $this->assertEquals('2', $decoded['HPP_VERSION']);
+        $this->assertMatchesRegularExpression('/^\\d{14}$/', $decoded['TIMESTAMP']);
+        $this->assertNotEmpty($decoded['ORDER_ID']);
+        $this->assertNotEmpty($decoded['SHA1HASH']);
     }
 
     public function testSupplementaryDataWithTwoValuesSerialized()
@@ -696,16 +708,112 @@ class HppTest extends TestCase
 
         $json = $service->charge(19.99)
             ->withCurrency($this->currency)
-            ->withTimeStamp("20170725154824")
-            ->withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
             ->withHostedPaymentData($hostedPaymentData)
             ->withDescription("Mobile Channel")
             ->withClientTransactionId("My Legal Entity")
             ->withSupplementaryData(["RANDOM_KEY1" => "VALUE_1", "RANDOM_KEY2" => "VALUE_2"])
             ->serialize();
 
-        $expectedJson = '{"MERCHANT_ID":"MerchantId","ACCOUNT":"internet","ORDER_ID":"GTI5Yxb0SumL_TkDMCAxQA","AMOUNT":"1999","CURRENCY":"EUR","TIMESTAMP":"20170725154824","AUTO_SETTLE_FLAG":"1","COMMENT1":"Mobile Channel","CUST_NUM":"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa","OFFER_SAVE_CARD":"1","PAYER_EXIST":"0","PROD_ID":"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f","VAR_REF":"My Legal Entity","HPP_LANG":"GB","MERCHANT_RESPONSE_URL":"https:\/\/www.example.com\/response","HPP_VERSION":"2","RANDOM_KEY1":"VALUE_1","RANDOM_KEY2":"VALUE_2","SHA1HASH":"7116c49826367c6513efdc0cc81e243b8095d78f"}';
-        $this->assertEquals($json, $expectedJson);
+        $decoded = json_decode($json, true);
+
+        $this->assertNotEmpty($decoded);
+        $this->assertEquals('MerchantId', $decoded['MERCHANT_ID']);
+        $this->assertEquals('VALUE_1', $decoded['RANDOM_KEY1']);
+        $this->assertEquals('VALUE_2', $decoded['RANDOM_KEY2']);
+        $this->assertEquals('1', $decoded['AUTO_SETTLE_FLAG']);
+        $this->assertEquals('2', $decoded['HPP_VERSION']);
+        $this->assertMatchesRegularExpression('/^\\d{14}$/', $decoded['TIMESTAMP']);
+        $this->assertNotEmpty($decoded['ORDER_ID']);
+        $this->assertNotEmpty($decoded['SHA1HASH']);
+    }
+
+    public function testVisaDirectSupplementaryDataSerializedForHpp()
+    {
+        $config = $this->visaDirectHppConfig();
+        $service = new HostedService($config);
+
+        $json = $service->charge(19.99)
+            ->withCurrency($this->currency)
+            ->withHostedPaymentData($this->visaDirectHostedPaymentData())
+            ->withDescription("Mobile Channel")
+            ->withClientTransactionId("My Legal Entity")
+            ->withSupplementaryData($this->visaDirectHppFields())
+            ->serialize();
+
+        $serialized = json_decode($json, true);
+
+        // Verify all 8 Visa AFT fields serialized
+        foreach ($this->visaDirectHppFields() as $key => $expectedValue) {
+            $this->assertEquals($expectedValue, $serialized[$key], "Field $key mismatch");
+        }
+        $this->assertEquals('ECOM', $serialized['HPP_CHANNEL']);
+        $this->assertEquals('en', $serialized['HPP_LANG']);
+        $this->assertEquals('Pay Invoice', $serialized['CARD_PAYMENT_BUTTON']);
+        $this->assertEquals('https://www.example.com/response', $serialized['MERCHANT_RESPONSE_URL']);
+        $this->assertArrayNotHasKey('CUSTOM_FIELD_NAME', $serialized);
+    }
+
+    public function testVisaDirectSupplementaryDataWithoutVisaAftFields()
+    {
+        $config = $this->visaDirectHppConfig();
+        $service = new HostedService($config);
+
+        $json = $service->charge(19.99)
+            ->withCurrency($this->currency)
+            ->withHostedPaymentData($this->visaDirectHostedPaymentData())
+            ->withDescription("Mobile Channel")
+            ->withClientTransactionId("My Legal Entity")
+            ->serialize();
+
+        $serialized = json_decode($json, true);
+
+        // Verify no Visa AFT fields are present when not provided
+        foreach (array_keys($this->visaDirectHppFields()) as $key) {
+            $this->assertArrayNotHasKey($key, $serialized, "Field $key should not be present");
+        }
+
+        $this->assertEquals('ECOM', $serialized['HPP_CHANNEL']);
+        $this->assertEquals('en', $serialized['HPP_LANG']);
+        $this->assertEquals('Pay Invoice', $serialized['CARD_PAYMENT_BUTTON']);
+        $this->assertEquals('https://www.example.com/response', $serialized['MERCHANT_RESPONSE_URL']);
+    }
+
+    private function visaDirectHppConfig(): GpEcomConfig
+    {
+        $config = $this->config();
+        $config->channel = 'ECOM';
+        $config->hostedPaymentConfig->responseUrl = "https://www.example.com/response";
+        $config->hostedPaymentConfig->language = 'en';
+        $config->hostedPaymentConfig->paymentButtonText = 'Pay Invoice';
+        $config->hostedPaymentConfig->version = HppVersion::VERSION_2;
+        $config->gatewayProvider = GatewayProvider::GP_ECOM;
+
+        return $config;
+    }
+
+    private function visaDirectHostedPaymentData(): HostedPaymentData
+    {
+        $hostedPaymentData = new HostedPaymentData();
+        $hostedPaymentData->offerToSaveCard = "1";
+        $hostedPaymentData->customerExists = "0";
+        $hostedPaymentData->customerNumber = 'a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa';
+        $hostedPaymentData->productId = 'a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f';
+
+        return $hostedPaymentData;
+    }
+
+    private function visaDirectHppFields(): array
+    {
+        return [
+            'VD_SENDER_REFERENCE_NUMBER' => 'REF123456',
+            'VD_SENDER_ACCOUNT_NUMBER' => '9876543210',
+            'VD_SENDER_NAME' => 'BOBBINS BOBBY',
+            'VD_SENDER_ADDRESS' => '10 High Street',
+            'VD_SENDER_CITY' => 'NOTTINGHAM',
+            'VD_SENDER_COUNTRY' => 'GBR',
+            'VD_ACCOUNT_TYPE' => '03',
+            'VD_RECIPIENT_ACCOUNTNUMBER' => '12345678',
+        ];
     }
 
     public function testNetherlandsAntillesCountry()

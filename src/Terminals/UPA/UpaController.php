@@ -207,7 +207,11 @@ class UpaController extends DeviceController
         return TerminalUtils::buildUpaRequest($requestMessage);
     }
 
-    private function mapTransactionType($type, $trnModifier = null, IPaymentMethod $paymentMethod = null)
+    private function mapTransactionType(
+        int|string $type,
+        int|string|null $trnModifier = null,
+        ?IPaymentMethod $paymentMethod = null
+    )
     {
         switch ($type) {
             case TransactionType::SALE:
@@ -326,7 +330,7 @@ class UpaController extends DeviceController
         }
     }
 
-    private function buildReportTransaction(TerminalReportBuilder $builder) : IDeviceMessage
+    protected function buildReportTransaction(TerminalReportBuilder $builder) : IDeviceMessage
     {
         $requestId = $builder->searchBuilder->referenceNumber;
         if (empty($requestId) && isset($this->requestIdProvider)) {
@@ -352,6 +356,10 @@ class UpaController extends DeviceController
                 $requestMessage['data']["params"] = [
                     "reportOutput" => $builder->searchBuilder->reportOutput ?? null,
                     "reportType" => $builder->searchBuilder->reportType ?? null,
+                    "reportSubType" => $builder->searchBuilder->reportSubType ?? null,
+                    "bothReports" => $builder->searchBuilder->bothReports ?? null,
+                    "clerkId" => $builder->searchBuilder->clerkId ?? null,
+                    "previousBatchReport" => $builder->searchBuilder->previousBatchReport ?? null,
                     "batch" => $builder->searchBuilder->batch ?? null
                 ];
                 break;
@@ -374,7 +382,7 @@ class UpaController extends DeviceController
                 return UpaMessageId::GET_SAF_REPORT;
             case TerminalReportType::GET_BATCH_REPORT:
                 return UpaMessageId::GET_BATCH_REPORT;
-            case TerminalReportType::FIND_BATCHES;
+            case TerminalReportType::FIND_BATCHES:
                 return UpaMessageId::AVAILABLE_BATCHES;
             case TerminalReportType::GET_BATCH_DETAILS:
                 return UpaMessageId::GET_BATCH_DETAILS;

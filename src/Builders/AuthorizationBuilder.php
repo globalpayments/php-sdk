@@ -265,6 +265,14 @@ class AuthorizationBuilder extends TransactionBuilder
     public HostedPaymentData|HPPData|null $hostedPaymentData = null;
 
     /**
+     * Request supplementary data for Visa AFT (HPP only)
+     *
+     * @internal
+     * @var array<string, string>|null
+     */
+    public ?array $supplementaryDataVisaAft = null;
+
+    /**
      * Request invoice number
      *
      * @internal
@@ -1328,6 +1336,59 @@ class AuthorizationBuilder extends TransactionBuilder
     {
         $this->hostedPaymentData = $hostedPaymentData;
         return $this;
+    }
+
+    /**
+     * Set supplementary data for Visa AFT or generic supplementary data.
+     *
+     * For Visa AFT (XML auth path), use the varargs style with 8 ordered fields:
+     *   ->withSupplementaryData('VisaDirect', [
+     *       'SenderRefNum', 'SenderAcctNum', 'SenderName', 'SenderAddress',
+     *       'SenderCity', 'SenderCountry', 'AccountNumberType', 'RecipientAccountNumber'
+     *   ])
+     * This stores to supplementaryDataVisaAft with VD_ prefixed keys for HPP gateway serialization
+     * and populates supplementaryData for XML request building.
+     *
+     * For HPP with explicit keys, use:
+     *   ->withSupplementaryData(['VD_SENDER_REFERENCE_NUMBER' => 'val', 'VD_SENDER_ACCOUNT_NUMBER' => 'val', ...])
+     * This stores directly to supplementaryData for HPP serialization.
+     *
+     * All other supplementary data uses the parent implementation.
+     *
+     * @param mixed $key Single key, or array of key-value pairs
+     * @param mixed $value Single value (array for Visa AFT), or null when key is array
+     *
+     * @return static
+     * @throws BuilderException if VisaDirect key is detected but field count is not 8
+     */
+    public function withSupplementaryData($key, $value = null): static
+    {
+        // Visa AFT detection: varargs style with "VisaDirect" key and 8-element array value
+        if (is_string($key) && is_array($value) && strtolower($key) === 'visadirect') {
+            if (count($value) !== 8) {
+                throw new BuilderException(
+                    'VisaDirect supplementary data must contain 8 fields in order: '
+                    . 'Sender Reference Number, Sender Account Number, Sender Name, Sender Address, '
+                    . 'Sender City, Sender Country, Account Number Type, Recipient Account Number.'
+                );
+            }
+            // Map Visa AFT ordered fields to VD_ prefixed keys for HPP gateway serialization
+            $this->supplementaryDataVisaAft = [
+                'VD_SENDER_REFERENCE_NUMBER' => $value[0] ?? null,
+                'VD_SENDER_ACCOUNT_NUMBER' => $value[1] ?? null,
+                'VD_SENDER_NAME' => $value[2] ?? null,
+                'VD_SENDER_ADDRESS' => $value[3] ?? null,
+                'VD_SENDER_CITY' => $value[4] ?? null,
+                'VD_SENDER_COUNTRY' => $value[5] ?? null,
+                'VD_ACCOUNT_TYPE' => $value[6] ?? null,
+                'VD_RECIPIENT_ACCOUNTNUMBER' => $value[7] ?? null,
+            ];
+            // Also store in supplementaryData for XML request building path
+            return parent::withSupplementaryData($key, $value);
+        }
+
+        // All other supplementary data (including map-like arrays) use parent implementation
+        return parent::withSupplementaryData($key, $value);
     }
 
     /**

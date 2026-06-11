@@ -355,4 +355,160 @@ class PayerTest extends TestCase
 
         $connector->getPayerById('');
     }
+
+    public function testCreatePayer_GpApi()
+    {
+        /** @var \GlobalPayments\Api\Gateways\GpApiConnector $connector */
+        $connector = ServicesContainer::instance()->getClient('default');
+        $guid = GenerationUtils::getGuid();
+
+        $payerDetails = [
+            'email' => 'james.mason' . $guid . '@example.com',
+            'first_name' => 'James',
+            'last_name' => 'Mason',
+            'reference' => 'payer-ref-' . $guid,
+        ];
+
+        /** @var \GlobalPayments\Api\Entities\Payer $payer */
+        $payer = $connector->createPayer($payerDetails);
+
+        $this->assertInstanceOf(\GlobalPayments\Api\Entities\Payer::class, $payer);
+        $this->assertNotNull($payer->id);
+        $guidPos = strpos($payer->email, $guid);
+        $this->assertNotFalse($guidPos);
+
+        $this->assertEquals(substr($payerDetails['email'], $guidPos), substr($payer->email, $guidPos));
+        $this->assertEquals($payerDetails['first_name'][0] . str_repeat('X', max(0, strlen($payerDetails['first_name']) - 1)), $payer->firstName);
+        $this->assertEquals($payerDetails['last_name'][0] . str_repeat('X', max(0, strlen($payerDetails['last_name']) - 1)), $payer->lastName);
+        $this->assertEquals($payerDetails['reference'], $payer->reference);
+    }
+
+    public function testCreatePayer_WithoutFirstName_GpApi()
+    {
+        /** @var \GlobalPayments\Api\Gateways\GpApiConnector $connector */
+        $connector = ServicesContainer::instance()->getClient('default');
+
+        $payerDetails = [
+            'email' => 'test' . GenerationUtils::getGuid() . '@example.com',
+            'last_name' => 'Mason'
+        ];
+
+        $exceptionCaught = false;
+        try {
+            $connector->createPayer($payerDetails);
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertStringContainsString('MANDATORY_DATA_MISSING', $e->getMessage());
+            $this->assertStringContainsString('first_name', $e->getMessage());
+            $this->assertEquals('40005', $e->responseCode);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testEditPayer_GpApi()
+    {
+        /** @var \GlobalPayments\Api\Gateways\GpApiConnector $connector */
+        $connector = ServicesContainer::instance()->getClient('default');
+        $guid = GenerationUtils::getGuid();
+        // First, create a payer to edit
+        $payerDetails = [
+            'email' => 'edit.test' . $guid . '@example.com',
+            'first_name' => 'Original',
+            'last_name' => 'Name',
+            'reference' => 'ref-' . $guid
+        ];
+
+        /** @var \GlobalPayments\Api\Entities\Payer $createdPayer */
+        $createdPayer = $connector->createPayer($payerDetails);
+        $this->assertNotNull($createdPayer->id);
+
+        // Now edit the payer
+        $updateDetails = [
+            'first_name' => 'Updated',
+            'last_name' => 'Name',
+            'email' => 'updated.email' . $guid . '@example.com',
+        ];
+
+        /** @var \GlobalPayments\Api\Entities\Payer $updatedPayer */
+        $updatedPayer = $connector->editPayer($createdPayer->id, $updateDetails);
+
+        $this->assertInstanceOf(\GlobalPayments\Api\Entities\Payer::class, $updatedPayer);
+        $this->assertEquals($createdPayer->id, $updatedPayer->id);
+        $this->assertStringContainsString($updateDetails['first_name'][0] . str_repeat('X', max(0, strlen($updateDetails['first_name']) - 1)), $updatedPayer->firstName);
+        $guidPos = strpos($updatedPayer->email, $guid);
+        $this->assertStringContainsString(substr($updateDetails['email'], $guidPos), substr($updatedPayer->email, $guidPos));
+    }
+
+    public function testEditPayer_PartialUpdate_GpApi()
+    {
+        /** @var \GlobalPayments\Api\Gateways\GpApiConnector $connector */
+        $connector = ServicesContainer::instance()->getClient('default');
+
+        // First, create a payer to edit
+        $payerDetails = [
+            'email' => 'partial.test' . GenerationUtils::getGuid() . '@example.com',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'reference' => 'ref-' . GenerationUtils::getGuid()
+        ];
+
+        /** @var \GlobalPayments\Api\Entities\Payer $createdPayer */
+        $createdPayer = $connector->createPayer($payerDetails);
+        $this->assertNotNull($createdPayer->id);
+
+        // Update only the first name
+        $updateDetails = [
+            'first_name' => 'Jane'
+        ];
+
+        /** @var \GlobalPayments\Api\Entities\Payer $updatedPayer */
+        $updatedPayer = $connector->editPayer($createdPayer->id, $updateDetails);
+
+        $this->assertInstanceOf(\GlobalPayments\Api\Entities\Payer::class, $updatedPayer);
+        $this->assertEquals($createdPayer->id, $updatedPayer->id);
+        $this->assertStringContainsString($updateDetails['first_name'][0] . str_repeat('X', max(0, strlen($updateDetails['first_name']) - 1)), $updatedPayer->firstName);
+    }
+
+    public function testEditPayer_WithInvalidId_GpApi()
+    {
+        /** @var \GlobalPayments\Api\Gateways\GpApiConnector $connector */
+        $connector = ServicesContainer::instance()->getClient('default');
+
+        $invalidPayerId = 'PYR_' . GenerationUtils::getGuid();
+        $updateDetails = [
+            'first_name' => 'Updated'
+        ];
+
+        $exceptionCaught = false;
+        try {
+            $connector->editPayer($invalidPayerId, $updateDetails);
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertStringContainsString('RESOURCE_NOT_FOUND', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testEditPayer_WithEmptyId_GpApi()
+    {
+        /** @var \GlobalPayments\Api\Gateways\GpApiConnector $connector */
+        $connector = ServicesContainer::instance()->getClient('default');
+
+        $updateDetails = [
+            'first_name' => 'Updated'
+        ];
+
+        $exceptionCaught = false;
+        try {
+            $connector->editPayer('', $updateDetails);
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            
+            $this->assertStringContainsString('INVALID_REQUEST_DATA', $e->getMessage());
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
 }

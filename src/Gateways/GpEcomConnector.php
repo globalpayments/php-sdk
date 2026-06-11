@@ -44,6 +44,18 @@ class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringS
     /** @var GpEcomConfig */
     private $config;
 
+    /** Whitelist of allowed Visa AFT field names for HPP */
+    private const ALLOWED_VISA_AFT_KEYS = [
+        'VD_SENDER_REFERENCE_NUMBER',
+        'VD_SENDER_ACCOUNT_NUMBER',
+        'VD_SENDER_NAME',
+        'VD_SENDER_ADDRESS',
+        'VD_SENDER_CITY',
+        'VD_SENDER_COUNTRY',
+        'VD_ACCOUNT_TYPE',
+        'VD_RECIPIENT_ACCOUNTNUMBER'
+    ];
+
     public function __construct(GpEcomConfig $config)
     {
         parent::__construct();
@@ -427,6 +439,13 @@ class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringS
         }
         if (!empty($builder->supplementaryData)) {
             $this->serializeSupplementaryData($builder->supplementaryData);
+        }
+        if (!empty($builder->supplementaryDataVisaAft)) {
+            foreach ($builder->supplementaryDataVisaAft as $key => $value) {
+                if (in_array($key, self::ALLOWED_VISA_AFT_KEYS, true)) {
+                    $this->setSerializeData($key, $value);
+                }
+            }
         }
 
         $toHash = [

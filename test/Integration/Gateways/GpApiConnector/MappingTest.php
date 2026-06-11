@@ -221,4 +221,75 @@ class MappingTest extends TestCase
         $this->assertEquals($doc->last_adjustment_currency, $disputeSummary->lastAdjustmentCurrency);
         $this->assertEquals($doc->last_adjustment_funding, $disputeSummary->lastAdjustmentFunding);
     }
+
+    public function testMapResponseAPMNormalizesRedirectUrlPathAndPreservesQueryAndFragment()
+    {
+        $response = $this->createApmResponse("https://example.com//checkout///redirect?token=abc#step");
+
+        $transaction = GpApiMapping::mapResponseAPM($response);
+
+        $this->assertEquals(
+            "https://example.com/checkout/redirect?token=abc#step",
+            $transaction->alternativePaymentResponse->redirectUrl
+        );
+    }
+
+    public function testMapResponseAPMReturnsNullRedirectUrlWhenRedirectUrlIsNotAString()
+    {
+        $response = $this->createApmResponse(123);
+
+        $transaction = GpApiMapping::mapResponseAPM($response);
+
+        $this->assertNull($transaction->alternativePaymentResponse->redirectUrl);
+    }
+
+    public function testMapResponseAPMPreservesOriginalRedirectUrlWhenSchemeOrHostIsMissing()
+    {
+        $response = $this->createApmResponse('/checkout//redirect?token=abc#step');
+
+        $transaction = GpApiMapping::mapResponseAPM($response);
+
+        $this->assertEquals(
+            '/checkout//redirect?token=abc#step',
+            $transaction->alternativePaymentResponse->redirectUrl
+        );
+    }
+
+    public function testMapResponseAPMPreservesOriginalRedirectUrlWhenUrlCannotBeParsed()
+    {
+        $response = $this->createApmResponse("https://example.com:bad-port//redirect?token=abc#step");
+
+        $transaction = GpApiMapping::mapResponseAPM($response);
+
+        $this->assertEquals(
+            "https://example.com:bad-port//redirect?token=abc#step",
+            $transaction->alternativePaymentResponse->redirectUrl
+        );
+    }
+
+    /**
+     * @param mixed $redirectUrl
+     * @return stdClass
+     */
+    private function createApmResponse(mixed $redirectUrl): stdClass
+    {
+        $response = new stdClass();
+        $response->id = 'TRN_TEST_REDIRECT';
+        $response->status = 'PREAUTHORIZED';
+        $response->amount = '';
+        $response->type = 'SALE';
+        $response->action = (object) [
+            'result_code' => 'SUCCESS',
+            'type' => 'PREAUTHORIZE',
+        ];
+        $response->payment_method = (object) [
+            'result' => '00',
+            'redirect_url' => $redirectUrl,
+            'apm' => (object) [
+                'provider' => 'ERATY',
+            ],
+        ];
+
+        return $response;
+    }
 }

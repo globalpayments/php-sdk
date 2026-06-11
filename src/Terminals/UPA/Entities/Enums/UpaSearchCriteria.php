@@ -10,4 +10,8 @@ class UpaSearchCriteria extends Enum
     const BATCH = 'batch';
     const REPORT_OUTPUT = 'reportOutput';
     const REPORT_TYPE = 'reportType';
+    const REPORT_SUB_TYPE = 'reportSubType';
+    const BOTH_REPORTS = 'bothReports';
+    const CLERK_ID = 'clerkId';
+    const PREVIOUS_BATCH_REPORT = 'previousBatchReport';
 }

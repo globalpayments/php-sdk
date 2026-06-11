@@ -14,6 +14,7 @@ use GlobalPayments\Api\Entities\{
 };
 use GlobalPayments\Api\Entities\Enums\{
     AddressType,
+    AlternativePaymentType,
     BankPaymentType,
     CaptureMode,
     CardType,
@@ -31,7 +32,7 @@ use GlobalPayments\Api\Entities\Enums\{
     TransactionModifier,
     TransactionType
 };
-use GlobalPayments\Api\Entities\Exceptions\{ApiException, UnsupportedTransactionException};
+use GlobalPayments\Api\Entities\Exceptions\{ApiException, ArgumentException, UnsupportedTransactionException};
 use GlobalPayments\Api\Entities\GpApi\DTO\{Card, PaymentMethod};
 use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Gateways\OpenBankingProvider;
@@ -279,11 +280,19 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                             }
                         }
                         
-                        // Address match indicator
-                        if (!empty($payer->addressMatchIndicator)) {
-                            $requestData['payer']['address_match_indicator'] = is_bool($payer->addressMatchIndicator) 
-                                ? StringUtils::boolToYesNo($payer->addressMatchIndicator) 
-                                : "NO";
+                        // Address match indicator - PayerDetails::$addressMatchIndicator is ?string.
+                        // Accepts: boolean (via withAddressMatchIndicator), or string ('yes'/'no'/'YES'/'NO').
+                        // Normalize case variants (yes/Yes/YES -> YES, no/No/NO -> NO).
+                        if (isset($payer->addressMatchIndicator)) {
+                            $rawAddressMatchIndicator = trim($payer->addressMatchIndicator);
+                            if ($rawAddressMatchIndicator === '') {
+                                throw new ArgumentException('address_match_indicator must not be empty or whitespace; use YES or NO');
+                            }
+                            $normalizedAddressMatchIndicator = strtoupper($rawAddressMatchIndicator);
+                            if (!in_array($normalizedAddressMatchIndicator, ['YES', 'NO'], true)) {
+                                throw new ArgumentException('address_match_indicator must be YES or NO');
+                            }
+                            $requestData['payer']['address_match_indicator'] = $normalizedAddressMatchIndicator;
                         }
                     }
                     
@@ -655,6 +664,19 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
      */
     private function setPayerInformation($builder)
     {
+        if (
+            $builder->paymentMethod instanceof AlternativePaymentMethod
+            && $builder->paymentMethod->alternativePaymentMethodType === AlternativePaymentType::ERATY
+        ) {
+            return [
+                'reference' => $builder->customerId
+                    ?? (!empty($builder->customerData) ? $builder->customerData->key : null),
+                'country' => $builder->paymentMethod->country
+                    ?? (!empty($builder->billingAddress) ? $builder->billingAddress->countryCode : null),
+                'email' => !empty($builder->customerData) ? $builder->customerData->email : null
+            ];
+        }
+
         $payer['id'] = !empty($builder->customerId) ?
             $builder->customerId : (!empty($builder->customerData) ? $builder->customerData->id : null);
         $payer['reference'] = !empty($builder->customerData) ? $builder->customerData->key : null;
@@ -864,6 +886,24 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     'address_override_mode' => !empty($paymentMethodContainer->addressOverrideMode) ?
                         $paymentMethodContainer->addressOverrideMode : null
                 ];
+                if (!empty($paymentMethodContainer->category)) {
+                    $paymentMethod->apm['category'] = $paymentMethodContainer->category;
+                } elseif ($paymentMethodContainer->alternativePaymentMethodType === AlternativePaymentType::ERATY) {
+                    $paymentMethod->apm['category'] = 'BNPL';
+                }
+                if (!empty($paymentMethodContainer->terms)) {
+                    $paymentMethod->apm['terms'] = [
+                        'time_unit' => $paymentMethodContainer->terms->time_unit
+                            ?? $paymentMethodContainer->terms->timeUnit
+                            ?? null,
+                        'count' => !empty($paymentMethodContainer->terms->count)
+                            ? (string) $paymentMethodContainer->terms->count
+                            : (!empty($paymentMethodContainer->terms->timeUnitNumbers)
+                                ? (string) $paymentMethodContainer->terms->timeUnitNumbers
+                                : null),
+                        'mode' => $paymentMethodContainer->terms->mode ?? null
+                    ];
+                }
                 $paymentMethod->bank_transfer = [
                     'bank' => [
                         'name' => $paymentMethodContainer->bank

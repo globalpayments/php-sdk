@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\PaymentMethods;
 
 use GlobalPayments\Api\Builders\AuthorizationBuilder;
+use GlobalPayments\Api\Entities\Terms;
 use GlobalPayments\Api\Entities\Enums\{
     BankList,
     PaymentMethodType,
@@ -98,6 +99,20 @@ class AlternativePaymentMethod implements
 
     /** @var BankList */
     public mixed $bank = null;
+
+    /**
+     * The APM category. For eRaty this should be BNPL.
+     *
+     * @var string
+     */
+    public ?string $category = null;
+
+    /**
+     * Optional installment terms used by selected APM providers.
+     *
+     * @var Terms
+     */
+    public ?Terms $terms = null;
     
     public function __construct($alternativePaymentMethodType)
     {

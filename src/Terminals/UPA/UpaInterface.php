@@ -229,9 +229,9 @@ class UpaInterface extends DeviceInterface
 
     public function lineItem(
         string $leftText,
-        string $rightText = null,
-        string $runningLeftText = null,
-        string $runningRightText = null
+        ?string $rightText = null,
+        ?string $runningLeftText = null,
+        ?string $runningRightText = null
     ): DeviceResponse
     {
         if (empty($leftText)) {
@@ -353,7 +353,15 @@ class UpaInterface extends DeviceInterface
         return new UpaBatchReport($rawResponse, UpaMessageId::GET_BATCH_REPORT);
     }
 
-    public function getBatchDetails(?string $batchId = null, bool $printReport = false, string|BatchReportType $reportType = null) : ITerminalReport
+    public function getBatchDetails(
+        ?string $batchId = null,
+        bool $printReport = false,
+        string|BatchReportType|null $reportType = null,
+        string|int|null $reportSubType = null,
+        string|int|null $bothReports = null,
+        string|int|null $clerkId = null,
+        string|int|null $previousBatchReport = null
+    ) : ITerminalReport
     {
         $builder = (new TerminalReportBuilder(TerminalReportType::GET_BATCH_DETAILS))
             ->where(UpaSearchCriteria::ECR_ID, "1");
@@ -371,6 +379,22 @@ class UpaInterface extends DeviceInterface
 
         if (!empty($reportType)) {
             $builder->andCondition(UpaSearchCriteria::REPORT_TYPE, $reportType);
+        }
+
+        if (null !== $reportSubType && '' !== (string)$reportSubType) {
+            $builder->andCondition(UpaSearchCriteria::REPORT_SUB_TYPE, (string)$reportSubType);
+        }
+
+        if (null !== $bothReports && '' !== (string)$bothReports) {
+            $builder->andCondition(UpaSearchCriteria::BOTH_REPORTS, (string)$bothReports);
+        }
+
+        if (null !== $clerkId && '' !== (string)$clerkId) {
+            $builder->andCondition(UpaSearchCriteria::CLERK_ID, (string)$clerkId);
+        }
+
+        if (null !== $previousBatchReport && '' !== (string)$previousBatchReport) {
+            $builder->andCondition(UpaSearchCriteria::PREVIOUS_BATCH_REPORT, (string)$previousBatchReport);
         }
 
         return $builder->execute();
@@ -724,12 +748,17 @@ class UpaInterface extends DeviceInterface
     }
     #endregion
 
-    public function getSignatureFile(SignatureData $signatureData = null) : ISignatureResponse
+    public function getSignatureFile(?SignatureData $signatureData = null) : ISignatureResponse
     {
+        $signatureData = $signatureData ?? new SignatureData();
+        if (!isset($signatureData->prompts)) {
+            $signatureData->prompts = new PromptMessages();
+        }
+
         $data['params'] = [
-            'prompt1' => $signatureData->prompts->prompt1 ?? null,
-            'prompt2' => $signatureData->prompts->prompt2 ?? null,
-            'displayOption' => (string) $signatureData->displayOption ?? null,
+            'prompt1' => $signatureData->prompts->prompt1,
+            'prompt2' => $signatureData->prompts->prompt2,
+            'displayOption' => isset($signatureData->displayOption) ? (string)$signatureData->displayOption : null,
         ];
 
         $message = TerminalUtils::buildUPAMessage(
@@ -796,7 +825,7 @@ class UpaInterface extends DeviceInterface
         return new TransactionResponse($rawResponse);
     }
 
-    public function setDebugLevel(array $debugLevels,string $logOutput = null) : DeviceResponse
+    public function setDebugLevel(array $debugLevels, ?string $logOutput = null) : DeviceResponse
     {
         $debugLevel = '';
         array_walk($debugLevels, function ($v) use (&$debugLevel) {
@@ -834,7 +863,7 @@ class UpaInterface extends DeviceInterface
         return new TransactionResponse($rawResponse);
     }
 
-    public function getDebugInfo(string $logDirectory, string $fileIndicator = null) : DeviceResponse
+    public function getDebugInfo(string $logDirectory, ?string $fileIndicator = null) : DeviceResponse
     {
         $data['params'] = [
             'logFile' => $fileIndicator,

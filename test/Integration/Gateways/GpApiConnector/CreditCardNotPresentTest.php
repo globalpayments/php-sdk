@@ -1370,6 +1370,30 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertNotEmpty($transaction->token);
     }
 
+
+    /**
+     * The SDK can return AVS & CVN response codes in multiple places. This
+     * test demonstrates that when there is an AVS and/or CVN response code
+     * that the data makes it to the main response properties instead of
+     * potentially being buried in a nested property.
+     *
+     * 
+     * @return void 
+     */
+    public function testCardAvsAndCvnResponseMapping(): void
+    {
+        $card = $this->card;
+        $card->number = '5218042821896924';
+        $transaction = $card->charge(10.00)
+            ->withCurrency('USD')
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('N', $transaction->cvnResponseCode);
+        $this->assertEquals('N', $transaction->avsResponseCode);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+    }
+
     public function testCardTokenizationThenUpdateWithoutUsageMode()
     {
         $tokenizedCard = new CreditCardData();

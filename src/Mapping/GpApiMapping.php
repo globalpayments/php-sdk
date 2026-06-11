@@ -25,6 +25,7 @@ use GlobalPayments\Api\Entities\{
     FileUploaded,
     FraudManagementResponse,
     FraudRule,
+    Payer,
     PayerDetails,
     PayByLinkResponse,
     PaymentMethodList,
@@ -186,6 +187,25 @@ class GpApiMapping
             $transaction->cardBrandTransactionId = !empty($response->card->brand_reference) ?
                 $response->card->brand_reference : null;
         }
+
+        // Look for CVV result elsewhere if missing $transaction->cvnResponseCode
+        if (
+            empty($transaction->cvnResponseCode) &&
+            !empty($transaction->cardIssuerResponse) &&
+            !empty($transaction->cardIssuerResponse->cvvResult)
+        ) {
+            $transaction->cvnResponseCode = $transaction->cardIssuerResponse->cvvResult;
+        }
+
+        // Look for AVS result elsewhere if missing $transaction->avsResponseCode
+        if (
+            empty($transaction->avsResponseCode) &&
+            !empty($transaction->cardIssuerResponse) &&
+            !empty($transaction->cardIssuerResponse->avsAddressResult)
+        ) {
+            $transaction->avsResponseCode = $transaction->cardIssuerResponse->avsAddressResult;
+        }
+
         $dccDataResponse = $response->action->type === self::DCC_RESPONSE ? $response : ($response->currency_conversion ?? null);
         if (!empty($dccDataResponse)) {
             $transaction->dccRateData = self::mapDccInfo($dccDataResponse);
@@ -292,12 +312,16 @@ class GpApiMapping
         }
 
         $transaction->cardIssuerResponse = $cardIssuerResponse;
-        if (!empty($paymentMethodResponse->apm) &&
+        if (
+            !empty($paymentMethodResponse->apm) &&
+            is_string($paymentMethodResponse->apm->provider) &&
             $paymentMethodResponse->apm->provider == strtolower(PaymentProvider::OPEN_BANKING)
         ) {
             $transaction->paymentMethodType = PaymentMethodType::BANK_PAYMENT;
             $obResponse = new BankPaymentResponse();
-            $obResponse->redirectUrl = $paymentMethodResponse->redirect_url ?? null;
+            $obResponse->redirectUrl = self::normalizeRedirectUrl(
+                is_string($paymentMethodResponse->redirect_url ?? null) ? $paymentMethodResponse->redirect_url : null
+            );
             $obResponse->paymentStatus = $paymentMethodResponse->message ?? null;
             $obResponse->accountNumber = $paymentMethodResponse->bank_transfer->account_number ?? null;
             $obResponse->sortCode = $paymentMethodResponse->bank_transfer->bank->code ?? null;
@@ -315,16 +339,29 @@ class GpApiMapping
             $transaction->paymentMethodType = PaymentMethodType::APM;
         }
 
-        if ( !empty($paymentMethodResponse->apm->provider) &&
-            $paymentMethodResponse->apm->provider == strtolower(AlternativePaymentType::BLIK)
+        if (
+            !empty($paymentMethodResponse->apm) &&
+            !empty($paymentMethodResponse->apm->provider) &&
+            is_string($paymentMethodResponse->apm->provider) &&
+            strcasecmp(
+                $paymentMethodResponse->apm->provider,
+                strtolower(AlternativePaymentType::BLIK)
+            ) === 0
         ) {
             $alternativePaymentResponse = new AlternativePaymentResponse();
-            $alternativePaymentResponse->redirectUrl = !empty($paymentMethodResponse->apm->redirect_url);
-            $alternativePaymentResponse->providerName = !empty($paymentMethodResponse->apm->provider);
+            $alternativePaymentResponse->redirectUrl = self::normalizeRedirectUrl(
+                is_string($paymentMethodResponse->apm->redirect_url ?? null)
+                    ? $paymentMethodResponse->apm->redirect_url
+                    : null
+            );
+            $alternativePaymentResponse->providerName = $paymentMethodResponse->apm->provider ?? null;
             $transaction->alternativePaymentResponse = $alternativePaymentResponse;
         }
 
-        if ( !empty($paymentMethodResponse->apm->provider) &&
+        if (
+            !empty($paymentMethodResponse->apm) &&
+            !empty($paymentMethodResponse->apm->provider) &&
+            is_string($paymentMethodResponse->apm->provider) &&
             strcasecmp($paymentMethodResponse->apm->provider, "BANK_PAYMENT") === 0
         ) {
             $alternativePaymentResponse = new AlternativePaymentResponse();
@@ -560,6 +597,7 @@ class GpApiMapping
             $summary->gatewayResponseMessage = $paymentMethod->message ?? null;
             $summary->entryMode = $paymentMethod->entry_mode ?? null;
             $summary->cardHolderName = $paymentMethod->name ?? '';
+            $paymentMethodObj = null;
 
             /** map card details */
             if (isset($paymentMethod->card)) {
@@ -577,9 +615,9 @@ class GpApiMapping
             }
 
             if (!empty($paymentMethodObj)) {
-                $summary->cardType = $card->brand ?? null;
-                $summary->authCode = $card->authcode ?? null;
-                $summary->brandReference = $card->brand_reference ?? null;
+                $summary->cardType = $paymentMethodObj->brand ?? null;
+                $summary->authCode = $paymentMethodObj->authcode ?? null;
+                $summary->brandReference = $paymentMethodObj->brand_reference ?? null;
             }
 
             /** map ACH response info */
@@ -596,7 +634,10 @@ class GpApiMapping
             /** map APM response info */
             if (isset($response->payment_method->apm)) {
                 /** map Open Banking response info */
-                if ($response->payment_method->apm->provider == strtolower(PaymentProvider::OPEN_BANKING)) {
+                if (
+                    is_string($response->payment_method->apm->provider) &&
+                    $response->payment_method->apm->provider == strtolower(PaymentProvider::OPEN_BANKING)
+                ) {
                     $summary->paymentType = PaymentMethodName::BANK_PAYMENT;
                     $bankPaymentResponse = new BankPaymentResponse();
                     $bankPaymentResponse->iban = $response->payment_method->bank_transfer->iban ?? null;
@@ -608,7 +649,11 @@ class GpApiMapping
                         $response->payment_method->bank_transfer->remittance_reference->value ?? null;
                     $bankPaymentResponse->remittanceReferenceType =
                         $response->payment_method->bank_transfer->remittance_reference->type ?? null;
-                    $bankPaymentResponse->redirectUrl = $response->payment_method->redirect_url ?? null;
+                    $bankPaymentResponse->redirectUrl = self::normalizeRedirectUrl(
+                        is_string($response->payment_method->redirect_url ?? null)
+                            ? $response->payment_method->redirect_url
+                            : null
+                    );
                     $summary->bankPaymentResponse = $bankPaymentResponse;
                     $summary->accountNumberLast4 = $response->payment_method->bank_transfer->masked_account_number_last4 ?? null;
 
@@ -616,8 +661,10 @@ class GpApiMapping
                     /** map APMs (Paypal) response info */
                     $apm = $response->payment_method->apm;
                     $alternativePaymentResponse = new AlternativePaymentResponse();
-                    $alternativePaymentResponse->redirectUrl = !empty($response->payment_method->redirect_url) ?
-                        $response->payment_method->redirect_url : null;
+                    $alternativePaymentResponse->redirectUrl = self::normalizeRedirectUrl(
+                        is_string($response->payment_method->redirect_url ?? null) ?
+                            $response->payment_method->redirect_url : null
+                    );
                     $alternativePaymentResponse->providerName = !empty($apm->provider) ? $apm->provider : null;
                     $alternativePaymentResponse->providerReference = !empty($apm->provider_reference) ? $apm->provider_reference : null;
                     $summary->alternativePaymentResponse = $alternativePaymentResponse;
@@ -1043,8 +1090,11 @@ class GpApiMapping
         $apm = new AlternativePaymentResponse();
         $transaction = self::mapResponse($response);
         $paymentMethodApm = $response->payment_method->apm;
-        $apm->redirectUrl = !empty($response->payment_method->redirect_url) ?
-            $response->payment_method->redirect_url : ($paymentMethodApm->redirect_url ?? null);
+        $apm->redirectUrl = self::normalizeRedirectUrl(
+            is_string($response->payment_method->redirect_url ?? null)
+                ? $response->payment_method->redirect_url
+                : (is_string($paymentMethodApm->redirect_url ?? null) ? $paymentMethodApm->redirect_url : null)
+        );
         $apm->qrCodeImage = $response->payment_method->qr_code ?? null;
         $apm->timeCreatedReference = !empty($paymentMethodApm->time_created_reference) ?
             new DateTime($paymentMethodApm->time_created_reference) : null;
@@ -1054,14 +1104,46 @@ class GpApiMapping
             $apm->providerName = $paymentMethodApm->provider->name ?? null;
             $apm->providerReference = $paymentMethodApm->provider->merchant_identifier ?? null;
             $apm->timeCreatedReference = $paymentMethodApm->provider->time_created_reference ?? null;
+            // eRaty CAPTURED status details
+            $apm->confirmedAccountHolder = $paymentMethodApm->provider->confirmed_account_holder ?? null;
+            $apm->waitNotification = !empty($paymentMethodApm->provider->wait_notification) ?
+                $paymentMethodApm->provider->wait_notification : null;
+            $apm->fundStatus = !empty($paymentMethodApm->provider->fund_status) ?
+                $paymentMethodApm->provider->fund_status : null;
+            $apm->paymentDescription = !empty($paymentMethodApm->provider->payment_description) ?
+                $paymentMethodApm->provider->payment_description : null;
+            $apm->optionalRedirect = !empty($paymentMethodApm->provider->optional_redirect) ?
+                $paymentMethodApm->provider->optional_redirect : null;
         }
 
         $apm->accountHolderName = $paymentMethodApm->provider_payer_name ?? null;
+        
+        // eRaty bank details (from CAPTURED status notification)
+        if (!empty($paymentMethodApm->bank) && is_object($paymentMethodApm->bank)) {
+            $apm->bankAccountNumber = !empty($paymentMethodApm->bank->account_number) ? $paymentMethodApm->bank->account_number : null;
+            $apm->bankIban = !empty($paymentMethodApm->bank->iban) ? $paymentMethodApm->bank->iban : null;
+            $apm->bankIdentifierCode = !empty($paymentMethodApm->bank->identifier_code) ? $paymentMethodApm->bank->identifier_code : null;
+            $apm->bankName = !empty($paymentMethodApm->bank->name) ? $paymentMethodApm->bank->name : null;
+        }
+        
         $apm->ack = $paymentMethodApm->ack ?? null;
         $apm->sessionToken = !empty($paymentMethodApm->session_token) ? $paymentMethodApm->session_token : null;
         $apm->correlationReference = $paymentMethodApm->correlation_reference ?? null;
         $apm->versionReference = $paymentMethodApm->version_reference ?? null;
         $apm->buildReference = $paymentMethodApm->build_reference ?? null;
+        $apm->category = $paymentMethodApm->category ?? null;
+        if (!empty($paymentMethodApm->terms)) {
+            $terms = new Terms();
+            $terms->id = $paymentMethodApm->terms->id ?? null;
+            $terms->timeUnit = $paymentMethodApm->terms->time_unit ?? null;
+            $terms->timeUnitNumbers = isset($paymentMethodApm->terms->time_unit_numbers)
+                ? (string) $paymentMethodApm->terms->time_unit_numbers
+                : (isset($paymentMethodApm->terms->count) ? (string) $paymentMethodApm->terms->count : null);
+            $terms->time_unit = $paymentMethodApm->terms->time_unit ?? null;
+            $terms->count = isset($paymentMethodApm->terms->count) ? (string) $paymentMethodApm->terms->count : null;
+            $terms->mode = $paymentMethodApm->terms->mode ?? null;
+            $apm->terms = $terms;
+        }
 
         $apm->transactionReference = !empty($paymentMethodApm->transaction_reference) ?
             $paymentMethodApm->transaction_reference : null;
@@ -1103,6 +1185,53 @@ class GpApiMapping
         $transaction->alternativePaymentResponse = $apm;
 
         return $transaction;
+    }
+
+    /**
+     * Normalizes a redirect URL by collapsing duplicate slashes in the path.
+     *
+     * @param string|null $url
+     *
+     * @return string|null
+     */
+    private static function normalizeRedirectUrl(?string $url): ?string
+    {
+        if (empty($url)) {
+            return null;
+        }
+
+        $parts = parse_url($url);
+        if ($parts === false || !is_array($parts)) {
+            return $url;
+        }
+
+        $scheme = isset($parts['scheme']) && is_string($parts['scheme']) ? $parts['scheme'] : null;
+        $host = isset($parts['host']) && is_string($parts['host']) ? $parts['host'] : null;
+        if ($scheme === null || $host === null) {
+            return $url;
+        }
+
+        $path = isset($parts['path']) && is_string($parts['path']) ? $parts['path'] : '';
+        $normalizedPath = preg_replace('#/{2,}#', '/', $path);
+        if (!is_string($normalizedPath)) {
+            $normalizedPath = $path;
+        }
+
+        $authority = $host;
+        if (isset($parts['port']) && is_int($parts['port'])) {
+            $authority .= ':' . (string) $parts['port'];
+        }
+
+        $normalized = $scheme . '://' . $authority . $normalizedPath;
+
+        if (isset($parts['query']) && is_string($parts['query'])) {
+            $normalized .= '?' . $parts['query'];
+        }
+        if (isset($parts['fragment']) && is_string($parts['fragment'])) {
+            $normalized .= '#' . $parts['fragment'];
+        }
+
+        return $normalized;
     }
 
     /**
@@ -1209,8 +1338,9 @@ class GpApiMapping
     {
         $transaction->paymentMethodType = PaymentMethodType::BNPL;
         $bnplResponse = new BNPLResponse();
-        $bnplResponse->redirectUrl = !empty($response->payment_method->redirect_url) ?
-            $response->payment_method->redirect_url : null;
+        $bnplResponse->redirectUrl = self::normalizeRedirectUrl(
+            is_string($response->payment_method->redirect_url ?? null) ? $response->payment_method->redirect_url : null
+        );
         $bnplResponse->providerName = !empty($response->payment_method->bnpl->provider) ?
             $response->payment_method->bnpl->provider : null;
         $transaction->bnplResponse = $bnplResponse;
@@ -1674,5 +1804,27 @@ class GpApiMapping
             }
         }
         return $installment;
+    }
+
+    /**
+     * Map payer response from GPAPI
+     *
+     * @param object $response The raw API response object
+     * @return Payer The mapped payer entity
+     */
+    public static function mapPayerResponse(object $response): Payer
+    {
+        $payer = new Payer();
+        $payer->id = $response->id ?? null;
+        $payer->reference = $response->reference ?? null;
+        $payer->firstName = $response->first_name ?? null;
+        $payer->lastName = $response->last_name ?? null;
+        $payer->email = $response->email ?? null;
+
+        // Map payment methods if present
+        if (!empty($response->payment_methods)) {
+            $payer->paymentMethods = $response->payment_methods;
+        }
+        return $payer;
     }
 }

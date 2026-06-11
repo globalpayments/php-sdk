@@ -120,9 +120,9 @@ class HpaInterface extends DeviceInterface
     }
     public function lineItem(
         string $leftText,
-        string $rightText = null,
-        string $runningLeftText = null,
-        string $runningRightText = null
+        ?string $rightText = null,
+        ?string $runningLeftText = null,
+        ?string $runningRightText = null
     ): DeviceResponse
     {
         if (empty($leftText)) {
@@ -306,7 +306,7 @@ class HpaInterface extends DeviceInterface
         );
     }
 
-    public function promptForSignature(string $transactionId = null)
+    public function promptForSignature(?string $transactionId = null)
     {
         return $this->hpaController->send(
             sprintf(

@@ -86,9 +86,9 @@ interface IDeviceInterface
     /********************************************************************************/
     public function lineItem(
         string $leftText,
-        string $rightText = null,
-        string $runningLeftText = null,
-        string $runningRightText = null
+        ?string $rightText = null,
+        ?string $runningLeftText = null,
+        ?string $runningRightText = null
     ) : DeviceResponse;
 
     public function reboot() : DeviceResponse;
@@ -150,11 +150,11 @@ interface IDeviceInterface
 
     public function cancel($cancelParams = null);
 
-    public function getSignatureFile(SignatureData $data = null) : ISignatureResponse;
+    public function getSignatureFile(?SignatureData $data = null) : ISignatureResponse;
 
     public function initialize();
 
-    public function promptForSignature(string $transactionId = null);
+    public function promptForSignature(?string $transactionId = null);
 
     public function batchClose() : IBatchCloseResponse;
 
@@ -179,7 +179,7 @@ interface IDeviceInterface
      *
      * @return DeviceResponse
      */
-    public function setDebugLevel(array $debugLevels, string $logOutput = null) : DeviceResponse;
+    public function setDebugLevel(array $debugLevels, ?string $logOutput = null) : DeviceResponse;
 
     public function getDebugLevel() : DeviceResponse;
 
@@ -190,7 +190,7 @@ interface IDeviceInterface
      * @param string|null $fileIndicator
      * @return DeviceResponse
      */
-    public function getDebugInfo(string $logDirectory, string $fileIndicator = null) : DeviceResponse;
+    public function getDebugInfo(string $logDirectory, ?string $fileIndicator = null) : DeviceResponse;
 
     /**
      * This command informs the application to display the idle screen.
@@ -282,7 +282,15 @@ interface IDeviceInterface
 
     public function getSAFReport() : TerminalReportBuilder;
     public function getBatchReport() : TerminalReportBuilder;
-    public function getBatchDetails(?string $batchId = null, bool $printReport = false, string|BatchReportType $reportType = null) : ITerminalReport;
+    public function getBatchDetails(
+        ?string $batchId = null,
+        bool $printReport = false,
+        string|BatchReportType|null $reportType = null,
+        string|int|null $reportSubType = null,
+        string|int|null $bothReports = null,
+        string|int|null $clerkId = null,
+        string|int|null $previousBatchReport = null
+    ) : ITerminalReport;
     public function findBatches() : TerminalReportBuilder;
     public function getOpenTabDetails() : TerminalReportBuilder;
 }

@@ -64,6 +64,83 @@ class AlternativePaymentResponse
      */
     public $providerName;
 
+    /**
+     * APM category, for example BNPL for eRaty.
+     *
+     * @var string|null
+     */
+    public ?string $category = null;
+
+    /**
+     * Installment terms returned by provider.
+     *
+     * @var Terms|null
+     */
+    public ?Terms $terms = null;
+
+    /**
+     * Confirmed account holder name (from provider for CAPTURED status)
+     *
+     * @var string|null
+     */
+    public ?string $confirmedAccountHolder = null;
+
+    /**
+     * Bank account number
+     *
+     * @var string|null
+     */
+    public ?string $bankAccountNumber = null;
+
+    /**
+     * Bank IBAN
+     *
+     * @var string|null
+     */
+    public ?string $bankIban = null;
+
+    /**
+     * Bank identifier code (BIC/SWIFT)
+     *
+     * @var string|null
+     */
+    public ?string $bankIdentifierCode = null;
+
+    /**
+     * Bank name
+     *
+     * @var string|null
+     */
+    public ?string $bankName = null;
+
+    /**
+     * Wait notification message
+     *
+     * @var string|null
+     */
+    public ?string $waitNotification = null;
+
+    /**
+     * Fund status
+     *
+     * @var string|null
+     */
+    public ?string $fundStatus = null;
+
+    /**
+     * Payment description
+     *
+     * @var string|null
+     */
+    public ?string $paymentDescription = null;
+
+    /**
+     * Optional redirect URL
+     *
+     * @var string|null
+     */
+    public ?string $optionalRedirect = null;
+
     /** @var string */
     public $ack;
     /** @var string */

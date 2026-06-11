@@ -13,21 +13,30 @@ class ArrayUtils
      */
     public static function array_remove_empty(?array $haystack): array
     {
-        if (is_null($haystack)) {
+        if ($haystack === null) {
             return [];
+        }
+        // Extract keys that should preserve empty values
+        $preserve = [];
+        if (isset($haystack['__PRESERVE_EMPTY__']) && is_array($haystack['__PRESERVE_EMPTY__'])) {
+            $preserve = $haystack['__PRESERVE_EMPTY__'];
+            unset($haystack['__PRESERVE_EMPTY__']);
         }
         foreach ($haystack as $key => $value) {
             if (is_array($value) || is_object($value)) {
-                $v = (array)$value;
-                $haystack[$key] = self::array_remove_empty($v);
+                $haystack[$key] = self::array_remove_empty((array)$value);
             }
+
             if (empty($haystack[$key])) {
+                if (in_array($key, $preserve, true) && is_array($haystack[$key])) {
+                    continue;
+                }
                 if (is_null($haystack[$key]) || is_array($haystack[$key]) || $haystack[$key] === '') {
                     unset($haystack[$key]);
                 }
             }
         }
-
+        
         return $haystack;
     }
 

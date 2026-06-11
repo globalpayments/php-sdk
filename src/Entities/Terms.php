@@ -7,6 +7,8 @@ class Terms
     public ?string $id = null;
     public ?string $timeUnit = null;
     public ?string $timeUnitNumbers = null;
+    public ?string $count = null;
+    public ?string $mode = null;
     
     // Visa installment specific fields
     public ?string $time_unit = null;

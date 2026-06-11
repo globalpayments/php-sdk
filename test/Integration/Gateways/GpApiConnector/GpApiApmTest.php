@@ -5,6 +5,8 @@ namespace Gateways\GpApiConnector;
 use DateTime;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
+use GlobalPayments\Api\Entities\Customer;
+use GlobalPayments\Api\Entities\Terms;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 use GlobalPayments\Api\Entities\Enums\Channel;
@@ -23,6 +25,7 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
+use GlobalPayments\Api\Utils\Logging\RequestConsoleLogger;
 use PHPUnit\Framework\TestCase;
 
 class GpApiApmTest extends TestCase
@@ -59,12 +62,43 @@ class GpApiApmTest extends TestCase
 
     public function setUpConfig(): GpApiConfig
     {
-        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $config->requestLogger = new RequestConsoleLogger();
+
+        return $config;
     }
 
     public static function tearDownAfterClass(): void
     {
         BaseGpApiTestConfig::resetGpApiConfig();
+    }
+
+    private function createEratyPaymentMethod(): AlternativePaymentMethod
+    {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::ERATY);
+        $paymentMethod->returnUrl = 'https://example.com/returnUrl';
+        $paymentMethod->statusUpdateUrl = 'https://example.com/statusUrl';
+        $paymentMethod->cancelUrl = 'https://example.com/cancelUrl';
+        $paymentMethod->country = 'PL';
+        $paymentMethod->accountHolderName = 'John Doe';
+        $paymentMethod->category = 'BNPL';
+        $paymentMethod->terms = new Terms();
+        $paymentMethod->terms->time_unit = 'MONTH';
+        $paymentMethod->terms->count = '6';
+        $paymentMethod->terms->mode = 'BANK_INTEREST';
+
+        return $paymentMethod;
+    }
+
+    private function configureEratyService(): void
+    {
+        $config = $this->setUpConfig();
+        $config->appId = 'hkjrcsGDhWiDt8GEhoDMKy3pzFz5R0Bo'; // gitleaks:allow
+        $config->appKey = 'cQOKHoAAvNIcEN8s'; // gitleaks:allow
+        $config->country = 'PL';
+        $config->accessTokenInfo->transactionProcessingAccountName = 'GPECOM_APM_Transaction_Processing';
+        $config->requestLogger = new RequestConsoleLogger();
+        ServicesContainer::configureService($config);
     }
 
     /**
@@ -521,6 +555,217 @@ class GpApiApmTest extends TestCase
             $this->assertEquals('40005', $e->responseCode);
         } finally {
             $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    /**
+     * eRaty redirect-url test:
+     * validates that GPAPI returns INITIATED with a redirect URL.
+     */
+    public function testERatyRedirectUrl()
+    {
+        $config = $this->setUpConfig();
+        $config->appId = 'hkjrcsGDhWiDt8GEhoDMKy3pzFz5R0Bo'; #gitleaks:allow
+        $config->appKey = 'cQOKHoAAvNIcEN8s'; #gitleaks:allow
+        $config->country = 'PL';
+        $config->accessTokenInfo->transactionProcessingAccountName = 'GPECOM_APM_Transaction_Processing';
+        $config->requestLogger = new RequestConsoleLogger();
+        ServicesContainer::configureService($config);
+
+        $paymentMethod = $this->createEratyPaymentMethod();
+
+        $customer = new Customer();
+        $customer->email = 'abc@ccc.com';
+
+        $response = $paymentMethod->charge(400)
+            ->withCurrency('PLN')
+            ->withCustomerId('B8J9KSQA5M6S2')
+            ->withCustomerData($customer)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::INITIATED, $response->responseMessage);
+        $this->assertNotNull($response->alternativePaymentResponse->redirectUrl);
+
+        fwrite(STDERR, 'eRaty redirect URL: ' . (string) $response->alternativePaymentResponse->redirectUrl . PHP_EOL);
+    }
+
+    /**
+     * Manual full-cycle eRaty flow:
+     * 1) Initiate and get redirect URL
+     * 2) Open URL in browser and click Pay
+     * 3) Poll reporting until transaction reaches CAPTURED
+     */
+    public function testERatyCharge_fullCycle()
+    {
+        $this->configureEratyService();
+
+        $paymentMethod = $this->createEratyPaymentMethod();
+
+        $customer = new Customer();
+        $customer->email = 'abc@ccc.com';
+
+        $response = $paymentMethod->charge(400)
+            ->withCurrency('PLN')
+            ->withCustomerId('B8J9KSQA5M6S2')
+            ->withCustomerData($customer)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::INITIATED, $response->responseMessage);
+        $this->assertNotNull($response->alternativePaymentResponse->redirectUrl);
+
+        $redirectUrl = (string) $response->alternativePaymentResponse->redirectUrl;
+        fwrite(STDERR, "eRaty redirect URL: {$redirectUrl}" . PHP_EOL);
+
+        // Open redirect URL in browser for manual payer authorization step.
+        if (PHP_OS_FAMILY === 'Windows') {
+            pclose(popen('start "" "' . $redirectUrl . '"', 'r'));
+            fwrite(STDERR, 'Browser opened. Click Pay on eRaty page to continue.' . PHP_EOL);
+        } else {
+            fwrite(STDERR, 'Open the redirect URL in your browser and click Pay on the eRaty page to continue.' . PHP_EOL);
+        }
+
+        // Poll reporting for up to 300 seconds to allow manual click on Pay button.
+        $startDate = new DateTime();
+        $summary = null;
+        $deadline = time() + 300;
+        while (time() < $deadline) {
+            $report = ReportingService::findTransactionsPaged(1, 1)
+                ->withTransactionId($response->transactionId)
+                ->where(SearchCriteria::START_DATE, $startDate)
+                ->andWith(SearchCriteria::END_DATE, new DateTime())
+                ->execute();
+
+            if (!empty($report->result)) {
+                /** @var TransactionSummary $candidate */
+                $candidate = reset($report->result);
+                if ($candidate && $candidate->transactionStatus === TransactionStatus::CAPTURED) {
+                    $summary = $candidate;
+                    break;
+                }
+            }
+
+            sleep(5);
+        }
+
+        $this->assertNotNull($summary, 'Transaction did not reach CAPTURED. Open redirect URL and click Pay.');
+        $this->assertEquals(TransactionStatus::CAPTURED, $summary->transactionStatus);
+    }
+
+    
+    /**
+     * eRaty report transaction detail: captured sandbox transaction.
+     */
+    public function testERatyReportTransactionDetailCaptured()
+    {
+        $this->configureEratyService();
+
+        $response = ReportingService::transactionDetail('TRN_X3Hds5qhlvlp7we7LQVC74jVCM9Eh0_2fd52873ad53')->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->transactionStatus);
+    }
+
+    /**
+     * eRaty report transaction detail: declined sandbox transaction.
+     */
+    public function testERatyReportTransactionDetailDeclined()
+    {
+        $this->configureEratyService();
+
+        $response = ReportingService::transactionDetail('TRN_10tXeI3vO7kQE5NGDx7GmH3y5cSaeJ_a7403b592d4f')->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals(TransactionStatus::DECLINED, $response->transactionStatus);
+    }
+
+    /**
+     * Negative eRaty validation: country is required.
+     */
+    public function testERatyMissingCountry()
+    {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::ERATY);
+        $paymentMethod->returnUrl = 'https://example.com/returnUrl';
+        $paymentMethod->statusUpdateUrl = 'https://example.com/statusUrl';
+        $paymentMethod->cancelUrl = 'https://example.com/cancelUrl';
+        $paymentMethod->accountHolderName = 'John Doe';
+        $paymentMethod->category = 'BNPL';
+        // country is NOT set
+
+        $exceptionCaught = false;
+        try {
+            $paymentMethod->charge(400)
+                ->withCurrency('PLN')
+                ->withCustomerId('B8J9KSQA5M6S2')
+                ->execute();
+        } catch (BuilderException $e) {
+            $exceptionCaught = true;
+            fwrite(STDERR, 'eRaty negative test (missing country): ' . $e->getMessage() . PHP_EOL);
+            $this->assertStringContainsString('country', strtolower($e->getMessage()));
+        } finally {
+            $this->assertTrue($exceptionCaught, 'Expected BuilderException for missing country');
+        }
+    }
+
+    /**
+     * Negative eRaty validation: unsupported currency (eRaty only supports PLN).
+     */
+    public function testERatyUnsupportedCurrency()
+    {
+        $this->configureEratyService();
+
+        $paymentMethod = $this->createEratyPaymentMethod();
+
+        $customer = new Customer();
+        $customer->email = 'abc@ccc.com';
+
+        $exceptionCaught = false;
+        try {
+            // Use EUR instead of PLN - should fail
+            $paymentMethod->charge(400)
+                ->withCurrency('EUR')
+                ->withCustomerId('B8J9KSQA5M6S2')
+                ->withCustomerData($customer)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            fwrite(STDERR, 'eRaty negative test (unsupported currency EUR): ' . $e->getMessage() . PHP_EOL);
+            $this->assertStringContainsString('currency', strtolower($e->getMessage()));
+        } finally {
+            $this->assertTrue($exceptionCaught, 'Expected GatewayException for unsupported currency');
+        }
+    }
+
+    /**
+     * Negative eRaty validation: invalid/insufficient amount.
+     */
+    public function testERatyInvalidAmount()
+    {
+        $this->configureEratyService();
+
+        $paymentMethod = $this->createEratyPaymentMethod();
+        $customer = new Customer();
+        $customer->email = 'abc@ccc.com';
+
+        // Very low amount that eRaty should reject
+        $amount = 0.01;
+
+        $exceptionCaught = false;
+        try {
+            $paymentMethod->charge($amount)
+                ->withCurrency('PLN')
+                ->withCustomerId('B8J9KSQA5M6S2')
+                ->withCustomerData($customer)
+                ->execute();
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            fwrite(STDERR, 'eRaty negative test (invalid amount): ' . $e->getMessage() . PHP_EOL);
+            $this->assertStringContainsString('amount', strtolower($e->getMessage()));
+        } finally {
+            $this->assertTrue($exceptionCaught, 'Expected GatewayException for invalid amount ' . $amount);
         }
     }
 }

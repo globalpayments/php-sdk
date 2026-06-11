@@ -20,6 +20,7 @@ use GlobalPayments\Api\Entities\Enums\{
     PaymentMethodUsageMode,
     HPPAllowedPaymentMethods,
 };
+use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use GlobalPayments\Api\Services\HPPService;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\Logging\RequestConsoleLogger;
@@ -31,6 +32,8 @@ use PHPUnit\Framework\TestCase;
  */
 class HPPIntegrationTest extends TestCase
 {
+    private const NOT_SET = 'NOT SET';
+
     private static $config;
     private $validPayer;
     private $validBillingAddress;
@@ -327,14 +330,137 @@ class HPPIntegrationTest extends TestCase
         $this->assertDccMode(false, 'NO');
     }
 
+    /**
+     * @group integration
+     * @group hpp
+     * @group address-match
+     */
+    public function testAddressMatchIndicatorEnabled(): void
+    {
+        $this->assertAddressMatchIndicator(true, 'YES');
+    }
+
+    /**
+     * @group integration
+     * @group hpp
+     * @group address-match
+     */
+    public function testAddressMatchIndicatorDisabled(): void
+    {
+        $this->assertAddressMatchIndicator(false, 'NO');
+    }
+
+    /**
+     * @group integration
+     * @group hpp
+     * @group address-match
+     * @dataProvider provideAddressMatchIndicatorSerializationCases
+     */
+    public function testAddressMatchIndicatorSerializationVariants(mixed $input, string $expected): void
+    {
+        $hppData = $this->createAddressMatchHppDataFromRawValue($input);
+        $this->assertSerializedAddressMatchIndicator(
+            $hppData,
+            $expected,
+            'address_match_indicator variant must serialize correctly'
+        );
+    }
+
+    /**
+     * @return array<string, array{0:mixed, 1:string}>
+     */
+    public function provideAddressMatchIndicatorSerializationCases(): array
+    {
+        return [
+            'bool true' => [true, 'YES'],
+            'bool false' => [false, 'NO'],
+            'string YES uppercase' => ['YES', 'YES'],
+            'string NO uppercase' => ['NO', 'NO'],
+            'string yes lowercase' => ['yes', 'YES'],
+            'string no lowercase' => ['no', 'NO'],
+            'string Yes camelcase' => ['Yes', 'YES'],
+            'string No camelcase' => ['No', 'NO'],
+            'string yEs mixedcase' => ['yEs', 'YES'],
+            'string nO mixedcase' => ['nO', 'NO'],
+            'null value not serialized' => [null, self::NOT_SET],
+        ];
+    }
+
+    /**
+     * Verify the mapper's normalization path: 'yes' injected directly (bypassing the builder)
+     * must be normalized to 'YES' by the request mapper.
+     *
+     * @group integration
+     * @group hpp
+     * @group address-match
+     */
+    public function testAddressMatchIndicatorDirectStringYesNormalized(): void
+    {
+        $hppData = $this->createAddressMatchHppData(false);
+        $hppData->payer->addressMatchIndicator = 'yes';
+        $this->assertSerializedAddressMatchIndicator(
+            $hppData,
+            'YES',
+            'lowercase yes directly injected must be normalized to YES by mapper'
+        );
+    }
+
+    /**
+     * Verify the mapper's normalization path: 'no' injected directly (bypassing the builder)
+     * must be normalized to 'NO' by the request mapper.
+     *
+     * @group integration
+     * @group hpp
+     * @group address-match
+     */
+    public function testAddressMatchIndicatorDirectStringNoNormalized(): void
+    {
+        $hppData = $this->createAddressMatchHppData(true);
+        $hppData->payer->addressMatchIndicator = 'no';
+        $this->assertSerializedAddressMatchIndicator(
+            $hppData,
+            'NO',
+            'lowercase no directly injected must be normalized to NO by mapper'
+        );
+    }
+
+    /**
+     * @group integration
+     * @group hpp
+     * @group address-match
+     */
+    public function testAddressMatchIndicatorEmptyStringThrowsException(): void
+    {
+        $hppData = $this->createAddressMatchHppData(true);
+        $hppData->payer->addressMatchIndicator = '';
+
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessageMatches('/address_match_indicator must not be empty/');
+
+        $this->getDccRequestBody($hppData);
+    }
+
+    /**
+     * @group integration
+     * @group hpp
+     * @group address-match
+     */
+    public function testAddressMatchIndicatorWhitespaceThrowsException(): void
+    {
+        $hppData = $this->createAddressMatchHppData(true);
+        $hppData->payer->addressMatchIndicator = '   ';
+
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessageMatches('/address_match_indicator must not be empty/');
+
+        $this->getDccRequestBody($hppData);
+    }
+
     private function assertDccMode(bool $modeEnabled, string $expected): void
     {
         $hppData = $this->createDccHppData($modeEnabled);
         $requestBody = $this->getDccRequestBody($hppData);
-        $serialized = 'NOT SET';
-        if (is_array($requestBody)) {
-            $serialized = $requestBody['order']['transaction_configuration']['currency_conversion_mode'] ?? 'NOT SET';
-        }
+        $serialized = $requestBody['order']['transaction_configuration']['currency_conversion_mode'] ?? self::NOT_SET;
 
         $this->assertSame($modeEnabled, $hppData->order->HPPTransactionConfiguration->currencyConversionMode);
         $this->assertSame($expected, $serialized, 'currency_conversion_mode must serialize correctly');
@@ -347,6 +473,24 @@ class HPPIntegrationTest extends TestCase
             ServicesContainer::configureService(self::$config);
         }
         $this->assertValidPayByLinkResponse($response);
+    }
+
+    private function assertAddressMatchIndicator(bool $indicator, string $expected): void
+    {
+        $hppData = $this->createAddressMatchHppData($indicator);
+        $this->assertSerializedAddressMatchIndicator(
+            $hppData,
+            $expected,
+            'address_match_indicator must serialize correctly'
+        );
+    }
+
+    private function assertSerializedAddressMatchIndicator(HPPData $hppData, string $expected, string $message): void
+    {
+        $requestBody = $this->getDccRequestBody($hppData);
+        $serialized = $requestBody['payer']['address_match_indicator'] ?? self::NOT_SET;
+
+        $this->assertSame($expected, $serialized, $message);
     }
 
     private function createDccHppData(bool $modeEnabled): HPPData
@@ -367,6 +511,43 @@ class HPPIntegrationTest extends TestCase
                 'https://example.com/status'
             )
             ->build();
+    }
+
+    private function createAddressMatchHppData(bool $indicator): HPPData
+    {
+        $reference = $indicator
+            ? 'INT_TEST_ADDR_MATCH_ON_' . uniqid()
+            : 'INT_TEST_ADDR_MATCH_OFF_' . uniqid();
+
+        return HPPBuilder::create()
+            ->withName('Address Match Integration Test')
+            ->withDescription('Address match indicator integration serialization test')
+            ->withReference($reference)
+            ->withAmount('1200')
+            ->withCurrency('GBP')
+            ->withPayer($this->validPayer)
+            ->withNotifications(
+                'https://webhook.site/return',
+                'https://webhook.site/status',
+                'https://webhook.site/cancel'
+            )
+            ->withBillingAddress($this->validBillingAddress)
+            ->withShippingAddress($this->validShippingAddress)
+            ->withTransactionConfig(Channel::CardNotPresent, 'GB', CaptureMode::AUTO)
+            ->withAddressMatchIndicator($indicator)
+            ->build();
+    }
+
+    private function createAddressMatchHppDataFromRawValue(mixed $value): HPPData
+    {
+        if (is_bool($value)) {
+            return $this->createAddressMatchHppData($value);
+        }
+
+        $hppData = $this->createAddressMatchHppData(false);
+        $hppData->payer->addressMatchIndicator = $value;
+
+        return $hppData;
     }
 
     private function createDccConfig(): GpApiConfig
@@ -390,7 +571,7 @@ class HPPIntegrationTest extends TestCase
         $gpApiRequest = (new GpApiAuthorizationRequestBuilder())->buildRequest($authBuilder, $this->createDccConfig());
         return $gpApiRequest->requestBody;
     }
-    
+
     private function assertValidPayByLinkResponse(Transaction $response): void
     {
         $this->assertNotNull($response);

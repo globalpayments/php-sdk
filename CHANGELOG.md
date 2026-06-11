@@ -2,7 +2,17 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version v14.1.16 (05/28/26)
+## Latest Version v14.2.0 (06/11/26)
+### Bug Fixes:
+- [GPAPI] Fixed address_match_indicator serialization in HPP to properly normalize case variants and validate input values
+- [GPAPI] Fixed transaction response properties don't include AVS/CVV response codes
+### Enhancements:
+- [GP-ECOM] Added Visa Direct AFT supplementary data support for API and HPP channels 
+- [GPAPI] Added eRaty installment payment support for Alternative Payment Methods
+- [GPAPI] Additional Active Payer functionality
+- [UPA] Added Mexico TYP (Thank You Points) loyalty program support: sale/void/reversal redeem fields, batch report filters, and Verifone T650C/T660 device types
+
+## v14.1.16 (05/28/26)
 ### Enhancements:
 - [TransIT] Added a basic Transit/TSEP payment page example
 - [GPAPI] Added APAC GPAPI auth endpoint verification coverage

@@ -88,7 +88,7 @@ class GeniusInterface extends DeviceInterface
         return new NotImplementedException();
     }
 
-    public function getSignatureFile(SignatureData $data = null) : ISignatureResponse
+    public function getSignatureFile(?SignatureData $data = null) : ISignatureResponse
     {
         return new NotImplementedException();
     }
