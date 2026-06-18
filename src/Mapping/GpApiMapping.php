@@ -199,7 +199,7 @@ class GpApiMapping
 
         // Look for AVS result elsewhere if missing $transaction->avsResponseCode
         if (
-            empty($transaction->avsResponseCode) &&
+            (empty($transaction->avsResponseCode) || (strlen($transaction->avsResponseCode) > 1)) &&
             !empty($transaction->cardIssuerResponse) &&
             !empty($transaction->cardIssuerResponse->avsAddressResult)
         ) {

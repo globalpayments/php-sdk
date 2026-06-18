@@ -2,7 +2,11 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version v14.2.0 (06/11/26)
+## Latest Version v14.2.1 (06/18/26)
+### Bug Fixes:
+- [GPAPI] Fixed transaction response avsResponseCode property assignment
+
+## v14.2.0 (06/11/26)
 ### Bug Fixes:
 - [GPAPI] Fixed address_match_indicator serialization in HPP to properly normalize case variants and validate input values
 - [GPAPI] Fixed transaction response properties don't include AVS/CVV response codes

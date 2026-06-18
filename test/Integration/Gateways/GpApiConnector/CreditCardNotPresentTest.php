@@ -1384,7 +1384,25 @@ class CreditCardNotPresentTest extends TestCase
     {
         $card = $this->card;
         $card->number = '5218042821896924';
+
         $transaction = $card->charge(10.00)
+            ->withCurrency('USD')
+            ->execute();
+
+        $this->assertNotNull($transaction);
+        $this->assertEquals('N', $transaction->cvnResponseCode);
+        $this->assertEquals('N', $transaction->avsResponseCode);
+        $this->assertEquals('SUCCESS', $transaction->responseCode);
+
+        // Added an additional transaction check that includes an address because
+        // the gateway can send different request contents depending on the
+        // inclusion/omission of a billing address.
+        $addy = new Address();
+        $addy->streetAddress1 = "123 Some Fake Street";
+        $addy->postalCode = 44556;
+
+        $transaction = $card->charge(10.00)
+            ->withAddress($addy)
             ->withCurrency('USD')
             ->execute();
 
