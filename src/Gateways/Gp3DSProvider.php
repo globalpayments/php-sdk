@@ -206,7 +206,7 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             $request['order'] = $this->maybeSetKey($request['order'], 'currency', $builder->getCurrency());
             $request['order'] = $this->maybeSetKey($request['order'], 'id', $orderId);
             $request['order'] = $this->maybeSetKey($request['order'], 'address_match_indicator', ($builder->isAddressMatchIndicator() ? true : false));
-            $request['order'] = $this->maybeSetKey($request['order'], 'date_time_created', (new \DateTime($builder->getOrderCreateDate()))->format(\DateTime::RFC3339_EXTENDED));
+            $request['order'] = $this->maybeSetKey($request['order'], 'date_time_created', (new \DateTime($builder->getOrderCreateDate()))->format('Y-m-d\TH:i:s.P'));
             $request['order'] = $this->maybeSetKey($request['order'], 'gift_card_count', $builder->getGiftCardCount());
             $request['order'] = $this->maybeSetKey($request['order'], 'gift_card_currency', $builder->getGiftCardCurrency());
             $request['order'] = $this->maybeSetKey($request['order'], 'gift_card_amount', preg_replace('/[^0-9]/', '', sprintf('%01.2f', $builder->getGiftCardAmount())));
