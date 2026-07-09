@@ -347,12 +347,12 @@ class HPPBuilder extends AuthorizationBuilder
     }
 
     /**
-     * Configure currency conversion mode
+     * Configure whether Dynamic Currency Conversion (DCC) is enabled on the hosted payment page.
      * 
-     * @param bool $currencyConversionMode true to enable, false to disable
-     * @return HPPBuilder this
+     * @param bool|int|string $currencyConversionMode Accepts: true/false, 1/0, or "YES"/"NO" (any case e.g. "Yes", "no")
+     * @return static
      */
-    public function withCurrencyConversionMode(bool $currencyConversionMode): static
+    public function withCurrencyConversionMode(bool|int|string $currencyConversionMode): static
     {
         $this->transactionConfig->currencyConversionMode = $currencyConversionMode;
         return $this;

@@ -2,7 +2,16 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version v14.2.1 (06/18/26)
+## Latest Version v14.3.0 (07/09/26)
+### New Feature:
+- [GPAPI] - Add APAC multi-currency support with decimal precision handling
+### Enhancements:
+- [GPAPI] Add E-Raty support for HPP Links via payer reference
+- [Harness] Added CI pipeline and testing harness for PHP SDK
+### Bug Fixes:
+- [GPAPI] Fix DCC currency_conversion_mode handling for bool/int/string
+
+## v14.2.1 (06/18/26)
 ### Bug Fixes:
 - [GPAPI] Fixed transaction response avsResponseCode property assignment
 

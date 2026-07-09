@@ -113,7 +113,7 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
             case TransactionType::REFUND:
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/refund';
                 $verb = 'POST';
-                $payload['amount'] = StringUtils::toNumeric($builder->amount);
+                $payload['amount'] = StringUtils::toNumeric($builder->amount, $builder->currency);
                 $payload['currency_conversion'] = !empty($builder->dccRateData) ? $this->getDccRate($builder->dccRateData) : null;
                 break;
             case TransactionType::REVERSAL:
@@ -128,20 +128,20 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                     }
                 }
                 $verb = 'POST';
-                $payload['amount'] = StringUtils::toNumeric($builder->amount);
+                $payload['amount'] = StringUtils::toNumeric($builder->amount, $builder->currency);
                 $payload['currency_conversion'] = !empty($builder->dccRateData) ?
                     $this->getDccRate($builder->dccRateData) : null;
                 break;
             case TransactionType::CAPTURE:
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/capture';
                 $verb = 'POST';
-                $payload['amount'] = StringUtils::toNumeric($builder->amount);
-                $payload['gratuity'] = StringUtils::toNumeric($builder->gratuity);
+                $payload['amount'] = StringUtils::toNumeric($builder->amount, $builder->currency);
+                $payload['gratuity'] = StringUtils::toNumeric($builder->gratuity, $builder->currency);
                 $payload['capture_sequence'] = $builder->multiCaptureSequence ?? null;
                 $payload['total_capture_count'] = $builder->multiCapturePaymentCount ?? null;
                 $payload['currency_conversion'] = !empty($builder->dccRateData) ? $this->getDccRate($builder->dccRateData) : null;
                 if (!empty($builder->lodgingData)) {
-                    $this->setLodgingInfo($payload, $builder->lodgingData);
+                    $this->setLodgingInfo($payload, $builder->lodgingData, $builder->currency);
                 }
                 if (!empty($builder->tagData)) {
                     $payload['payment_method'] = [
@@ -165,7 +165,7 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
             case TransactionType::REAUTH:
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/reauthorization';
                 $verb = 'POST';
-                $payload['amount'] = StringUtils::toNumeric($builder->amount);
+                $payload['amount'] = StringUtils::toNumeric($builder->amount, $builder->currency);
                 if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::ACH) {
                     $payload['description'] = $builder->description;
                     if (!empty($builder->bankTransferDetails)) {
@@ -206,9 +206,9 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
             case TransactionType::AUTH:
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/incremental';
                 $verb = 'POST';
-                $payload['amount'] = StringUtils::toNumeric($builder->amount);
+                $payload['amount'] = StringUtils::toNumeric($builder->amount, $builder->currency);
                 if (!empty($builder->lodgingData)) {
-                    $this->setLodgingInfo($payload, $builder->lodgingData);
+                    $this->setLodgingInfo($payload, $builder->lodgingData, $builder->currency);
                 }
                 break;
             case TransactionType::EDIT:
@@ -216,8 +216,8 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                     '/adjustment';
                 $verb = 'POST';
                 $payload = [
-                    'amount' => StringUtils::toNumeric($builder->amount),
-                    'gratuity_amount' => StringUtils::toNumeric($builder->gratuity),                     
+                    'amount' => StringUtils::toNumeric($builder->amount, $builder->currency),
+                    'gratuity_amount' => StringUtils::toNumeric($builder->gratuity, $builder->currency),
                     'payment_method' => [
                             'card' => ['tag' => $builder->tagData]
                         ]
@@ -236,9 +236,9 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                     'shippable' => isset($builder->payByLinkData->shippable) ?
                         json_encode($builder->payByLinkData->shippable) : null,
                     'shipping_amount' => !empty($builder->payByLinkData->shippingAmount) ?
-                        StringUtils::toNumeric($builder->payByLinkData->shippingAmount) : null,
+                        StringUtils::toNumeric($builder->payByLinkData->shippingAmount, $builder->currency) : null,
                     'transactions' => [
-                        'amount' => !empty($builder->amount) ? StringUtils::toNumeric($builder->amount) : null
+                        'amount' => !empty($builder->amount) ? StringUtils::toNumeric($builder->amount, $builder->currency) : null
                     ],
                     'expiration_date' => !empty($builder->payByLinkData->expirationDate) ?
                         (new \DateTime($builder->payByLinkData->expirationDate))->format('Y-m-d\TH:i:s\Z') : null,
@@ -274,7 +274,7 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                       [
                         'recipient_account_id' => $builder->fundsData->recipientAccountId ?? null,
                         'reference' => $builder->reference,
-                        'amount' => StringUtils::toNumeric($builder->amount),
+                        'amount' => StringUtils::toNumeric($builder->amount, $builder->currency),
                         'description' => $builder->description
                     ]
                 ];
@@ -306,7 +306,7 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
         return array_search($transactionType,$reflector->getConstants());
     }
 
-    private function setLodgingInfo(&$payload, $lodging): void
+    private function setLodgingInfo(&$payload, $lodging, ?string $currency = null): void
     {
         if (!empty($lodging->items)) {
             $lodgingItems = [];
@@ -315,7 +315,8 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                 $lodgingItems[] = [
                     'types' => $item->types,
                     'reference' => $item->reference,
-                    'total_amount' => !empty($item->totalAmount) ? StringUtils::toNumeric($item->totalAmount) : null,
+                    'total_amount' => !empty($item->totalAmount) ?
+                        StringUtils::toNumeric($item->totalAmount, $currency) : null,
                     'payment_method_program_codes' => $item->paymentMethodProgramCodes
                 ];
             }
@@ -329,7 +330,7 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
             'date_checked_out' => !empty($lodging->checkedOutDate) ?
                 (new \DateTime($lodging->checkedOutDate))->format('Y-m-d') : null,
             'daily_rate_amount' => !empty($lodging->dailyRateAmount) ?
-                StringUtils::toNumeric($lodging->dailyRateAmount) : null,
+                StringUtils::toNumeric($lodging->dailyRateAmount, $currency) : null,
             'charge_items' =>  $lodgingItems ?? null
         ];
     }

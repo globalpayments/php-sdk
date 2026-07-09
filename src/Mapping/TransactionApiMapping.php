@@ -75,7 +75,7 @@ class TransactionApiMapping
         $transaction->referenceNumber = !empty($response->reference_id)
             ? $response->reference_id : null;
         $transaction->balanceAmount = !empty($response->amount)
-            ? StringUtils::toAmount($response->amount) : null;
+            ? StringUtils::toAmount($response->amount, $response->currency ?? null) : null;
 
         return $transaction;
     }

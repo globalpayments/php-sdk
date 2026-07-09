@@ -15,7 +15,15 @@ class GpApiSessionInfo implements IAccessTokenProvider
 
     private static function generateNonce(): string
     {
-        return (new \DateTime())->format(\DateTime::RFC3339);
+        $ts = getenv('SDK_TESTING_TIMESTAMP');
+
+        if ($ts !== false && $ts !== '') {
+            $dt = (new \DateTime('@' . intdiv((int) $ts, 1000)))->setTimezone(new \DateTimeZone('UTC'));
+        } else {
+            $dt = new \DateTime();
+        }
+
+        return $dt->format(\DateTime::RFC3339);
     }
 
     public function signIn(

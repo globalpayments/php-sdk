@@ -5,6 +5,7 @@ namespace GlobalPayments\Api\Entities;
 class PayerDetails
 {
     public ?string $id = null;
+    public ?string $reference = null;
     public ?string $firstName = null;
     public ?string $lastName = null;
     public ?string $email = null;

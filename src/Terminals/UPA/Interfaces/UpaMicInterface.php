@@ -59,7 +59,7 @@ class UpaMicInterface implements IDeviceCommInterface
                 'channel' => $this->gatewayConfig->channel,
                 'country' => $this->gatewayConfig->country,
                 'currency' => $this->gatewayConfig->deviceCurrency,
-                'reference' => $message->getRequestField('tranNo') ?? GenerationUtils::generateOrderId(),
+                'reference' => $message->getRequestField('requestId') ?? GenerationUtils::generateOrderId(),
                 'request' => $message->getJsonRequest(),
                 'notifications' => [
                     'status_url' => $this->gatewayConfig->methodNotificationUrl

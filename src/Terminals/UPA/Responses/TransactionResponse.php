@@ -19,6 +19,7 @@ class TransactionResponse extends UpaResponseHandler implements IBatchCloseRespo
     public ?string $osVersion;
     public ?string $emvSdkVersion;
     public ?string $CTLSSdkVersion;
+
     public ?float $additionalTipAmount;
     public ?float $baseAmount;
     public ?float $taxAmount;

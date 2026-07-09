@@ -69,6 +69,7 @@ class HPPIntegrationTest extends TestCase
         $this->validPayer->name = 'John Doe';
         $this->validPayer->email = 'john.doe+test@example.com';
         $this->validPayer->status = 'NEW';
+        $this->validPayer->reference = 'PAYER_REF_' . uniqid();
 
         // Valid phone number
         $this->validPhone = new PhoneNumber("44", "07987654321", PhoneNumberType::MOBILE);
@@ -289,6 +290,90 @@ class HPPIntegrationTest extends TestCase
         $this->assertNotEmpty($urlParts['path']);
     }
 
+    /**
+     * @group integration
+     * @group hpp
+     * @group eraty
+     */
+    public function testCreateHPPUrlWithEratyRedirectUrl(): void
+    {
+        $reference = 'INT_TEST_ERATY_HPP_' . uniqid();
+
+        $hppData = HPPBuilder::create()
+            ->withName('Integration Test - HPP eRaty Redirect URL')
+            ->withDescription('HPP eRaty redirect URL integration test')
+            ->withReference($reference)
+            ->withAmount('210000')
+            ->withCurrency('PLN')
+            ->withPayer($this->validPayer)
+            ->withNotifications(
+                'https://webhook.site/return',
+                'https://webhook.site/status',
+                'https://webhook.site/cancel'
+            )
+            ->withBillingAddress($this->validBillingAddress)
+            ->withShippingAddress($this->validShippingAddress)
+            ->withTransactionConfig(
+                Channel::CardNotPresent,
+                'GB',
+                CaptureMode::AUTO,
+                [HPPAllowedPaymentMethods::CARD],
+                PaymentMethodUsageMode::SINGLE,
+                '1'
+            )
+            ->build();
+
+        $requestBody = $this->getDccRequestBody($hppData);
+        $this->assertArrayHasKey('payer', $requestBody);
+        $this->assertSame($this->validPayer->reference, $requestBody['payer']['reference']);
+        
+        // Verify ERATY is serialized in allowed_payment_methods
+        $allowedMethods = $requestBody['order']['transaction_configuration']['allowed_payment_methods'] ?? [];
+        $this->assertSame(
+            [HPPAllowedPaymentMethods::CARD],
+            $allowedMethods,
+            'allowed_payment_methods must include ERATY'
+        );
+
+        $response = HPPService::create($hppData)->execute();
+
+        $this->assertValidPayByLinkResponse($response);
+        $this->assertNotSame('', trim((string) $response->payByLinkResponse->url));
+        $this->assertStringStartsWith('https://', (string) $response->payByLinkResponse->url);
+    }
+
+    /**
+     * @group integration
+     * @group hpp
+     * @group eraty
+     */
+    public function testInvalidAllowedPaymentMethodThrows(): void
+    {
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessageMatches('/Validation failed: .*Invalid payment method: INVALID_METHOD/');
+
+        HPPBuilder::create()
+            ->withName('Integration Test - invalid allowed method')
+            ->withReference('INT_TEST_ERATY_INVALID_' . uniqid())
+            ->withAmount('210000')
+            ->withCurrency('PLN')
+            ->withPayer($this->validPayer)
+            ->withNotifications(
+                'https://webhook.site/return',
+                'https://webhook.site/status',
+                'https://webhook.site/cancel'
+            )
+            ->withTransactionConfig(
+                Channel::CardNotPresent,
+                'PL',
+                CaptureMode::AUTO,
+                ['INVALID_METHOD'],
+                PaymentMethodUsageMode::SINGLE,
+                '1'
+            )
+            ->build();
+    }
+
    
 
     /**
@@ -317,7 +402,7 @@ class HPPIntegrationTest extends TestCase
      */
     public function testDccModeEnabled(): void
     {
-        $this->assertDccMode(true, 'YES');
+        $this->assertDccModeWithValue(true, 'YES', 'bool true');
     }
 
     /**
@@ -327,7 +412,72 @@ class HPPIntegrationTest extends TestCase
      */
     public function testDccModeDisabled(): void
     {
-        $this->assertDccMode(false, 'NO');
+        $this->assertDccModeWithValue(false, 'NO', 'bool false');
+    }
+
+    /**
+     * Test DCC mode scenarios using mixed input types.
+     * @group integration
+     * @group hpp
+     * @group dcc
+     * @group scenarios
+     * @dataProvider provideDccModeScenarios
+     */
+    public function testDccModeScenarios(mixed $value, string $expectedYesNo, string $scenario): void
+    {
+        $this->assertDccModeWithValue($value, $expectedYesNo, $scenario);
+    }
+
+    /**
+     * @return array<string, array{0:mixed, 1:string, 2:string}>
+     */
+    public function provideDccModeScenarios(): array
+    {
+        return [
+            'bool true' => [true, 'YES', 'bool true'],
+            'bool false' => [false, 'NO', 'bool false'],
+            'string YES' => ['YES', 'YES', 'string YES'],
+            'string NO' => ['NO', 'NO', 'string NO'],
+            'integer 1' => [1, 'YES', 'integer 1'],
+            'integer 0' => [0, 'NO', 'integer 0'],
+            'string yes lowercase' => ['yes', 'YES', 'string yes (lowercase)'],
+            'string Yes mixedcase' => ['Yes', 'YES', 'string Yes (mixedcase)'],
+            'string no lowercase' => ['no', 'NO', 'string no (lowercase)'],
+            'string No mixedcase' => ['No', 'NO', 'string No (mixedcase)'],
+        ];
+    }
+
+    /**
+     * Invalid string values must throw ArgumentException at build time.
+     * @group integration
+     * @group hpp
+     * @group dcc
+     * @group scenarios-negative
+     * @dataProvider provideInvalidDccModeInputs
+     */
+    public function testDccModeWithInvalidStringThrowsException(string $value): void
+    {
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessageMatches('/Validation failed/');
+
+        $this->createDccHppDataWithValue($value);
+    }
+
+    /**
+     * @return array<string, array{0:string}>
+     */
+    public function provideInvalidDccModeInputs(): array
+    {
+        return [
+            'empty string'      => [''],
+            'whitespace string' => ['   '],
+            'string Y'          => ['Y'],
+            'string N'          => ['N'],
+            'string ENABLE'     => ['ENABLE'],
+            'string DISABLE'    => ['DISABLE'],
+            'string 1'          => ['1'],
+            'string 0'          => ['0'],
+        ];
     }
 
     /**
@@ -456,23 +606,36 @@ class HPPIntegrationTest extends TestCase
         $this->getDccRequestBody($hppData);
     }
 
-    private function assertDccMode(bool $modeEnabled, string $expected): void
+    private function assertDccModeWithValue(mixed $value, string $expectedYesNo, string $scenario): void
     {
-        $hppData = $this->createDccHppData($modeEnabled);
+        $hppData = $this->createDccHppDataWithValue($value);
+        $this->assertSerializedDccMode($hppData, $expectedYesNo, $scenario);
+
+        $response = $this->executeWithDccConfig($hppData);
+        $this->assertValidPayByLinkResponse($response);
+    }
+
+    private function assertSerializedDccMode(HPPData $hppData, string $expectedYesNo, string $scenario): void
+    {
         $requestBody = $this->getDccRequestBody($hppData);
         $serialized = $requestBody['order']['transaction_configuration']['currency_conversion_mode'] ?? self::NOT_SET;
 
-        $this->assertSame($modeEnabled, $hppData->order->HPPTransactionConfiguration->currencyConversionMode);
-        $this->assertSame($expected, $serialized, 'currency_conversion_mode must serialize correctly');
+        $this->assertSame(
+            $expectedYesNo,
+            $serialized,
+            "Scenario '{$scenario}' failed: currency_conversion_mode must serialize to {$expectedYesNo}"
+        );
+    }
 
+    private function executeWithDccConfig(HPPData $hppData): Transaction
+    {
         $dccConfig = $this->createDccConfig();
         ServicesContainer::configureService($dccConfig);
         try {
-            $response = HPPService::create($hppData)->execute();
+            return HPPService::create($hppData)->execute();
         } finally {
             ServicesContainer::configureService(self::$config);
         }
-        $this->assertValidPayByLinkResponse($response);
     }
 
     private function assertAddressMatchIndicator(bool $indicator, string $expected): void
@@ -493,19 +656,18 @@ class HPPIntegrationTest extends TestCase
         $this->assertSame($expected, $serialized, $message);
     }
 
-    private function createDccHppData(bool $modeEnabled): HPPData
+    private function createDccHppDataWithValue(mixed $value): HPPData
     {
-        $name = $modeEnabled ? 'DCC Enabled' : 'DCC Disabled';
-        $reference = $modeEnabled ? 'INT_TEST_DCC_ON_' . uniqid() : 'INT_TEST_DCC_OFF_' . uniqid();
+        $reference = 'INT_TEST_DCC_SCENARIO_' . uniqid();
 
         return HPPBuilder::create()
-            ->withName($name)
+            ->withName('DCC Scenario Test')
             ->withReference($reference)
             ->withAmount('1000')
             ->withCurrency('USD')
             ->withPayer($this->validPayer)
             ->withTransactionConfig('CNP', 'US', CaptureMode::AUTO)
-            ->withCurrencyConversionMode($modeEnabled)
+            ->withCurrencyConversionMode($value)
             ->withNotifications(
                 'https://example.com/return',
                 'https://example.com/status'
@@ -569,6 +731,10 @@ class HPPIntegrationTest extends TestCase
     {
         $authBuilder = HPPService::create($hppData);
         $gpApiRequest = (new GpApiAuthorizationRequestBuilder())->buildRequest($authBuilder, $this->createDccConfig());
+        if (!is_object($gpApiRequest) || !property_exists($gpApiRequest, 'requestBody') || !is_array($gpApiRequest->requestBody)) {
+            throw new \RuntimeException('Failed to build DCC request payload');
+        }
+
         return $gpApiRequest->requestBody;
     }
 

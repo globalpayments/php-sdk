@@ -135,7 +135,8 @@ class GpApiMapping
                 $transaction->payByLinkResponse = self::mapPayByLinkResponse($response);
                 if (!empty($response->transactions)) {
                     $trn = $response->transactions;
-                    $transaction->balanceAmount = isset($trn->amount) ? StringUtils::toAmount($trn->amount) : null;
+                    $transaction->balanceAmount = isset($trn->amount) ?
+                        StringUtils::toAmount($trn->amount, $trn->currency ?? null) : null;
                     $transaction->payByLinkResponse->allowedPaymentMethods = $trn->allowed_payment_methods;
                 }
 
@@ -154,9 +155,10 @@ class GpApiMapping
             self::mapBatchCloseResponse($batchSummary, $response);
         }
         $transaction->batchSummary = $batchSummary;
-        $transaction->balanceAmount = !empty($response->amount) ? StringUtils::toAmount($response->amount) : null;
-        $transaction->authorizedAmount = ($response->status == TransactionStatus::PREAUTHORIZED && !empty($response->amount)) ?
-            StringUtils::toAmount($response->amount) : null;
+        $transaction->balanceAmount = (isset($response->amount) && $response->amount !== '') ?
+            StringUtils::toAmount($response->amount, $response->currency ?? null) : null;
+        $transaction->authorizedAmount = ($response->status == TransactionStatus::PREAUTHORIZED && isset($response->amount) && $response->amount !== '') ?
+            StringUtils::toAmount($response->amount, $response->currency ?? null) : null;
         $transaction->multiCapture = (!empty($response->capture_mode) && $response->capture_mode == CaptureMode::MULTIPLE);
         $transaction->fingerprint = !empty($response->fingerprint) ? $response->fingerprint : null;
         $transaction->fingerprintIndicator = !empty($response->fingerprint_presence_indicator) ?
@@ -228,10 +230,11 @@ class GpApiMapping
     {
         $batchSummary->id = $response->id;
         $batchSummary->processedDeviceId = $response->device_reference ?? null;
-        $batchSummary->totalAmount = !empty($response->amount) ? StringUtils::toAmount($response->amount) : null;
+        $batchSummary->totalAmount = !empty($response->amount) ?
+            StringUtils::toAmount($response->amount, $response->currency ?? null) : null;
         $batchSummary->hostTotalCnt = $response->host_breakdown->count ?? null;
         $batchSummary->hostTotalAmt = !empty($response->host_breakdown->amount) ?
-            StringUtils::toAmount($response->host_breakdown->amount) : null;
+            StringUtils::toAmount($response->host_breakdown->amount, $response->currency ?? null) : null;
         $batchSummary->batchTotals = self::extractBatchTotals($response);
         foreach ($response->brand_breakdown as $brandBreakdown) {
             $batchSummary->brandBreakdown[$brandBreakdown->brand] = self::extractBatchTotals($brandBreakdown);
@@ -243,19 +246,20 @@ class GpApiMapping
         $batchTotals = new BatchTotals();
         $batchTotals->salesCount = $response->sales->count ?? null;
         $batchTotals->saleAmount = !empty($response->sales->amount) ?
-            StringUtils::toAmount($response->sales->amount) : null;
+            StringUtils::toAmount($response->sales->amount, $response->currency ?? null) : null;
         $batchTotals->refundsCount = $response->refunds->count ?? null;
         $batchTotals->refundsAmount = !empty($response->refunds->amount) ?
-            StringUtils::toAmount($response->refunds->amount) : null;
+            StringUtils::toAmount($response->refunds->amount, $response->currency ?? null) : null;
         $batchTotals->fundingCreditCount = $response->funding_credit->count ?? null;
         $batchTotals->fundingCreditAmount = !empty($response->funding_credit->amount) ?
-            StringUtils::toAmount($response->funding_credit->amount) : null;
+            StringUtils::toAmount($response->funding_credit->amount, $response->currency ?? null) : null;
         $batchTotals->fundingDebitCount = $response->funding_debit->count ?? null;
         $batchTotals->fundingDebitAmount = !empty($response->funding_debit->amount) ?
-            StringUtils::toAmount($response->funding_debit->amount) : null;
+            StringUtils::toAmount($response->funding_debit->amount, $response->currency ?? null) : null;
         $batchTotals->totalGratuityAmt = !empty($response->gratuity_amount) ?
-            StringUtils::toAmount($response->gratuity_amount) : null;
-        $batchTotals->totalAmount = !empty($response->amount) ? StringUtils::toAmount($response->amount) : null;
+            StringUtils::toAmount($response->gratuity_amount, $response->currency ?? null) : null;
+        $batchTotals->totalAmount = (isset($response->amount) && $response->amount !== '') ?
+            StringUtils::toAmount($response->amount, $response->currency ?? null) : null;
         $batchTotals->totalCount = $response->count ?? null;
 
         return $batchTotals;
@@ -273,7 +277,7 @@ class GpApiMapping
             $transfer->timeCreated = !empty($transferResponse->time_created) ?
                 new DateTime($transferResponse->time_created) : '';
             $transfer->amount = !empty($transferResponse->amount) ?
-                StringUtils::toAmount($transferResponse->amount) : null;
+                StringUtils::toAmount($transferResponse->amount, $transferResponse->currency ?? null) : null;
             $transfer->reference = $transferResponse->reference ?? null;
             $transfer->description = $transferResponse->description ?? null;
             $transfer->status = $transferResponse->status ?? null;
@@ -394,6 +398,8 @@ class GpApiMapping
         $payerDetails = new PayerDetails();
         $payerDetails->id = $payer->id ?? null;
         $payerDetails->email = $payer->email ?? null;
+        $payerDetails->reference = $payer->reference ?? null;
+
         if (!empty($payer->billing_address)) {
             $billingAddress = $payer->billing_address;
             $payerDetails->firstName = $billingAddress->first_name ?? null;
@@ -454,10 +460,11 @@ class GpApiMapping
         $dccRateData = new DccRateData();
         $dccRateData->cardHolderCurrency = !empty($response->payer_currency) ? $response->payer_currency : null;
         $dccRateData->cardHolderAmount = !empty($response->payer_amount) ?
-            StringUtils::toAmount($response->payer_amount) : null;
+            StringUtils::toAmount($response->payer_amount, $response->payer_currency ?? null) : null;
         $dccRateData->cardHolderRate = !empty($response->exchange_rate) ? $response->exchange_rate : null;
         $dccRateData->merchantCurrency = !empty($response->currency) ? $response->currency : null;
-        $dccRateData->merchantAmount = !empty($response->amount) ? StringUtils::toAmount($response->amount) : null;
+        $dccRateData->merchantAmount = !empty($response->amount) ?
+            StringUtils::toAmount($response->amount, $response->currency ?? null) : null;
         $dccRateData->marginRatePercentage = !empty($response->margin_rate_percentage) ?
             $response->margin_rate_percentage : null;
         $dccRateData->exchangeRateSourceName = !empty($response->exchange_rate_source) ?
@@ -584,7 +591,7 @@ class GpApiMapping
         $summary->depositTimeCreated = !empty($response->deposit_time_created) ?
             new DateTime($response->deposit_time_created) : '';
         $summary->settlementAmount = !empty($response->deposit_amount) ?
-            StringUtils::toAmount($response->deposit_amount) : null;
+            StringUtils::toAmount($response->deposit_amount, $response->currency ?? null) : null;
         $summary->batchCloseDate = !empty($response->batch_time_created) ? new DateTime($response->batch_time_created) : '';
         $summary->orderId = $response->order->reference ?? null;
 
@@ -691,12 +698,12 @@ class GpApiMapping
             $summary->dccRateData = self::mapDccInfo($response->currency_conversion);
         }
         $summary->cashBackAmount = !empty($response->cashback_amount) ?
-            StringUtils::toAmount($response->cashback_amount) : null;
+            StringUtils::toAmount($response->cashback_amount, $response->currency ?? null) : null;
         $summary->merchantAmount = !empty($response->merchant_amount) ?
-            StringUtils::toAmount($response->merchant_amount) : null;
+            StringUtils::toAmount($response->merchant_amount, $response->merchant_currency ?? null) : null;
         $summary->merchantCurrency = $response->merchant_currency ?? null;
         $summary->gratuityAmount = !empty($response->gratuity_amount) ?
-            StringUtils::toAmount($response->gratuity_amount) : null;
+            StringUtils::toAmount($response->gratuity_amount, $response->currency ?? null) : null;
 
         /** map Installment transaction Report response info */
         if (!empty($response->installment)) {
@@ -720,7 +727,7 @@ class GpApiMapping
         $summary->depositDate = new DateTime($response->time_created);
         $summary->status = $response->status;
         $summary->type = $response->funding_type;
-        $summary->amount = StringUtils::toAmount($response->amount);
+        $summary->amount = StringUtils::toAmount($response->amount, $response->currency ?? null);
         $summary->currency = $response->currency;
         if (isset($response->system)) {
             self::mapSystemResponse($summary, $response->system);
@@ -728,32 +735,35 @@ class GpApiMapping
         if (isset($response->sales)) {
             $sales = $response->sales;
             $summary->salesTotalCount = $sales->count ?? 0;
-            $summary->salesTotalAmount = isset($sales->amount) ? StringUtils::toAmount($sales->amount) : 0;
+            $summary->salesTotalAmount = isset($sales->amount) ?
+                StringUtils::toAmount($sales->amount, $response->currency ?? null) : 0;
         }
 
         if (isset($response->refunds)) {
             $refunds = $response->refunds;
             $summary->refundsTotalCount = $refunds->count ?? 0;
-            $summary->refundsTotalAmount = isset($refunds->amount) ? StringUtils::toAmount($refunds->amount) : 0;
+            $summary->refundsTotalAmount = isset($refunds->amount) ?
+                StringUtils::toAmount($refunds->amount, $response->currency ?? null) : 0;
         }
 
         if (isset($response->tax)) {
             $summary->taxTotalCount = $response->tax->count ?? 0;
-            $summary->taxTotalAmount = isset($response->tax->amount) ? StringUtils::toAmount($response->tax->amount) : 0;
+            $summary->taxTotalAmount = isset($response->tax->amount) ?
+                StringUtils::toAmount($response->tax->amount, $response->currency ?? null) : 0;
         }
 
         if (isset($response->disputes)) {
             $disputes = $response->disputes;
             $summary->chargebackTotalCount = $disputes->chargebacks->count ?? 0;
             $summary->chargebackTotalAmount = isset($disputes->chargebacks->amount) ?
-                StringUtils::toAmount($disputes->chargebacks->amount) : 0;
+                StringUtils::toAmount($disputes->chargebacks->amount, $response->currency ?? null) : 0;
 
             $summary->adjustmentTotalCount = $disputes->reversals->count ?? 0;
             $summary->adjustmentTotalAmount = isset($disputes->reversals->amount) ?
-                StringUtils::toAmount($disputes->reversals->amount) : 0;
+                StringUtils::toAmount($disputes->reversals->amount, $response->currency ?? null) : 0;
         }
 
-        $summary->feesTotalAmount = isset($response->fees->amount) ? StringUtils::toAmount($response->fees->amount) : 0;
+        $summary->feesTotalAmount = isset($response->fees->amount) ? StringUtils::toAmount($response->fees->amount, $response->currency ?? null) : 0;
 
         return $summary;
     }
@@ -775,7 +785,7 @@ class GpApiMapping
         $summary->caseStage = $response->stage;
         $summary->disputeStageTime =
             (!empty($response->stage_time_created) ? new DateTime($response->stage_time_created) : null);
-        $summary->caseAmount = StringUtils::toAmount($response->amount);
+        $summary->caseAmount = StringUtils::toAmount($response->amount, $response->currency ?? null);
         $summary->caseCurrency = $response->currency;
 
         if (isset($response->system)) {
@@ -792,7 +802,7 @@ class GpApiMapping
         if (!empty($response->transaction)) {
             $summary->transactionTime = $response->transaction->time_created;
             $summary->transactionType = $response->transaction->type;
-            $summary->transactionAmount = StringUtils::toAmount($response->transaction->amount);
+            $summary->transactionAmount = StringUtils::toAmount($response->transaction->amount, $response->transaction->currency ?? null);
             $summary->transactionCurrency = $response->transaction->currency;
             $summary->transactionReferenceNumber = $response->transaction->reference;
             if (isset($response->transaction->payment_method->card)) {
@@ -824,14 +834,14 @@ class GpApiMapping
         $summary->result = $response->result;
         $summary->fundingType = $response->funding_type ?? null;
         $summary->lastAdjustmentAmount = !empty($response->last_adjustment_amount) ?
-            StringUtils::toAmount($response->last_adjustment_amount) : null;
+            StringUtils::toAmount($response->last_adjustment_amount, $response->last_adjustment_currency ?? null) : null;
         $summary->lastAdjustmentCurrency = $response->last_adjustment_currency ?? null;
         $summary->lastAdjustmentFunding = $response->last_adjustment_funding ?? null;
         $summary->lastAdjustmentTimeCreated = $response->last_adjustment_time_created ?? null;
         $summary->depositDate = !empty($response->deposit_time_created) ? $response->deposit_time_created : null;
         $summary->depositReference = !empty($response->deposit_id) ? $response->deposit_id : null;
         $summary->disputeCustomerAmount = !empty($response->payer_amount) ?
-            StringUtils::toAmount($response->payer_amount) : null;
+            StringUtils::toAmount($response->payer_amount, $response->payer_currency ?? null) : null;
         $summary->disputeCustomerCurrency = $response->payer_currency ?? null;
         if (!empty($response->payment_method_provider)) {
             foreach ($response->payment_method_provider as $providerPaymentMethod) {
@@ -909,7 +919,8 @@ class GpApiMapping
         $riskAssessment->id = $response->id;
         $riskAssessment->timeCreated = $response->time_created;
         $riskAssessment->status = $response->status ?? null;
-        $riskAssessment->amount = isset($response->amount) ? StringUtils::toAmount($response->amount) : null;
+        $riskAssessment->amount = isset($response->amount) ?
+            StringUtils::toAmount($response->amount, $response->currency ?? null) : null;
         $riskAssessment->currency = $response->currency ?? null;
         $riskAssessment->merchantId = $response->merchant_id ?? null;
         $riskAssessment->merchantName = $response->merchant_name ?? null;
@@ -1022,7 +1033,7 @@ class GpApiMapping
         }
 
         $threeDSecure->setCurrency($response->currency);
-        $threeDSecure->setAmount(StringUtils::toAmount($response->amount));
+        $threeDSecure->setAmount(StringUtils::toAmount($response->amount, $response->currency ?? null));
         $threeDSecure->authenticationValue = !empty($response->three_ds->authentication_value) ?
             $response->three_ds->authentication_value : null;
         $threeDSecure->directoryServerTransactionId = !empty($response->three_ds->ds_trans_ref) ?
@@ -1152,7 +1163,7 @@ class GpApiMapping
         $apm->reasonCode = !empty($paymentMethodApm->reason_code) ? $paymentMethodApm->reason_code : null;
         $apm->pendingReason = !empty($paymentMethodApm->pending_reason) ? $paymentMethodApm->pending_reason : null;
         $apm->grossAmount = !empty($paymentMethodApm->gross_amount) ?
-            StringUtils::toAmount($paymentMethodApm->gross_amount) : null;
+            StringUtils::toAmount($paymentMethodApm->gross_amount, $response->currency ?? null) : null;
         $apm->paymentTimeReference = !empty($paymentMethodApm->payment_time_reference) ?
             new DateTime($paymentMethodApm->payment_time_reference) : null;
         $apm->paymentType = !empty($paymentMethodApm->payment_type) ? $paymentMethodApm->payment_type : null;
@@ -1161,11 +1172,12 @@ class GpApiMapping
         $apm->protectionEligibilty = !empty($paymentMethodApm->protection_eligibilty) ?
             $paymentMethodApm->protection_eligibilty : null;
         $apm->feeAmount = !empty($paymentMethodApm->fee_amount) ?
-            StringUtils::toAmount($paymentMethodApm->fee_amount) : null;
+            StringUtils::toAmount($paymentMethodApm->fee_amount, $response->currency ?? null) : null;
         if (!empty($response->payment_method->authorization)) {
             $authorization = $response->payment_method->authorization;
             $apm->authStatus = !empty($authorization->status) ? $authorization->status : null;
-            $apm->authAmount = !empty($authorization->amount) ? StringUtils::toAmount($authorization->amount) : null;
+            $apm->authAmount = !empty($authorization->amount) ?
+                StringUtils::toAmount($authorization->amount, $response->currency ?? null) : null;
             $apm->authAck = !empty($authorization->ack) ? $authorization->ack : null;
             $apm->authCorrelationReference = !empty($authorization->correlation_reference) ?
                 $authorization->correlation_reference : null;
@@ -1265,7 +1277,8 @@ class GpApiMapping
         $summary->shippingAmount = $response->shipping_amount ?? null;
 
         if (!empty($response->transactions)) {
-            $summary->amount = StringUtils::toAmount($response->transactions->amount) ?? null;
+            $summary->amount =
+                StringUtils::toAmount($response->transactions->amount, $response->transactions->currency ?? null);
             $summary->currency = $response->transactions->currency ?? null;
             $summary->allowedPaymentMethods = $response->transactions->allowed_payment_methods ?? null; //@TODO check
             if (!empty($response->transactions->transaction_list)) {
@@ -1318,7 +1331,7 @@ class GpApiMapping
         $transaction->transactionStatus = $response->status;
         $transaction->transactionType = $response->type;
         $transaction->channel = !empty($response->channel) ? $response->channel : null;
-        $transaction->amount = StringUtils::toAmount($response->amount);
+        $transaction->amount = StringUtils::toAmount($response->amount, $response->currency ?? null);
         $transaction->currency = $response->currency;
         $transaction->referenceNumber = $transaction->clientTransactionId = $response->reference;
         $transaction->description = $response->description ?? null;
@@ -1466,7 +1479,7 @@ class GpApiMapping
                 $funds->paymentMethodType = $response->type ?? null;
                 $funds->paymentMethodName = $response->payment_method ?? null;
                 $funds->status = $response->status;
-                $funds->amount = StringUtils::toAmount($response->amount);
+                $funds->amount = StringUtils::toAmount($response->amount, $response->currency ?? null);
                 $funds->currency = $response->currency ?? null;
                 $funds->account = new UserAccount($response->account_id, $response->account_name);
                 $user->fundsAccountDetails = $funds;

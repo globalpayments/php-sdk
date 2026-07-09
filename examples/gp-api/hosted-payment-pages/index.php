@@ -120,12 +120,13 @@ try{
     *  - channel: The payment channel (e.g. CardNotPresent)
     *  - country: The country code (e.g. 'GB')
     *  - captureMode: Indicates whether the transaction is to be captured automatically, or later after a separate request. Can be set to Multiple to accommodate subscriptions
-    *  - allowedPaymentMethods: An array of allowed payment methods. E.G: [HPPAllowedPaymentMethods::CARD, HPPAllowedPaymentMethods::BANK_PAYMENT],HPPAllowedPaymentMethods::BLIK )
+    *  - allowedPaymentMethods: An array of allowed payment methods. E.G: [HPPAllowedPaymentMethods::CARD, HPPAllowedPaymentMethods::BANK_PAYMENT,HPPAllowedPaymentMethods::BLIK] )
+    *   Note: passing [] to allowedPaymentMethod will show all the available payment methods on your account.         
     *  - usageMode: Sets the HPP URL to Multiple or single uses
     *  - usageLimit: The maximum number of times the HPP URL can be used
     */
 
-	->withTransactionConfig(Channel::CardNotPresent, 'GB', CaptureMode::AUTO)
+	->withTransactionConfig(Channel::CardNotPresent, 'GB', CaptureMode::AUTO, [])
 	
 	// Authentication configuration for 3DS
 	// ChallengeRequestIndicator - Indicates the merchants preference for 3DS checks

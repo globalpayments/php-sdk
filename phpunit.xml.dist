@@ -44,6 +44,9 @@
     <testsuite name="transactionapi">
         <directory>./test/Integration/Gateways/TransactionApiConnector/</directory>
     </testsuite>
+    <testsuite name="ci">
+      <directory>./test/Integration/Gateways/CI/</directory>
+    </testsuite>
     <testsuite name="hpp">
       <directory>./test/Unit/Entities/HPP/</directory>
       <directory>./test/Unit/Builders/HPP/</directory>

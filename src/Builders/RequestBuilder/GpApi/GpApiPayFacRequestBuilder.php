@@ -114,7 +114,7 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
                     'account_id' => $builder->accountNumber,
                     'type' => !empty($builder->paymentMethodType) ?
                         PaymentMethodType::getKey($builder->paymentMethodType) : null,
-                    'amount' => StringUtils::toNumeric($builder->amount),
+                    'amount' => StringUtils::toNumeric($builder->amount, $builder->currency ?? null),
                     'currency' => $builder->currency ?? null,
                     'payment_method' => !empty($builder->paymentMethodName) ?
                         PaymentMethodName::getKey($builder->paymentMethodName) : null,

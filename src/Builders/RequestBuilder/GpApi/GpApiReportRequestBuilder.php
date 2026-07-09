@@ -55,7 +55,10 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $queryParams['account_id'] = $config->accessTokenInfo->dataAccountID;
                 $queryParams['order_by'] = $builder->depositOrderBy;
                 $queryParams['order'] = $builder->order;
-                $queryParams['amount'] = StringUtils::toNumeric($builder->searchBuilder->amount);
+                $queryParams['amount'] = StringUtils::toNumeric(
+                    $builder->searchBuilder->amount,
+                    $builder->searchBuilder->currency
+                );
                 $queryParams['from_time_created'] = !empty($builder->searchBuilder->startDate) ?
                     $builder->searchBuilder->startDate->format('Y-m-d') : null;
                 $queryParams['to_time_created'] = !empty($builder->searchBuilder->endDate) ?
@@ -73,7 +76,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                     'id' => $builder->transactionId,
                     'type' => $builder->searchBuilder->paymentType,
                     'channel' => $builder->searchBuilder->channel,
-                    'amount' => StringUtils::toNumeric($builder->searchBuilder->amount),
+                    'amount' => StringUtils::toNumeric($builder->searchBuilder->amount, $builder->searchBuilder->currency),
                     'currency' => $builder->searchBuilder->currency,
                     'token_first6' => $builder->searchBuilder->tokenFirstSix,
                     'token_last4' => $builder->searchBuilder->tokenLastFour,
@@ -249,7 +252,10 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $queryParams['status'] = $builder->searchBuilder->payByLinkStatus;
                 $queryParams['usage_mode'] = $builder->searchBuilder->paymentMethodUsageMode;
                 $queryParams['name'] = $builder->searchBuilder->displayName;
-                $queryParams['amount'] = StringUtils::toNumeric($builder->searchBuilder->amount);;
+                $queryParams['amount'] = StringUtils::toNumeric(
+                    $builder->searchBuilder->amount,
+                    $builder->searchBuilder->currency
+                );
                 $queryParams['description'] = $builder->searchBuilder->description;
                 $queryParams['reference'] = $builder->searchBuilder->referenceNumber;
                 $queryParams['country'] = $builder->searchBuilder->country;

@@ -41,11 +41,12 @@ class HPPTransactionConfiguration
     public ?string $captureMode = null;
     
     /**
-     * Determines whether Dynamic Currency Conversion is enabled.
+     * Controls whether Dynamic Currency Conversion (DCC) is enabled on the hosted payment page.
+     * Accepts boolean (true/false), integer (0/1), or string ("YES"/"NO", case-insensitive).
      * 
-     * @var bool|null
+     * @var bool|int|string|null
      */
-    public ?bool $currencyConversionMode = null;
+    public bool|int|string|null $currencyConversionMode = null;
     
     /**
      * The payment methods available to create transactions with.
@@ -106,9 +107,11 @@ class HPPTransactionConfiguration
             }
         }
         
-        // Validate currencyConversionMode
-        if (!is_null($this->currencyConversionMode) && !is_bool($this->currencyConversionMode)) {
-            $errors[] = 'currencyConversionMode must be a boolean value';
+        // Validate currencyConversionMode — delegate conversion rules to StringUtils::boolToYesNo
+        if (!is_null($this->currencyConversionMode)) {
+            if (StringUtils::boolToYesNo($this->currencyConversionMode) === null) {
+                $errors[] = 'currencyConversionMode must be a boolean, integer (0/1), or string (YES/NO)';
+            }
         }
         
         // Validate usageMode

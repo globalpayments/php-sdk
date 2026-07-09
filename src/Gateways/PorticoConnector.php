@@ -57,6 +57,7 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\{
 };
 use GlobalPayments\Api\PaymentMethods\{RecurringPaymentMethod, TransactionReference};
 use GlobalPayments\Api\Entities\PayFac\PayFacResponseData;
+use GlobalPayments\Api\Utils\ReleaseVersionUtils;
 
 class PorticoConnector extends XmlGateway implements IPaymentGateway
 {
@@ -1367,8 +1368,8 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             );
         } else {
             $header->appendChild(
-                $xml->createElement('SDKNameVersion', 'php;version=' . $this->getReleaseVersion())
-            );         
+                $xml->createElement('SDKNameVersion', 'php;version=' . ReleaseVersionUtils::getReleaseVersion())
+            );
         }
 
         $version->appendChild($header);
@@ -2669,30 +2670,6 @@ class PorticoConnector extends XmlGateway implements IPaymentGateway
             return true;
         }
         return false;
-    }
-
-    /**
-     * Parses and returns the release number (version number) from 'metadata.xml'
-     * 
-     * @return string 
-     */
-    private function getReleaseVersion() : string
-    {
-        try {
-            $fileContents = file_get_contents(
-                dirname(__DIR__, 2) . '/metadata.xml'
-            );
-            
-            $posOne = strpos($fileContents, "<releaseNumber>");
-            $posTwo = strpos($fileContents, "</releaseNumber>");
-            
-            return substr($fileContents, $posOne + 15, $posTwo - $posOne - 15);
-        } catch(Exception $e) {
-            trigger_error(
-                "Unable to append SDK version to request header. Inner Exception:"
-                . PHP_EOL . $e->getMessage()
-            );
-        }        
     }
 
     /**

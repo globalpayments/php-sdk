@@ -3,7 +3,9 @@
 namespace GlobalPayments\Api\Builders\RequestBuilder\GpApi;
 
 use GlobalPayments\Api\Builders\BaseBuilder;
+use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\IRequestBuilder;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 
 class GpApiMiCRequestBuilder implements IRequestBuilder
 {
@@ -26,9 +28,9 @@ class GpApiMiCRequestBuilder implements IRequestBuilder
     {
         throw new \GlobalPayments\Api\Entities\Exceptions\NotImplementedException();
     }
-    
+
     public function buildRequestFromJson(mixed $jsonRequest, mixed $config): mixed
     {
-        throw new \GlobalPayments\Api\Entities\Exceptions\NotImplementedException();
+        return new GpApiRequest(GpApiRequest::DEVICE_ENDPOINT, "POST", $jsonRequest);
     }
 }

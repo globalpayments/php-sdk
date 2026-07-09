@@ -139,7 +139,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                 $requestData['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
                 $requestData['account_id'] = $config->accessTokenInfo->transactionProcessingAccountID;
                 $requestData['channel'] = $config->channel;
-                $requestData['amount'] = StringUtils::toNumeric($builder->amount);
+                $requestData['amount'] = StringUtils::toNumeric($builder->amount, $builder->currency);
                 $requestData['currency'] = $builder->currency;
                 $requestData['country'] = $config->country;
                 $requestData['reference'] = !empty($builder->clientTransactionId) ?
@@ -161,14 +161,14 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $requestData['name'] = $payByLink->name;
                     $requestData['description'] = $builder->description;
                     $requestData['shippable'] = StringUtils::boolToYesNo($payByLink->isShippable) ? StringUtils::boolToYesNo($payByLink->isShippable) : "NO";
-                    $requestData['shipping_amount'] = StringUtils::toNumeric($payByLink->shippingAmount);
+                    $requestData['shipping_amount'] = StringUtils::toNumeric($payByLink->shippingAmount, $builder->currency);
                     $requestData['expiration_date'] = !empty($payByLink->expirationDate) ?
                         (new \DateTime($payByLink->expirationDate))->format('Y-m-d\TH:i:s\Z') : null;
                     //@TODO - remove status when GP-API will fix the issue (status shouldn't be sent in request)
                     $requestData['status'] = PayByLinkStatus::ACTIVE;
                     $requestData['images'] = $payByLink->images;
                     $requestData['transactions'] = [
-                        'amount' => StringUtils::toNumeric($builder->amount),
+                        'amount' => StringUtils::toNumeric($builder->amount, $builder->currency),
                         'channel' => $config->channel,
                         'currency' => $builder->currency,
                         'country' => $config->country,
@@ -193,7 +193,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     'account_name' => $builder->paymentMethod->accountName ?? null,
                     'recipient_account_id' => $builder->paymentMethod->recipientAccountId ?? null,
                     'reference' => $builder->clientTransactionId ?? GenerationUtils::getGuid(),
-                    'amount' => StringUtils::toNumeric($builder->amount),
+                    'amount' => StringUtils::toNumeric($builder->amount, $builder->currency),
                     'description' => $builder->description,
                     'usable_balance_mode' => $builder->paymentMethod->usableBalanceMode ?? null
                 ];
@@ -225,7 +225,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     
                     // Add shipping_amount if shippable is YES and amount is provided
                     if ($requestData['shippable'] === 'YES' && !empty($builder->hostedPaymentData->shippingAmount)) {
-                        $requestData['shipping_amount'] = StringUtils::toNumeric($builder->hostedPaymentData->shippingAmount);
+                        $requestData['shipping_amount'] = StringUtils::toNumeric($builder->hostedPaymentData->shippingAmount, $builder->hostedPaymentData->order?->currency ?? $builder->currency);
                     }
                     
                     // Add usage_mode and usage_limit
@@ -244,7 +244,6 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                         $payer = $builder->hostedPaymentData->payer;
                         $requestData['payer'] = [
                             'status' => $payer->status ?? "NEW",
-                            // 'id' => $payer->id ?? "",
                             'name' => $payer->name ?? "",
                             'first_name' => $payer->firstName ?? "",
                             'last_name' => $payer->lastName ?? "",
@@ -254,6 +253,10 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                         if(property_exists($payer, 'id') && !empty($payer->id)) {
                             $requestData['payer']['id'] = $payer->id;
                         }
+                        if(property_exists($payer, 'reference') && !empty($payer->reference)) {
+                            $requestData['payer']['reference'] = $payer->reference;
+                        }
+
                         
                         // Mobile phone - Allready validation in place for this data
                         if ($payer->mobilePhone) {
@@ -300,7 +303,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     if ($builder->hostedPaymentData->order) {
                         $order = $builder->hostedPaymentData->order;
                         $requestData['order'] = [
-                            'amount' => StringUtils::toNumeric($order->amount),
+                            'amount' => StringUtils::toNumeric($order->amount, $order->currency),
                             'currency' => $order->currency
                         ];
                         
@@ -518,7 +521,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             PaymentType::REFUND : PaymentType::SALE);
         $requestBody['capture_mode'] = !empty($captureMode) ? $captureMode : CaptureMode::AUTO;
         $requestBody['authorization_mode'] = !empty($builder->allowPartialAuth) ? 'PARTIAL' : null;
-        $requestBody['amount'] = StringUtils::toNumeric($builder->amount);
+        $requestBody['amount'] = StringUtils::toNumeric($builder->amount, $builder->currency);
         $requestBody['currency'] = $builder->currency;
         $requestBody['reference'] = !empty($builder->clientTransactionId) ?
             $builder->clientTransactionId : GenerationUtils::getGuid();
@@ -530,10 +533,10 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         }
         $requestBody['description'] = $builder->description;
         $requestBody['order'] = ['reference' => $builder->orderId];
-        $requestBody['gratuity_amount'] = StringUtils::toNumeric($builder->gratuity);
-        $requestBody['surcharge_amount'] = StringUtils::toNumeric($builder->surchargeAmount);
-        $requestBody['convenience_amount'] = StringUtils::toNumeric($builder->convenienceAmount);
-        $requestBody['cashback_amount'] = StringUtils::toNumeric($builder->cashBackAmount);
+        $requestBody['gratuity_amount'] = StringUtils::toNumeric($builder->gratuity, $builder->currency);
+        $requestBody['surcharge_amount'] = StringUtils::toNumeric($builder->surchargeAmount, $builder->currency);
+        $requestBody['convenience_amount'] = StringUtils::toNumeric($builder->convenienceAmount, $builder->currency);
+        $requestBody['cashback_amount'] = StringUtils::toNumeric($builder->cashBackAmount, $builder->currency);
         $requestBody['ip_address'] = $builder->customerIpAddress;
         $requestBody['merchant_category'] = $builder->merchantCategory ?? null;
         $requestBody['payer'] = ['id' => $builder->customerId ?: ""];
@@ -1200,10 +1203,10 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         /** @var Product $product */
         foreach ($builder->productData as $product) {
             $qta = !empty($product->quantity) ? (int) $product->quantity : 0;
-            $unitAmount = !empty($product->unitPrice) ? StringUtils::toNumeric($product->unitPrice) : 0;
-            $taxAmount = !empty($product->taxAmount) ? StringUtils::toNumeric($product->taxAmount) : 0;
-            $netUnitAmount = !empty($product->netUnitPrice) ? StringUtils::toNumeric($product->netUnitPrice) : 0;
-            $discountAmount = !empty($product->discountAmount) ? StringUtils::toNumeric($product->discountAmount) : 0;
+            $unitAmount = !empty($product->unitPrice) ? StringUtils::toNumeric($product->unitPrice, $builder->currency) : 0;
+            $taxAmount = !empty($product->taxAmount) ? StringUtils::toNumeric($product->taxAmount, $builder->currency) : 0;
+            $netUnitAmount = !empty($product->netUnitPrice) ? StringUtils::toNumeric($product->netUnitPrice, $builder->currency) : 0;
+            $discountAmount = !empty($product->discountAmount) ? StringUtils::toNumeric($product->discountAmount, $builder->currency) : 0;
             $items[] = [
                 'reference' => !empty($product->productId) ? $product->productId : null,
                 'label' => !empty($product->productName) ? $product->productName : null,
@@ -1229,43 +1232,58 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
     private function setItemDetailsListForApm($builder, &$order)
     {
         $taxTotalAmount = $itemsAmount = 0;
+        $orderCurrency = !empty($builder->currency) ? strtoupper((string) $builder->currency) : null;
+
         foreach ($builder->productData as $product) {
             $qta = !empty($product['quantity']) ? $product['quantity'] : 0;
-            $taxAmount = !empty($product['tax_amount']) ? StringUtils::toNumeric($product['tax_amount']) : 0;
-            $unitAmount = !empty($product['unit_amount']) ? StringUtils::toNumeric($product['unit_amount']) : 0;
+            $itemCurrency = !empty($product['unit_currency']) ? strtoupper((string) $product['unit_currency']) : null;
+
+            if (empty($orderCurrency) && !empty($itemCurrency)) {
+                $orderCurrency = $itemCurrency;
+            }
+
+            if (!empty($itemCurrency) && !empty($orderCurrency) && $itemCurrency !== $orderCurrency) {
+                throw new ArgumentException('Item currency must match order currency.');
+            }
+
+            $effectiveCurrency = $orderCurrency ?? $itemCurrency;
+            $taxAmount = !empty($product['tax_amount']) ?
+                StringUtils::toNumeric($product['tax_amount'], $effectiveCurrency) : 0;
+            $unitAmount = !empty($product['unit_amount']) ?
+                StringUtils::toNumeric($product['unit_amount'], $effectiveCurrency) : 0;
             $items[] = [
                 'reference' => !empty($product['reference']) ? $product['reference'] : null,
                 'label' => !empty($product['label']) ? $product['label'] : null,
                 'description' => !empty($product['description']) ? $product['description'] : null,
                 'quantity' => $qta,
                 'unit_amount' => $unitAmount,
-                'unit_currency' => !empty($product['unit_currency']) ? $product['unit_currency'] : null,
+                'unit_currency' => $effectiveCurrency,
                 'tax_amount' => $taxAmount,
                 'amount' => $qta * $unitAmount
             ];
             if (!empty($product['tax_amount'])) {
-                $taxTotalAmount += $taxAmount;
+                $taxTotalAmount += $qta * $taxAmount;
             }
             if (!empty($product['unit_amount'])) {
-                $itemsAmount += $unitAmount;
+                $itemsAmount += $qta * $unitAmount;
             }
         }
 
         $order['tax_amount'] = $taxTotalAmount;
         $order['item_amount'] = $itemsAmount;
         $order['shipping_amount'] = !empty($builder->shippingAmount) ?
-            StringUtils::toNumeric($builder->shippingAmount) : 0;
+            StringUtils::toNumeric($builder->shippingAmount, $orderCurrency) : 0;
         $order['insurance_offered'] = !empty($builder->orderDetails) && !is_null($builder->orderDetails->hasInsurance) ?
             ($builder->orderDetails->hasInsurance === true ? 'YES' : 'NO') : null;
         $order['shipping_discount'] = !empty($builder->shippingDiscount) ?
-            StringUtils::toNumeric($builder->shippingDiscount) : 0;
-        $order['insurance_amount'] = !empty($builder->orderDetails->insuranceAmount) ?
-            StringUtils::toNumeric($builder->orderDetails->insuranceAmount) : 0;
-        $order['handling_amount'] = !empty($builder->orderDetails->handlingAmount) ?
-            StringUtils::toNumeric($builder->orderDetails->handlingAmount) : 0;
+            StringUtils::toNumeric($builder->shippingDiscount, $orderCurrency) : 0;
+        $order['insurance_amount'] = !empty($builder->orderDetails?->insuranceAmount) ?
+            StringUtils::toNumeric($builder->orderDetails->insuranceAmount, $orderCurrency) : 0;
+        $order['handling_amount'] = !empty($builder->orderDetails?->handlingAmount) ?
+            StringUtils::toNumeric($builder->orderDetails->handlingAmount, $orderCurrency) : 0;
         $orderAmount = $itemsAmount + $taxTotalAmount + $order['handling_amount'] + $order['insurance_amount'] + $order['shipping_amount'];
         $order['amount'] = $orderAmount;
-        $order['currency'] = $builder->currency;
+        $order['currency'] = $orderCurrency;
         $order['items'] = $items ?? null;
     }
 

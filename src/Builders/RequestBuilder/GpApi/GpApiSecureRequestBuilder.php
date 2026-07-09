@@ -112,7 +112,7 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
         $threeDS['country'] = $config->country;
         $threeDS['reference'] = !empty($builder->getReferenceNumber()) ?
             $builder->getReferenceNumber() : GenerationUtils::getGuid();
-        $threeDS['amount'] = StringUtils::toNumeric($builder->getAmount());
+        $threeDS['amount'] = StringUtils::toNumeric($builder->getAmount(), $builder->getCurrency());
         $threeDS['currency'] = $builder->getCurrency();
         $threeDS['preference'] = $builder->challengeRequestIndicator;
         $threeDS['source'] = (string) $builder->getAuthenticationSource();
@@ -232,7 +232,7 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
         $order = [
             'time_created_reference' => !empty($this->builder->getOrderCreateDate()) ?
                 (new \DateTime($this->builder->getOrderCreateDate()))->format('Y-m-d\TH:i:s.u\Z') : null,
-            'amount' => StringUtils::toNumeric($this->builder->getAmount()),
+            'amount' => StringUtils::toNumeric($this->builder->getAmount(), $this->builder->getCurrency()),
             'currency' => $this->builder->getCurrency(),
             'reference' => $this->builder->getOrderId() ?? GenerationUtils::getGuid(),
             'address_match_indicator' => StringUtils::boolToString($this->builder->isAddressMatchIndicator()),

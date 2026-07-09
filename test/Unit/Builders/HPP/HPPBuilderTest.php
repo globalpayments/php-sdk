@@ -403,15 +403,70 @@ class HPPBuilderTest extends TestCase
         $this->assertSame('NO', $serialized, 'currency_conversion_mode must serialize to NO');
     }
 
+    /**
+     * @dataProvider provideCurrencyConversionModeScenarios
+     */
+    public function testWithCurrencyConversionModeScenarios(mixed $value, string $expectedYesNo): void
+    {
+        $hppData = $this->createDccHppDataWithValue($value);
+        $serialized = $this->getSerializedCurrencyConversionMode($hppData);
+
+        $this->assertSame($expectedYesNo, $serialized);
+    }
+
+    public function provideCurrencyConversionModeScenarios(): array
+    {
+        return [
+            'integer 1'            => [1,     'YES'],
+            'integer 0'            => [0,     'NO'],
+            'string YES uppercase' => ['YES', 'YES'],
+            'string NO uppercase'  => ['NO',  'NO'],
+            'string yes lowercase' => ['yes', 'YES'],
+            'string no lowercase'  => ['no',  'NO'],
+            'string Yes mixedcase' => ['Yes', 'YES'],
+            'string No mixedcase'  => ['No',  'NO'],
+        ];
+    }
+
+    /**
+     * @dataProvider provideInvalidCurrencyConversionModeInputs
+     */
+    public function testWithCurrencyConversionModeInvalidThrowsException(string $value): void
+    {
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessageMatches('/Validation failed/');
+
+        $this->createDccHppDataWithValue($value);
+    }
+
+    public function provideInvalidCurrencyConversionModeInputs(): array
+    {
+        return [
+            'empty string'   => [''],
+            'whitespace'     => ['   '],
+            'string Y'       => ['Y'],
+            'string N'       => ['N'],
+            'string ENABLE'  => ['ENABLE'],
+            'string DISABLE' => ['DISABLE'],
+            'string 1'       => ['1'],
+            'string 0'       => ['0'],
+        ];
+    }
+
     private function createDccHppData(bool $enabled): HPPData
     {
-        return $this->builder
-            ->withName($enabled ? 'DCC Enabled' : 'DCC Disabled')
+        return $this->createDccHppDataWithValue($enabled);
+    }
+
+    private function createDccHppDataWithValue(mixed $value): HPPData
+    {
+        return HPPBuilder::create()
+            ->withName('DCC Test')
             ->withAmount('1000')
             ->withCurrency('USD')
             ->withPayer($this->validPayer)
             ->withTransactionConfig('CNP', 'US', CaptureMode::AUTO)
-            ->withCurrencyConversionMode($enabled)
+            ->withCurrencyConversionMode($value)
             ->withNotifications(
                 'https://example.com/return',
                 'https://example.com/status'

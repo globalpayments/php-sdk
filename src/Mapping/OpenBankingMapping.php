@@ -74,7 +74,7 @@ class OpenBankingMapping
         $summary = new TransactionSummary();
         $summary->transactionId = $response->ob_trans_id;
         $summary->orderId = $response->order_id;
-        $summary->amount = StringUtils::toAmount($response->amount);
+        $summary->amount = StringUtils::toAmount($response->amount, $response->currency ?? null);
         $summary->currency = $response->currency;
         $summary->transactionStatus = $response->status;
         $summary->paymentType = PaymentMethodName::BANK_PAYMENT;
