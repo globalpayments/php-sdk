@@ -77,15 +77,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
     private $accessToken;
     private $builtInMerchantManagementService = true;
     private $config;
-    
-    /**
-     * Debug helper to log request and response
-     */
-    private function debugLog(string $label, $data): void
-    {
-        $logFile = __DIR__ . '/../../gpapi_debug.log';
-        file_put_contents($logFile, date('c') . " [$label] " . print_r($data, true) . "\n", FILE_APPEND);
-    }
+
     /**
      * Get a list of payers from GPAPI
      * @param array $queryParams Optional query parameters (from_time_created, to_time_created, id, reference, etc)
@@ -392,13 +384,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         if (!empty($request::$maskedValues)) {
             $this->maskedRequestData = $request::$maskedValues;
         }
-        $this->debugLog('REQUEST_EXEC_PROCESS', [
-            'httpVerb' => $request->httpVerb,
-            'endpoint' => $request->endpoint,
-            'requestBody' => $request->requestBody,
-            'queryParams' => $request->queryParams,
-            'headers' => $this->headers
-        ]);
+
         return $this->doTransaction(
             $request->httpVerb,
             $request->endpoint,

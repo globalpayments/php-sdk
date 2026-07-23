@@ -2,6 +2,10 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
+## Latest Version v14.3.1 (07/23/26)
+### Bug Fixes:
+- [GPAPI] Removed hardcoded gateway logger
+
 ## Latest Version v14.3.0 (07/09/26)
 ### New Feature:
 - [GPAPI] - Add APAC multi-currency support with decimal precision handling
