@@ -4,10 +4,15 @@
 namespace GlobalPayments\Api\Entities;
 
 use GlobalPayments\Api\Entities\{HPPAuthenticationConfiguration, HPPApmConfiguration};
-use GlobalPayments\Api\Entities\Enums\HPPStorageModes;
+use GlobalPayments\Api\Entities\Enums\{HPPDigitalWalletProvider, HPPStorageModes, PaymentEntryMode};
 
 class HPPPaymentMethodConfiguration
 {
+    /**
+     * Entry mode for payment method (e.g., ECOM, MOTO, etc.)
+     * @var string|null
+     */
+    public ?string $entryMode = null;
     /**
      * Provides authentication data, this will include 3DS challenge preference, 
      * @var HPPAuthenticationConfiguration|null
@@ -64,7 +69,19 @@ class HPPPaymentMethodConfiguration
             try {
                 HPPStorageModes::validate($this->storageMode);
             } catch (\Exception $e) {
-                $errors[] = 'Invalid storage mode: ' . $this->storageMode;
+                $allowedStorageModes = implode(', ', array_values((new \ReflectionClass(HPPStorageModes::class))->getConstants()));
+                $errors[] = 'Invalid storage mode: ' . $this->storageMode . '. Allowed values: ' . $allowedStorageModes;
+            }
+        }
+
+        // Validate entry mode if provided
+        if ($this->entryMode !== null) {
+            $entryMode = trim((string)$this->entryMode);
+            try {
+                PaymentEntryMode::validate($entryMode);
+            } catch (\Exception $e) {
+                $allowedEntryModes = implode(', ', array_values((new \ReflectionClass(PaymentEntryMode::class))->getConstants()));
+                $errors[] = 'Invalid entry mode: ' . $this->entryMode . '. Allowed values: ' . $allowedEntryModes;
             }
         }
 
@@ -76,6 +93,18 @@ class HPPPaymentMethodConfiguration
                 !is_array($this->digitalWallets['provider'])
             ) {
                 $errors[] = 'digital_wallets must be an array with a "provider" key containing an array of strings.';
+            } else {
+                $allowedProviders = array_values((new \ReflectionClass(HPPDigitalWalletProvider::class))->getConstants());
+                foreach ($this->digitalWallets['provider'] as $provider) {
+                    if (!is_scalar($provider) || is_bool($provider)) {
+                        $errors[] = 'Invalid digital wallet provider type. Provider values must be strings.';
+                        continue;
+                    }
+                    $providerValue = trim((string)$provider);
+                    if ($providerValue === '' || !in_array($providerValue, $allowedProviders, true)) {
+                        $errors[] = 'Invalid digital wallet provider: ' . $providerValue . '. Allowed values: ' . implode(', ', $allowedProviders);
+                    }
+                }
             }
         }
         

@@ -6,6 +6,7 @@ use GlobalPayments\Api\Builders\{AuthorizationBuilder, BaseBuilder};
 use GlobalPayments\Api\Entities\{
     CustomerDocument,
     EncryptionData,
+    HPPOrder,
     IRequestBuilder,
     PayByLinkData,
     PhoneNumber,
@@ -136,8 +137,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             case TransactionType::DCC_RATE_LOOKUP:
                 $endpoint = GpApiRequest::DCC_ENDPOINT;
                 $verb = 'POST';
-                $requestData['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
-                $requestData['account_id'] = $config->accessTokenInfo->transactionProcessingAccountID;
+                $this->setTransactionProcessingAccount($requestData, $config);
                 $requestData['channel'] = $config->channel;
                 $requestData['amount'] = StringUtils::toNumeric($builder->amount, $builder->currency);
                 $requestData['currency'] = $builder->currency;
@@ -152,8 +152,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $payByLink = $builder->payByLinkData;
                     $endpoint = GpApiRequest::PAYBYLINK_ENDPOINT;
                     $verb = 'POST';
-                    $requestData['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
-                    $requestData['account_id'] = $config->accessTokenInfo->transactionProcessingAccountID;
+                    $this->setTransactionProcessingAccount($requestData, $config);
                     $requestData['type'] = $payByLink->type;
                     $requestData['usage_mode'] = $payByLink->usageMode;
                     $requestData['usage_limit'] = (string) $payByLink->usageLimit;
@@ -205,14 +204,19 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $endpoint = GpApiRequest::PAYBYLINK_ENDPOINT;
                     $verb = 'POST';
                     $requestData = [];
-                    $requestData['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
-                    $requestData['account_id'] = $config->accessTokenInfo->transactionProcessingAccountID;
+                    $this->setTransactionProcessingAccount($requestData, $config);
                     $requestData['type'] = $builder->hostedPaymentData->type;
                     $requestData['name'] = $builder->hostedPaymentData->name;
                     $requestData['description'] = $builder->hostedPaymentData->description;
                     $requestData['reference'] = $builder->hostedPaymentData->reference;
                     if(property_exists($builder->hostedPaymentData, 'expirationDate') && !empty($builder->hostedPaymentData->expirationDate)) {
                         $requestData['expiration_date'] = (new \DateTime($builder->hostedPaymentData->expirationDate))->format('Y-m-d\TH:i:s\Z');
+                    }
+                    if (property_exists($builder->hostedPaymentData, 'submitButtonLabel') && $builder->hostedPaymentData->submitButtonLabel !== null) {
+                        $label = trim((string)$builder->hostedPaymentData->submitButtonLabel);
+                        if ($label !== '') {
+                            $requestData['submit_button_label'] = $label;
+                        }
                     }
                     if(property_exists($builder->hostedPaymentData, "images") && !empty($builder->hostedPaymentData->images)) {
                         $requestData['images'] = $builder->hostedPaymentData->images;
@@ -302,14 +306,51 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     // Order information
                     if ($builder->hostedPaymentData->order) {
                         $order = $builder->hostedPaymentData->order;
+                        $orderAmount = trim((string)($order->amount ?? ''));
+                        if ($orderAmount === '' || !preg_match('/^\d+$/', $orderAmount) || preg_match('/^0+$/', $orderAmount)) {
+                            throw new ArgumentException('Invalid order amount. Amount must be a positive whole-number string in minor units.');
+                        }
                         $requestData['order'] = [
-                            'amount' => StringUtils::toNumeric($order->amount, $order->currency),
+                            'amount' => $orderAmount,
                             'currency' => $order->currency
                         ];
                         
                         // Add order reference if available
                         if (!empty($order->reference)) {
                             $requestData['order']['reference'] = $order->reference;
+                        }
+
+                        // Add surcharge array if available
+                        if (!empty($order->surcharge) && is_array($order->surcharge)) {
+                            $surchargeArray = [];
+                            foreach ($order->surcharge as $index => $surcharge) {
+                                if (!is_array($surcharge)) {
+                                    throw new ArgumentException("Invalid surcharge entry at index {$index}. Each surcharge must be an array with 'card_type' and 'amount'.");
+                                }
+                                $rawCardType = $surcharge['card_type'] ?? '';
+                                $rawAmount = $surcharge['amount'] ?? '';
+                                if (!is_scalar($rawCardType) || is_bool($rawCardType) || !is_scalar($rawAmount) || is_bool($rawAmount)) {
+                                    throw new ArgumentException("Invalid surcharge entry at index {$index}. card_type and amount must be strings.");
+                                }
+                                $cardType = strtoupper(trim((string)$rawCardType));
+                                $amount = trim((string)$rawAmount);
+                                if ($cardType === '' || $amount === '') {
+                                    throw new ArgumentException("Invalid surcharge entry at index {$index}. Both card_type and amount are required.");
+                                }
+                                if (!in_array($cardType, HPPOrder::ALLOWED_SURCHARGE_CARD_TYPES, true)) {
+                                    throw new ArgumentException("Invalid surcharge card type '{$cardType}'. Allowed values: " . implode(', ', HPPOrder::ALLOWED_SURCHARGE_CARD_TYPES));
+                                }
+                                if ($amount === '' || !preg_match('/^\d+$/', $amount)) {
+                                    throw new ArgumentException('Invalid surcharge amount. Amount must be a whole-number string in minor units.');
+                                }
+                                $surchargeArray[] = [
+                                    'card_type' => $cardType,
+                                    'amount' => $amount
+                                ];
+                            }
+                            if (!empty($surchargeArray)) {
+                                $requestData['order']['surcharge'] = $surchargeArray;
+                            }
                         }
                         
                         // Order Transaction configuration
@@ -337,6 +378,13 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                         if ($order->HPPPaymentMethodConfiguration) {
                             $paymentMethodConfig = $order->HPPPaymentMethodConfiguration;
                             $requestData['order']['payment_method_configuration'] = [];
+                            // Add entry mode if available
+                            if ($paymentMethodConfig->entryMode !== null) {
+                                $entryMode = trim((string) $paymentMethodConfig->entryMode);
+                                if ($entryMode !== '') {
+                                    $requestData['order']['payment_method_configuration']['entry_mode'] = PaymentEntryMode::validate($entryMode);
+                                }
+                            }
                             // Authentications
                             if ($paymentMethodConfig->authentications) {
                                 $auth = $paymentMethodConfig->authentications;
@@ -492,8 +540,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
     private function generateVerificationRequest(AuthorizationBuilder $builder, GpApiConfig $config)
     {
         $requestBody = [];
-        $requestBody['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
-        $requestBody['account_id'] = $config->accessTokenInfo->transactionProcessingAccountID;
+        $this->setTransactionProcessingAccount($requestBody, $config);
         $requestBody['channel'] = $config->channel;
         $requestBody['reference'] = !empty($builder->clientTransactionId) ?
             $builder->clientTransactionId : GenerationUtils::getGuid();
@@ -513,8 +560,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $captureMode = $this->getCaptureMode($builder);
 
         $requestBody = [];
-        $requestBody['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
-        $requestBody['account_id'] = $config->accessTokenInfo->transactionProcessingAccountID;
+        $this->setTransactionProcessingAccount($requestBody, $config);
         $requestBody['channel'] = $config->channel;
         $requestBody['country'] = $config->country;
         $requestBody['type'] = ($builder->transactionType == TransactionType::REFUND ?
@@ -636,6 +682,17 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         }
 
         return $requestBody;
+    }
+
+    private function setTransactionProcessingAccount(array &$requestData, GpApiConfig $config): void
+    {
+        $accountName = $config->accessTokenInfo?->transactionProcessingAccountName;
+        if (empty($accountName) && isset($config->transactionAccountName)) {
+            $accountName = $config->transactionAccountName;
+        }
+
+        $requestData['account_name'] = $accountName;
+        $requestData['account_id'] = $config->accessTokenInfo?->transactionProcessingAccountID;
     }
 
     private function setRequestStoredCredentials(StoredCredential $storedCredential, &$request, $builder = null, $config = null)

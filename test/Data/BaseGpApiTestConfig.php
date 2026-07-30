@@ -24,6 +24,8 @@ class BaseGpApiTestConfig
 
     const EU_APP_ID = 'QlI6DivlPcXboV1AAG3NGtf340bJO6A34SqUa5REJojQMzat';
     const EU_APP_KEY = 'G3Gdx6biXAXgJJFaMnuLo0hlBCCMH18rCXnPzySl37nwctMAmrV1EykuXi6GQCrh';
+    const EU_CTP_APP_ID = 'Q3GX8Q0eY70hoRedigufpFadVgC4vZ5irPzxdifAAI26VxT2'; #gitleaks:allow
+    const EU_CTP_APP_KEY = 'EGTR7u6uqVuiQqHYDBDjqGJRu1TW7ZVMRYczYZhtx5xAzOxkGLODFRzOGBbbjVza'; #gitleaks:allow
 
     public static string $appId = self::APP_ID;
     public static string $appKey = self::APP_KEY; #gitleaks:allow

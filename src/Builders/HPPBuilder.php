@@ -23,6 +23,7 @@ use GlobalPayments\Api\Entities\Enums\{
     CaptureMode,
     ChallengeRequestIndicator,
     HPPStorageModes,
+    PaymentEntryMode,
     PaymentMethodUsageMode,
     ExemptStatus,
     HPPTypes,
@@ -84,10 +85,65 @@ class HPPBuilder extends AuthorizationBuilder
     }
 
     /**
+     * Set the submit button label
+     *
+     * @param string $label Button label text
+     * @return HPPBuilder this
+     */
+    public function withSubmitButtonLabel(string $label): static
+    {
+        $this->HPPData->submitButtonLabel = $label;
+        return $this;
+    }
+
+    /**
+     * Set the entry mode for payment method
+     *
+     * @param string $entryMode Entry mode (ECOM, MOTO, etc.)
+     * @return HPPBuilder this
+     */
+    public function withEntryMode(string $entryMode): static
+    {
+        $this->paymentMethodConfig->entryMode = PaymentEntryMode::validate(trim($entryMode));
+        return $this;
+    }
+
+    /**
+     * Add surcharge configuration to the order
+     *
+     * @param string $cardType Card type (DEBIT, CREDIT, COMMERCIAL)
+     * @param string $amount Surcharge amount as a numeric string sent as-is in the request payload (e.g., '100001').
+     * @return HPPBuilder this
+     */
+    public function withSurcharge(string $cardType, string $amount): static
+    {
+        $normalizedCardType = strtoupper(trim($cardType));
+        if (!in_array($normalizedCardType, HPPOrder::ALLOWED_SURCHARGE_CARD_TYPES, true)) {
+            throw new ArgumentException("Invalid surcharge card type '{$normalizedCardType}'. Allowed values: " . implode(', ', HPPOrder::ALLOWED_SURCHARGE_CARD_TYPES));
+        }
+
+        $normalizedAmount = trim($amount);
+            if ($normalizedAmount === '' || !preg_match('/^\d+$/', $normalizedAmount) || preg_match('/^0+$/', $normalizedAmount)) {
+                throw new ArgumentException('Invalid surcharge amount. Amount must be a positive non-zero whole-number string in minor units.');
+        }
+
+        if (null === $this->order->surcharge) {
+            $this->order->surcharge = [];
+        }
+        $this->order->surcharge[] = [
+            'card_type' => $normalizedCardType,
+            'amount' => $normalizedAmount
+        ];
+
+        return $this;
+    }
+
+    /**
      * Set digital wallets for the payment method configuration
      *
-     * @param array $providers Array of provider strings (e.g., ['googlepay', 'applepay'])
+     * @param array $providers Array of provider strings (e.g., [HPPDigitalWalletProvider::GOOGLEPAY, HPPDigitalWalletProvider::APPLEPAY, HPPDigitalWalletProvider::CLICK_TO_PAY])
      * @return HPPBuilder this
+     * @see \GlobalPayments\Api\Entities\Enums\HPPDigitalWalletProvider
      */
     public function withDigitalWallets(array $providers): static
     {
@@ -263,20 +319,23 @@ class HPPBuilder extends AuthorizationBuilder
     {
         $this->payer->addressMatchIndicator = StringUtils::boolToYesNo($indicator);
         return $this;
-    }    /**
-     * Configure order amount 
-     
+    }
+
+    /**
+     * Configure order amount in minor units (e.g., 1000 for 10.00).
+     *
      * @param string $amount
-     * @throws ArgumentException When the amount is not a number or its a negative number
+     * @throws ArgumentException When amount is not a positive whole-number string
      * @return HPPBuilder this
      */
     public function withAmount($amount): static
     {
-        if (!is_numeric($amount) || floatval($amount) <= 0) {
-            throw new ArgumentException('Issue with the amount, it must be a positive number');
+        $normalizedAmount = trim((string)$amount);
+        if ($normalizedAmount === '' || !preg_match('/^\d+$/', $normalizedAmount) || preg_match('/^0+$/', $normalizedAmount)) {
+            throw new ArgumentException('Invalid order amount. Amount must be a positive whole-number string in minor units.');
         }
-     
-        $this->order->amount = $amount;
+
+        $this->order->amount = $normalizedAmount;
         return $this;
     }
 

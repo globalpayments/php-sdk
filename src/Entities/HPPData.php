@@ -99,6 +99,12 @@ class HPPData
      * @var string IP address of the page hosting the third-party page
      */
     public ?string $ipAddress = null;
+
+    /**
+     * Submit button label text
+     * @var string|null
+     */
+    public ?string $submitButtonLabel = null;
     
     /**
      * IP subnet mask information for non HOSTED_PAYMENT_PAGE types

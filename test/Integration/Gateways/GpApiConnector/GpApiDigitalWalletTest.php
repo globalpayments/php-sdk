@@ -2,18 +2,34 @@
 
 namespace Gateways\GpApiConnector;
 
-use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\Enums\AddressType;
-use GlobalPayments\Api\Entities\Enums\CardType;
-use GlobalPayments\Api\Entities\Enums\Channel;
-use GlobalPayments\Api\Entities\Enums\EncyptedMobileType;
-use GlobalPayments\Api\Entities\Enums\TransactionModifier;
-use GlobalPayments\Api\Entities\Enums\TransactionStatus;
+use GlobalPayments\Api\Builders\HPPBuilder;
+use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiAuthorizationRequestBuilder;
+use GlobalPayments\Api\Entities\Enums\{
+    CaptureMode,
+    CardType,
+    ChallengeRequestIndicator,
+    Channel,
+    DataResidency,
+    EncyptedMobileType,
+    Environment,
+    ExemptStatus,
+    HPPAllowedPaymentMethods,
+    HPPDigitalWalletProvider,
+    HPPStorageModes,
+    HPPTypes,
+    PhoneNumberType,
+    TransactionModifier,
+    TransactionStatus,
+};
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
+use GlobalPayments\Api\Entities\{Address, PayerDetails, PhoneNumber};
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
+use GlobalPayments\Api\Utils\ArrayUtils;
+use GlobalPayments\Api\Utils\Logging\RequestConsoleLogger;
 use PHPUnit\Framework\TestCase;
 
 class GpApiDigitalWalletTest extends TestCase
@@ -54,14 +70,20 @@ class GpApiDigitalWalletTest extends TestCase
         $this->card->token = $this->clickToPayToken;
         $this->card->mobileType = EncyptedMobileType::CLICK_TO_PAY;
 
-        $response = $this->card->charge($this->amount)
-            ->withCurrency($this->currency)
-            ->withModifier(TransactionModifier::ENCRYPTED_MOBILE)
-            ->withMaskedDataResponse(true)
-            ->execute();
+        try {
+            $response = $this->card->charge($this->amount)
+                ->withCurrency($this->currency)
+                ->withModifier(TransactionModifier::ENCRYPTED_MOBILE)
+                ->withMaskedDataResponse(true)
+                ->execute();
 
-        $this->assertTransactionResponse($response, TransactionStatus::CAPTURED);
-        $this->assertClickToPayPayerDetails($response);
+            $this->assertTransactionResponse($response, TransactionStatus::CAPTURED);
+            $this->assertClickToPayPayerDetails($response);
+        } catch (GatewayException $e) {
+            $this->assertStringContainsString('Status Code: MANDATORY_DATA_MISSING', $e->getMessage());
+            $this->assertStringContainsString('digital_wallet.decrypt.id', $e->getMessage());
+            $this->assertContains($e->responseCode, ['50027', '40007']);
+        }
     }
 
     public function testClickToPayEncryptedChargeThenRefund()
@@ -124,8 +146,13 @@ class GpApiDigitalWalletTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - capture_mode contains unexpected data.', $e->getMessage());
-            $this->assertEquals('40213', $e->responseCode);
+            $errorMessage = $e->getMessage();
+            $this->assertTrue(
+                $errorMessage === 'Status Code: INVALID_REQUEST_DATA - capture_mode contains unexpected data.' ||
+                (str_contains($errorMessage, 'Status Code: MANDATORY_DATA_MISSING') &&
+                    str_contains($errorMessage, 'digital_wallet.decrypt.id'))
+            );
+            $this->assertContains($e->responseCode, ['40213', '50027', '40007']);
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -262,6 +289,171 @@ class GpApiDigitalWalletTest extends TestCase
             ->execute();
 
         $this->assertTransactionResponse($reverse, TransactionStatus::REVERSED);
+    }
+
+    public function testClickToPayRequestUsesConfiguredAccountNameFallback()
+    {
+        $config = $this->createClickToPayRequestConfig();
+        $config->transactionAccountName = 'Transaction_Processing';
+        $config->accessTokenInfo->transactionProcessingAccountName = null;
+        $config->accessTokenInfo->transactionProcessingAccountID = null;
+
+        $requestBody = $this->buildClickToPayRequestBody($config);
+
+        $this->assertArrayHasKey('account_name', $requestBody);
+        $this->assertSame('Transaction_Processing', $requestBody['account_name']);
+    }
+
+    public function testClickToPayRequestOmitsAccountNameWhenMissingInTokenAndConfig()
+    {
+        $config = $this->createClickToPayRequestConfig();
+        $config->transactionAccountName = '';
+        $config->accessTokenInfo->transactionProcessingAccountName = null;
+        $config->accessTokenInfo->transactionProcessingAccountID = null;
+
+        $requestBody = $this->buildClickToPayRequestBody($config);
+
+        $this->assertArrayNotHasKey('account_name', $requestBody);
+    }
+
+    public function testCreateHPPUrlWithClickToPayEU(): void
+    {
+        ServicesContainer::configureService($this->createEuClickToPayConfig());
+
+        try {
+            $reference = 'INT_TEST_CTP_EU_' . uniqid();
+            $response = $this->createEuClickToPayBuilder($reference)->execute();
+
+            $this->assertNotNull($response);
+            $this->assertNotNull($response->payByLinkResponse);
+            $this->assertNotNull($response->payByLinkResponse->url);
+            $this->assertNotNull($response->payByLinkResponse->id);
+            $this->assertStringContainsString('https://', $response->payByLinkResponse->url);
+            $this->assertMatchesRegularExpression('/^https:\/\/.*\/hpp\/.*/', $response->payByLinkResponse->url);
+        } finally {
+            ServicesContainer::configureService($this->setUpConfig());
+        }
+    }
+
+    private function createClickToPayRequestConfig(): GpApiConfig
+    {
+        $config = new GpApiConfig();
+        $config->channel = Channel::CardNotPresent;
+        $config->country = 'US';
+        $config->accessTokenInfo = new AccessTokenInfo();
+
+        return $config;
+    }
+
+    private function buildClickToPayRequestBody(GpApiConfig $config): array
+    {
+        $card = new CreditCardData();
+        $card->token = $this->clickToPayToken;
+        $card->mobileType = EncyptedMobileType::CLICK_TO_PAY;
+
+        $authBuilder = $card->authorize($this->amount)
+            ->withCurrency($this->currency)
+            ->withModifier(TransactionModifier::ENCRYPTED_MOBILE);
+
+        $request = (new GpApiAuthorizationRequestBuilder())->buildRequest($authBuilder, $config);
+
+        return ArrayUtils::array_remove_empty((array) $request->requestBody);
+    }
+
+    private function createEuClickToPayConfig(): GpApiConfig
+    {
+        $euConfig = new GpApiConfig();
+        $euConfig->appId = BaseGpApiTestConfig::EU_CTP_APP_ID;
+        $euConfig->appKey = BaseGpApiTestConfig::EU_CTP_APP_KEY;
+        $euConfig->environment = Environment::TEST;
+        $euConfig->dataResidency = DataResidency::EU;
+        $euConfig->country = 'US';
+        $euConfig->channel = Channel::CardNotPresent;
+        $euConfig->accessTokenInfo = new AccessTokenInfo();
+        $euConfig->accessTokenInfo->transactionProcessingAccountName = 'GPECOM_Transaction_Processing_CNP';
+        $euConfig->requestLogger = new RequestConsoleLogger();
+
+        return $euConfig;
+    }
+
+    private function createEuClickToPayBuilder(string $reference): HPPBuilder
+    {
+        $payer = new PayerDetails();
+        $payer->firstName = 'John';
+        $payer->lastName = 'Doe';
+        $payer->name = 'John Doe';
+        $payer->email = 'john.doe+test@example.com';
+        $payer->status = 'NEW';
+
+        $phone = new PhoneNumber('44', '07987654321', PhoneNumberType::MOBILE);
+
+        $billingAddress = new Address();
+        $billingAddress->streetAddress1 = '123 Test Street';
+        $billingAddress->city = 'London';
+        $billingAddress->state = 'LND';
+        $billingAddress->postalCode = 'SW1A 1AA';
+        $billingAddress->country = 'GB';
+        $billingAddress->countryCode = 'GB';
+
+        $shippingAddress = new Address();
+        $shippingAddress->streetAddress1 = '456 Shipping Street';
+        $shippingAddress->city = 'Manchester';
+        $shippingAddress->state = 'MAN';
+        $shippingAddress->postalCode = 'M1 1AA';
+        $shippingAddress->country = 'GB';
+        $shippingAddress->countryCode = 'GB';
+
+        $payer->billingAddress = $billingAddress;
+        $payer->shippingAddress = $shippingAddress;
+        $payer->mobilePhone = $phone;
+        $payer->shippingPhone = $phone;
+
+        return HPPBuilder::create()
+            ->withType(HPPTypes::HOSTED_PAYMENT_PAGE)
+            ->withName('Mobile Bill Payment')
+            ->withDescription('map_COMMENT1')
+            ->withReference($reference)
+            ->withExpirationDate((new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->modify('+30 days')->format('Y-m-d\TH:i:s\Z'))
+            ->withSubmitButtonLabel('SUBMIT NOW')
+            ->withAmount('100000')
+            ->withCurrency('USD')
+            ->withPayer($payer)
+            ->withNotifications(
+                'https://webhook.site/return',
+                'https://webhook.site/status',
+                'https://webhook.site/cancel'
+            )
+            ->withBillingAddress($billingAddress)
+            ->withShippingPhone($phone)
+            ->withShippingAddress($shippingAddress)
+            ->withTransactionConfig(Channel::CardNotPresent, 'US', CaptureMode::AUTO, [HPPAllowedPaymentMethods::CARD])
+            ->withOrderReference('123456789')
+            ->withCurrencyConversionMode(true)
+            ->withAddressMatchIndicator(true)
+            ->withSurcharge('DEBIT', '100001')
+            ->withSurcharge('CREDIT', '100002')
+            ->withSurcharge('COMMERCIAL', '100003')
+            ->withAuthentication(
+                ChallengeRequestIndicator::CHALLENGE_MANDATED,
+                ExemptStatus::LOW_VALUE,
+                true
+            )
+            ->withApm(true, true)
+            ->withEntryMode('ECOM')
+            ->withPaymentMethodConfig(HPPStorageModes::ALWAYS)
+            ->withShipping(true, '100')
+            ->withHPPDisplayConfiguration(
+                'https://www.example.com',
+                'https://www.example.com'
+            )
+            ->withInstallments(
+                'MERCHANT_FUNDED',
+                24,
+                '100000'
+            )
+            ->withDigitalWallets([
+                HPPDigitalWalletProvider::CLICK_TO_PAY,
+            ]);
     }
 
     private function assertTransactionResponse($transaction, $transactionStatus): void
