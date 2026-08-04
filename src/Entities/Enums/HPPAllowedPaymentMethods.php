@@ -28,4 +28,9 @@ class HPPAllowedPaymentMethods extends Enum
      * PayU payment method
      */
     const PAYU = 'PAYU';
+
+    /**
+     * eRaty payment method
+     */
+    const ERATY = 'ERATY';
 }
