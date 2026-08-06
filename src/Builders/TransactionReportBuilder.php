@@ -302,10 +302,12 @@ class TransactionReportBuilder extends ReportBuilder
      * @param string $sortProperty sorting property
      * @param string $sortDirection sorting direction
      * @return $this
+     * @throws \GlobalPayments\Api\Entities\Exceptions\ArgumentException
+     * @throws \InvalidArgumentException
      */
     public function orderBy($sortProperty, $sortDirection = SortDirection::DESC)
     {
-        $this->order = $sortDirection;
+        $this->order = SortDirection::validate($sortDirection);
         switch ($this->reportType) {
             case ReportType::FIND_TRANSACTIONS:
             case ReportType::FIND_TRANSACTIONS_PAGED:

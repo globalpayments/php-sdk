@@ -2,7 +2,11 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version: v14.4.1 (08/04/26)
+## Latest Version: v14.4.2 (08/06/26)
+### Enhancements:
+- [GPAPI] Fixed PHP 8 strict type compliance for builder properties and nullable entity fields
+
+## v14.4.1 (08/04/26)
 ### Enhancements:
 - [GPAPI] Updated HPP allowed-payment-methods to include eRaty
 

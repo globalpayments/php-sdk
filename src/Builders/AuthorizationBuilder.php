@@ -538,19 +538,24 @@ class AuthorizationBuilder extends TransactionBuilder
     /** @var PhoneNumber */
     public ?PhoneNumber $shippingPhone = null;
 
-    /** @var RemittanceReferenceType */
-    public mixed $remittanceReferenceType = null;
+    /** @var string|null */
+    public ?string $remittanceReferenceType = null;
 
-    /** @var string */
+    /** @var string|null */
     public ?string $remittanceReferenceValue = null;
 
-    /** @var BNPLShippingMethod */
-    public ?BNPLShippingMethod $bnplShippingMethod = null;
+    /** @var string|null */
+    public ?string $bnplShippingMethod = null;
 
     /** @var boolean */
     public ?bool $maskedDataResponse = null;
 
-    public BlockedCardType $cardTypesBlocking;
+    /**
+     * Blocked card types configuration for this transaction.
+     *
+     * @var BlockedCardType|null
+     */
+    public ?BlockedCardType $cardTypesBlocking = null;
 
     /** @var MerchantCategory */
     public mixed $merchantCategory = null;
@@ -1640,33 +1645,37 @@ class AuthorizationBuilder extends TransactionBuilder
     /**
      * Set Remittance Reference
      *
-     * @param RemittanceReferenceType|string|null $remittanceReferenceType
+     * @param string|null $remittanceReferenceType
      * @param string|null $remittanceReferenceValue
      *
      * @return AuthorizationBuilder
+     * @throws ArgumentException
      */
     public function withRemittanceReference(
-        RemittanceReferenceType|string|null $remittanceReferenceType,
+        ?string $remittanceReferenceType,
         ?string $remittanceReferenceValue
     ): self {
-        $this->remittanceReferenceType = $remittanceReferenceType;
+        $this->remittanceReferenceType = $remittanceReferenceType === null
+            ? null
+            : RemittanceReferenceType::validate($remittanceReferenceType);
         $this->remittanceReferenceValue = $remittanceReferenceValue;
 
         return $this;
     }
 
     /**
-     * @param BNPLShippingMethod $bnpShippingMethod
+     * @param string $bnpShippingMethod
      *
      * @return $this
      * @throws ArgumentException
      */
-    public function withBNPLShippingMethod(BNPLShippingMethod|string $bnpShippingMethod): self
+    public function withBNPLShippingMethod(string $bnpShippingMethod): self
     {
         if (!$this->paymentMethod instanceof BNPL) {
             throw new ArgumentException("The selected payment method doesn't support this property!");
         }
-        $this->bnplShippingMethod = $bnpShippingMethod;
+
+        $this->bnplShippingMethod = BNPLShippingMethod::validate($bnpShippingMethod);
         return $this;
     }
 

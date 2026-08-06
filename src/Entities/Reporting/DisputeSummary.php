@@ -32,10 +32,10 @@ class DisputeSummary extends BaseSummary
     public $caseCurrency;
 
     /** This field indicates the distinct step a dispute is at, within the dispute lifecycle. */
-    public ?string $caseStage;
+    public ?string $caseStage = null;
 
     /** Time the current Dispute stage was created.  */
-    public ?\DateTime $disputeStageTime;
+    public ?\DateTime $disputeStageTime = null;
     /**
      * @var string
      */
@@ -109,8 +109,8 @@ class DisputeSummary extends BaseSummary
      */
     public $disputeCustomerAmount;
 
-    public ?string $disputeCustomerCurrency;
-    public ?\DateTime $respondByDate;
+    public ?string $disputeCustomerCurrency = null;
+    public ?\DateTime $respondByDate = null;
 
     /**
      * @var integer
@@ -125,15 +125,15 @@ class DisputeSummary extends BaseSummary
      */
     public $lastAdjustmentFunding;
 
-    public ?string $lastAdjustmentTimeCreated;
+    public ?string $lastAdjustmentTimeCreated = null;
 
     /** @var array<DisputeDocument> */
     public $documents;
 
-    public ?string $transactionBrandReference;
-    public ?string $fundingType;
-    public ?string $orderId;
-    public ?string $responseCode;
+    public ?string $transactionBrandReference = null;
+    public ?string $fundingType = null;
+    public ?string $orderId = null;
+    public ?string $responseCode = null;
 
     /**
      * @return ManagementBuilder

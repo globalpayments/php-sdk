@@ -4,6 +4,7 @@ namespace GlobalPayments\Api\Builders;
 
 use GlobalPayments\Api\Entities\{DccRateData, FundsData, LodgingData, Transaction};
 use GlobalPayments\Api\Entities\BillPay\Bill;
+use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use GlobalPayments\Api\Entities\Enums\{
     CommercialIndicator,
     CreditDebitIndicator,
@@ -161,9 +162,10 @@ class ManagementBuilder extends TransactionBuilder
     /**
      * Dispute id
      *
-     * @var int
+     * @var string|null
      */
-    public ?int $disputeId = null;
+    public ?string $disputeId = null;
+
     /**
      * Array with DisputeDocument objects
      *
@@ -637,13 +639,23 @@ class ManagementBuilder extends TransactionBuilder
     /**
      * Sets the Dispute Id.
      *
-     * @param string $value
+     * @param string|int|null $value
      *
      * @return $this
+     * @throws ArgumentException
      */
-    public function withDisputeId($value)
+    public function withDisputeId(string|int|null $value): self
     {
-        $this->disputeId = $value;
+        if (is_null($value)) {
+            $this->disputeId = null;
+        } else {
+            $stringValue = (string) $value;
+            $trimmedValue = trim($stringValue);
+            if ($trimmedValue === '') {
+                throw new ArgumentException("Dispute ID cannot be empty or whitespace-only");
+            }
+            $this->disputeId = $trimmedValue;
+        }
         return $this;
     }
 
