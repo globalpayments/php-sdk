@@ -11,7 +11,7 @@ use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 
 class GpApiFileProcessingRequestBuilder implements IRequestBuilder
 {
-    public static function canProcess(BaseBuilder $builder): bool
+    public static function canProcess(?BaseBuilder $builder = null): bool
     {
         if ($builder instanceof FileProcessingBuilder) {
             return true;

@@ -2,7 +2,13 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version: v14.4.2 (08/06/26)
+## Latest Version: v14.4.3 (08/13/26)
+### Bug Fixes:
+- [GP-ECOM] Improved 3DS test reliability by handling known sandbox issues (signature checks and ACS connection drops) so test results are more stable
+- [GPAPI] Fixed sandbox changed surcharge error code and CVV error line number. Updated tests to use keyword-based assertions instead of exact-match strings
+- [GPAPI] Resolved issue affecting customer creation and recurring payment flows
+
+## v14.4.2 (08/06/26)
 ### Enhancements:
 - [GPAPI] Fixed PHP 8 strict type compliance for builder properties and nullable entity fields
 

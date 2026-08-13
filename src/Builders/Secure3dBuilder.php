@@ -2,7 +2,6 @@
 
 namespace GlobalPayments\Api\Builders;
 
-use GlobalPayments\Api\Entities\Enums\DecoupledFlowRequest;
 use GlobalPayments\Api\Entities\MobileData;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Gateways\GpApiConnector;
@@ -33,8 +32,8 @@ class Secure3dBuilder extends SecureBuilder
     public mixed $authenticationRequestType = null;
     /** @var ChallengeRequestIndicator */
     public mixed $challengeRequestIndicator = null;
-    /** @var DecoupledFlowRequest */
-    public mixed $decoupledFlowRequest = null;
+    /** @var bool|null */
+    public ?bool $decoupledFlowRequest = null;
     /** @var integer */
     public ?int $decoupledFlowTimeout = null;
     /** @var string */
@@ -243,7 +242,7 @@ class Secure3dBuilder extends SecureBuilder
     }
 
     /**
-     * @return DecoupledFlowRequest
+     * @return bool|null
      */
     public function getDecoupledFlowRequest()
     {

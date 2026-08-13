@@ -152,8 +152,9 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('Status Code: INVALID_REQUEST_DATA - The surcharge amount is greater than 5% of the transaction amount', $e->getMessage());
-            $this->assertEquals('50020', $e->responseCode);
+            $this->assertEquals('400171', $e->responseCode);
+            $this->assertStringContainsString('INVALID_REQUEST_DATA', $e->getMessage());
+            $this->assertStringContainsString('surcharge', strtolower($e->getMessage()));
         } finally {
             $this->assertTrue($exceptionCaught);
         }
@@ -1037,7 +1038,8 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
         } catch (GatewayException $e) {
             $this->assertEquals('50018', $e->responseCode);
-            $this->assertEquals('Status Code: SYSTEM_ERROR_DOWNSTREAM - The line number 12 which contains \'         [number] XXX [/number] \' does not conform to the schema', $e->getMessage());
+            $this->assertStringContainsString('SYSTEM_ERROR_DOWNSTREAM', $e->getMessage());
+            $this->assertStringContainsString('does not conform to the schema', $e->getMessage());
         }
     }
 

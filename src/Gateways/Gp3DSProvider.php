@@ -156,7 +156,9 @@ class Gp3DSProvider extends RestGateway implements ISecure3dProvider
             $request = $this->maybeSetKey($request, 'merchant_contact_url', $this->merchantContactUrl);
             $request = $this->maybeSetKey($request, 'merchant_initiated_request_type', $builder->getMerchantInitiatedRequestType());
             $request = $this->maybeSetKey($request, 'whitelist_status', $builder->getWhitelistStatus());
-            $request = $this->maybeSetKey($request, 'decoupled_flow_request', $builder->decoupledFlowRequest ?? null);
+            if (isset($builder->decoupledFlowRequest) && $builder->decoupledFlowRequest !== null) {
+                $request['decoupled_flow_request'] = $builder->decoupledFlowRequest === true ? 'Y' : 'N';
+            }
             $request = $this->maybeSetKey($request, 'decoupled_flow_timeout', $builder->decoupledFlowTimeout ?? null);
             $request = $this->maybeSetKey($request, 'decoupled_notification_url', $builder->decoupledNotificationUrl ?? null);
             $request = $this->maybeSetKey($request, 'enable_exemption_optimization', $builder->enableExemptionOptimization);

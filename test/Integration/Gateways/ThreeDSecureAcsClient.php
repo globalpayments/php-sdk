@@ -169,35 +169,73 @@ class ThreeDSecureAcsClient
      */
     private function sendRequest($verb, $data, $headers = [])
     {
+        $request = null;
         try {
             $request = curl_init();
+            if ($request === false) {
+                throw new ApiException('Failed to initialize cURL request.');
+            }
+
+            $insecureSsl = $this->isInsecureAcsSslEnabled();
             curl_setopt_array($request, [
                 CURLOPT_URL => $this->serviceUrl,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_FOLLOWLOCATION => true,
                 CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 30,
+                CURLOPT_TIMEOUT => 60,
+                CURLOPT_CONNECTTIMEOUT => 30,
                 CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
                 CURLOPT_CUSTOMREQUEST => $verb,
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $data,
                 CURLOPT_ENCODING => "",
                 CURLOPT_HTTPHEADER => $headers,
+                CURLOPT_SSL_VERIFYPEER => !$insecureSsl,
+                CURLOPT_SSL_VERIFYHOST => $insecureSsl ? 0 : 2,
             ]);
 
             $rawResponse = curl_exec($request);
             $curlInfo = curl_getinfo($request);
             $err = curl_error($request);
-            curl_close($request);
+
+            if ($rawResponse === false || $curlInfo['http_code'] == 0) {
+                throw new ApiException(sprintf(
+                    'Acs request failed with response code: %s (curl error: %s, url: %s)',
+                    $curlInfo['http_code'],
+                    $err,
+                    $this->serviceUrl
+                ));
+            }
 
             if ($curlInfo['http_code'] != 200) {
                 throw new ApiException(sprintf('Acs request failed with response code: %s', $curlInfo['http_code']));
             }
-        } catch (Exception $exc) {
-            throw new ApiException($exc);
+        } catch (ApiException $exc) {
+            throw $exc;
+        } catch (\Exception $exc) {
+            throw new ApiException($exc->getMessage(), $exc);
+        } finally {
+            if ($request !== null) {
+                if (PHP_VERSION_ID < 80500) {
+                    curl_close($request);
+                } else {
+                    // curl_close() is deprecated in PHP 8.5+ and has no effect since 8.0.
+                    $request = null;
+                }
+            }
         }
 
         return !empty($rawResponse) ? $rawResponse : '';
+    }
+
+    private function isInsecureAcsSslEnabled()
+    {
+        $value = getenv('GP_INSECURE_ACS_SSL');
+        if ($value === false || $value === null) {
+            return false;
+        }
+
+        return in_array(strtolower(trim((string)$value)), ['1', 'true', 'yes', 'on'], true);
     }
 
 
@@ -231,11 +269,15 @@ class ThreeDSecureAcsClient
         if ($raw == null) {
             return null;
         }
+        $searchString = null;
         if (!empty($inputValue)) {
             $searchString = sprintf('name="%s" value="', $inputValue);
         }
         if (!empty($formName)) {
             $searchString = sprintf('name="%s" action="', $formName);
+        }
+        if ($searchString === null) {
+            return null;
         }
         $index = strpos($raw, $searchString);
 
