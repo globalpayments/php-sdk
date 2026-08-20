@@ -15,16 +15,8 @@ class RequestConsoleLogger implements IRequestLogger
         print_r("Request verb: " . $verb . PHP_EOL);
         print_r("Request endpoint: " . $endpoint . PHP_EOL);
 
-        // Sanitize sensitive headers before logging
-        $sensitiveHeaders = [
-            'X-GP-Version', 
-            'Accept', 
-            'Accept-Encoding', 
-            'x-gp-sdk',
-            'Content-Type',
-            'Content-Length',
-            'Authorization'
-        ];
+        // Only redact truly sensitive headers
+        $sensitiveHeaders = ['Authorization'];
 
         $sanitizedHeaders = [];
         foreach ($headers as $header) {
@@ -46,7 +38,7 @@ class RequestConsoleLogger implements IRequestLogger
                 $sanitizedData = json_encode($sanitizedData, JSON_PRETTY_PRINT);
             }
         
-            // Use a regular expression to redact sensitive values associated with specific keys
+            // Redact fields that should not appear in logs
             $sensitiveKeys = ['app_id', 'nonce', 'secret', 'grant_type'];
             foreach ($sensitiveKeys as $key) {
                 $sanitizedData = preg_replace(

@@ -2,7 +2,13 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version: v14.4.3 (08/13/26)
+## Latest Version: v14.4.4 (08/20/26)
+### Bug Fixes:
+- [GPAPI] Fixed Genius logging by wiring requestLogger so gateway request/response logs are now captured correctly
+### Enhancements:
+- [GPAPI] Mapped all missing response fields for /accesstoken
+
+## v14.4.3 (08/13/26)
 ### Bug Fixes:
 - [GP-ECOM] Improved 3DS test reliability by handling known sandbox issues (signature checks and ACS connection drops) so test results are more stable
 - [GPAPI] Fixed sandbox changed surcharge error code and CVV error line number. Updated tests to use keyword-based assertions instead of exact-match strings

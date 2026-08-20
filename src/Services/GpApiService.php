@@ -31,6 +31,15 @@ class GpApiService
 
         $accessTokenInfo = new AccessTokenInfo();
         $accessTokenInfo->accessToken = $data->token;
+        $accessTokenInfo->merchantId = $data->merchantId;
+        $accessTokenInfo->merchantName = $data->merchantName;
+        $accessTokenInfo->email = $data->email;
+        $accessTokenInfo->appId = $data->appId;
+        $accessTokenInfo->appName = $data->appName;
+        $accessTokenInfo->tokenType = $data->type;
+        $accessTokenInfo->timeCreated = $data->timeCreated;
+        $accessTokenInfo->secondsToExpire = $data->secondsToExpire;
+        $accessTokenInfo->intervalToExpire = $data->intervalToExpire;
         $accessTokenInfo->dataAccountName = $data->getDataAccountName();
         $accessTokenInfo->disputeManagementAccountName = $data->getDisputeManagementAccountName();
         $accessTokenInfo->transactionProcessingAccountName = $data->getTransactionProcessingAccountName();

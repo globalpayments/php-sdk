@@ -85,6 +85,64 @@ try {
 }
 ```
 
+### GP-API Access Token
+
+The SDK supports creating GP-API access tokens with full control over token configuration and complete response field mapping.
+
+#### Generate an Access Token
+
+```php
+use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\Entities\Enums\IntervalToExpire;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
+use GlobalPayments\Api\Services\GpApiService;
+
+$config = new GpApiConfig();
+$config->appId = 'your-app-id';
+$config->appKey = 'your-app-key';
+$config->environment = Environment::TEST;
+$config->channel = Channel::CardNotPresent;
+
+// Optional: control token expiration
+$config->secondsToExpire = 3600;
+$config->intervalToExpire = IntervalToExpire::ONE_HOUR;
+
+// Optional: scope the token to specific permissions
+$config->permissions = ['TRN_POST_Authorize', 'TRN_POST_Capture'];
+
+// Optional: create a restricted token for Drop-in UI / Hosted Fields
+$config->restrictedToken = true;
+
+$accessTokenInfo = GpApiService::generateTransactionKey($config);
+```
+
+#### Available Request Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `appId` | string | Application identifier (required) |
+| `appKey` | string | Application key (required) |
+| `secondsToExpire` | int | Token TTL in seconds (60–604800) |
+| `intervalToExpire` | string | Token TTL as interval (`WEEK`, `DAY`, `1_HOUR`, etc.) |
+| `permissions` | array | Permission strings to scope the token |
+| `restrictedToken` | bool | When true, masks account info in the response |
+
+#### Available Response Fields
+
+```php
+$accessTokenInfo->accessToken;       // Bearer token string
+$accessTokenInfo->tokenType;         // "Bearer"
+$accessTokenInfo->appId;             // Application ID
+$accessTokenInfo->appName;           // Application name
+$accessTokenInfo->merchantId;        // Merchant ID (MER_...)
+$accessTokenInfo->merchantName;      // Merchant name
+$accessTokenInfo->email;             // Associated email
+$accessTokenInfo->timeCreated;       // ISO-8601 creation timestamp
+$accessTokenInfo->secondsToExpire;   // TTL in seconds
+$accessTokenInfo->intervalToExpire;  // TTL interval enum
+```
+
 ### Test Card Data
 
 Name        | Number           | Exp Month | Exp Year | CVN

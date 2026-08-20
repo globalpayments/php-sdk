@@ -37,6 +37,7 @@ class GeniusConfig extends GatewayConfig
         $gateway->timeout = $this->timeout;
         $gateway->serviceUrl = $this->serviceUrl;
         $gateway->webProxy = $this->webProxy;
+        $gateway->requestLogger = $this->requestLogger;
 
         $services->gatewayConnector = $gateway;
     }

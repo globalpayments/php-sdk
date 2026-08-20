@@ -11,6 +11,8 @@ use GlobalPayments\Api\Tests\Data\TestCards;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GeniusConfig;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
+use GlobalPayments\Api\Utils\Logging\Logger;
+use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
 
 class MerchantwareTest extends TestCase
 {
@@ -53,6 +55,7 @@ class MerchantwareTest extends TestCase
         // $config->terminalId = '3';
         $config->gatewayProvider = GatewayProvider::GENIUS;
         $config->environment = Environment::TEST;
+        $config->requestLogger = new SampleRequestLogger(new Logger(__DIR__ . '/logs'));
         return $config;
     }
 

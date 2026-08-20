@@ -480,13 +480,22 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         if (!$accessTokenInfo instanceof AccessTokenInfo) {
             $accessTokenInfo = new AccessTokenInfo();
         }
-        $accessTokenInfo->merchantId = $response->merchantId;
+        $accessTokenInfo->merchantId = $response->merchantId ?? null;
+        $accessTokenInfo->merchantName = $response->merchantName ?? null;
+        $accessTokenInfo->email = $response->email ?? null;
+        $accessTokenInfo->appId = $response->appId ?? null;
+        $accessTokenInfo->appName = $response->appName ?? null;
+        $accessTokenInfo->tokenType = $response->type ?? null;
+        $accessTokenInfo->timeCreated = $response->timeCreated ?? null;
+        $accessTokenInfo->secondsToExpire = $response->secondsToExpire ?? null;
+        $accessTokenInfo->intervalToExpire = $response->intervalToExpire ?? null;
         if (empty($accessTokenInfo->accessToken)) {
             $accessTokenInfo->accessToken = $response->getToken();
         }
 
         if (empty($accessTokenInfo->dataAccountID)) {
             $accessTokenInfo->dataAccountID = $response->getDataAccountID();
+            $accessTokenInfo->dataAccountName = $response->getDataAccountName();
         }
         if (
             empty($accessTokenInfo->tokenizationAccountID) &&
@@ -508,12 +517,14 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
             empty($accessTokenInfo->disputeManagementAccountName)
         ) {
             $accessTokenInfo->disputeManagementAccountID = $response->getDisputeManagementAccountID();
+            $accessTokenInfo->disputeManagementAccountName = $response->getDisputeManagementAccountName();
         }
         if (
             empty($accessTokenInfo->riskAssessmentAccountID) &&
             empty($accessTokenInfo->riskAssessmentAccountName)
         ) {
             $accessTokenInfo->riskAssessmentAccountID = $response->getRiskAssessmentAccountID();
+            $accessTokenInfo->riskAssessmentAccountName = $response->getRiskAssessmentAccountName();
         }
 
         if (
@@ -521,6 +532,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
             empty($accessTokenInfo->merchantManagementAccountName)
         ) {
             $accessTokenInfo->merchantManagementAccountID = $response->getMerchantManagementAccountID();
+            $accessTokenInfo->merchantManagementAccountName = $response->getMerchantManagementAccountName();
         }
 
         if (
@@ -528,6 +540,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
             empty($accessTokenInfo->fileProcessingAccountName)
         ) {
             $accessTokenInfo->fileProcessingAccountID = $response->getFileProcessingAccountID();
+            $accessTokenInfo->fileProcessingAccountName = $response->getFileProcessingAccountName();
         }
 
         $this->gpApiConfig->accessTokenInfo = $accessTokenInfo;

@@ -8,6 +8,7 @@ class GpApiTokenResponse
     public $type;
     public $timeCreated;
     public $secondsToExpire;
+    public ?string $intervalToExpire = null;
     public $appId;
     public $appName;
     public $email;
@@ -155,12 +156,14 @@ class GpApiTokenResponse
         $this->appName = $response->app_name;
         $this->timeCreated = $response->time_created;
         $this->secondsToExpire = $response->seconds_to_expire;
+        $this->intervalToExpire = $response->interval_to_expire ?? null;
         $this->email = $response->email;
         if (!empty($response->scope)) {
             $this->merchantId = $response->scope->merchant_id;
             $this->merchantName = $response->scope->merchant_name;
             foreach ($response->scope->accounts as $account) {
-                $this->accounts[] = new GpApiAccount($account->id, $account->name);
+                $permissions = isset($account->permissions) ? (array)$account->permissions : null;
+                $this->accounts[] = new GpApiAccount($account->id, $account->name, $permissions);
             }
         }
     }

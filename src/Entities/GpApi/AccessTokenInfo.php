@@ -12,6 +12,30 @@ class AccessTokenInfo
     /** @var string */
     public $merchantId;
 
+    /** @var string|null */
+    public ?string $merchantName = null;
+
+    /** @var string|null */
+    public ?string $email = null;
+
+    /** @var string|null */
+    public ?string $appId = null;
+
+    /** @var string|null */
+    public ?string $appName = null;
+
+    /** @var string|null */
+    public ?string $tokenType = null;
+
+    /** @var string|null */
+    public ?string $timeCreated = null;
+
+    /** @var int|null */
+    public ?int $secondsToExpire = null;
+
+    /** @var string|null */
+    public ?string $intervalToExpire = null;
+
     /**
      * @var string
      */

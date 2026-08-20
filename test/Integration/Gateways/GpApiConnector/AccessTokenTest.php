@@ -12,6 +12,7 @@ use GlobalPayments\Api\Services\GpApiService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Utils\Logging\RequestConsoleLogger;
 use PHPUnit\Framework\TestCase;
 
 class AccessTokenTest extends TestCase
@@ -101,6 +102,27 @@ class AccessTokenTest extends TestCase
 
         $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
         $this->assertAccessTokenResponse($accessTokenInfo);
+    }
+
+    public function testGenerateAccessToken_ReturnsAllResponseFields()
+    {
+        $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
+
+        $this->assertAccessTokenResponse($accessTokenInfo);
+
+        // Additional fields not covered by assertAccessTokenResponse()
+        $this->assertNotNull($accessTokenInfo->email);
+    }
+
+    public function testGenerateAccessToken_WithIntervalToExpire_ReturnsInterval()
+    {
+        $this->config->intervalToExpire = IntervalToExpire::FIVE_MINUTES;
+
+        $accessTokenInfo = GpApiService::generateTransactionKey($this->config);
+
+        $this->assertNotNull($accessTokenInfo);
+        $this->assertNotNull($accessTokenInfo->accessToken);
+        $this->assertNotNull($accessTokenInfo->intervalToExpire);
     }
 
     public function testGenerateAccessTokenWrongAppId()
@@ -276,10 +298,27 @@ class AccessTokenTest extends TestCase
         $this->assertNotNull($accessTokenInfo);
         $this->assertNotNull($accessTokenInfo->accessToken);
 
+        // Token metadata
+        $this->assertNotNull($accessTokenInfo->tokenType);
+        $this->assertNotNull($accessTokenInfo->timeCreated);
+        $this->assertNotNull($accessTokenInfo->secondsToExpire);
+        $this->assertGreaterThan(0, $accessTokenInfo->secondsToExpire);
+
+        // App info
+        $this->assertNotNull($accessTokenInfo->appId);
+        $this->assertNotNull($accessTokenInfo->appName);
+
+        // Merchant info
+        $this->assertNotNull($accessTokenInfo->merchantId);
+        $this->assertNotNull($accessTokenInfo->merchantName);
+
+        // Account names
         $this->assertEquals("settlement_reporting", $accessTokenInfo->dataAccountName);
         $this->assertEquals("dispute_management", $accessTokenInfo->disputeManagementAccountName);
         $this->assertEquals("tokenization", $accessTokenInfo->tokenizationAccountName);
         $this->assertEquals("transaction_processing", $accessTokenInfo->transactionProcessingAccountName);
+
+        // Account IDs
         $this->assertNotNull($accessTokenInfo->transactionProcessingAccountID);
         $this->assertNotNull($accessTokenInfo->tokenizationAccountID);
         $this->assertNotNull($accessTokenInfo->riskAssessmentAccountID);
@@ -335,6 +374,7 @@ class AccessTokenTest extends TestCase
     public function setUpConfig(): GpApiConfig
     {
         $this->config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $this->config->requestLogger = new RequestConsoleLogger();
 
         return $this->config;
     }
