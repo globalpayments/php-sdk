@@ -179,6 +179,8 @@ class EnumMapping
                 switch ($value) {
                     case MessageCategory::PAYMENT_AUTHENTICATION:
                         return 'PAYMENT';
+                    case MessageCategory::NON_PAYMENT_AUTHENTICATION:
+                        return 'NON_PAYMENT';
                     default:
                         return $value;
                 }

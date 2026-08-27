@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Tests\Data;
 
 use GlobalPayments\Api\Entities\CustomWebProxy;
+use GlobalPayments\Api\Entities\Enums\DataResidency;
 use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
@@ -51,7 +52,7 @@ class BaseGpApiTestConfig
         $config->merchantContactUrl = "https://ensi808o85za.x.pipedream.net/";
 
         if (self::$logEnabled) {
-            $config->requestLogger = new SampleRequestLogger(new Logger("logs"));
+            $config->requestLogger = new SampleRequestLogger(new Logger('logs'));
         }
 
         if (self::$dynamicHeaderEnabled) {
@@ -68,6 +69,21 @@ class BaseGpApiTestConfig
         if (self::$webProxyEnabled) {
             $config->webProxy = new CustomWebProxy('127.0.0.1:8866');
         }
+
+        return $config;
+    }
+
+    public static function gpApiSetupConfigEuCtp(string $channel): GpApiConfig
+    {
+        $config = new GpApiConfig();
+        $config->appId = self::EU_CTP_APP_ID;
+        $config->appKey = self::EU_CTP_APP_KEY;
+        $config->environment = Environment::TEST;
+        $config->dataResidency = DataResidency::EU;
+        $config->channel = $channel;
+        $config->country = 'US';
+        $config->accessTokenInfo = new AccessTokenInfo();
+        $config->accessTokenInfo->transactionProcessingAccountName = 'GPECOM_Transaction_Processing_CNP';
 
         return $config;
     }

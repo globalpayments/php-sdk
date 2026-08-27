@@ -572,6 +572,9 @@ class AuthorizationBuilder extends TransactionBuilder
     /** @var string|null */
     public ?string $clerkId = null;
 
+    /** @var string|null */
+    public ?string $decryptId = null;
+
     /** @var string */
     public ?string $shippingDate = null;
 
@@ -774,6 +777,18 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withAmount(string|float|null $amount): self
     {
         $this->amount = $amount;
+        return $this;
+    }
+
+    /**
+     * Set decrypt id (DEC_ID) returned from /decrypt endpoint.
+     *
+     * @param string $decryptId
+     * @return AuthorizationBuilder
+     */
+    public function withDecryptId(string $decryptId): self
+    {
+        $this->decryptId = $decryptId;
         return $this;
     }
 

@@ -178,6 +178,35 @@ try {
 }
 ```
 
+### GP-API Actions Reporting Example
+
+```php
+use GlobalPayments\Api\Entities\Enums\ActionSortProperty;
+use GlobalPayments\Api\Entities\Enums\SortDirection;
+use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
+use GlobalPayments\Api\Services\ReportingService;
+
+// GET /actions
+$actions = ReportingService::findActionsPaged(1, 10)
+    ->orderBy(ActionSortProperty::TIME_CREATED, SortDirection::DESC)
+    ->where(SearchCriteria::ACTION_TYPE, 'AUTHORIZE')
+    ->andWith(SearchCriteria::RESOURCE, 'TRANSACTIONS')
+    ->andWith(SearchCriteria::HTTP_RESPONSE_CODE, '200')
+    ->execute();
+
+// GET /actions/{id}
+$action = ReportingService::actionDetail('ACT_bxWus66W5qSTCcGECIPUT5zLhISaMy')
+    ->execute();
+
+// Single action details include core and extended fields such as:
+// id, type, resource, resourceId, resourceParentId, resourceRequestUrl,
+// responseCode, responseDetailedCode, responseDetailedMessage,
+// merchantId, merchantName, accountId, accountName,
+// sourceLocation, destinationLocation,
+// messageReceived/messageSent (rawRequest/rawResponse aliases),
+// metrics, totalTimeMilliseconds, totalTimeDownstreamMilliseconds.
+```
+
 ## Contributing
 
 All our code is open sourced and we encourage fellow developers to contribute and help improve it!

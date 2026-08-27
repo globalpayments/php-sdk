@@ -5,10 +5,12 @@ namespace GlobalPayments\Api\PaymentMethods;
 use GlobalPayments\Api\Builders\{AuthorizationBuilder, ManagementBuilder};
 use GlobalPayments\Api\Entities\{Address, Customer, DccRateData, ThreeDSecure, Transaction};
 use GlobalPayments\Api\Entities\Enums\{
+    EncyptedMobileType,
     EntryMethod,
     ManualEntryMethod,
     PaymentMethodType,
     PaymentMethodUsageMode,
+    TransactionModifier,
     TransactionType
 };
 use GlobalPayments\Api\Entities\Exceptions\{ApiException, BuilderException};
@@ -99,6 +101,21 @@ abstract class Credit implements
      * encrypted payload from the mobile payment scheme.
      */
     public ?string $token = null;
+
+    /**
+     * Decrypt transaction id (DEC_ID) returned by GPAPI /decrypt endpoint.
+     */
+    public ?string $decryptId = null;
+
+    /**
+     * Click to Pay dpa_reference.
+     */
+    public ?string $dpaReference = null;
+
+    /**
+     * Click to Pay data_type_indicator.
+     */
+    public ?string $dataTypeIndicator = null;
 
     /**
      * Authorizes the payment method
@@ -192,6 +209,29 @@ abstract class Credit implements
     public function verify()
     {
         return new AuthorizationBuilder(TransactionType::VERIFY, $this);
+    }
+
+    /**
+     * Sends encrypted Click to Pay token to GPAPI /decrypt endpoint.
+     *
+     * @return AuthorizationBuilder
+     */
+    public function decrypt(): AuthorizationBuilder
+    {
+        if ($this->mobileType !== EncyptedMobileType::CLICK_TO_PAY) {
+            throw new BuilderException('decrypt() is only supported for Click to Pay payment methods.');
+        }
+
+        if (empty($this->token)) {
+            throw new BuilderException('decrypt() requires the encrypted Click to Pay payload to be set on $token.');
+        }
+
+        if (empty($this->dpaReference)) {
+            throw new BuilderException('decrypt() requires dpaReference to be set.');
+        }
+
+        return (new AuthorizationBuilder(TransactionType::VERIFY, $this))
+            ->withModifier(TransactionModifier::ENCRYPTED_MOBILE);
     }
 
     /**

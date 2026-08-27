@@ -71,6 +71,10 @@ class Secure3dBuilder extends SecureBuilder
 //    public $version;
     /** @var string */
     public ?string $whitelistStatus = null;
+
+    /** @var mixed */
+    public mixed $messageExtension = null;
+
     /**
      * @var bool
      */

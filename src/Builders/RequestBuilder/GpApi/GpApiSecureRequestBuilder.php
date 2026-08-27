@@ -88,6 +88,7 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
                 $requestData['recurring_authorization_data'] = $this->setRecurringAuthorizationDataParam();
                 $requestData['payer_login_data'] = $this->setPayerLoginDataParam();
                 $requestData['browser_data'] = $this->setBrowserDataParam($builder->getBrowserData());
+                $requestData = $this->cleanRequestData($requestData);
                 break;
             default:
                  throw new UnsupportedTransactionException(
@@ -105,49 +106,97 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
 
     private function verifyEnrolled(Secure3dBuilder $builder, GpApiConfig $config)
     {
-        $threeDS = [];
-        $threeDS['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
-        $threeDS['account_id'] =  $config->accessTokenInfo->transactionProcessingAccountID;
-        $threeDS['channel'] = $config->channel;
-        $threeDS['country'] = $config->country;
-        $threeDS['reference'] = !empty($builder->getReferenceNumber()) ?
+        $requestData = [];
+        $mappedMessageCategory = EnumMapping::mapMessageCategory(GatewayProvider::GP_API, $builder->messageCategory);
+
+        $requestData['merchant_id'] = $config->accessTokenInfo->merchantId;
+        $requestData['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
+        $requestData['reference'] = !empty($builder->getReferenceNumber()) ?
             $builder->getReferenceNumber() : GenerationUtils::getGuid();
-        $threeDS['amount'] = StringUtils::toNumeric($builder->getAmount(), $builder->getCurrency());
-        $threeDS['currency'] = $builder->getCurrency();
-        $threeDS['preference'] = $builder->challengeRequestIndicator;
-        $threeDS['source'] = (string) $builder->getAuthenticationSource();
-        $threeDS['payment_method'] = $this->setPaymentMethodParam($builder->paymentMethod);
-        $threeDS['notifications'] = [
-            'challenge_return_url' => $config->challengeNotificationUrl,
-            'three_ds_method_return_url' => $config->methodNotificationUrl,
-            'decoupled_notification_url' => $builder->decoupledNotificationUrl ?? null
+        $requestData['channel'] = $config->channel;
+        $requestData['amount'] = StringUtils::toNumeric($builder->getAmount(), $builder->getCurrency());
+        $requestData['currency'] = $builder->getCurrency();
+        $requestData['country'] = $config->country;
+        $requestData['transaction_type'] = 'SALE';
+
+        $requestData['payment_method'] = $this->setPaymentMethodParam($builder->paymentMethod);
+        $requestData['payment_method']->entry_mode = 'ECOM';
+
+        $requestData['three_ds'] = [
+            'message_category' => !empty($mappedMessageCategory) ? $mappedMessageCategory : null,
+            'preference' => $builder->challengeRequestIndicator,
+            'source' => (string) $builder->getAuthenticationSource(),
+            'initiator' => 'MERCHANT'
+        ];
+
+        $requestData['notifications'] = [
+            'three_ds_method_return_url' => $config->methodNotificationUrl
         ];
         if (!empty($builder->storedCredential)) {
-            $this->setStoreCredentialParam($builder->storedCredential, $threeDS);
+            $this->setStoreCredentialParam($builder->storedCredential, $requestData);
         }
 
-        return $threeDS;
+        return $this->cleanRequestData($requestData);
     }
 
     private function initiateAuthenticationData(Secure3dBuilder $builder, GpApiConfig $config)
     {
-        $threeDS['three_ds'] = [
+        $requestData = [];
+        $mappedMessageCategory = EnumMapping::mapMessageCategory(GatewayProvider::GP_API, $builder->messageCategory);
+
+        $requestData['account_name'] = $config->accessTokenInfo->transactionProcessingAccountName;
+        $requestData['channel'] = $config->channel;
+        $requestData['amount'] = StringUtils::toNumeric($builder->getAmount(), $builder->getCurrency());
+        $requestData['currency'] = $builder->getCurrency();
+        $requestData['country'] = $config->country;
+        $requestData['reference'] = !empty($builder->getReferenceNumber()) ?
+            $builder->getReferenceNumber() : GenerationUtils::getGuid();
+        $requestData['transaction_type'] = 'SALE';
+        $requestData['initiator'] = 'PAYER';
+        $requestData['method_url_completion_status'] = (string) $builder->methodUrlCompletion;
+        $requestData['merchant_contact_url'] = $config->merchantContactUrl;
+
+        // Stored Credential (at top level)
+        if (!empty($builder->storedCredential)) {
+            $this->setStoreCredentialParam($builder->storedCredential, $requestData);
+        }
+
+        // Three DS Data
+        $requestData['three_ds'] = [
             'source' => (string) $builder->getAuthenticationSource(),
             'preference' => $builder->challengeRequestIndicator,
             'message_version' => $builder->threeDSecure->messageVersion,
-            'message_category' => EnumMapping::mapMessageCategory(GatewayProvider::GP_API, $builder->messageCategory)
+            'message_category' => !empty($mappedMessageCategory) ? $mappedMessageCategory : null,
+            'initiator' => 'PAYER'
         ];
 
-        if (!empty($builder->storedCredential)) {
-            $this->setStoreCredentialParam($builder->storedCredential, $threeDS);
+        // Three DS Message Extension (if available)
+        if (!empty($builder->threeDSecure->messageExtension)) {
+            $requestData['three_ds']['message_extension'] = $builder->threeDSecure->messageExtension;
         }
-        $threeDS['method_url_completion_status'] = (string) $builder->methodUrlCompletion;
-        $threeDS['merchant_contact_url'] = $config->merchantContactUrl;
-        $threeDS['order'] = $this->setOrderParam();
-        $threeDS['payment_method'] = $this->setPaymentMethodParam($builder->paymentMethod);
-        $threeDS['payer'] = $this->setPayerParam();
+
+        // Order Data
+        $requestData['order'] = $this->setOrderParam();
+
+        // Payment Method
+        $requestData['payment_method'] = $this->setPaymentMethodParam($builder->paymentMethod);
+        $requestData['payment_method']->entry_mode = 'ECOM';
+
+        if (
+            !empty($builder->paymentMethod) &&
+            !empty($builder->paymentMethod->cardHolderName)
+        ) {
+            $nameParts = preg_split('/\s+/', trim((string)$builder->paymentMethod->cardHolderName));
+            $requestData['payment_method']->first_name = $nameParts[0] ?? null;
+            $requestData['payment_method']->last_name = isset($nameParts[1])
+                ? implode(' ', array_slice($nameParts, 1))
+                : null;
+        }
+
+        // Payer Data
+        $requestData['payer'] = $this->setPayerParam();
         if (!empty($builder->billingAddress)) {
-            $threeDS['payer']['billing_address'] = [
+            $requestData['payer']['billing_address'] = [
                 'line1' => $builder->billingAddress->streetAddress1,
                 'line2' => $builder->billingAddress->streetAddress2,
                 'line3' => $builder->billingAddress->streetAddress3,
@@ -158,15 +207,38 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
             ];
         }
 
-        $threeDS['payer_prior_three_ds_authentication_data'] = $this->setPayerPrior3DSAuthenticationDataParam();
-        $threeDS['recurring_authorization_data'] = $this->setRecurringAuthorizationDataParam();
-        $threeDS['payer_login_data'] = $this->setPayerLoginDataParam();
+        // Prior 3DS Authentication Data
+        $requestData['payer_prior_three_ds_authentication_data'] = $this->setPayerPrior3DSAuthenticationDataParam();
 
-        if (!empty($builder->getBrowserData()) && $builder->getAuthenticationSource() != AuthenticationSource::MOBILE_SDK) {
-            $threeDS['browser_data'] = $this->setBrowserDataParam($builder->getBrowserData());
+        // Recurring Authorization Data
+        $requestData['recurring_authorization_data'] = $this->setRecurringAuthorizationDataParam();
+
+        // Payer Login Data
+        $requestData['payer_login_data'] = $this->setPayerLoginDataParam();
+
+        // Decoupled Flow (if applicable)
+        if (isset($builder->decoupledFlowRequest)) {
+            $requestData['decoupled_flow_request'] = $builder->decoupledFlowRequest === true ? DecoupledFlowRequest::DECOUPLED_PREFERRED :
+                DecoupledFlowRequest::DO_NOT_USE_DECOUPLED;
         }
-        if (!empty($builder->mobileData) && $builder->getAuthenticationSource() == AuthenticationSource::MOBILE_SDK) {
-            $threeDS['mobile_data'] = [
+        $requestData['decoupled_flow_timeout'] = $builder->decoupledFlowTimeout ?? null;
+
+        // Whitelist Status (if available)
+        if (!empty($builder->whitelistStatus)) {
+            $requestData['whitelist_status'] = $builder->whitelistStatus;
+        }
+
+        // Top-level Message Extension (if available)
+        if (!empty($builder->messageExtension)) {
+            $requestData['message_extension'] = $builder->messageExtension;
+        }
+
+        // Browser Data or Mobile Data
+        if (!empty($builder->getBrowserData()) && $builder->getAuthenticationSource() != AuthenticationSource::MOBILE_SDK) {
+            $requestData['browser_data'] = $this->setBrowserDataParam($builder->getBrowserData());
+        }
+        if (!empty($builder->mobileData)) {
+            $requestData['mobile_data'] = [
                 'encoded_data' => $builder->mobileData->encodedData,
                 'application_reference' => $builder->mobileData->applicationReference,
                 'sdk_interface' => $builder->mobileData->sdkInterface,
@@ -177,16 +249,16 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
                 'sdk_trans_reference' => $builder->mobileData->sdkTransReference
             ];
         }
-        $threeDS['notifications'] = [
+
+        // Notifications
+        $requestData['notifications'] = [
+            'challenge_return_url' => $config->challengeNotificationUrl,
+            'three_ds_method_url' => null,
             'decoupled_notification_url' => $builder->decoupledNotificationUrl ?? null
         ];
-        if (isset($builder->decoupledFlowRequest)) {
-            $threeDS['decoupled_flow_request'] = $builder->decoupledFlowRequest === true ? DecoupledFlowRequest::DECOUPLED_PREFERRED :
-                DecoupledFlowRequest::DO_NOT_USE_DECOUPLED;
-        }
-        $threeDS['decoupled_flow_timeout'] = $builder->decoupledFlowTimeout ?? null;
 
-        return $threeDS;
+        // Clean out null and empty values before returning
+        return $this->cleanRequestData($requestData);
     }
 
     private function setPaymentMethodParam($cardData)
@@ -224,36 +296,43 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
 
     /**
      * Set the order parameter in the request
-     *
-     * @return array
      */
     private function setOrderParam()
     {
+        $preOrderAvailabilityDate = $this->builder->getPreOrderAvailabilityDate();
+        $orderCreateDate = $this->builder->getOrderCreateDate();
+        if ($orderCreateDate instanceof \DateTimeInterface) {
+            $formattedOrderCreateDate = $orderCreateDate->format('Y-m-d\TH:i:s.u\Z');
+        } elseif (!empty($orderCreateDate)) {
+            $formattedOrderCreateDate = (new \DateTime((string) $orderCreateDate))->format('Y-m-d\TH:i:s.u\Z');
+        } else {
+            $formattedOrderCreateDate = null;
+        }
+
         $order = [
-            'time_created_reference' => !empty($this->builder->getOrderCreateDate()) ?
-                (new \DateTime($this->builder->getOrderCreateDate()))->format('Y-m-d\TH:i:s.u\Z') : null,
             'amount' => StringUtils::toNumeric($this->builder->getAmount(), $this->builder->getCurrency()),
             'currency' => $this->builder->getCurrency(),
-            'reference' => $this->builder->getOrderId() ?? GenerationUtils::getGuid(),
-            'address_match_indicator' => StringUtils::boolToString($this->builder->isAddressMatchIndicator()),
+            'reference' => $this->builder->getOrderId(),
+            'address_match_indicator' => $this->builder->isAddressMatchIndicator(),
+            'time_created_reference' => $formattedOrderCreateDate,
             'gift_card_count' => $this->builder->getGiftCardCount(),
-            'gift_card_currency'=> $this->builder->getGiftCardCurrency(),
+            'gift_card_currency' => $this->builder->getGiftCardCurrency(),
             'gift_card_amount' => $this->builder->getGiftCardAmount(),
             'delivery_email' => $this->builder->getDeliveryEmail(),
             'delivery_timeframe' => $this->builder->getDeliveryTimeframe(),
             'shipping_method' => (string) $this->builder->getShippingMethod(),
-            'shipping_name_matches_cardholder_name' => StringUtils::boolToString(
-                $this->builder->getShippingNameMatchesCardHolderName()
-            ),
+            'shipping_name_matches_cardholder_name' => $this->builder->getShippingNameMatchesCardHolderName(),
             'preorder_indicator' => (string) $this->builder->getPreOrderIndicator(),
-            'preorder_availability_date' => !empty($this->builder->getPreOrderAvailabilityDate()) ?
-                (new \DateTime($this->builder->getPreOrderAvailabilityDate()))->format('Y-m-d') : null,
-//            'reorder_indicator' => (string) $this->builder->getReorderIndicator(),
-            'category' => $this->builder->getOrderTransactionType()
+            'preorder_availability_date' => !empty($preOrderAvailabilityDate) ?
+                ($preOrderAvailabilityDate instanceof \DateTimeInterface
+                    ? $preOrderAvailabilityDate->format('Y-m-d')
+                    : (new \DateTime($preOrderAvailabilityDate))->format('Y-m-d')) : null,
+            'reorder_indicator' => (string) $this->builder->getReorderIndicator(),
+            'transaction_type' => (string) $this->builder->getOrderTransactionType()
         ];
 
-        if (!empty($this->builder->getShippingAddress())) {
-            $shippingAddress = $this->builder->getShippingAddress();
+        $shippingAddress = $this->builder->getShippingAddress();
+        if (!empty($shippingAddress)) {
             $order['shipping_address'] = [
                 'line1' => $shippingAddress->streetAddress1,
                 'line2' => $shippingAddress->streetAddress2,
@@ -407,6 +486,37 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
                 (new \DateTime($this->builder->getCustomerAuthenticationTimestamp()))->format('Y-m-d\TH:i:s.u\Z') : null,
             'authentication_type' => (string) $this->builder->getCustomerAuthenticationMethod()
         ];
+    }
+
+    /**
+     * Remove nulls, empty strings, and empty nested arrays from request payloads.
+     *
+     * @param array $data
+     * @return array
+     */
+    private function cleanRequestData(array $data): array
+    {
+        $cleaned = [];
+
+        foreach ($data as $key => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            if (is_array($value)) {
+                $cleanedArray = $this->cleanRequestData($value);
+
+                if (!empty($cleanedArray)) {
+                    $cleaned[$key] = $cleanedArray;
+                }
+
+                continue;
+            }
+
+            $cleaned[$key] = $value;
+        }
+
+        return $cleaned;
     }
 
     public function buildRequestFromJson(mixed $jsonRequest, mixed $config): mixed

@@ -83,6 +83,8 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
     public function buildRequest(BaseBuilder $builder, mixed $config): mixed
     {
         $this->builder = $builder;
+        $endpoint = '';
+        $verb = '';
         $requestData = null;
         /** @var AuthorizationBuilder $builder */
         switch ($builder->transactionType) {
@@ -94,40 +96,17 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                 $requestData =  $this->createFromAuthorizationBuilder($builder, $config);
                 break;
             case TransactionType::VERIFY:
+                if ($this->isClickToPayDecryptRequest($builder)) {
+                    $endpoint = GpApiRequest::DECRYPT_ENDPOINT;
+                    $verb = 'POST';
+                    $requestData = $this->createClickToPayDecryptRequest($builder, $config);
+                    break;
+                }
+
                 if ($builder->requestMultiUseToken && empty($builder->paymentMethod->token)) {
                     $endpoint = GpApiRequest::PAYMENT_METHODS_ENDPOINT;
                     $verb = 'POST';
-                    $requestData = [];
-                    $requestData['account_name'] = $config->accessTokenInfo->tokenizationAccountName;
-                    $requestData['account_id'] = $config->accessTokenInfo->tokenizationAccountID;
-                    $requestData['name'] = $builder->description ?: "";
-                    $requestData['payer'] = ['id' => $builder->customerId ?: ""];
-                    $requestData['reference'] = $builder->clientTransactionId ?: GenerationUtils::generateOrderId();
-                    $requestData['usage_mode'] = $builder->paymentMethodUsageMode;
-                    $requestData['fingerprint_mode'] =
-                        (!empty($builder->customerData) & !empty($builder->customerData->deviceFingerPrint) ?
-                            $builder->customerData->deviceFingerPrint : null);
-                    $card = new Card();
-                    $builderCard = $builder->paymentMethod;
-                    $card->number = $builderCard->number;
-                    $card->expiry_month = !empty($builderCard->expMonth) ?
-                        str_pad((string) $builderCard->expMonth, 2, '0', STR_PAD_LEFT) : null;
-                    $card->expiry_year = !empty($builderCard->expYear) ?
-                        substr(
-                            str_pad((string) $builderCard->expYear, 4, '0', STR_PAD_LEFT),
-                            2,
-                            2
-                        ) : null;
-                    $card->cvv = $builderCard->cvn;
-                    $requestData['card'] = $card;
-                    $this->maskedValues = ProtectSensitiveData::hideValues(
-                        [
-                            'card.expiry_month' => $card->expiry_month,
-                            'card.expiry_year' => $card->expiry_year,
-                            'card.cvv' => $card->cvv
-                        ]
-                    );
-                    $this->maskedValues = ProtectSensitiveData::hideValue('card.number', $card->number, 4, 6);
+                    $requestData = $this->createPaymentMethodRequest($builder, $config);
                 } else {
                     $endpoint = GpApiRequest::VERIFICATIONS_ENDPOINT;
                     $verb = 'POST';
@@ -160,9 +139,13 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     $requestData['name'] = $payByLink->name;
                     $requestData['description'] = $builder->description;
                     $requestData['shippable'] = StringUtils::boolToYesNo($payByLink->isShippable) ? StringUtils::boolToYesNo($payByLink->isShippable) : "NO";
+                    $expirationDate = $payByLink->expirationDate;
                     $requestData['shipping_amount'] = StringUtils::toNumeric($payByLink->shippingAmount, $builder->currency);
                     $requestData['expiration_date'] = !empty($payByLink->expirationDate) ?
-                        (new \DateTime($payByLink->expirationDate))->format('Y-m-d\TH:i:s\Z') : null;
+                        ($expirationDate instanceof \DateTimeInterface
+                            ? $expirationDate->format('Y-m-d\TH:i:s\Z')
+                            : (new \DateTime((string) $expirationDate))->format('Y-m-d\TH:i:s\Z'))
+                        : null;
                     //@TODO - remove status when GP-API will fix the issue (status shouldn't be sent in request)
                     $requestData['status'] = PayByLinkStatus::ACTIVE;
                     $requestData['images'] = $payByLink->images;
@@ -554,6 +537,100 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         return $requestBody;
     }
 
+    private function createPaymentMethodRequest(AuthorizationBuilder $builder, GpApiConfig $config): array
+    {
+        $requestData = [];
+        $requestData['account_name'] = $config->accessTokenInfo->tokenizationAccountName;
+        $requestData['account_id'] = $config->accessTokenInfo->tokenizationAccountID;
+        $requestData['name'] = $builder->description ?: "";
+        $requestData['payer'] = ['id' => $builder->customerId ?: ""];
+        $requestData['reference'] = $builder->clientTransactionId ?: GenerationUtils::generateOrderId();
+        $requestData['usage_mode'] = $builder->paymentMethodUsageMode ?? null;
+        $requestData['fingerprint_mode'] =
+            (!empty($builder->customerData) && !empty($builder->customerData->deviceFingerPrint) ?
+                $builder->customerData->deviceFingerPrint : null);
+
+        $card = new Card();
+        $builderCard = $builder->paymentMethod;
+        $card->token_format = DigitalWalletTokenFormat::CARD_TOKEN;
+        $card->number = $builderCard->number;
+        $card->expiry_month = !empty($builderCard->expMonth) ?
+            str_pad((string) $builderCard->expMonth, 2, '0', STR_PAD_LEFT) : null;
+        $card->expiry_year = !empty($builderCard->expYear) ?
+            substr(
+                str_pad((string) $builderCard->expYear, 4, '0', STR_PAD_LEFT),
+                2,
+                2
+            ) : null;
+        $requestData['cvv_present'] = !empty($builderCard->cvn) ? 'YES' : 'NO';
+        
+        if (!empty($builderCard->cvn)) {
+            $card->cvv = $builderCard->cvn;
+        }
+        $requestData['card'] = $card;
+
+        $this->maskedValues = ProtectSensitiveData::hideValues(
+            [
+                'card.expiry_month' => $card->expiry_month,
+                'card.expiry_year' => $card->expiry_year,
+                'card.cvv' => $card->cvv
+            ]
+        );
+        $this->maskedValues = ProtectSensitiveData::hideValue('card.number', $card->number, 4, 6);
+
+        return $requestData;
+    }
+
+    /**
+     * Click to Pay decrypt is represented as VERIFY + ENCRYPTED_MOBILE.
+     */
+    private function isClickToPayDecryptRequest(AuthorizationBuilder $builder): bool
+    {
+        return (
+            $builder->transactionType === TransactionType::VERIFY
+            && $builder->transactionModifier === TransactionModifier::ENCRYPTED_MOBILE
+            && $builder->paymentMethod instanceof Credit
+            && $builder->paymentMethod->mobileType === EncyptedMobileType::CLICK_TO_PAY
+        );
+    }
+
+    /**
+     * Build /decrypt request body for Click to Pay.
+     */
+    private function createClickToPayDecryptRequest(AuthorizationBuilder $builder, GpApiConfig $config): array
+    {
+        /** @var Credit $paymentMethod */
+        $paymentMethod = $builder->paymentMethod;
+
+        $requestData = [
+            'account_name' => $config->accessTokenInfo->transactionProcessingAccountName,
+            'type' => 'DECRYPT',
+            'channel' => $config->channel,
+            'country' => $config->country,
+            'currency' => $builder->currency,
+            'payment_method' => [
+                'name' => $paymentMethod->cardHolderName ?? null,
+                'entry_mode' => 'ecom',
+                'digital_wallet' => [
+                    'provider' => 'CLICK_TO_PAY',
+                    'brand' => $paymentMethod->cardType ?? null,
+                    'payment_token' => [
+                        'data' => $paymentMethod->token,
+                        'dpa_reference' => $paymentMethod->dpaReference,
+                        'data_type_indicator' => $paymentMethod->dataTypeIndicator
+                    ]
+                ]
+            ]
+        ];
+
+        $this->maskedValues = ProtectSensitiveData::hideValue(
+            'payment_method.digital_wallet.payment_token.data',
+            $paymentMethod->token
+        );
+
+        return $requestData;
+    }
+
     private function createFromAuthorizationBuilder($builder, GpApiConfig $config)
     {
         /** @var AuthorizationBuilder $builder */
@@ -892,18 +969,34 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                         $builder->customerData->deviceFingerPrint : null);
                 $secureEcom = $paymentMethodContainer->threeDSecure;
                 if (!empty($secureEcom)) {
-                    $paymentMethod->authentication =
+                    $authentication = [
+                        'id' => $secureEcom->serverTransactionId
+                    ];
+
+                    $threeDsAuthentication = array_filter(
                         [
-                            'id' => $secureEcom->serverTransactionId,
-                            'three_ds' => [
-                                'exempt_status' => $secureEcom->exemptStatus,
-                                'message_version' => $secureEcom->messageVersion,
-                                'eci' => $secureEcom->eci,
-                                'server_trans_ref' => $secureEcom->serverTransactionId,
-                                'ds_trans_ref' => $secureEcom->directoryServerTransactionId,
-                                'value' => $secureEcom->authenticationValue
-                            ]
-                        ];
+                            'exempt_status' => $secureEcom->exemptStatus,
+                            'message_version' => $secureEcom->messageVersion,
+                            'eci' => $secureEcom->eci,
+                            'server_trans_ref' => $secureEcom->serverTransactionId,
+                            'ds_trans_ref' => $secureEcom->directoryServerTransactionId,
+                            'value' => $secureEcom->authenticationValue
+                        ],
+                        static function ($value) {
+                            return $value !== null && $value !== '';
+                        }
+                    );
+
+                    $meaningfulThreeDsAuthentication = array_diff_key(
+                        $threeDsAuthentication,
+                        ['server_trans_ref' => true]
+                    );
+
+                    if (!empty($meaningfulThreeDsAuthentication)) {
+                        $authentication['three_ds'] = $threeDsAuthentication;
+                    }
+
+                    $paymentMethod->authentication = $authentication;
                 }
                 break;
             case ECheck::class:
@@ -1027,6 +1120,36 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                 $paymentMethod->card = CardUtils::generateCard($builder, GatewayProvider::GP_API, $this->maskedValues);
                 if ($paymentMethodContainer instanceof ICardData && !empty($paymentMethodContainer->number)) {
                     $paymentMethod->card->brand = strtoupper((string)$paymentMethodContainer->getCardType());
+                }
+            }
+
+            // For Click to Pay post-decrypt transactions, include DEC_ID and token metadata.
+            if (
+                $paymentMethodContainer instanceof Credit
+                && $paymentMethodContainer->mobileType === EncyptedMobileType::CLICK_TO_PAY
+            ) {
+                $decryptId = $builder->decryptId ?? $paymentMethodContainer->decryptId;
+                if (!empty($decryptId)) {
+                    $digitalWallet = [
+                        'provider' => EnumMapping::mapDigitalWalletType(
+                            GatewayProvider::GP_API,
+                            $paymentMethodContainer->mobileType
+                        ),
+                        'decrypt' => ['id' => $decryptId]
+                    ];
+
+                    $paymentToken = [];
+                    if (!empty($paymentMethodContainer->dpaReference)) {
+                        $paymentToken['dpa_reference'] = $paymentMethodContainer->dpaReference;
+                    }
+                    if (!empty($paymentMethodContainer->dataTypeIndicator)) {
+                        $paymentToken['data_type_indicator'] = $paymentMethodContainer->dataTypeIndicator;
+                    }
+                    if (!empty($paymentToken)) {
+                        $digitalWallet['payment_token'] = $paymentToken;
+                    }
+
+                    $paymentMethod->digital_wallet = $digitalWallet;
                 }
             }
         } else {

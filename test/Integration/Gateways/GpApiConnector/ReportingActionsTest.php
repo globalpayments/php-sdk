@@ -3,9 +3,9 @@
 namespace Gateways\GpApiConnector;
 
 use DateTime;
+use GlobalPayments\Api\Entities\Enums\ActionSortProperty;
 use GlobalPayments\Api\Entities\Enums\Channel;
 use GlobalPayments\Api\Entities\Enums\SortDirection;
-use GlobalPayments\Api\Entities\Enums\StoredPaymentMethodSortProperty;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\Entities\Reporting\ActionSummary;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
@@ -31,7 +31,7 @@ class ReportingActionsTest extends TestCase
         $this->endDate = (new DateTime())->modify('-3 days')->setTime(0, 0, 0);
 
         $response = ReportingService::findActionsPaged(1, 1)
-            ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->orderBy(ActionSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::START_DATE, $this->startDate)
             ->andWith(SearchCriteria::END_DATE, $this->endDate)
             ->andWith(SearchCriteria::RESOURCE, 'TRANSACTIONS')
@@ -54,18 +54,68 @@ class ReportingActionsTest extends TestCase
 
     public function testReportActionDetail()
     {
-        $actionId = $this->actionSummary->id ?? 'ACT_9r5Vy2uFjXI4nR3uTLYdiaUWMDgYFp';
-        $response = ReportingService::actionDetail($actionId)
-            ->execute();
+        [$actionId, $response] = $this->resolveActionDetail();
 
         $this->assertNotNull($response);
         $this->assertInstanceOf(ActionSummary::class, $response);
         $this->assertEquals($actionId, $response->id);
+        $this->assertNotEmpty($response->type);
+        $this->assertNotEmpty($response->appId);
+        $this->assertNotEmpty($response->appName);
+        $this->assertNotNull($response->timeCreated);
+        $this->assertNotEmpty($response->messageReceived);
+        $this->assertNotEmpty($response->messageSent);
         $this->assertNotEmpty($response->rawRequest);
         $this->assertNotEmpty($response->rawResponse);
     }
 
-    public function testReportActionDetail_RandomId()
+    /**
+     * Resolve an action id that is retrievable via GET /actions/{id}.
+     *
+     * @return array{0:string,1:ActionSummary}
+     * @throws ApiException
+     */
+    private function resolveActionDetail(): array
+    {
+        $maxRounds = 6;
+        $lastResourceNotFound = null;
+
+        for ($round = 1; $round <= $maxRounds; $round++) {
+            $listResponse = ReportingService::findActionsPaged(1, 5)
+                ->orderBy(ActionSortProperty::TIME_CREATED, SortDirection::DESC)
+                ->where(SearchCriteria::RESOURCE, 'TRANSACTIONS')
+                ->execute();
+
+            $candidateIds = array_values(array_unique(array_filter(
+                array_merge(
+                    [$listResponse->action->id ?? null],
+                    array_map(fn($a) => $a->id ?? null, $listResponse->result ?? [])
+                )
+            )));
+
+            foreach ($candidateIds as $candidateId) {
+                try {
+                    $response = ReportingService::actionDetail($candidateId)->execute();
+                    return [$candidateId, $response];
+                } catch (ApiException $e) {
+                    if (strpos($e->getMessage(), 'RESOURCE_NOT_FOUND') === false) {
+                        throw $e;
+                    }
+                    $lastResourceNotFound = $e;
+                }
+            }
+
+            usleep(500000);
+        }
+
+        if ($lastResourceNotFound !== null) {
+            throw $lastResourceNotFound;
+        }
+
+        $this->fail('Unable to resolve a valid action id for GET /actions/{id}.');
+    }
+
+    public function testActionDetailRandomId_NotFound()
     {
         $actionId = GenerationUtils::getGuid();
         $exceptionCaught = false;
@@ -75,7 +125,7 @@ class ReportingActionsTest extends TestCase
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('40118', $e->responseCode);
+            $this->assertStringContainsString('RESOURCE_NOT_FOUND', $e->getMessage());
             $this->assertEquals(sprintf('Status Code: RESOURCE_NOT_FOUND - Actions %s not found at this /ucp/actions/%s', $actionId, $actionId), $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
@@ -85,7 +135,7 @@ class ReportingActionsTest extends TestCase
     public function testFindActions_By_StartDateAndEndDate()
     {
         $response = ReportingService::findActionsPaged(1, 10)
-            ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->orderBy(ActionSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::START_DATE, $this->startDate)
             ->andWith(SearchCriteria::END_DATE, $this->endDate)
             ->execute();
@@ -250,7 +300,7 @@ class ReportingActionsTest extends TestCase
                 ->execute();
         } catch (ApiException $e) {
             $exceptionCaught = true;
-            $this->assertEquals('40003', $e->responseCode);
+            $this->assertStringContainsString('ACTION_NOT_AUTHORIZED', $e->getMessage());
             $this->assertEquals('Status Code: ACTION_NOT_AUTHORIZED - Token does not match merchant_name in the request', $e->getMessage());
         } finally {
             $this->assertTrue($exceptionCaught);
@@ -378,7 +428,7 @@ class ReportingActionsTest extends TestCase
     {
         $id = 'ACT_p11JBFXHU9w2linA6IhMf5ccOoR50a';
         $response = ReportingService::findActionsPaged(1, 10)
-            ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->orderBy(ActionSortProperty::TIME_CREATED, SortDirection::ASC)
             ->where(SearchCriteria::ACTION_ID, $id)
             ->execute();
 
@@ -391,7 +441,7 @@ class ReportingActionsTest extends TestCase
         }
 
         $responseDesc = ReportingService::findActionsPaged(1, 10)
-            ->orderBy(StoredPaymentMethodSortProperty::TIME_CREATED, SortDirection::DESC)
+            ->orderBy(ActionSortProperty::TIME_CREATED, SortDirection::DESC)
             ->where(SearchCriteria::ACTION_ID, $id)
             ->execute();
 

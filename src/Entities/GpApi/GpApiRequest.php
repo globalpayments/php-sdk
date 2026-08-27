@@ -7,6 +7,7 @@ use GlobalPayments\Api\Entities\Request;
 class GpApiRequest extends Request
 {
     const ACCESS_TOKEN_ENDPOINT = '/accesstoken';
+    const DECRYPT_ENDPOINT = '/decrypt';
     const TRANSACTION_ENDPOINT = '/transactions';
     const PAYMENT_METHODS_ENDPOINT = '/payment-methods';
     const VERIFICATIONS_ENDPOINT = '/verifications';

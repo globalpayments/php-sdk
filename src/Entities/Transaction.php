@@ -352,6 +352,9 @@ class Transaction
     /** @var Card */
     public $cardDetails;
 
+    /** @var string|null */
+    public ?string $decryptId = null;
+
     /** @var Address */
     public $address;
 

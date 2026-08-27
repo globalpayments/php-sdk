@@ -2,7 +2,12 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version: v14.4.4 (08/20/26)
+## Latest Version: v14.5.0 (08/20/26)
+### Enhancements:
+- [GPAPI] Added end-to-end Click to Pay decrypt support: decrypt request handling, DEC_ID/PMT_ID mapping, and decrypt ID usage in transactions
+- [GPAPI] Synced Actions reporting with API spec by adding all missing request parameters and mapping all missing response fields for GET /actions and GET /actions/{id}
+
+## v14.4.4 (08/20/26)
 ### Bug Fixes:
 - [GPAPI] Fixed Genius logging by wiring requestLogger so gateway request/response logs are now captured correctly
 ### Enhancements:

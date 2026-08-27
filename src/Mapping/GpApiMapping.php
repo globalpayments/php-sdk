@@ -123,6 +123,12 @@ class GpApiMapping
         if (empty($response)) {
             return $transaction;
         }
+
+        // /decrypt responses do not contain an action object.
+        if (empty($response->action) && self::isDecryptActionResponse($response)) {
+            return self::mapDecryptResponse($response, $transaction);
+        }
+
         $transaction->responseCode = $response->action->result_code;
         $transaction->responseMessage = $response->status;
 
@@ -144,6 +150,9 @@ class GpApiMapping
         }
 
         $transaction->transactionId = $response->id;
+        if (self::isDecryptActionResponse($response)) {
+            $transaction->decryptId = $response->id;
+        }
         $transaction->clientTransactionId = !empty($response->reference) ? $response->reference : null;
         $transaction->timestamp = !empty($response->time_created) ? $response->time_created : '';
         $transaction->referenceNumber = !empty($response->reference) ? $response->reference : null;
@@ -172,7 +181,7 @@ class GpApiMapping
             $response->id : null;
         $transaction->tokenUsageMode = !empty($response->usage_mode) ? $response->usage_mode : null;
         if (!empty($response->payment_method)) {
-            self::mapPaymentMethodTransactionDetails($transaction, $response->payment_method);
+            self::mapAndApplyPaymentMethodDetails($transaction, $response->payment_method);
         }
         if (!empty($response->transfers)) {
             self::mapTransferFundsAccountDetails($transaction, $response->transfers);
@@ -223,6 +232,24 @@ class GpApiMapping
             $transaction->installment = $response->installment;
         }
     
+        return $transaction;
+    }
+
+    private static function mapDecryptResponse(object $response, Transaction $transaction): Transaction
+    {
+        $transaction->transactionId = $response->id ?? null;
+        $transaction->decryptId = $response->id ?? null;
+        $transaction->responseCode = $response->result ?? ($response->result_code ?? null);
+        $transaction->responseMessage = $response->status ?? null;
+
+        if (!empty($response->payment_method)) {
+            self::mapAndApplyPaymentMethodDetails($transaction, $response->payment_method);
+        }
+
+        if (!empty($response->payer)) {
+            $transaction->payerDetails = self::mapPayerDetails($response->payer);
+        }
+
         return $transaction;
     }
 
@@ -288,6 +315,8 @@ class GpApiMapping
 
     private static function mapPaymentMethodTransactionDetails(Transaction &$transaction, $paymentMethodResponse): void
     {
+        $paymentMethodResponse = self::normalizeToObject($paymentMethodResponse);
+
         $cardIssuerResponse = new CardIssuerResponse();
         $cardIssuerResponse->result = $paymentMethodResponse->result ?? null;
         if (!empty($paymentMethodResponse->id)) {
@@ -391,6 +420,66 @@ class GpApiMapping
         ) {
             $transaction->payerDetails = self::mapPayerDetails($paymentMethodResponse->payer, $paymentMethodResponse->shipping_address);
         }
+    }
+
+    private static function isDecryptActionResponse(object $response): bool
+    {
+        return (
+            ($response->type ?? null) === 'DECRYPT' ||
+            (!empty($response->action) && ($response->action->type ?? null) === 'DECRYPT_TOKEN')
+        );
+    }
+
+    private static function mapAndApplyPaymentMethodDetails(
+        Transaction &$transaction,
+        array|object|null $paymentMethodResponse
+    ): void
+    {
+        self::mapPaymentMethodTransactionDetails($transaction, $paymentMethodResponse);
+        self::applyPaymentMethodToken($transaction, $paymentMethodResponse);
+    }
+
+    private static function applyPaymentMethodToken(
+        Transaction &$transaction,
+        array|object|null $paymentMethodResponse
+    ): void
+    {
+        $paymentMethodId = self::extractPaymentMethodId($paymentMethodResponse);
+        if (empty($transaction->token) && !empty($paymentMethodId)) {
+            $transaction->token = $paymentMethodId;
+        }
+    }
+
+    private static function extractPaymentMethodId(array|object|null $paymentMethodResponse): ?string
+    {
+        if (is_array($paymentMethodResponse)) {
+            return $paymentMethodResponse['id'] ?? null;
+        }
+
+        if (is_object($paymentMethodResponse)) {
+            return $paymentMethodResponse->id ?? null;
+        }
+
+        return null;
+    }
+
+    private static function normalizeToObject(mixed $value): object
+    {
+        if (is_object($value)) {
+            return $value;
+        }
+
+        if (is_array($value)) {
+            $decoded = json_decode(json_encode($value));
+
+            if (is_object($decoded)) {
+                return $decoded;
+            }
+
+            return (object) ($decoded ?? []);
+        }
+
+        return new \stdClass();
     }
 
     private static function mapPayerDetails($payer, $shippingAddress = null): PayerDetails
@@ -902,13 +991,25 @@ class GpApiMapping
         $summary->version = !empty($response->version) ? $response->version : null;
         $summary->httpResponseCode = !empty($response->http_response_code) ? $response->http_response_code : null;
         $summary->responseCode = !empty($response->response_code) ? $response->response_code : null;
+        $summary->responseDetailedCode = !empty($response->response_detailed_code) ? $response->response_detailed_code : null;
+        $summary->responseDetailedMessage = !empty($response->response_detailed_message) ? $response->response_detailed_message : null;
         $summary->appId = !empty($response->app_id) ? $response->app_id : null;
         $summary->appName = !empty($response->app_name) ? $response->app_name : null;
+        $summary->email = !empty($response->email) ? $response->email : null;
+        $summary->merchantId = !empty($response->merchant_id) ? $response->merchant_id : null;
         $summary->merchantName = !empty($response->merchant_name) ? $response->merchant_name : null;
         $summary->accountName = !empty($response->account_name) ? $response->account_name : null;
         $summary->accountId = !empty($response->account_id) ? $response->account_id : null;
-        $summary->rawRequest = $response->message_received ?? null;
-        $summary->rawResponse = $response->message_sent ?? null;
+        $summary->resourceParentId = !empty($response->resource_parent_id) ? $response->resource_parent_id : null;
+        $summary->resourceRequestUrl = !empty($response->resource_request_url) ? $response->resource_request_url : null;
+        $summary->sourceLocation = !empty($response->source_location) ? $response->source_location : null;
+        $summary->destinationLocation = !empty($response->destination_location) ? $response->destination_location : null;
+        $summary->rawRequest = $summary->messageReceived = !empty($response->message_received) ? $response->message_received : null;
+        $summary->rawResponse = $summary->messageSent = !empty($response->message_sent) ? $response->message_sent : null;
+        $summary->metrics = !empty($response->metrics) ? $response->metrics : null;
+        $summary->totalTimeMilliseconds = !empty($response->total_time_milliseconds) ? $response->total_time_milliseconds : null;
+        $summary->totalTimeDownstreamMilliseconds = !empty($response->total_time_downstream_milliseconds) ? $response->total_time_downstream_milliseconds : null;
+        $summary->action = self::mapActionMetadata($response->action ?? null);
 
         return $summary;
     }
@@ -1078,14 +1179,33 @@ class GpApiMapping
     private static function setPagingInfo($response): PagedResult
     {
         $pageInfo = new PagedResult();
-        $pageInfo->totalRecordCount = !empty($response->total_count) ? $response->total_count :
-            (!empty($response->total_record_count) ? $response->total_record_count : null);
-        $pageInfo->pageSize = !empty($response->paging->page_size) ? $response->paging->page_size : null;
-        $pageInfo->page = !empty($response->paging->page) ? $response->paging->page : null;
-        $pageInfo->order = !empty($response->paging->order) ? $response->paging->order : null;
-        $pageInfo->orderBy = !empty($response->paging->order_by) ? $response->paging->order_by : null;
+        $pageInfo->totalRecordCount = $response->total_count ?? $response->total_record_count ?? null;
+        $pageInfo->currentPageSize = $response->current_page_size ?? null;
+        $pageInfo->merchantId = $response->merchant_id ?? null;
+        $pageInfo->merchantName = $response->merchant_name ?? null;
+        $pageInfo->filter = $response->filter ?? null;
+        $pageInfo->action = self::mapActionMetadata($response->action ?? null);
+        $pageInfo->pageSize = $response->paging?->page_size ?? null;
+        $pageInfo->page = $response->paging?->page ?? null;
+        $pageInfo->order = $response->paging?->order ?? null;
+        $pageInfo->orderBy = $response->paging?->order_by ?? null;
 
         return $pageInfo;
+    }
+
+    private static function mapActionMetadata(?object $raw): ?Action
+    {
+        if ($raw === null) {
+            return null;
+        }
+        $action = new Action();
+        $action->id = $raw->id ?? '';
+        $action->type = $raw->type ?? '';
+        $action->timeCreated = $raw->time_created ?? '';
+        $action->resultCode = $raw->result_code ?? '';
+        $action->appId = $raw->app_id ?? '';
+        $action->appName = $raw->app_name ?? '';
+        return $action;
     }
 
     /**
