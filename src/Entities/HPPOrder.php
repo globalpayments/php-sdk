@@ -3,6 +3,8 @@
 
 namespace GlobalPayments\Api\Entities;
 
+use GlobalPayments\Api\Entities\Enums\CashpressoShippingMethod;
+
 class HPPOrder
 {
     public const ALLOWED_SURCHARGE_CARD_TYPES = ['DEBIT', 'CREDIT', 'COMMERCIAL'];
@@ -47,6 +49,24 @@ class HPPOrder
      * @var array|null
      */
     public ?array $surcharge = null;
+
+    /**
+     * Shipping method used by Cashpresso requests.
+     * @var string|null
+     */
+    public ?string $shippingMethod = null;
+
+    /**
+     * Shipping date used by Cashpresso requests in YYYY-MM-DD format.
+     * @var string|null
+     */
+    public ?string $shippingDate = null;
+
+    /**
+     * Order items payload for APM providers.
+     * @var array|null
+     */
+    public ?array $items = null;
 
     /**
      * Validate the hosted payment order data
@@ -117,6 +137,29 @@ class HPPOrder
                         $errors[] = 'Invalid surcharge amount. Amount must be a whole-number string in minor units.';
                     }
                 }
+            }
+        }
+
+        if ($this->shippingMethod !== null) {
+            try {
+                CashpressoShippingMethod::validate($this->shippingMethod);
+            } catch (\Exception) {
+                $errors[] = 'Invalid shipping method: ' . $this->shippingMethod;
+            }
+        }
+
+        if ($this->shippingDate !== null) {
+            $date = \DateTime::createFromFormat('Y-m-d', $this->shippingDate);
+            if (!$date || $date->format('Y-m-d') !== $this->shippingDate) {
+                $errors[] = 'Shipping date must be in YYYY-MM-DD format';
+            }
+        }
+
+        if ($this->items !== null) {
+            if (!is_array($this->items)) {
+                $errors[] = 'Items must be an array';
+            } elseif (count($this->items) > 10) {
+                $errors[] = 'Items can contain at most 10 entries';
             }
         }
 

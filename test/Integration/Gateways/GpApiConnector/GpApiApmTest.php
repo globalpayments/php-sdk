@@ -3,17 +3,28 @@
 namespace Gateways\GpApiConnector;
 
 use DateTime;
+use GlobalPayments\Api\Builders\HPPBuilder;
+use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiAuthorizationRequestBuilder;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\AlternativePaymentResponse;
 use GlobalPayments\Api\Entities\Customer;
+use GlobalPayments\Api\Entities\PayerDetails;
+use GlobalPayments\Api\Entities\PhoneNumber;
 use GlobalPayments\Api\Entities\Terms;
 use GlobalPayments\Api\Entities\Enums\AddressType;
 use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
+use GlobalPayments\Api\Entities\Enums\CaptureMode;
+use GlobalPayments\Api\Entities\Enums\CashpressoPaymentPlan;
+use GlobalPayments\Api\Entities\Enums\CashpressoShippingMethod;
 use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\DataResidency;
+use GlobalPayments\Api\Entities\Enums\HPPAllowedPaymentMethods;
 use GlobalPayments\Api\Entities\Enums\MerchantCategory;
 use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
+use GlobalPayments\Api\Entities\Enums\PaymentMethodUsageMode;
 use GlobalPayments\Api\Entities\Enums\PhoneNumberType;
 use GlobalPayments\Api\Entities\Enums\TransactionStatus;
+use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\OrderDetails;
@@ -22,6 +33,7 @@ use GlobalPayments\Api\Entities\Reporting\TransactionSummary;
 use GlobalPayments\Api\Entities\Transaction;
 use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
+use GlobalPayments\Api\Services\HPPService;
 use GlobalPayments\Api\Services\ReportingService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
@@ -101,6 +113,539 @@ class GpApiApmTest extends TestCase
         ServicesContainer::configureService($config);
     }
 
+    private function configureCashpressoService(string $country = 'DE'): GpApiConfig
+    {
+        $config = $this->setUpConfig();
+        $config->appId = 'hlZAokTftDazLlWDPe8E6VAz5g9rSDPg'; // gitleaks:allow
+        $config->appKey = 'ThDO2fISzzWCgkCZ'; // gitleaks:allow
+        $config->dataResidency = DataResidency::EU;
+        $config->serviceUrl = 'https://apis-qa.globalpay.com/ucp';
+        $config->country = $country;
+        $config->accessTokenInfo->transactionProcessingAccountName = 'GPECOM_CASHPRESSO_APM_Transaction_Processing';
+        $config->requestLogger = new RequestConsoleLogger();
+        ServicesContainer::configureService($config);
+
+        return $config;
+    }
+
+    private function createCashpressoPaymentMethod(string $paymentPlan, string $country = 'DE'): AlternativePaymentMethod
+    {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::CASHPRESSO);
+        $paymentMethod->returnUrl = 'https://webhook.site/return';
+        $paymentMethod->statusUpdateUrl = 'https://webhook.site/status';
+        $paymentMethod->cancelUrl = 'https://webhook.site/cancel';
+        $paymentMethod->country = $country;
+        $paymentMethod->accountHolderName = 'James Mason';
+        $paymentMethod->paymentPlan = $paymentPlan;
+
+        return $paymentMethod;
+    }
+
+    private function configureBlikLevelZeroService(): void
+    {
+        $config = $this->setUpConfig();
+        $config->appId = 'hlZAokTftDazLlWDPe8E6VAz5g9rSDPg'; // gitleaks:allow
+        $config->appKey = 'ThDO2fISzzWCgkCZ'; // gitleaks:allow
+        $config->environment = GpApiConfig::QA_ENVIRONMENT;
+        $config->dataResidency = DataResidency::EU;
+        $config->serviceUrl = 'https://apis-qa.globalpay.com/ucp';
+        $config->country = 'PL';
+        $config->accessTokenInfo->transactionProcessingAccountName = 'GPECOM_BLIK_APM_Transaction_Processing';
+        $config->requestLogger = new RequestConsoleLogger();
+        ServicesContainer::configureService($config);
+    }
+
+    private function createBlikLevelZeroPaymentMethod(): AlternativePaymentMethod
+    {
+        $paymentMethod = new AlternativePaymentMethod(AlternativePaymentType::BLIK);
+        $paymentMethod->returnUrl = 'https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98';
+        $paymentMethod->statusUpdateUrl = 'https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98';
+        $paymentMethod->cancelUrl = 'https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98';
+        $paymentMethod->country = 'PL';
+        $paymentMethod->accountHolderName = 'James2 Carl';
+        $paymentMethod->mode = 'level_zero';
+        $paymentMethod->paymentCodeInitiator = 'payer';
+        $paymentMethod->paymentCode = '999000';
+
+        return $paymentMethod;
+    }
+
+    private function createCashpressoCustomer(): Customer
+    {
+        $customer = new Customer();
+        $customer->firstName = 'James';
+        $customer->lastName = 'Mason';
+        $customer->email = 'james.mason@example.com';
+
+        return $customer;
+    }
+
+    private function createCashpressoBillingAddress(string $country = 'DE'): Address
+    {
+        $billingAddress = new Address();
+        $billingAddress->streetAddress1 = 'Marienplatz 8';
+        $billingAddress->streetAddress2 = 'Suite 302, Commercial Center';
+        $billingAddress->streetAddress3 = 'Old Town District';
+        $billingAddress->city = $country === 'AT' ? 'Wien' : 'Muenchen';
+        $billingAddress->postalCode = $country === 'AT' ? '1010' : '80331';
+        $billingAddress->state = $country === 'AT' ? 'WI' : 'BY';
+        $billingAddress->countryCode = $country;
+
+        return $billingAddress;
+    }
+
+    private function createCashpressoItems(): array
+    {
+        return [
+            [
+                'description' => 'Iphone 16',
+                'reference' => 'Invoice-68775',
+                'quantity' => '1',
+                'unit_amount' => '100',
+                'tax_amount' => '0',
+            ],
+        ];
+    }
+
+    private function executeCashpressoInitiate(
+        string $paymentPlan,
+        string $shippingMethod,
+        float $amount,
+        string $country = 'DE',
+        ?string $shippingDate = null
+    ): Transaction {
+        $this->configureCashpressoService($country);
+        $paymentMethod = $this->createCashpressoPaymentMethod($paymentPlan, $country);
+        $customer = $this->createCashpressoCustomer();
+        $billingAddress = $this->createCashpressoBillingAddress($country);
+        $effectiveShippingDate = $shippingDate ?: date('Y-m-d', strtotime('+30 days'));
+
+        try {
+            return $paymentMethod->charge($amount)
+                ->withCurrency('EUR')
+                ->withDescription('Cashpresso APM integration test')
+                ->withAddress($billingAddress, AddressType::BILLING)
+                ->withAddress($billingAddress, AddressType::SHIPPING)
+                ->withCustomerData($customer)
+                ->withPhoneNumber('+49', '1511234567', PhoneNumberType::HOME)
+                ->withCashpressoShippingMethod($shippingMethod)
+                ->withShippingDate($effectiveShippingDate)
+                ->withProductData($this->createCashpressoItems())
+                ->execute();
+        } catch (GatewayException $e) {
+            if (stripos($e->getMessage(), 'App credentials not recognized') !== false) {
+                $this->markTestSkipped(
+                    'Cashpresso credentials are not authorized in this environment.'
+                );
+            }
+
+            throw $e;
+        }
+    }
+
+    private function assertCashpressoInitiateResponse(Transaction $response, string $expectedPaymentPlan): void
+    {
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertContains($response->responseMessage, [TransactionStatus::INITIATED, TransactionStatus::PENDING]);
+        $this->assertNotNull($response->alternativePaymentResponse);
+        $this->assertNotEmpty($response->alternativePaymentResponse->redirectUrl);
+        $this->assertEquals('CASHPRESSO', strtoupper((string) $response->alternativePaymentResponse->providerName));
+        $this->assertEquals('BNPL', strtoupper((string) $response->alternativePaymentResponse->category));
+        $this->assertEquals($expectedPaymentPlan, $response->alternativePaymentResponse->paymentPlan);
+    }
+
+    private function buildCashpressoTransactionRequest(
+        ?string $paymentPlan = CashpressoPaymentPlan::PAY_30_DAYS,
+        ?string $shippingMethod = CashpressoShippingMethod::DELIVERY,
+        ?string $shippingDate = null,
+        float $amount = 100.00,
+        string $country = 'DE',
+        ?array $items = null
+    ): void {
+        $config = $this->configureCashpressoService($country);
+        $paymentMethod = $this->createCashpressoPaymentMethod(CashpressoPaymentPlan::PAY_30_DAYS, $country);
+        $paymentMethod->paymentPlan = $paymentPlan;
+
+        $customer = $this->createCashpressoCustomer();
+        $billingAddress = $this->createCashpressoBillingAddress($country);
+
+        $builder = $paymentMethod->charge($amount)
+            ->withCurrency('EUR')
+            ->withDescription('Cashpresso validation test')
+            ->withAddress($billingAddress, AddressType::BILLING)
+            ->withAddress($billingAddress, AddressType::SHIPPING)
+            ->withCustomerData($customer)
+            ->withPhoneNumber('+49', '1511234567', PhoneNumberType::HOME);
+
+        if ($shippingMethod !== null) {
+            $builder->withCashpressoShippingMethod($shippingMethod);
+        }
+
+        if ($shippingDate !== null) {
+            $builder->withShippingDate($shippingDate);
+        }
+
+        $builder->withProductData($items ?? $this->createCashpressoItems());
+
+        (new GpApiAuthorizationRequestBuilder())->buildRequest($builder, $config);
+    }
+
+    public function provideCashpressoShippingMethods(): array
+    {
+        return [
+            'DELIVERY' => [CashpressoShippingMethod::DELIVERY],
+            'PICKUP' => [CashpressoShippingMethod::PICKUP],
+            'PICKUP_BOX' => [CashpressoShippingMethod::PICKUP_BOX],
+            'POSTOFFICE' => [CashpressoShippingMethod::POSTOFFICE],
+        ];
+    }
+
+    /**
+     * @group integration
+     * @group apm
+     * @group cashpresso
+     */
+    public function testCashpressoApiInitiatePayIn3InstallmentsMinAmountReturnsRedirectUrl(): void
+    {
+        $response = $this->executeCashpressoInitiate(
+            CashpressoPaymentPlan::PAY_IN_3_INSTALLMENTS,
+            CashpressoShippingMethod::DELIVERY,
+            150.00,
+            'DE'
+        );
+
+        $this->assertCashpressoInitiateResponse($response, CashpressoPaymentPlan::PAY_IN_3_INSTALLMENTS);
+    }
+
+    /**
+     * @group integration
+     * @group apm
+     * @group cashpresso
+     */
+    public function testCashpressoApiInitiatePay30DaysReturnsRedirectUrl(): void
+    {
+        $response = $this->executeCashpressoInitiate(
+            CashpressoPaymentPlan::PAY_30_DAYS,
+            CashpressoShippingMethod::DELIVERY,
+            100.00,
+            'DE'
+        );
+
+        $this->assertCashpressoInitiateResponse($response, CashpressoPaymentPlan::PAY_30_DAYS);
+    }
+
+    /**
+     * @group integration
+     * @group apm
+     * @group cashpresso
+     * @dataProvider provideCashpressoShippingMethods
+     */
+    public function testCashpressoApiInitiateSupportsAllShippingMethods(string $shippingMethod): void
+    {
+        $response = $this->executeCashpressoInitiate(
+            CashpressoPaymentPlan::PAY_30_DAYS,
+            $shippingMethod,
+            100.00,
+            'DE'
+        );
+
+        $this->assertCashpressoInitiateResponse($response, CashpressoPaymentPlan::PAY_30_DAYS);
+    }
+
+    /**
+     * @group integration
+     * @group apm
+     * @group cashpresso
+     */
+    public function testCashpressoApiInitiateWithFutureShippingDateReturnsRedirectUrl(): void
+    {
+        $futureShippingDate = date('Y-m-d', strtotime('+45 days'));
+        $this->assertGreaterThan(date('Y-m-d'), $futureShippingDate);
+
+        $response = $this->executeCashpressoInitiate(
+            CashpressoPaymentPlan::PAY_30_DAYS,
+            CashpressoShippingMethod::DELIVERY,
+            100.00,
+            'DE',
+            $futureShippingDate
+        );
+
+        $this->assertCashpressoInitiateResponse($response, CashpressoPaymentPlan::PAY_30_DAYS);
+    }
+
+    /**
+     * @group integration
+     * @group apm
+     * @group cashpresso
+     */
+    public function testCashpressoTransactionPayIn3BelowMinimumThrowsArgumentException(): void
+    {
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessage('PAY_IN_3_INSTALLMENTS requires amount >= 15000 in minor units.');
+
+        $this->buildCashpressoTransactionRequest(
+            CashpressoPaymentPlan::PAY_IN_3_INSTALLMENTS,
+            CashpressoShippingMethod::DELIVERY,
+            date('Y-m-d', strtotime('+30 days')),
+            149.99,
+            'DE'
+        );
+    }
+
+    /**
+     * @group integration
+     * @group apm
+     * @group cashpresso
+     */
+    public function testCashpressoTransactionMissingPaymentPlanThrowsArgumentException(): void
+    {
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessage('payment_method.apm.payment_plan is required for CASHPRESSO.');
+
+        $this->buildCashpressoTransactionRequest(
+            null,
+            CashpressoShippingMethod::DELIVERY,
+            date('Y-m-d', strtotime('+30 days')),
+            100.00,
+            'DE'
+        );
+    }
+
+    /**
+     * @group integration
+     * @group apm
+     * @group cashpresso
+     */
+    public function testCashpressoTransactionMissingShippingMethodThrowsArgumentException(): void
+    {
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessage('order.shipping_method is required for CASHPRESSO.');
+
+        $this->buildCashpressoTransactionRequest(
+            CashpressoPaymentPlan::PAY_30_DAYS,
+            null,
+            date('Y-m-d', strtotime('+30 days')),
+            100.00,
+            'DE'
+        );
+    }
+
+    /**
+     * @group integration
+     * @group apm
+     * @group cashpresso
+     */
+    public function testCashpressoTransactionMissingShippingDateThrowsArgumentException(): void
+    {
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessage('order.shipping_date is required for CASHPRESSO.');
+
+        $this->buildCashpressoTransactionRequest(
+            CashpressoPaymentPlan::PAY_30_DAYS,
+            CashpressoShippingMethod::DELIVERY,
+            null,
+            100.00,
+            'DE'
+        );
+    }
+
+    /**
+     * @group integration
+     * @group apm
+     * @group cashpresso
+     */
+    public function testCashpressoTransactionShippingDateNotFutureThrowsArgumentException(): void
+    {
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessage('order.shipping_date must be later than today for CASHPRESSO.');
+
+        $this->buildCashpressoTransactionRequest(
+            CashpressoPaymentPlan::PAY_30_DAYS,
+            CashpressoShippingMethod::DELIVERY,
+            date('Y-m-d'),
+            100.00,
+            'DE'
+        );
+    }
+
+    /**
+     * @group integration
+     * @group apm
+     * @group cashpresso
+     */
+    public function testCashpressoTransactionMoreThanTenItemsThrowsArgumentException(): void
+    {
+        $items = [];
+        for ($i = 0; $i < 11; $i++) {
+            $items[] = [
+                'description' => 'Item ' . $i,
+                'reference' => 'REF-' . $i,
+                'quantity' => '1',
+                'unit_amount' => '100',
+                'tax_amount' => '0',
+            ];
+        }
+
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessage('order.items supports a maximum of 10 entries for CASHPRESSO.');
+
+        $this->buildCashpressoTransactionRequest(
+            CashpressoPaymentPlan::PAY_30_DAYS,
+            CashpressoShippingMethod::DELIVERY,
+            date('Y-m-d', strtotime('+30 days')),
+            100.00,
+            'DE',
+            $items
+        );
+    }
+
+    /**
+     * @group integration
+     * @group apm
+     * @group cashpresso
+     */
+    public function testCashpressoTransactionSupportedAtCountryBuildsRequest(): void
+    {
+        $this->buildCashpressoTransactionRequest(
+            CashpressoPaymentPlan::PAY_30_DAYS,
+            CashpressoShippingMethod::DELIVERY,
+            date('Y-m-d', strtotime('+30 days')),
+            100.00,
+            'AT'
+        );
+
+        $this->assertTrue(true);
+    }
+
+    /**
+     * @group integration
+     * @group apm
+     * @group cashpresso
+     */
+    public function testCashpressoTransactionUnsupportedCountryThrowsArgumentException(): void
+    {
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessage('country must be DE or AT for CASHPRESSO.');
+
+        $this->buildCashpressoTransactionRequest(
+            CashpressoPaymentPlan::PAY_30_DAYS,
+            CashpressoShippingMethod::DELIVERY,
+            date('Y-m-d', strtotime('+30 days')),
+            100.00,
+            'PL'
+        );
+    }
+
+    /**
+     * @group integration
+     * @group hpp
+     * @group cashpresso
+     */
+    public function testCashpressoValidHppRequestContainsCashpressoAndCreatesLink(): void
+    {
+        $config = $this->configureCashpressoService('DE');
+
+        $payer = new PayerDetails();
+        $payer->firstName = 'James';
+        $payer->lastName = 'Mason';
+        $payer->email = 'James.Mason8286@example.com';
+        $payer->status = 'ACTIVE';
+        $payer->id = 'PYR_992a3181a1bb493ead11474ce0fbd567';
+
+        $billingAddress = $this->createCashpressoBillingAddress('DE');
+        $shippingAddress = new Address();
+        $shippingAddress->streetAddress1 = '100 main st';
+        $shippingAddress->streetAddress2 = 'Guly2';
+        $shippingAddress->streetAddress3 = 'Kop Strasse 1892';
+        $shippingAddress->city = 'Frankfurt';
+        $shippingAddress->postalCode = '60329';
+        $shippingAddress->state = 'HE';
+        $shippingAddress->countryCode = 'DE';
+
+        $payerPhone = new PhoneNumber('+49', '609568831', PhoneNumberType::MOBILE);
+        $shippingPhone = new PhoneNumber('+49', '609568831', PhoneNumberType::SHIPPING);
+
+        $futureShippingDate = date('Y-m-d', strtotime('+30 days'));
+        $futureExpirationDate = gmdate('Y-m-d\TH:i:s\Z', strtotime('+90 days'));
+
+        $hppData = HPPBuilder::create()
+            ->withName('Mobile Bill Payment')
+            ->withDescription('February and March Invoice')
+            ->withReference('TRANS-' . gmdate('YmdHis') . uniqid())
+            ->withExpirationDate($futureExpirationDate)
+            ->withAmount('65000')
+            ->withCurrency('EUR')
+            ->withPayer($payer)
+            ->withPayerPhone($payerPhone)
+            ->withBillingAddress($billingAddress)
+            ->withShippingAddress($shippingAddress)
+            ->withShippingPhone($shippingPhone)
+            ->withAddressMatchIndicator(false)
+            ->withNotifications(
+                'https://webhook.site/62511d22-b672-41ef-afc3-03b136069aeb',
+                'https://webhook.site/62511d22-b672-41ef-afc3-03b136069aeb',
+                'https://webhook.site/62511d22-b672-41ef-afc3-03b136069aeb'
+            )
+            ->withTransactionConfig(
+                Channel::CardNotPresent,
+                'DE',
+                CaptureMode::AUTO,
+                [HPPAllowedPaymentMethods::CARD, HPPAllowedPaymentMethods::CASHPRESSO],
+                PaymentMethodUsageMode::SINGLE,
+                '1'
+            )
+            ->withOrderReference('REF-23')
+            ->withCurrencyConversionMode('NO')
+            ->withApm(true, true)
+            ->withCashpressoPaymentPlans([
+                CashpressoPaymentPlan::PAY_IN_3_INSTALLMENTS,
+                CashpressoPaymentPlan::PAY_30_DAYS,
+            ])
+            ->withOrderShippingMethod(CashpressoShippingMethod::DELIVERY)
+            ->withOrderShippingDate($futureShippingDate)
+            ->withOrderItems([
+                [
+                    'label' => 'Iphone 16',
+                    'product_code' => 'IPH65434',
+                    'quantity' => '1',
+                    'unit_amount' => '65000',
+                    'tax_amount' => '0',
+                ],
+            ])
+            ->build();
+
+        $authBuilder = HPPService::create($hppData);
+        $request = (new GpApiAuthorizationRequestBuilder())->buildRequest($authBuilder, $config);
+        $requestBody = $request->requestBody;
+
+        $allowedMethods = $requestBody['order']['transaction_configuration']['allowed_payment_methods'] ?? [];
+        $allowedMethods = is_array($allowedMethods) ? $allowedMethods : [$allowedMethods];
+        $this->assertContains(HPPAllowedPaymentMethods::CASHPRESSO, $allowedMethods);
+        $this->assertEquals('CASHPRESSO', $requestBody['order']['payment_method_configuration']['apm']['configurations'][0]['provider'] ?? null);
+        $this->assertEquals(CashpressoShippingMethod::DELIVERY, $requestBody['order']['shipping_method'] ?? null);
+        $this->assertEquals($futureShippingDate, $requestBody['order']['shipping_date'] ?? null);
+        $this->assertGreaterThan(date('Y-m-d'), (string) ($requestBody['order']['shipping_date'] ?? ''));
+        $this->assertEquals('Iphone 16', $requestBody['order']['items'][0]['label'] ?? null);
+        $this->assertEquals('IPH65434', $requestBody['order']['items'][0]['product_code'] ?? null);
+        $this->assertEquals('0', $requestBody['order']['tax_amount'] ?? null);
+
+        try {
+            $response = $authBuilder->execute();
+        } catch (GatewayException $e) {
+            if (stripos($e->getMessage(), 'App credentials not recognized') !== false) {
+                $this->markTestSkipped(
+                    'Cashpresso credentials are not authorized in this environment.'
+                );
+            }
+
+            throw $e;
+        }
+
+        $this->assertNotNull($response);
+        $this->assertNotNull($response->payByLinkResponse);
+        $this->assertNotEmpty($response->payByLinkResponse->url);
+    }
     /**
      * How to have a success running test. When you will run the test in the console it will be printed the
      * PayPal redirect url. You need to copy the link and open it in a browser, do the login wih your PayPal
@@ -766,6 +1311,121 @@ class GpApiApmTest extends TestCase
             $this->assertStringContainsString('amount', strtolower($e->getMessage()));
         } finally {
             $this->assertTrue($exceptionCaught, 'Expected GatewayException for invalid amount ' . $amount);
+        }
+    }
+
+    public function testBlikLevelZeroCharge()
+    {
+        $this->configureBlikLevelZeroService();
+        $paymentMethod = $this->createBlikLevelZeroPaymentMethod();
+
+        $customer = new Customer();
+        $customer->firstName = 'James';
+        $customer->lastName = 'Mason';
+        $customer->email = 'james2.carl@gmail.com';
+
+        try {
+            $response = $paymentMethod->charge(10.00)
+                ->withCurrency('PLN')
+                ->withCustomerData($customer)
+                ->withCustomerIpAddress('106.215.180.111')
+                ->withCustomerUserAgent('PostmanRuntime/7.51.1')
+                ->withClientTransactionId('123456789')
+                ->execute();
+
+            $this->assertNotNull($response);
+            $this->assertEquals('SUCCESS', $response->responseCode);
+            $this->assertNotNull($response->transactionId);
+            $this->assertNotNull($response->alternativePaymentResponse);
+            $this->assertEquals(
+                AlternativePaymentType::BLIK,
+                strtolower((string) $response->alternativePaymentResponse->providerName)
+            );
+        } catch (GatewayException $e) {
+            if (
+                str_contains($e->getMessage(), 'ACTION_NOT_AUTHORIZED')
+                || str_contains($e->getMessage(), 'INVALID_TRANSACTION_ACTION')
+            ) {
+                $this->markTestSkipped('BLIK Level 0 QA credentials are not authorized in this environment.');
+            }
+
+            throw $e;
+        }
+    }
+
+    public function testBlikLevelZeroMissingUserAgent()
+    {
+        $paymentMethod = $this->createBlikLevelZeroPaymentMethod();
+        $errorFound = false;
+
+        try {
+            $paymentMethod->charge(10.01)
+                ->withCurrency('PLN')
+                ->withCustomerIpAddress('127.0.0.1')
+                ->execute();
+        } catch (BuilderException $e) {
+            $errorFound = true;
+            $this->assertEquals('customerUserAgent cannot be null for BLIK Level 0 transactions.', $e->getMessage());
+        } finally {
+            $this->assertTrue($errorFound);
+        }
+    }
+
+    public function testBlikLevelZeroMissingIpAddress()
+    {
+        $paymentMethod = $this->createBlikLevelZeroPaymentMethod();
+        $errorFound = false;
+
+        try {
+            $paymentMethod->charge(10.01)
+                ->withCurrency('PLN')
+                ->withCustomerUserAgent('Mozilla/5.0 Test Agent')
+                ->execute();
+        } catch (BuilderException $e) {
+            $errorFound = true;
+            $this->assertEquals('customerIpAddress cannot be null for BLIK Level 0 transactions.', $e->getMessage());
+        } finally {
+            $this->assertTrue($errorFound);
+        }
+    }
+
+    public function testBlikLevelZeroPaymentCodeTooShort()
+    {
+        $paymentMethod = $this->createBlikLevelZeroPaymentMethod();
+        $paymentMethod->paymentCode = '99999';
+        $errorFound = false;
+
+        try {
+            $paymentMethod->charge(10.01)
+                ->withCurrency('PLN')
+                ->withCustomerIpAddress('106.215.180.111')
+                ->withCustomerUserAgent('PostmanRuntime/7.51.1')
+                ->execute();
+        } catch (BuilderException $e) {
+            $errorFound = true;
+            $this->assertEquals('paymentMethod->paymentCode must be exactly 6 digits for BLIK Level 0 transactions.', $e->getMessage());
+        } finally {
+            $this->assertTrue($errorFound);
+        }
+    }
+
+    public function testBlikLevelZeroPaymentCodeTooLong()
+    {
+        $paymentMethod = $this->createBlikLevelZeroPaymentMethod();
+        $paymentMethod->paymentCode = '9990001';
+        $errorFound = false;
+
+        try {
+            $paymentMethod->charge(10.01)
+                ->withCurrency('PLN')
+                ->withCustomerIpAddress('106.215.180.111')
+                ->withCustomerUserAgent('PostmanRuntime/7.51.1')
+                ->execute();
+        } catch (BuilderException $e) {
+            $errorFound = true;
+            $this->assertEquals('paymentMethod->paymentCode must be exactly 6 digits for BLIK Level 0 transactions.', $e->getMessage());
+        } finally {
+            $this->assertTrue($errorFound);
         }
     }
 }

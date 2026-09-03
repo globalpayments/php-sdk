@@ -17,6 +17,8 @@ use GlobalPayments\Api\Entities\Enums\{
     AddressType,
     AlternativePaymentType,
     BankPaymentType,
+    CashpressoPaymentPlan,
+    CashpressoShippingMethod,
     CaptureMode,
     CardType,
     Channel,
@@ -303,6 +305,35 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                             $requestData['order']['reference'] = $order->reference;
                         }
 
+                        if (!empty($order->shippingMethod)) {
+                            $requestData['order']['shipping_method'] = $order->shippingMethod;
+                        }
+
+                        if (!empty($order->shippingDate)) {
+                            $requestData['order']['shipping_date'] = $order->shippingDate;
+                        }
+
+                        if (!empty($order->items)) {
+                            $requestData['order']['items'] = $order->items;
+
+                            $taxTotalAmount = 0;
+                            foreach ($order->items as $item) {
+                                if (
+                                    is_array($item)
+                                    && array_key_exists('tax_amount', $item)
+                                    && $item['tax_amount'] !== null
+                                    && trim((string) $item['tax_amount']) !== ''
+                                ) {
+                                    $taxTotalAmount += StringUtils::toNumeric(
+                                        $item['tax_amount'],
+                                        $order->currency ?? $builder->currency
+                                    );
+                                }
+                            }
+
+                            $requestData['order']['tax_amount'] = (string) $taxTotalAmount;
+                        }
+
                         // Add surcharge array if available
                         if (!empty($order->surcharge) && is_array($order->surcharge)) {
                             $surchargeArray = [];
@@ -390,6 +421,10 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                                         ? StringUtils::boolToYesNo($apm->addressOverride) 
                                         : 'NO',
                                 ];
+                                if (!empty($apm->configurations)) {
+                                    $requestData['order']['payment_method_configuration']['apm']['configurations'] =
+                                        $apm->configurations;
+                                }
                             }
                             // Storage mode
                             if (!empty($paymentMethodConfig->storageMode)) {
@@ -401,9 +436,10 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                             }
                         }
                         
-                        // Shipping address 
-                        if ($builder->hostedPaymentData->payer && $builder->hostedPaymentData->payer->shippingAddress) {
-                            $shippingAddr = $builder->hostedPaymentData->payer->shippingAddress;
+                        // Shipping address (HPPBuilder stores this on order; keep payer fallback for compatibility)
+                        $shippingAddr = $builder->hostedPaymentData->order?->shippingAddress
+                            ?? ($builder->hostedPaymentData->payer?->shippingAddress ?? null);
+                        if ($shippingAddr) {
                             $requestData['order']['shipping_address'] = [
                                 'line_1' => $shippingAddr->streetAddress1 ?? "",
                                 'line_2' => $shippingAddr->streetAddress2 ?? "",
@@ -419,9 +455,10 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                             }
                         }
                         
-                        // Shipping phone 
-                        if ($builder->hostedPaymentData->payer && $builder->hostedPaymentData->payer->shippingPhone) {
-                            $shippingPhone = $builder->hostedPaymentData->payer->shippingPhone;
+                        // Shipping phone (HPPBuilder stores this on order; keep payer fallback for compatibility)
+                        $shippingPhone = $builder->hostedPaymentData->order?->shippingPhone
+                            ?? ($builder->hostedPaymentData->payer?->shippingPhone ?? null);
+                        if ($shippingPhone) {
                             $requestData['order']['shipping_phone'] = [
                                 'country_code' => $shippingPhone->countryCode ?? null,
                                 'subscriber_number' => $shippingPhone->number ?? null
@@ -683,6 +720,12 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             $builder->paymentMethod instanceof BNPL ||
             !empty($builder->supplementaryData)
         ) {
+            if (
+                $builder->paymentMethod instanceof AlternativePaymentMethod &&
+                $builder->paymentMethod->alternativePaymentMethodType === AlternativePaymentType::CASHPRESSO
+            ) {
+                $this->validateCashpressoTransactionRequirements($builder, $config);
+            }
             $this->setOrderInformation($builder, $requestBody);
         }
         if ($builder->paymentMethod instanceof AlternativePaymentMethod ||
@@ -819,6 +862,20 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $payer['reference'] = !empty($builder->customerData) ? $builder->customerData->key : null;
         switch (get_class($builder->paymentMethod)) {
             case AlternativePaymentMethod::class:
+                if ($builder->paymentMethod->alternativePaymentMethodType === AlternativePaymentType::CASHPRESSO) {
+                    $payer['email'] = !empty($builder->customerData) ? $builder->customerData->email : null;
+                    if (!empty($builder->billingAddress)) {
+                        $payer['billing_address'] = [
+                            'line_1' => $builder->billingAddress->streetAddress1,
+                            'line_2' => $builder->billingAddress->streetAddress2,
+                            'line_3' => $builder->billingAddress->streetAddress3,
+                            'city' => $builder->billingAddress->city,
+                            'postal_code' => $builder->billingAddress->postalCode,
+                            'state' => $builder->billingAddress->state,
+                            'country' => $builder->billingAddress->countryCode
+                        ];
+                    }
+                }
                 $payer['home_phone'] = [
                     'country_code' => !empty($builder->homePhone) ?
                         StringUtils::validateToNumber($builder->homePhone->countryCode) : null,
@@ -831,6 +888,16 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     'subscriber_number' => !empty($builder->workPhone) ?
                         StringUtils::validateToNumber($builder->workPhone->number) : null,
                 ];
+                if (
+                    $builder->paymentMethod->alternativePaymentMethodType === AlternativePaymentType::BLIK
+                    && strcasecmp((string) $builder->paymentMethod->mode, 'LEVEL_ZERO') === 0
+                ) {
+                    $payer['first_name'] = !empty($builder->customerData) ? $builder->customerData->firstName : null;
+                    $payer['last_name'] = !empty($builder->customerData) ? $builder->customerData->lastName : null;
+                    $payer['email'] = !empty($builder->customerData) ? $builder->customerData->email : null;
+                    $payer['ip_address'] = $builder->customerIpAddress;
+                    $payer['user_agent'] = $builder->customerUserAgent ?? $builder->paymentMethod->userAgent;
+                }
                 break;
             case ECheck::class:
                 $payer['billing_address'] = [
@@ -1039,6 +1106,29 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                     'address_override_mode' => !empty($paymentMethodContainer->addressOverrideMode) ?
                         $paymentMethodContainer->addressOverrideMode : null
                 ];
+                if ($paymentMethodContainer->alternativePaymentMethodType === AlternativePaymentType::BLIK) {
+                    $paymentMethod->apm['provider'] = 'BLIK';
+                    if (!empty($paymentMethodContainer->mode)) {
+                        $paymentMethod->apm['mode'] = strtoupper((string) $paymentMethodContainer->mode);
+                    }
+                    if (!empty($paymentMethodContainer->paymentCodeInitiator)) {
+                        $paymentMethod->apm['payment_code_initiator'] =
+                            strtoupper((string) $paymentMethodContainer->paymentCodeInitiator);
+                    }
+                    if (!empty($paymentMethodContainer->paymentCode)) {
+                        $paymentMethod->apm['payment_code'] = $paymentMethodContainer->paymentCode;
+                        $this->maskedValues = ProtectSensitiveData::hideValue(
+                            'payment_method.apm.payment_code',
+                            $paymentMethodContainer->paymentCode
+                        );
+                    }
+                }
+                if (
+                    $paymentMethodContainer->alternativePaymentMethodType === AlternativePaymentType::CASHPRESSO &&
+                    !empty($paymentMethodContainer->paymentPlan)
+                ) {
+                    $paymentMethod->apm['payment_plan'] = $paymentMethodContainer->paymentPlan;
+                }
                 if (!empty($paymentMethodContainer->category)) {
                     $paymentMethod->apm['category'] = $paymentMethodContainer->category;
                 } elseif ($paymentMethodContainer->alternativePaymentMethodType === AlternativePaymentType::ERATY) {
@@ -1343,8 +1433,16 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
 
         switch (get_class($builder->paymentMethod)) {
             case AlternativePaymentMethod::class:
+                if ($builder->paymentMethod->alternativePaymentMethodType === AlternativePaymentType::CASHPRESSO) {
+                    $order['shipping_method'] = $builder->cashpressoShippingMethod;
+                    $order['shipping_date'] = $builder->shippingDate;
+                }
                 if (!empty($builder->productData)) {
-                    $this->setItemDetailsListForApm($builder, $order);
+                    if ($builder->paymentMethod->alternativePaymentMethodType === AlternativePaymentType::CASHPRESSO) {
+                        $this->setCashpressoItemDetailsListForApm($builder, $order);
+                    } else {
+                        $this->setItemDetailsListForApm($builder, $order);
+                    }
                 }
                 break;
             case BNPL::class:
@@ -1465,6 +1563,109 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $order['amount'] = $orderAmount;
         $order['currency'] = $orderCurrency;
         $order['items'] = $items ?? null;
+    }
+
+    private function setCashpressoItemDetailsListForApm(AuthorizationBuilder $builder, array &$order): void
+    {
+        $taxTotalAmount = 0;
+        $items = [];
+
+        foreach ($builder->productData as $product) {
+            if ($product instanceof Product) {
+                $quantity = (int) ($product->quantity ?? 0);
+                $unitAmount = StringUtils::toNumeric($product->unitPrice ?? 0, $builder->currency);
+                $taxAmount = StringUtils::toNumeric($product->taxAmount ?? 0, $builder->currency);
+                $description = $product->description ?? null;
+                $reference = $product->productId ?? null;
+                $label = $product->productName ?? $description;
+            } elseif (is_array($product)) {
+                $quantity = (int) ($product['quantity'] ?? 0);
+                $unitAmount = StringUtils::toNumeric($product['unit_amount'] ?? 0, $builder->currency);
+                $taxAmount = StringUtils::toNumeric($product['tax_amount'] ?? 0, $builder->currency);
+                $description = $product['description'] ?? null;
+                $reference = $product['reference'] ?? null;
+                $label = $product['label'] ?? $description;
+            } else {
+                continue;
+            }
+
+            $taxTotalAmount += $taxAmount;
+
+            $items[] = [
+                'description' => $description,
+                'reference' => $reference,
+                'label' => $label,
+                'quantity' => (string) $quantity,
+                'unit_amount' => (string) $unitAmount,
+                'tax_amount' => (string) $taxAmount,
+            ];
+        }
+
+        if (!empty($items)) {
+            $order['items'] = $items;
+            $order['tax_amount'] = (string) $taxTotalAmount;
+        }
+    }
+
+    private function validateCashpressoTransactionRequirements(
+        AuthorizationBuilder $builder,
+        ?GpApiConfig $config = null
+    ): void {
+        $paymentMethod = $builder->paymentMethod;
+
+        if (!$paymentMethod instanceof AlternativePaymentMethod) {
+            return;
+        }
+
+        if (empty($paymentMethod->paymentPlan)) {
+            throw new ArgumentException('payment_method.apm.payment_plan is required for CASHPRESSO.');
+        }
+
+        $country = strtoupper((string) (
+            $config?->country
+            ?? $paymentMethod->country
+            ?? $builder->billingAddress?->countryCode
+            ?? $builder->shippingAddress?->countryCode
+            ?? ''
+        ));
+        if (!in_array($country, ['DE', 'AT'], true)) {
+            throw new ArgumentException('country must be DE or AT for CASHPRESSO.');
+        }
+
+        CashpressoPaymentPlan::validate($paymentMethod->paymentPlan);
+
+        if (
+            $paymentMethod->paymentPlan === CashpressoPaymentPlan::PAY_IN_3_INSTALLMENTS &&
+            StringUtils::toNumeric($builder->amount, $builder->currency) < 15000
+        ) {
+            throw new ArgumentException('PAY_IN_3_INSTALLMENTS requires amount >= 15000 in minor units.');
+        }
+
+        if (empty($builder->cashpressoShippingMethod)) {
+            throw new ArgumentException('order.shipping_method is required for CASHPRESSO.');
+        }
+
+        CashpressoShippingMethod::validate($builder->cashpressoShippingMethod);
+
+        if (empty($builder->shippingDate)) {
+            throw new ArgumentException('order.shipping_date is required for CASHPRESSO.');
+        }
+
+        $shippingDate = \DateTime::createFromFormat('Y-m-d', (string) $builder->shippingDate);
+        if (!$shippingDate || $shippingDate->format('Y-m-d') !== $builder->shippingDate) {
+            throw new ArgumentException('order.shipping_date must use format YYYY-MM-DD for CASHPRESSO.');
+        }
+
+        $shippingDate->setTime(0, 0, 0);
+
+        $today = new \DateTime('today');
+        if ($shippingDate <= $today) {
+            throw new ArgumentException('order.shipping_date must be later than today for CASHPRESSO.');
+        }
+
+        if (!empty($builder->productData) && count($builder->productData) > 10) {
+            throw new ArgumentException('order.items supports a maximum of 10 entries for CASHPRESSO.');
+        }
     }
 
     public function mapFraudManagement()

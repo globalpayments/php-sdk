@@ -19,9 +19,12 @@ use GlobalPayments\Api\Entities\{Address,
     DecisionManager,
     Transaction};
 use GlobalPayments\Api\Entities\BillPay\Bill;
-use GlobalPayments\Api\Entities\Enums\{AddressType,
+use GlobalPayments\Api\Entities\Enums\{
+    AddressType,
     AliasAction,
+    AlternativePaymentType,
     BNPLShippingMethod,
+    CashpressoShippingMethod,
     CreditDebitIndicator,
     EmvFallbackCondition,
     EmvLastChipRead,
@@ -33,9 +36,18 @@ use GlobalPayments\Api\Entities\Enums\{AddressType,
     RemittanceReferenceType,
     RecurringSequence,
     RecurringType,
+    StoredCredentialInitiator,
     TransactionModifier,
-    TransactionType};
-use GlobalPayments\Api\PaymentMethods\{BankPayment, BNPL, EBTCardData, GiftCard, TransactionReference};
+    TransactionType
+};
+use GlobalPayments\Api\PaymentMethods\{
+    AlternativePaymentMethod,
+    BankPayment,
+    BNPL,
+    EBTCardData,
+    GiftCard,
+    TransactionReference
+};
 use GlobalPayments\Api\PaymentMethods\Interfaces\IPaymentMethod;
 use GlobalPayments\Api\Entities\Exceptions\{ArgumentException,BuilderException};
 
@@ -158,6 +170,14 @@ class AuthorizationBuilder extends TransactionBuilder
      * @var string|float
      */
     public string|float|null $customerIpAddress = null;
+
+    /**
+     * Request customer user agent
+     *
+     * @internal
+     * @var ?string
+     */
+    public ?string $customerUserAgent = null;
 
     /**
      * Request customer Data
@@ -547,6 +567,9 @@ class AuthorizationBuilder extends TransactionBuilder
     /** @var string|null */
     public ?string $bnplShippingMethod = null;
 
+    /** @var string|null */
+    public ?string $cashpressoShippingMethod = null;
+
     /** @var boolean */
     public ?bool $maskedDataResponse = null;
 
@@ -702,6 +725,77 @@ class AuthorizationBuilder extends TransactionBuilder
             ->check('statusUpdateUrl')->isNotNullInSubProperty('paymentMethod')
             ->check('country')->isNotNullInSubProperty('paymentMethod')
             ->check('accountHolderName')->isNotNullInSubProperty('paymentMethod');
+    }
+
+    protected function validate(): array
+    {
+        parent::validate();
+
+        if (
+            $this->transactionModifier !== TransactionModifier::ALTERNATIVE_PAYMENT_METHOD
+            || !($this->paymentMethod instanceof AlternativePaymentMethod)
+            || $this->paymentMethod->alternativePaymentMethodType !== AlternativePaymentType::BLIK
+        ) {
+            return [];
+        }
+
+        if (
+            null !== $this->paymentMethod->mode
+            && strcasecmp((string) $this->paymentMethod->mode, 'LEVEL_ZERO') !== 0
+        ) {
+            throw new BuilderException(
+                'Invalid BLIK mode. Supported value is LEVEL_ZERO.'
+            );
+        }
+
+        $hasLevelZeroInputs =
+            null !== $this->paymentMethod->mode
+            || null !== $this->paymentMethod->paymentCodeInitiator
+            || null !== $this->paymentMethod->paymentCode;
+
+        if (!$hasLevelZeroInputs) {
+            return [];
+        }
+
+        if (strcasecmp((string) $this->paymentMethod->mode, 'LEVEL_ZERO') !== 0) {
+            throw new BuilderException(
+                'paymentMethod->mode cannot be null for BLIK Level 0 transactions.'
+            );
+        }
+        if (null === $this->paymentMethod->paymentCodeInitiator) {
+            throw new BuilderException(
+                'paymentMethod->paymentCodeInitiator cannot be null for BLIK Level 0 transactions.'
+            );
+        }
+        if (strcasecmp((string) $this->paymentMethod->paymentCodeInitiator, StoredCredentialInitiator::PAYER) !== 0) {
+            throw new BuilderException(
+                'Invalid BLIK payment code initiator. Supported value is ' . StoredCredentialInitiator::PAYER . '.'
+            );
+        }
+        if (null === $this->paymentMethod->paymentCode) {
+            throw new BuilderException(
+                'paymentMethod->paymentCode cannot be null for BLIK Level 0 transactions.'
+            );
+        }
+        if (!preg_match('/^\d{6}$/', (string) $this->paymentMethod->paymentCode)) {
+            throw new BuilderException(
+                'paymentMethod->paymentCode must be exactly 6 digits for BLIK Level 0 transactions.'
+            );
+        }
+        if (null === $this->customerIpAddress) {
+            throw new BuilderException(
+                'customerIpAddress cannot be null for BLIK Level 0 transactions.'
+            );
+        }
+
+        $customerUserAgent = $this->customerUserAgent ?? $this->paymentMethod->userAgent;
+        if (null === $customerUserAgent) {
+            throw new BuilderException(
+                'customerUserAgent cannot be null for BLIK Level 0 transactions.'
+            );
+        }
+
+        return [];
     }
 
     /**
@@ -943,6 +1037,19 @@ class AuthorizationBuilder extends TransactionBuilder
     public function withCustomerIpAddress(string|float $customerIpAddress): self
     {
         $this->customerIpAddress = $customerIpAddress;
+        return $this;
+    }
+
+    /**
+     * Set the request customer user agent
+     *
+     * @param string $customerUserAgent Request customer user agent
+     *
+     * @return AuthorizationBuilder
+     */
+    public function withCustomerUserAgent(string $customerUserAgent): self
+    {
+        $this->customerUserAgent = $customerUserAgent;
         return $this;
     }
 
@@ -1691,6 +1798,27 @@ class AuthorizationBuilder extends TransactionBuilder
         }
 
         $this->bnplShippingMethod = BNPLShippingMethod::validate($bnpShippingMethod);
+        return $this;
+    }
+
+    /**
+     * Set Cashpresso shipping method.
+     *
+     * @param string $shippingMethod
+     *
+    * @return self
+     * @throws ArgumentException
+     */
+    public function withCashpressoShippingMethod(string $shippingMethod): self
+    {
+        if (
+            !$this->paymentMethod instanceof \GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod ||
+            $this->paymentMethod->alternativePaymentMethodType !== AlternativePaymentType::CASHPRESSO
+        ) {
+            throw new ArgumentException("The selected payment method doesn't support this property!");
+        }
+
+        $this->cashpressoShippingMethod = CashpressoShippingMethod::validate($shippingMethod);
         return $this;
     }
 

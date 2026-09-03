@@ -12,6 +12,8 @@ use GlobalPayments\Api\Entities\{
     HPPData
 };
 use GlobalPayments\Api\Entities\Enums\{
+    CashpressoPaymentPlan,
+    CashpressoShippingMethod,
     CaptureMode,
     ChallengeRequestIndicator,
     Channel,
@@ -252,6 +254,100 @@ class HPPBuilderTest extends TestCase
         $this->assertSame($this->builder, $result);
     }
 
+    public function testWithCashpressoPaymentPlans()
+    {
+        $result = $this->builder->withCashpressoPaymentPlans([
+            CashpressoPaymentPlan::PAY_30_DAYS,
+            CashpressoPaymentPlan::PAY_IN_3_INSTALLMENTS,
+        ]);
+
+        $this->assertSame($this->builder, $result);
+
+        $apmConfig = $this->getBuilderProperty('apmConfig');
+        $this->assertEquals('CASHPRESSO', $apmConfig->configurations[0]['provider']);
+        $this->assertEquals([
+            CashpressoPaymentPlan::PAY_30_DAYS,
+            CashpressoPaymentPlan::PAY_IN_3_INSTALLMENTS,
+        ], $apmConfig->configurations[0]['payment_plans']);
+    }
+
+    public function testWithCashpressoPaymentPlansEmptyThrowsException()
+    {
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessage('At least one Cashpresso payment plan is required');
+
+        $this->builder->withCashpressoPaymentPlans([]);
+    }
+
+    public function testWithOrderShippingMethod()
+    {
+        $result = $this->builder->withOrderShippingMethod(CashpressoShippingMethod::DELIVERY);
+
+        $this->assertSame($this->builder, $result);
+        $order = $this->getBuilderProperty('order');
+        $this->assertEquals(CashpressoShippingMethod::DELIVERY, $order->shippingMethod);
+    }
+
+    public function testWithOrderShippingMethodInvalidThrowsException()
+    {
+        $this->expectException(ArgumentException::class);
+        $this->builder->withOrderShippingMethod('INVALID');
+    }
+
+    public function testWithOrderShippingDate()
+    {
+        $shippingDate = '2030-01-20';
+        $result = $this->builder->withOrderShippingDate($shippingDate);
+
+        $this->assertSame($this->builder, $result);
+        $order = $this->getBuilderProperty('order');
+        $this->assertEquals($shippingDate, $order->shippingDate);
+    }
+
+    public function testWithOrderShippingDateInvalidThrowsException()
+    {
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessage('Shipping date must be in YYYY-MM-DD format');
+        $this->builder->withOrderShippingDate('20-01-2030');
+    }
+
+    public function testWithOrderItems()
+    {
+        $items = [
+            [
+                'label' => 'Iphone 16',
+                'product_code' => 'IPH65434',
+                'quantity' => '1',
+                'unit_amount' => '65000',
+                'tax_amount' => '0',
+            ],
+        ];
+
+        $result = $this->builder->withOrderItems($items);
+
+        $this->assertSame($this->builder, $result);
+        $order = $this->getBuilderProperty('order');
+        $this->assertEquals($items, $order->items);
+    }
+
+    public function testWithOrderItemsMoreThanTenThrowsException()
+    {
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessage('Items can contain at most 10 entries');
+
+        $items = [];
+        for ($i = 0; $i < 11; $i++) {
+            $items[] = [
+                'label' => 'Item ' . $i,
+                'quantity' => '1',
+                'unit_amount' => '100',
+                'tax_amount' => '0',
+            ];
+        }
+
+        $this->builder->withOrderItems($items);
+    }
+
     /*
     public function testWithApmInvalidParameterThrowsException()
     {
@@ -487,6 +583,17 @@ class HPPBuilderTest extends TestCase
         $requestBody = $gpApiRequest->requestBody;
 
         return $requestBody['order']['transaction_configuration']['currency_conversion_mode'] ?? 'NOT SET';
+    }
+
+    private function getBuilderProperty(string $property)
+    {
+        $reflection = new \ReflectionClass($this->builder);
+        $prop = $reflection->getProperty($property);
+        if (PHP_VERSION_ID < 80100) {
+            $prop->setAccessible(true);
+        }
+
+        return $prop->getValue($this->builder);
     }
 
     // Test Build Method

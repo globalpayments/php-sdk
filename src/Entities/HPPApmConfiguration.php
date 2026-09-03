@@ -6,6 +6,8 @@
 
 namespace GlobalPayments\Api\Entities;
 
+use GlobalPayments\Api\Entities\Enums\CashpressoPaymentPlan;
+
 /**
  * Configuration class for AMP's in hosted payment pages
  * These properties are PayPal specific. From the Documentation:
@@ -25,6 +27,13 @@ class HPPApmConfiguration
      * @var bool|null
      */
     public ?bool $addressOverride = false;
+
+    /**
+     * APM provider configurations, for example Cashpresso payment plans.
+     *
+     * @var array<int, array<string, mixed>>|null
+     */
+    public ?array $configurations = null;
     
     /**
      * Validate APM configuration
@@ -43,6 +52,41 @@ class HPPApmConfiguration
         if (!is_null($this->addressOverride) && !is_bool($this->addressOverride)) {
             $errors[] = 'addressOverride must be a boolean value';
         }
+
+        if ($this->configurations !== null) {
+            if (!is_array($this->configurations)) {
+                $errors[] = 'configurations must be an array';
+            } else {
+                foreach ($this->configurations as $index => $configuration) {
+                    if (!is_array($configuration)) {
+                        $errors[] = "configurations[{$index}] must be an object-like array";
+                        continue;
+                    }
+
+                    $provider = strtoupper((string) ($configuration['provider'] ?? ''));
+                    if ($provider === '') {
+                        $errors[] = "configurations[{$index}].provider is required";
+                        continue;
+                    }
+
+                    if ($provider === 'CASHPRESSO') {
+                        $plans = $configuration['payment_plans'] ?? null;
+                        if (!is_array($plans) || empty($plans)) {
+                            $errors[] = "configurations[{$index}].payment_plans must contain at least one value for CASHPRESSO";
+                            continue;
+                        }
+
+                        foreach ($plans as $plan) {
+                            try {
+                                CashpressoPaymentPlan::validate((string) $plan);
+                            } catch (\Exception $e) {
+                                $errors[] = "Invalid CASHPRESSO payment plan '{$plan}'";
+                            }
+                        }
+                    }
+                }
+            }
+        }
         
         return $errors;
     }
@@ -55,7 +99,8 @@ class HPPApmConfiguration
     {
         return [
             'shippingAddressEnabled' => $this->shippingAddressEnabled,
-            'addressOverride' => $this->addressOverride
+            'addressOverride' => $this->addressOverride,
+            'configurations' => $this->configurations
         ];
     }
 }

@@ -1263,6 +1263,7 @@ class GpApiMapping
         $apm->versionReference = $paymentMethodApm->version_reference ?? null;
         $apm->buildReference = $paymentMethodApm->build_reference ?? null;
         $apm->category = $paymentMethodApm->category ?? null;
+        $apm->paymentPlan = $paymentMethodApm->payment_plan ?? null;
         if (!empty($paymentMethodApm->terms)) {
             $terms = new Terms();
             $terms->id = $paymentMethodApm->terms->id ?? null;

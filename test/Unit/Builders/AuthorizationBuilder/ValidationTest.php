@@ -7,16 +7,22 @@ Use GlobalPayments\Api\ServiceConfigs\Gateways\PorticoConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\TestCards;
 use GlobalPayments\Api\Entities\Address;
+use GlobalPayments\Api\Entities\Enums\AlternativePaymentType;
 use GlobalPayments\Api\Entities\Enums\AccountType;
+use GlobalPayments\Api\Entities\Enums\CashpressoShippingMethod;
 use GlobalPayments\Api\Entities\Enums\CheckType;
 use GlobalPayments\Api\Entities\Enums\EntryMethod;
 use GlobalPayments\Api\Entities\Enums\SecCode;
+use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
+use GlobalPayments\Api\PaymentMethods\AlternativePaymentMethod;
 use GlobalPayments\Api\PaymentMethods\ECheck;
 use PHPUnit\Framework\TestCase;
 
 class ValidationTest extends TestCase
 {
     protected $card;
+    protected $eCheck;
+    protected $address;
     private $enableCryptoUrl = true;
 
     public function setUp(): void
@@ -140,6 +146,27 @@ class ValidationTest extends TestCase
             ->withCurrency('USD')
             ->withAddress($this->address)
             ->execute();
+    }
+
+    public function testWithCashpressoShippingMethodThrowsForUnsupportedPaymentMethod()
+    {
+        $this->expectException(ArgumentException::class);
+        $this->expectExceptionMessage("The selected payment method doesn't support this property!");
+
+        $this->card->charge(14)
+            ->withCashpressoShippingMethod(CashpressoShippingMethod::DELIVERY);
+    }
+
+    public function testWithCashpressoShippingMethodSucceedsForCashpresso()
+    {
+        $apm = new AlternativePaymentMethod(AlternativePaymentType::CASHPRESSO);
+
+        $builder = $apm->charge(14)
+            ->withCurrency('EUR');
+
+        $result = $builder->withCashpressoShippingMethod(CashpressoShippingMethod::DELIVERY);
+
+        $this->assertSame($builder, $result);
     }
 
     protected function getConfig()

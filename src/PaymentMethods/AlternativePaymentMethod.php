@@ -101,6 +101,34 @@ class AlternativePaymentMethod implements
     public mixed $bank = null;
 
     /**
+     * APM mode. For BLIK Level 0 use LEVEL_ZERO.
+     *
+     * @var ?string
+     */
+    public ?string $mode = null;
+
+    /**
+     * Identifies who provides the BLIK payment code.
+     *
+     * @var ?string
+     */
+    public ?string $paymentCodeInitiator = null;
+
+    /**
+     * 6-digit BLIK code for Level 0 flows.
+     *
+     * @var ?string
+     */
+    public ?string $paymentCode = null;
+
+    /**
+     * Browser/device user agent for APM payer context.
+     *
+     * @var ?string
+     */
+    public ?string $userAgent = null;
+
+    /**
      * The APM category. For eRaty this should be BNPL.
      *
      * @var string
@@ -113,6 +141,13 @@ class AlternativePaymentMethod implements
      * @var Terms
      */
     public ?Terms $terms = null;
+
+    /**
+     * Cashpresso payment plan.
+     *
+     * @var string|null
+     */
+    public ?string $paymentPlan = null;
     
     public function __construct($alternativePaymentMethodType)
     {

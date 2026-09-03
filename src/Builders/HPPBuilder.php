@@ -19,6 +19,8 @@ use GlobalPayments\Api\Entities\{
     InstallmentsTerms
 };
 use GlobalPayments\Api\Entities\Enums\{
+    CashpressoPaymentPlan,
+    CashpressoShippingMethod,
     PayByLinkType,
     CaptureMode,
     ChallengeRequestIndicator,
@@ -463,6 +465,78 @@ class HPPBuilder extends AuthorizationBuilder
     {
         $this->apmConfig->shippingAddressEnabled = $shippingAddressEnabled;
         $this->apmConfig->addressOverride = $addressOverride;
+        return $this;
+    }
+
+    /**
+     * Configure Cashpresso payment plans for HPP APM configuration.
+     *
+     * @param array $paymentPlans
+     * @return static
+     */
+    public function withCashpressoPaymentPlans(array $paymentPlans): static
+    {
+        if (empty($paymentPlans)) {
+            throw new ArgumentException('At least one Cashpresso payment plan is required');
+        }
+
+        $validatedPlans = [];
+        foreach ($paymentPlans as $plan) {
+            $validatedPlans[] = CashpressoPaymentPlan::validate((string) $plan);
+        }
+
+        $this->apmConfig->configurations = [
+            [
+                'provider' => 'CASHPRESSO',
+                'payment_plans' => $validatedPlans,
+            ],
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Set the order shipping method for Cashpresso flows.
+     *
+     * @param string $shippingMethod
+     * @return static
+     */
+    public function withOrderShippingMethod(string $shippingMethod): static
+    {
+        $this->order->shippingMethod = CashpressoShippingMethod::validate($shippingMethod);
+        return $this;
+    }
+
+    /**
+     * Set the order shipping date for Cashpresso flows.
+     *
+     * @param string $shippingDate YYYY-MM-DD
+     * @return static
+     */
+    public function withOrderShippingDate(string $shippingDate): static
+    {
+        $date = \DateTime::createFromFormat('Y-m-d', $shippingDate);
+        if (!$date || $date->format('Y-m-d') !== $shippingDate) {
+            throw new ArgumentException('Shipping date must be in YYYY-MM-DD format');
+        }
+
+        $this->order->shippingDate = $shippingDate;
+        return $this;
+    }
+
+    /**
+     * Set order items for HPP order payload.
+     *
+     * @param array $items
+     * @return static
+     */
+    public function withOrderItems(array $items): static
+    {
+        if (count($items) > 10) {
+            throw new ArgumentException('Items can contain at most 10 entries');
+        }
+
+        $this->order->items = $items;
         return $this;
     }
    

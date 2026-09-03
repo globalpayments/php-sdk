@@ -33,4 +33,9 @@ class HPPAllowedPaymentMethods extends Enum
      * eRaty payment method
      */
     const ERATY = 'ERATY';
+
+    /**
+     * Cashpresso payment method
+     */
+    const CASHPRESSO = 'CASHPRESSO';
 }

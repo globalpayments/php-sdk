@@ -72,6 +72,13 @@ class AlternativePaymentResponse
     public ?string $category = null;
 
     /**
+     * APM payment plan, for example Cashpresso selected plan.
+     *
+     * @var string|null
+     */
+    public ?string $paymentPlan = null;
+
+    /**
      * Installment terms returned by provider.
      *
      * @var Terms|null

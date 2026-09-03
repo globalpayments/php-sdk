@@ -145,6 +145,7 @@ class AlternativePaymentType extends Enum
     const PAYBYBANKAPP = 'paybybankapp';
     const ALIPAY = 'alipay';
     const BLIK = 'blik';
+    const CASHPRESSO = 'cashpresso';
     // eRaty BNPL installment method.
     const ERATY = 'eraty';
     const OB = 'ob';
