@@ -32,6 +32,8 @@ class UserReportBuilder extends ReportBuilder
 
     public mixed $transactionModifier = TransactionModifier::NONE;
 
+    public ?string $merchantId = null;
+
     public function __construct($reportType)
     {
         parent::__construct($reportType);
@@ -55,6 +57,13 @@ class UserReportBuilder extends ReportBuilder
     public function withAccountId($accountId)
     {
         $this->searchBuilder->accountId = $accountId;
+
+        return $this;
+    }
+
+    public function withMerchantId(?string $merchantId): static
+    {
+        $this->merchantId = $merchantId;
 
         return $this;
     }

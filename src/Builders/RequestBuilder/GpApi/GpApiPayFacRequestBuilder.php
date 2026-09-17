@@ -94,7 +94,15 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
                         $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $builder->userReference->userId;
                     }
                     $endpoint .= GpApiRequest::ACCOUNTS_ENDPOINT . '/' . $builder->accountNumber;
-                    $requestData['payer'] = [
+                    $requestData = array_filter([
+                        'status_change_reason' => $this->builder->statusChangeReason,
+                        'card_replacement_reason' => $this->builder->cardReplacementReason,
+                        'processing_limits' => $this->builder->processingLimits,
+                        'capabilities' => $this->builder->capabilities,
+                        'notifications' => null !== $this->builder->notificationStatusUrl
+                            ? ['status_url' => $this->builder->notificationStatusUrl]
+                            : null,
+                        'payer' => [
                         'payment_method' =>  [
                             'name' => $this->builder->creditCardInformation instanceof CreditCardData ?
                                 $this->builder->creditCardInformation->cardHolderName : null,
@@ -104,7 +112,8 @@ class GpApiPayFacRequestBuilder implements IRequestBuilder
                         'billing_address' =>
                             !empty($this->builder->addresses) && $this->builder->addresses->offsetExists(AddressType::BILLING) ?
                             $this->mapAddress($this->builder->addresses->get(AddressType::BILLING), 'alpha2') : null
-                    ];
+                        ]
+                    ], fn($v) => null !== $v);
                 }
                 break;
             case TransactionType::ADD_FUNDS:

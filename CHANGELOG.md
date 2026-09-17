@@ -2,7 +2,11 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version: v14.6.0 (09/03/26)
+## Latest Version: v14.6.1 (09/17/26)
+### Enhancements:
+- [GPAPI] Synced GP-API account reporting and edit flows with API spec by adding all missing request parameters and mapping all missing response fields for GET /accounts, GET /accounts/{id}, PATCH /accounts/{id}, and GET /merchants/{MER_id}/accounts/{FMA_id}
+
+## v14.6.0 (09/03/26)
 ### New Features:
 - [GPAPI] Added Cashpresso APM support for direct transactions and HPP, including payment plans, shipping method and shipping date, order item mapping, and request validation
 - [GPAPI] Added BLIK Level 0 support for direct transactions, including mode and payment code request mapping and required payer IP address and user agent validation

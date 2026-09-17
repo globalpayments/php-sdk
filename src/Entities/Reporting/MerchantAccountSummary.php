@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Entities\Reporting;
 
+use GlobalPayments\Api\Entities\Action;
 use GlobalPayments\Api\Entities\AddressCollection;
 use GlobalPayments\Api\Entities\Enums\MerchantAccountStatus;
 use GlobalPayments\Api\Entities\Enums\Channel;
@@ -48,4 +49,28 @@ class MerchantAccountSummary extends BaseSummary
 
     /** @var AddressCollection */
     public $addresses;
+
+    /** @var ?\DateTime */
+    public $timeCreated;
+
+    /** @var ?\DateTime */
+    public $timeLastUpdated;
+
+    /** @var ?string */
+    public $emailId;
+
+    /** @var ?string */
+    public $cardReplacementReason;
+
+    /** @var ?string */
+    public $statusDescription;
+
+    /** @var ?array */
+    public $capabilities;
+
+    /** @var ?object */
+    public $paymentProcessingStatistics;
+
+    /** @var ?Action */
+    public $action;
 }

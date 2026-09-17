@@ -105,8 +105,8 @@ class GpApiApmTest extends TestCase
     private function configureEratyService(): void
     {
         $config = $this->setUpConfig();
-        $config->appId = 'hkjrcsGDhWiDt8GEhoDMKy3pzFz5R0Bo'; // gitleaks:allow
-        $config->appKey = 'cQOKHoAAvNIcEN8s'; // gitleaks:allow
+        $config->appId = '';
+        $config->appKey = '';
         $config->country = 'PL';
         $config->accessTokenInfo->transactionProcessingAccountName = 'GPECOM_APM_Transaction_Processing';
         $config->requestLogger = new RequestConsoleLogger();
@@ -116,8 +116,8 @@ class GpApiApmTest extends TestCase
     private function configureCashpressoService(string $country = 'DE'): GpApiConfig
     {
         $config = $this->setUpConfig();
-        $config->appId = 'hlZAokTftDazLlWDPe8E6VAz5g9rSDPg'; // gitleaks:allow
-        $config->appKey = 'ThDO2fISzzWCgkCZ'; // gitleaks:allow
+        $config->appId = '';
+        $config->appKey = '';
         $config->dataResidency = DataResidency::EU;
         $config->serviceUrl = 'https://apis-qa.globalpay.com/ucp';
         $config->country = $country;
@@ -144,8 +144,8 @@ class GpApiApmTest extends TestCase
     private function configureBlikLevelZeroService(): void
     {
         $config = $this->setUpConfig();
-        $config->appId = 'hlZAokTftDazLlWDPe8E6VAz5g9rSDPg'; // gitleaks:allow
-        $config->appKey = 'ThDO2fISzzWCgkCZ'; // gitleaks:allow
+        $config->appId = '';
+        $config->appKey = '';
         $config->environment = GpApiConfig::QA_ENVIRONMENT;
         $config->dataResidency = DataResidency::EU;
         $config->serviceUrl = 'https://apis-qa.globalpay.com/ucp';
@@ -1110,8 +1110,8 @@ class GpApiApmTest extends TestCase
     public function testERatyRedirectUrl()
     {
         $config = $this->setUpConfig();
-        $config->appId = 'hkjrcsGDhWiDt8GEhoDMKy3pzFz5R0Bo'; #gitleaks:allow
-        $config->appKey = 'cQOKHoAAvNIcEN8s'; #gitleaks:allow
+        $config->appId = ''; #gitleaks:allow
+        $config->appKey = ''; #gitleaks:allow
         $config->country = 'PL';
         $config->accessTokenInfo->transactionProcessingAccountName = 'GPECOM_APM_Transaction_Processing';
         $config->requestLogger = new RequestConsoleLogger();

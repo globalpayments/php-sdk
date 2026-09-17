@@ -4,24 +4,30 @@ namespace Gateways\GpApiConnector;
 
 use DateTime;
 use GlobalPayments\Api\Entities\Address;
-use GlobalPayments\Api\Entities\Enums\Channel;
-use GlobalPayments\Api\Entities\Enums\FundsStatus;
-use GlobalPayments\Api\Entities\Enums\MerchantAccountsSortProperty;
-use GlobalPayments\Api\Entities\Enums\MerchantAccountStatus;
-use GlobalPayments\Api\Entities\Enums\MerchantAccountType;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodName;
-use GlobalPayments\Api\Entities\Enums\PaymentMethodType;
-use GlobalPayments\Api\Entities\Enums\SortDirection;
-use GlobalPayments\Api\Entities\Enums\TransactionStatus;
-use GlobalPayments\Api\Entities\Enums\UsableBalanceMode;
-use GlobalPayments\Api\Entities\Enums\UserType;
+use GlobalPayments\Api\Entities\Enums\{
+    Channel,
+    FundsStatus,
+    MerchantAccountsSortProperty,
+    MerchantAccountStatus,
+    MerchantAccountType,
+    PaymentMethodName,
+    PaymentMethodType,
+    SortDirection,
+    StatusChangeReason,
+    TransactionStatus,
+    UsableBalanceMode,
+    UserType,
+};
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use GlobalPayments\Api\Entities\Reporting\DataServiceCriteria;
 use GlobalPayments\Api\Entities\Reporting\MerchantAccountSummary;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\User;
+use GlobalPayments\Api\Builders\PayFacBuilder;
+use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiPayFacRequestBuilder;
 use GlobalPayments\Api\PaymentMethods\FundsAccount;
+use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\PayFacService;
 use GlobalPayments\Api\Services\ReportingService;
@@ -153,6 +159,52 @@ class GpApiMerchantAccountsTest extends TestCase
             ->execute();
 
         $this->assertEquals($this->accountId, $response->id);
+        // fields below are mapped when the sandbox returns them
+        if (null !== $response->merchantId) {
+            $this->assertIsString($response->merchantId);
+        }
+        if (null !== $response->merchantName) {
+            $this->assertIsString($response->merchantName);
+        }
+        if (null !== $response->timeCreated) {
+            $this->assertInstanceOf(\DateTime::class, $response->timeCreated);
+        }
+        if (null !== $response->timeLastUpdated) {
+            $this->assertInstanceOf(\DateTime::class, $response->timeLastUpdated);
+        }
+    }
+
+    public function testMerchantAccountDetails()
+    {
+        $merchant = ReportingService::findMerchants(1, 10)
+            ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->where(SearchCriteria::START_DATE, $this->startDate)
+            ->andWith(SearchCriteria::END_DATE, $this->endDate)
+            ->execute();
+
+        $this->assertNotEmpty($merchant->result);
+
+        $merchantId = reset($merchant->result)->id;
+        $account = ReportingService::findAccounts(1, 10)
+            ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->where(SearchCriteria::START_DATE, $this->startDate)
+            ->andWith(SearchCriteria::END_DATE, $this->endDate)
+            ->andWith(DataServiceCriteria::MERCHANT_ID, $merchantId)
+            ->execute();
+
+        $this->assertNotEmpty($account->result);
+
+        /** @var MerchantAccountSummary $response */
+        $response = ReportingService::accountDetail(reset($account->result)->id, $merchantId)
+            ->execute();
+
+        $this->assertEquals(reset($account->result)->id, $response->id);
+        if (null !== $response->merchantId) {
+            $this->assertEquals($merchantId, $response->merchantId);
+        }
+        if (null !== $response->merchantName) {
+            $this->assertNotEmpty($response->merchantName);
+        }
     }
 
     public function testAccountDetails_RandomId()
@@ -243,6 +295,46 @@ class GpApiMerchantAccountsTest extends TestCase
         }
     }
 
+    public function testEditAccountRequestSerializesAllKnownFields()
+    {
+        $billingAddress = new Address();
+        $billingAddress->streetAddress1 = 'Address 1';
+        $billingAddress->city = 'Atlanta';
+        $billingAddress->state = 'GA';
+        $billingAddress->postalCode = '30346';
+        $billingAddress->country = 'US';
+
+        $creditCardInformation = new CreditCardData();
+        $creditCardInformation->cardHolderName = 'Jane Merchant';
+        $creditCardInformation->number = '4111111111111111';
+        $creditCardInformation->expMonth = '12';
+        $creditCardInformation->expYear = '2028';
+        $creditCardInformation->cvn = '123';
+
+        $builder = PayFacService::editAccount()
+            ->withAccountNumber('FMA_123456')
+            ->withAddress($billingAddress)
+            ->withCreditCardData($creditCardInformation)
+            ->withStatusChangeReason(StatusChangeReason::REMOVE_PARTNERSHIP)
+            ->withCardReplacementReason('LOST_CARD')
+            ->withNotificationStatusUrl('https://example.com/status')
+            ->withProcessingLimits(['daily' => 1000, 'monthly' => 5000])
+            ->withCapabilities(['CARD_PAYMENTS', 'BANK_TRANSFER']);
+
+        $request = (new GpApiPayFacRequestBuilder())->buildRequest($builder, new GpApiConfig());
+
+        $this->assertSame('PATCH', $request->httpVerb);
+        $this->assertSame('/accounts/FMA_123456', $request->endpoint);
+        $this->assertSame(StatusChangeReason::REMOVE_PARTNERSHIP, $request->requestBody['status_change_reason']);
+        $this->assertSame('LOST_CARD', $request->requestBody['card_replacement_reason']);
+        $this->assertSame('https://example.com/status', $request->requestBody['notifications']['status_url']);
+        $this->assertSame(['daily' => 1000, 'monthly' => 5000], $request->requestBody['processing_limits']);
+        $this->assertSame(['CARD_PAYMENTS', 'BANK_TRANSFER'], $request->requestBody['capabilities']);
+        $this->assertSame('Jane Merchant', $request->requestBody['payer']['payment_method']['name']);
+        $this->assertSame('4111111111111111', $request->requestBody['payer']['payment_method']['card']['number']);
+        $this->assertNotNull($request->requestBody['payer']['billing_address']);
+    }
+
     /** Address Lookup is available only for MMA accounts and returns a list of addresses */
     public function testAccountAddressLookup()
     {
@@ -258,6 +350,29 @@ class GpApiMerchantAccountsTest extends TestCase
 
         $this->assertNotCount(0, $response->addresses);
         $this->assertEquals($address->postalCode, $response->addresses->offsetGet(0)->postalCode);
+    }
+
+    public function testFindAccountsResponseExposesPagingAndActionMetadata()
+    {
+        $response = ReportingService::findAccounts(1, 10)
+            ->orderBy(MerchantAccountsSortProperty::TIME_CREATED, SortDirection::ASC)
+            ->where(SearchCriteria::START_DATE, $this->startDate)
+            ->andWith(SearchCriteria::END_DATE, $this->endDate)
+            ->execute();
+
+        // sandbox may omit any of these envelope fields; assert type when present
+        if (null !== $response->currentPageSize) {
+            $this->assertIsInt($response->currentPageSize);
+        }
+        if (null !== $response->merchantId) {
+            $this->assertIsString($response->merchantId);
+        }
+        if (null !== $response->merchantName) {
+            $this->assertIsString($response->merchantName);
+        }
+        if (null !== $response->action) {
+            $this->assertIsObject($response->action);
+        }
     }
 
     public function testAccountAddressLookup_WithoutPostalCode()

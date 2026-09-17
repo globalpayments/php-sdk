@@ -67,8 +67,8 @@ class ApmTest extends TestCase
     {
         $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
         $config->country = 'PL';
-        $config->appId = 'ZbFY1jAz6sqq0GAyIPZe1raLCC7cUlpD';
-        $config->appKey = '4NpIQJDCIDzfTKhA';
+        $config->appId = '';
+        $config->appKey = '';
         $config->serviceUrl = 'https://apis.globalpay.com/ucp';
 
         $accessTokenInfo = new AccessTokenInfo();

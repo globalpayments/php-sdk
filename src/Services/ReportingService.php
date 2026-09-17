@@ -161,10 +161,16 @@ class ReportingService
             ->withPaging($page, $pageSize);
     }
 
-    public static function accountDetail(string $accountId)
+    public static function accountDetail(string $accountId, ?string $merchantId = null)
     {
-        return (new UserReportBuilder(ReportType::FIND_ACCOUNT_DETAIL))
+        $builder = (new UserReportBuilder(ReportType::FIND_ACCOUNT_DETAIL))
             ->withAccountId($accountId);
+
+        if (null !== $merchantId && '' !== $merchantId) {
+            $builder->withMerchantId($merchantId);
+        }
+
+        return $builder;
     }
 
     /**

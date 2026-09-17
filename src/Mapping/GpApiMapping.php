@@ -1181,14 +1181,16 @@ class GpApiMapping
         $pageInfo = new PagedResult();
         $pageInfo->totalRecordCount = $response->total_count ?? $response->total_record_count ?? null;
         $pageInfo->currentPageSize = $response->current_page_size ?? null;
-        $pageInfo->merchantId = $response->merchant_id ?? null;
-        $pageInfo->merchantName = $response->merchant_name ?? null;
-        $pageInfo->filter = $response->filter ?? null;
-        $pageInfo->action = self::mapActionMetadata($response->action ?? null);
         $pageInfo->pageSize = $response->paging?->page_size ?? null;
         $pageInfo->page = $response->paging?->page ?? null;
         $pageInfo->order = $response->paging?->order ?? null;
         $pageInfo->orderBy = $response->paging?->order_by ?? null;
+        $pageInfo->merchantId = $response->merchant_id ?? null;
+        $pageInfo->merchantName = $response->merchant_name ?? null;
+        $pageInfo->accountId = $response->account_id ?? null;
+        $pageInfo->accountName = $response->account_name ?? null;
+        $pageInfo->filter = $response->filter ?? null;
+        $pageInfo->action = self::mapActionMetadata($response->action ?? null);
 
         return $pageInfo;
     }
@@ -1489,12 +1491,22 @@ class GpApiMapping
         $merchantAccountSummary->type = $account->type ?? null;
         $merchantAccountSummary->name = $account->name ?? null;
         $merchantAccountSummary->status = $account->status ?? null;
+        $merchantAccountSummary->merchantId = $account->merchant_id ?? null;
+        $merchantAccountSummary->merchantName = $account->merchant_name ?? null;
+        $merchantAccountSummary->timeCreated = !empty($account->time_created) ? new DateTime($account->time_created) : null;
+        $merchantAccountSummary->timeLastUpdated = !empty($account->time_last_updated) ? new DateTime($account->time_last_updated) : null;
+        $merchantAccountSummary->emailId = $account->email_id ?? null;
+        $merchantAccountSummary->cardReplacementReason = $account->card_replacement_reason ?? null;
         $merchantAccountSummary->permissions = $account->permissions ?? null;
         $merchantAccountSummary->countries = $account->countries ?? null;
         $merchantAccountSummary->channels = $account->channels ?? null;
         $merchantAccountSummary->currencies = $account->currencies ?? null;
         $merchantAccountSummary->paymentMethods = $account->payment_methods ?? null;
         $merchantAccountSummary->configurations = $account->configurations ?? null;
+        $merchantAccountSummary->statusDescription = $account->status_description ?? null;
+        $merchantAccountSummary->capabilities = $account->capabilities ?? null;
+        $merchantAccountSummary->paymentProcessingStatistics = $account->payment_processing_statistics ?? null;
+        $merchantAccountSummary->action = self::mapActionMetadata($account->action ?? null);
         if (!empty($account->addresses)) {
             $addresses = new AddressCollection();
             foreach ($account->addresses as $key => $address) {

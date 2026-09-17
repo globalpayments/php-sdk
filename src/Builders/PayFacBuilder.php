@@ -111,6 +111,11 @@ class PayFacBuilder extends BaseBuilder
      */
     public mixed $statusChangeReason = null;
 
+    public ?string $cardReplacementReason = null;
+    public ?string $notificationStatusUrl = null;
+    public ?array $processingLimits = null;
+    public ?array $capabilities = null;
+
     /** @var User */
     public mixed $userReference = null;
 
@@ -633,6 +638,30 @@ class PayFacBuilder extends BaseBuilder
     public function withStatusChangeReason($statusChangeReason)
     {
         $this->statusChangeReason = $statusChangeReason;
+        return $this;
+    }
+
+    public function withCardReplacementReason(?string $cardReplacementReason): static
+    {
+        $this->cardReplacementReason = $cardReplacementReason;
+        return $this;
+    }
+
+    public function withNotificationStatusUrl(?string $notificationStatusUrl): static
+    {
+        $this->notificationStatusUrl = $notificationStatusUrl;
+        return $this;
+    }
+
+    public function withProcessingLimits(?array $processingLimits): static
+    {
+        $this->processingLimits = $processingLimits;
+        return $this;
+    }
+
+    public function withCapabilities(?array $capabilities): static
+    {
+        $this->capabilities = $capabilities;
         return $this;
     }
 

@@ -143,6 +143,36 @@ $accessTokenInfo->secondsToExpire;   // TTL in seconds
 $accessTokenInfo->intervalToExpire;  // TTL interval enum
 ```
 
+### GP-API Account Sync
+
+The GP-API account reporting and edit flows now surface the full account list/detail envelope, including merchant context, paging metadata, and action metadata.
+
+Supported account flows covered by this story:
+
+- `GET /accounts`
+- `GET /accounts/{id}`
+- `PATCH /accounts/{id}`
+- `GET /merchants/{MER_id}/accounts/{FMA_id}`
+
+Newly surfaced request and response fields include:
+
+- `card_replacement_reason`
+- `notifications.status_url`
+- `processing_limits`
+- `capabilities`
+- `status_change_reason`
+- `merchant_id`
+- `merchant_name`
+- `time_created`
+- `time_last_updated`
+- `email_id`
+- `action`
+
+Implementation and coverage references:
+
+- [test/Integration/Gateways/GpApiConnector/GpApiMerchantAccountsTest.php](test/Integration/Gateways/GpApiConnector/GpApiMerchantAccountsTest.php)
+- [gpapi-accounts-sync-report.html](gpapi-accounts-sync-report.html)
+
 ### Test Card Data
 
 Name        | Number           | Exp Month | Exp Year | CVN

@@ -292,7 +292,10 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $queryParams['id'] = $builder->searchBuilder->resourceId ?? null;
                 break;
             case ReportType::FIND_ACCOUNT_DETAIL:
-                $endpoint = GpApiRequest::ACCOUNTS_ENDPOINT. '/'. $builder->searchBuilder->accountId;
+                $endpoint = GpApiRequest::ACCOUNTS_ENDPOINT . '/' . $builder->searchBuilder->accountId;
+                if (!empty($builder->merchantId)) {
+                    $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $builder->merchantId . $endpoint;
+                }
                 if (!empty($builder->searchBuilder->address)) {
                     $endpoint .= '/addresses';
                     $queryParams = [
