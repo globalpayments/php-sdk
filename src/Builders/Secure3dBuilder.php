@@ -628,6 +628,7 @@ class Secure3dBuilder extends SecureBuilder
                             return $this->execute($configName, Secure3dVersion::ONE);
                         }
                         break;
+                    case TransactionType::FETCH:
                     case TransactionType::INITIATE_AUTHENTICATION:
                     case TransactionType::VERIFY_SIGNATURE: {
                         $rvalue->merge($response->threeDSecure);
@@ -657,6 +658,9 @@ class Secure3dBuilder extends SecureBuilder
 
         $this->validations->of(TransactionType::VERIFY_SIGNATURE)
             ->when('version')->isEqualTo(Secure3dVersion::TWO)
+            ->check('serverTransactionId')->isNotNull();
+
+        $this->validations->of(TransactionType::FETCH)
             ->check('serverTransactionId')->isNotNull();
 
         $this->validations->of(TransactionType::INITIATE_AUTHENTICATION)

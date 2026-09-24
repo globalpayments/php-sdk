@@ -85,6 +85,7 @@ abstract class SecureBuilder extends BaseBuilder
     /** @var string */
     private ?string $customerAccountId = null;
     public ?string $customerEmail = null;
+    public ?string $customerDateOfBirth = null;
 
     /** @var AgeIndicator */
     private mixed $accountAgeIndicator = null;
@@ -339,6 +340,12 @@ abstract class SecureBuilder extends BaseBuilder
     public function getCustomerEmail()
     {
         return $this->customerEmail;
+    }
+
+    /** @return string|null */
+    public function getCustomerDateOfBirth(): ?string
+    {
+        return $this->customerDateOfBirth;
     }
 
     /** @return AgeIndicator */
@@ -1122,6 +1129,16 @@ abstract class SecureBuilder extends BaseBuilder
     public function withCustomerEmail(string $value)
     {
         $this->customerEmail = $value;
+        return $this;
+    }
+
+    /**
+     * @param string $value
+     * @return $this
+     */
+    public function withCustomerDateOfBirth(string $value)
+    {
+        $this->customerDateOfBirth = $value;
         return $this;
     }
 }

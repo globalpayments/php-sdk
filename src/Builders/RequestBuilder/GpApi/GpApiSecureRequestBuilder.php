@@ -47,6 +47,7 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
 
         $this->builder = $builder;
         $requestData = null;
+        $queryParams = null;
         switch ($builder->transactionType)
         {
             case TransactionType::VERIFY_ENROLLED:
@@ -54,18 +55,24 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
                 $endpoint = GpApiRequest::AUTHENTICATIONS_ENDPOINT;
                 $requestData = $this->verifyEnrolled($builder, $config);
                 break;
+            case TransactionType::FETCH:
+                $verb = 'GET';
+                $endpoint = GpApiRequest::AUTHENTICATIONS_ENDPOINT . "/{$builder->getServerTransactionId()}";
+                break;
             case TransactionType::INITIATE_AUTHENTICATION:
                 $verb = 'POST';
                 $endpoint = GpApiRequest::AUTHENTICATIONS_ENDPOINT . "/{$builder->getServerTransactionId()}/initiate";
                 $requestData = $this->initiateAuthenticationData($builder, $config);
                 break;
             case  TransactionType::VERIFY_SIGNATURE:
-                $verb = 'POST';
+                $verb = 'GET';
                 $endpoint = GpApiRequest::AUTHENTICATIONS_ENDPOINT . "/{$builder->getServerTransactionId()}/result";
+                $queryParams = [];
+
+                // Frictionless and list-based GPAPI result lookups do not require a challenge result value.
+                // When ACS challenge data exists, send it explicitly as a query param on the same endpoint.
                 if (!empty($builder->getPayerAuthenticationResponse())) {
-                    $requestData['three_ds'] = [
-                        'challenge_result_value' => $builder->getPayerAuthenticationResponse()
-                    ];
+                    $queryParams['three_ds.challenge_result_value'] = $builder->getPayerAuthenticationResponse();
                 }
                 break;
             case TransactionType::RISK_ASSESS:
@@ -100,7 +107,8 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
         return new GpApiRequest(
             $endpoint,
             $verb,
-            $requestData
+            $requestData,
+            $queryParams
         );
     }
 
@@ -130,8 +138,15 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
         ];
 
         $requestData['notifications'] = [
-            'three_ds_method_return_url' => $config->methodNotificationUrl
+            'three_ds_method_return_url' => $config->methodNotificationUrl,
+            'return_url' => $config->challengeNotificationUrl,
+            'challenge_return_url' => $config->challengeNotificationUrl,
+            'decoupled_challenge_return_url' => $builder->decoupledNotificationUrl ?? null,
+            'status_url' => $config->statusUrl ?? null
         ];
+        if (!empty($builder->decoupledNotificationUrl)) {
+            $requestData['decoupled_notification_url'] = $builder->decoupledNotificationUrl;
+        }
         if (!empty($builder->storedCredential)) {
             $this->setStoreCredentialParam($builder->storedCredential, $requestData);
         }
@@ -216,13 +231,6 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
         // Payer Login Data
         $requestData['payer_login_data'] = $this->setPayerLoginDataParam();
 
-        // Decoupled Flow (if applicable)
-        if (isset($builder->decoupledFlowRequest)) {
-            $requestData['decoupled_flow_request'] = $builder->decoupledFlowRequest === true ? DecoupledFlowRequest::DECOUPLED_PREFERRED :
-                DecoupledFlowRequest::DO_NOT_USE_DECOUPLED;
-        }
-        $requestData['decoupled_flow_timeout'] = $builder->decoupledFlowTimeout ?? null;
-
         // Whitelist Status (if available)
         if (!empty($builder->whitelistStatus)) {
             $requestData['whitelist_status'] = $builder->whitelistStatus;
@@ -252,9 +260,11 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
 
         // Notifications
         $requestData['notifications'] = [
+            'return_url' => $config->challengeNotificationUrl,
             'challenge_return_url' => $config->challengeNotificationUrl,
-            'three_ds_method_url' => null,
-            'decoupled_notification_url' => $builder->decoupledNotificationUrl ?? null
+            'three_ds_method_return_url' => $config->methodNotificationUrl,
+            'status_url' => $config->statusUrl ?? null,
+            'decoupled_challenge_return_url' => $builder->decoupledNotificationUrl ?? null
         ];
 
         // Clean out null and empty values before returning
@@ -369,7 +379,16 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
     {
         $dateFormat = ($this->builder->transactionType === TransactionType::RISK_ASSESS ? 'Y-m-d\TH:i:s': 'Y-m-d');
 
+        $payerName = null;
+        if (
+            !empty($this->builder->paymentMethod) &&
+            isset($this->builder->paymentMethod->cardHolderName)
+        ) {
+            $payerName = $this->builder->paymentMethod->cardHolderName;
+        }
+
         return[
+            'name' => $payerName,
             'reference' => $this->builder->getCustomerAccountId(),
             'account_age' => (string) $this->builder->getAccountAgeIndicator(),
             'account_creation_date' => !empty($this->builder->getAccountCreateDate()) ?
@@ -427,7 +446,8 @@ class GpApiSecureRequestBuilder implements IRequestBuilder
             'shipping_address_time_created_reference' => !empty($this->builder->getShippingAddressCreateDate()) ?
                 (new \DateTime($this->builder->getShippingAddressCreateDate()))->format($dateFormat) : null,
             'shipping_address_creation_indicator' => (string) $this->builder->getShippingAddressUsageIndicator(),
-            'email' => $this->builder->getCustomerEmail()
+            'email' => $this->builder->getCustomerEmail(),
+            'date_of_birth' => $this->builder->getCustomerDateOfBirth()
         ];
     }
 

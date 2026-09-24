@@ -325,4 +325,19 @@ class MerchantwareTest extends TestCase
         $this->assertNotNull($voidResponse);
         $this->assertEquals('00', $voidResponse->responseCode);
     }
+
+    public function testReverse()
+    {
+        $response = $this->card->charge(10)
+            ->withCurrency('USD')
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertEquals('00', $response->responseCode);
+
+        $reverseResponse = $response->reverse(10)->execute();
+
+        $this->assertNotNull($reverseResponse);
+        $this->assertEquals('00', $reverseResponse->responseCode);
+    }
 }

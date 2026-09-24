@@ -34,6 +34,20 @@ class DisputeSummary extends BaseSummary
     /** This field indicates the distinct step a dispute is at, within the dispute lifecycle. */
     public ?string $caseStage = null;
 
+    public ?string $accountId = null;
+    public ?string $accountName = null;
+    public ?string $acquirerCode = null;
+    public ?string $systemTid = null;
+    public ?string $systemDba = null;
+    public ?float $merchantAmount = null;
+    public ?string $merchantCurrency = null;
+    public ?float $netFinancialAmount = null;
+    public ?string $netFinancialCurrency = null;
+    public ?string $netFinancialFunding = null;
+
+    /** Time the current Dispute status was created. */
+    public ?\DateTime $statusTimeCreated = null;
+
     /** Time the current Dispute stage was created.  */
     public ?\DateTime $disputeStageTime = null;
     /**
@@ -131,6 +145,7 @@ class DisputeSummary extends BaseSummary
     public $documents;
 
     public ?string $transactionBrandReference = null;
+    public ?string $transactionOrderReference = null;
     public ?string $fundingType = null;
     public ?string $orderId = null;
     public ?string $responseCode = null;

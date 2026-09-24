@@ -7,6 +7,8 @@ use GlobalPayments\Api\Entities\Reporting\BaseSummary;
 
 class PagedResult extends BaseSummary
 {
+    public $accountId;
+    public $accountName;
     public $totalRecordCount;
     public $currentPageSize;
     public $page;

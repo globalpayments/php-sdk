@@ -7,6 +7,18 @@ use GlobalPayments\Api\PaymentMethods\Interfaces\ISecureCheck;
 
 class ThreeDSecure implements ISecureCheck
 {
+    /** @var string */
+    public $actionCreateId;
+
+    /** @var Action|null */
+    public $action;
+
+    /** @var string */
+    public $accountId;
+
+    /** @var string */
+    public $accountName;
+
     /**
      * @var string
      */
@@ -34,6 +46,9 @@ class ThreeDSecure implements ISecureCheck
     /** @var string */
     public $acsUiTemplate;
 
+    /** @var string */
+    public $channel;
+
     /**
      * The algorithm used
      *
@@ -50,6 +65,12 @@ class ThreeDSecure implements ISecureCheck
      * @var string
      */
     public $authenticationType;
+
+    /** @var string */
+    public $context;
+
+    /** @var string */
+    public $country;
 
     /**
      * @var string
@@ -132,6 +153,9 @@ class ThreeDSecure implements ISecureCheck
      */
     public $decoupledResponseIndicator;
 
+    /** @var string */
+    public $decoupledChallengeReturnUrl;
+
     /**
      * @var string
      */
@@ -153,6 +177,9 @@ class ThreeDSecure implements ISecureCheck
      * @var int
      */
     public $eci;
+
+    /** @var string */
+    public $id;
 
     /**
      * The authentication 3DSecure status
@@ -188,6 +215,12 @@ class ThreeDSecure implements ISecureCheck
      * @var string
      */
     public $issuerAcsUrl;
+
+    /** @var string */
+    public $merchantId;
+
+    /** @var string */
+    public $merchantName;
 
     /**
      * A KVP collection of merchant supplied data
@@ -246,6 +279,12 @@ class ThreeDSecure implements ISecureCheck
      */
     public $messageType;
 
+    /** @var string */
+    public $redirectUrl;
+
+    /** @var string */
+    public $reference;
+
     /**
      * The order ID used for the initial transaction
      *
@@ -293,6 +332,9 @@ class ThreeDSecure implements ISecureCheck
      */
     public $paymentDataType;
 
+    /** @var object|string|null */
+    public $paymentMethod;
+
     /**
      * @var string
      */
@@ -317,6 +359,24 @@ class ThreeDSecure implements ISecureCheck
      * @var string
      */
     public $status;
+
+    /** @var string */
+    public $statusUrl;
+
+    /** @var string */
+    public $threeDSMethodReturnUrl;
+
+    /** @var string */
+    public $timeCreated;
+
+    /** @var string */
+    public $timeLastUpdated;
+
+    /** @var string */
+    public $transactionType;
+
+    /** @var object|null */
+    public $system;
 
     /**
      * @var string
@@ -394,7 +454,11 @@ class ThreeDSecure implements ISecureCheck
     public function merge(ThreeDSecure $secureEcom)
     {
         if (!empty($secureEcom)) {
+            $this->actionCreateId = $this->mergeValue($this->actionCreateId, $secureEcom->actionCreateId);
             $this->acsTransactionId = $this->mergeValue($this->acsTransactionId, $secureEcom->acsTransactionId);
+            $this->action = $this->mergeValue($this->action, $secureEcom->action);
+            $this->accountId = $this->mergeValue($this->accountId, $secureEcom->accountId);
+            $this->accountName = $this->mergeValue($this->accountName, $secureEcom->accountName);
             $this->acsEndVersion = $this->mergeValue($this->acsEndVersion, $secureEcom->acsEndVersion);
             $this->acsStartVersion = $this->mergeValue($this->acsStartVersion, $secureEcom->acsStartVersion);
             $this->acsInterface = $this->mergeValue($this->acsInterface, $secureEcom->acsInterface);
@@ -403,30 +467,46 @@ class ThreeDSecure implements ISecureCheck
             $this->amount = $this->mergeValue($this->amount, $secureEcom->amount);
             $this->authenticationSource = $this->mergeValue($this->authenticationSource, $secureEcom->authenticationSource);
             $this->authenticationType = $this->mergeValue($this->authenticationType, $secureEcom->authenticationType);
+            $this->channel = $this->mergeValue($this->channel, $secureEcom->channel);
             $this->authenticationValue = $this->mergeValue($this->authenticationValue, $secureEcom->authenticationValue);
             $this->cardHolderResponseInfo = $this->mergeValue($this->cardHolderResponseInfo, $secureEcom->cardHolderResponseInfo);
             $this->cavv = $this->mergeValue($this->cavv, $secureEcom->cavv);
             $this->challengeMandated = $this->mergeValue($this->challengeMandated, $secureEcom->challengeMandated);
             $this->messageExtension = $this->mergeValue($this->messageExtension, $secureEcom->messageExtension);
+            $this->context = $this->mergeValue($this->context, $secureEcom->context);
+            $this->country = $this->mergeValue($this->country, $secureEcom->country);
             $this->currency = $this->mergeValue($this->currency, $secureEcom->currency);
+            $this->decoupledChallengeReturnUrl = $this->mergeValue($this->decoupledChallengeReturnUrl, $secureEcom->decoupledChallengeReturnUrl);
             $this->decoupledResponseIndicator = $this->mergeValue($this->decoupledResponseIndicator, $secureEcom->decoupledResponseIndicator);
             $this->directoryServerTransactionId = $this->mergeValue($this->directoryServerTransactionId, $secureEcom->directoryServerTransactionId);
             $this->directoryServerEndVersion = $this->mergeValue($this->directoryServerEndVersion, $secureEcom->directoryServerEndVersion);
             $this->directoryServerStartVersion = $this->mergeValue($this->directoryServerStartVersion, $secureEcom->directoryServerStartVersion);
             $this->eci = $this->mergeValue($this->eci, $secureEcom->eci);
             $this->enrolled = $this->mergeValue($this->enrolled, $secureEcom->enrolled);
+            $this->id = $this->mergeValue($this->id, $secureEcom->id);
             $this->issuerAcsUrl = $this->mergeValue($this->issuerAcsUrl, $secureEcom->issuerAcsUrl);
             $this->messageCategory = $this->mergeValue($this->messageCategory, $secureEcom->messageCategory);
             $this->messageVersion = $this->mergeValue($this->messageVersion, $secureEcom->messageVersion);
+            $this->merchantId = $this->mergeValue($this->merchantId, $secureEcom->merchantId);
+            $this->merchantName = $this->mergeValue($this->merchantName, $secureEcom->merchantName);
             $this->orderId = $this->mergeValue($this->orderId, $secureEcom->orderId);
             $this->payerAuthenticationRequest = $this->mergeValue($this->payerAuthenticationRequest, $secureEcom->payerAuthenticationRequest);
             $this->paymentDataSource = $this->mergeValue($this->paymentDataSource, $secureEcom->paymentDataSource);
             $this->paymentDataType = $this->mergeValue($this->paymentDataType, $secureEcom->paymentDataType);
+            $this->paymentMethod = $this->mergeValue($this->paymentMethod, $secureEcom->paymentMethod);
+            $this->redirectUrl = $this->mergeValue($this->redirectUrl, $secureEcom->redirectUrl);
+            $this->reference = $this->mergeValue($this->reference, $secureEcom->reference);
             $this->sdkInterface = $this->mergeValue($this->sdkInterface, $secureEcom->sdkInterface);
             $this->sdkUiType = $this->mergeValue($this->sdkUiType, $secureEcom->sdkUiType);
             $this->serverTransactionId = $this->mergeValue($this->serverTransactionId, $secureEcom->serverTransactionId);
             $this->status = $this->mergeValue($this->status, $secureEcom->status);
             $this->statusReason = $this->mergeValue($this->statusReason, $secureEcom->statusReason);
+            $this->statusUrl = $this->mergeValue($this->statusUrl, $secureEcom->statusUrl);
+            $this->threeDSMethodReturnUrl = $this->mergeValue($this->threeDSMethodReturnUrl, $secureEcom->threeDSMethodReturnUrl);
+            $this->timeCreated = $this->mergeValue($this->timeCreated, $secureEcom->timeCreated);
+            $this->timeLastUpdated = $this->mergeValue($this->timeLastUpdated, $secureEcom->timeLastUpdated);
+            $this->transactionType = $this->mergeValue($this->transactionType, $secureEcom->transactionType);
+            $this->system = $this->mergeValue($this->system, $secureEcom->system);
             $this->version = $this->mergeValue($this->version, $secureEcom->version);
             $this->whitelistStatus = $this->mergeValue($this->whitelistStatus, $secureEcom->whitelistStatus);
             $this->xid = $this->mergeValue($this->xid, $secureEcom->xid);

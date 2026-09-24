@@ -117,6 +117,43 @@ $config->restrictedToken = true;
 $accessTokenInfo = GpApiService::generateTransactionKey($config);
 ```
 
+### GP-API 3DS Authentication Flow
+
+The SDK supports the GP-API authentication `/ucp/authentications`.
+
+#### Endpoint Sequence Covered
+
+Flow 1 (create + initiate):
+
+- `POST /ucp/authentications`
+- `POST /ucp/authentications/{id}/initiate`
+
+Flow 2 (list + result + single):
+
+- `GET /ucp/authentications`
+- `GET /ucp/authentications/{id}/result`
+- `GET /ucp/authentications/{id}`
+
+#### Account and Permission Notes
+
+- Use an account with authentication permissions (for example account name `transaction_processing`).
+- Required permissions typically include `AUT_GET_List`, `AUT_GET_Single`, `AUT_POST_Initiate`, and `AUT_POST_Results`.
+- If permissions are missing, sandbox may return authorization errors such as `ACTION_NOT_AUTHORIZED`.
+
+#### Integration Test Coverage
+
+Authentication endpoint coverage is validated in integration tests:
+
+- `test/Integration/Gateways/GpApiConnector/GpApi3DSecureTest.php`
+- `test/Integration/Gateways/GpApiConnector/GpApi3DS2Test.php`
+
+Run focused authentication tests:
+
+```bash
+vendor/bin/phpunit --filter testPostAuthentications_CreateThenInitiate test/Integration/Gateways/GpApiConnector/GpApi3DSecureTest.php
+vendor/bin/phpunit --filter testGetAuthentications_ListThenGetResultThenFetchById test/Integration/Gateways/GpApiConnector/GpApi3DSecureTest.php
+```
+
 #### Available Request Fields
 
 | Field | Type | Description |

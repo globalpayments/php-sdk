@@ -220,6 +220,7 @@ class GeniusConnector extends XmlGateway implements IPaymentGateway
                 return 'UpdateBoardedCard';
             case TransactionType::VERIFY:
                 return 'BoardCard';
+            case TransactionType::REVERSAL:
             case TransactionType::VOID:
                 return 'Void';
             case TransactionType::BALANCE:

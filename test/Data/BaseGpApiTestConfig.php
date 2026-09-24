@@ -8,13 +8,14 @@ use GlobalPayments\Api\Entities\Enums\Environment;
 use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
-use GlobalPayments\Api\Utils\Logging\Logger;
-use GlobalPayments\Api\Utils\Logging\SampleRequestLogger;
+use GlobalPayments\Api\Utils\Logging\RequestConsoleLogger;
 
 class BaseGpApiTestConfig
 {
     const APP_ID = '4gPqnGBkppGYvoE5UX9EWQlotTxGUDbs';
     const APP_KEY = 'FQyJA5VuEQfcji2M';
+    const VISA_APP_ID = "hkjrcsGDhWiDt8GEhoDMKy3pzFz5R0Bo"; #gitleaks:allow
+    const VISA_APP_KEY = "cQOKHoAAvNIcEN8s"; #gitleaks:allow
     const APAC_APP_ID = '16Br1RfjChBrsFnWlu7NGIp9LKm2MWWFyGg3SU3UfEl3voA2';
     const APAC_APP_KEY = 'xV9wnRLmi8qPqvMZoxAH9S0RtoQlodCYuvCboVYUohW6DObtcrYL1uj4YOZilKyu';
     const PARTNER_SOLUTION_APP_ID = 'A1feRdMmEB6m0Y1aQ65H0bDi9ZeAEB2t';
@@ -49,10 +50,11 @@ class BaseGpApiTestConfig
 
         $config->challengeNotificationUrl = "https://ensi808o85za.x.pipedream.net/";
         $config->methodNotificationUrl = "https://ensi808o85za.x.pipedream.net/";
+        $config->statusUrl = "https://ensi808o85za.x.pipedream.net/";
         $config->merchantContactUrl = "https://ensi808o85za.x.pipedream.net/";
 
         if (self::$logEnabled) {
-            $config->requestLogger = new SampleRequestLogger(new Logger('logs'));
+            $config->requestLogger = new RequestConsoleLogger();
         }
 
         if (self::$dynamicHeaderEnabled) {

@@ -3,6 +3,7 @@
 namespace GlobalPayments\Api\Gateways;
 
 use GlobalPayments\Api\Builders\{
+    AuthenticationListBuilder,
     AuthorizationBuilder,
     BaseBuilder,
     FileProcessingBuilder,
@@ -116,6 +117,23 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
             $request->endpoint
         );
         return $response;
+    }
+
+    public function processAuthenticationList(AuthenticationListBuilder $builder): PagedResult
+    {
+        if (empty($this->accessToken)) {
+            $this->signIn();
+        }
+        $request = \GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiAuthenticationRequestBuilder::buildGetAuthenticationsListRequest($builder);
+        $request->endpoint = $this->getMerchantUrl($request) . $request->endpoint;
+        $response = $this->doTransaction(
+            $request->httpVerb,
+            $request->endpoint,
+            null,
+            $request->queryParams
+        );
+
+        return GpApiMapping::mapAuthenticationListResponse($response);
     }
 
 

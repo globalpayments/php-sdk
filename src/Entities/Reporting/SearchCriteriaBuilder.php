@@ -58,6 +58,11 @@ class SearchCriteriaBuilder
     /**
      * @var string
      */
+    public $acquirerCode;
+
+    /**
+     * @var string
+     */
     public $aquirerReferenceNumber;
     
     /**
@@ -311,7 +316,7 @@ class SearchCriteriaBuilder
     /**
      * @var string
      */
-    public $oderId;
+    public $orderId;
 
     /**
      * @var PaymentEntryMode

@@ -2,6 +2,7 @@
 
 namespace GlobalPayments\Api\Services;
 
+use GlobalPayments\Api\Builders\AuthenticationListBuilder;
 use GlobalPayments\Api\Builders\Secure3dBuilder;
 use GlobalPayments\Api\Entities\ThreeDSecure;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
@@ -37,5 +38,19 @@ class Secure3dService
     public static function getAuthenticationData()
     {
         return new Secure3dBuilder(TransactionType::VERIFY_SIGNATURE);
+    }
+
+    /** @return Secure3dBuilder */
+    public static function getAuthentication(string $authenticationId)
+    {
+        return (new Secure3dBuilder(TransactionType::FETCH))
+            ->withServerTransactionId($authenticationId);
+    }
+
+    /** @return AuthenticationListBuilder */
+    public static function findAuthentications(int $page, int $pageSize)
+    {
+        return (new AuthenticationListBuilder())
+            ->withPaging($page, $pageSize);
     }
 }

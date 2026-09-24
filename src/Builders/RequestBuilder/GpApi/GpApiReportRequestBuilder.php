@@ -331,6 +331,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
             'order_by' => $builder->disputeOrderBy,
             'order' => $builder->order,
             'arn' => $builder->searchBuilder->aquirerReferenceNumber,
+            'acquirer_code' => $builder->searchBuilder->acquirerCode,
             'brand' => $builder->searchBuilder->cardBrand,
             'status' => $builder->searchBuilder->disputeStatus,
             'stage' => $builder->searchBuilder->disputeStage,
@@ -344,7 +345,8 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $builder->searchBuilder->endDepositDate->format('Y-m-d') : null,
             'system.mid' => $builder->searchBuilder->merchantId,
             'system.hierarchy' => $builder->searchBuilder->systemHierarchy,
-            'deposit_id' => $builder->searchBuilder->depositReference
+            'deposit_id' => $builder->searchBuilder->depositReference,
+            'order.reference' => $builder->searchBuilder->orderId
         ];
     }
 

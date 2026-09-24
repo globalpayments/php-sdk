@@ -8,6 +8,7 @@ class SearchCriteria extends Enum
 {
     const ACCOUNT_NAME = 'accountName';
     const ACCOUNT_NUMBER_LAST_FOUR = 'accountNumberLastFour';
+    const ACQUIRER_CODE = 'acquirerCode';
     const ALT_PAYMENT_STATUS = 'altPaymentStatus';
     const AQUIRER_REFERENCE_NUMBER = 'aquirerReferenceNumber';
     const AUTH_CODE = 'authCode';
@@ -48,6 +49,7 @@ class SearchCriteria extends Enum
     const PAYMENT_METHOD_NAME = 'paymentMethodName';
     const PAYMENT_METHOD_USAGE_MODE = 'paymentMethodUsageMode';
     const PAYMENT_PROVIDER = 'paymentProvider';
+    const ORDER_ID = 'orderId';
     const REFERENCE_NUMBER = 'referenceNumber';
     const SETTLEMENT_AMOUNT = 'settlementAmount';
     const SCHEDULE_ID = 'scheduleId';

@@ -3,6 +3,10 @@
 namespace Gateways\GpApiConnector;
 
 use PHPUnit\Framework\TestCase;
+use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiReportRequestBuilder;
+use GlobalPayments\Api\Builders\TransactionReportBuilder;
+use GlobalPayments\Api\Entities\Enums\ReportType;
+use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Mapping\GpApiMapping;
 use \GlobalPayments\Api\Utils\StringUtils;
 use stdClass;
@@ -188,7 +192,7 @@ class MappingTest extends TestCase
 
     public function testMapDisputeSummaryTest()
     {
-        $rawJson = "{\"id\":\"DIS_SAND_abcd1234\",\"time_created\":\"2020-11-12T18:50:39.721Z\",\"merchant_id\":\"MER_62251730c5574bbcb268191b5f315de8\",\"merchant_name\":\"TEST MERCHANT\",\"account_id\":\"DIA_882c832d13e04185bb6e213d6303ed98\",\"account_name\":\"testdispute\",\"status\":\"WITH_MERCHANT\",\"status_time_created\":\"2020-11-14T18:50:39.721Z\",\"stage\":\"RETRIEVAL\",\"stage_time_created\":\"2020-11-17T18:50:39.722Z\",\"amount\":\"1000\",\"currency\":\"USD\",\"payer_amount\":\"1000\",\"payer_currency\":\"USD\",\"merchant_amount\":\"1000\",\"merchant_currency\":\"USD\",\"reason_code\":\"104\",\"reason_description\":\"Other Fraud-Card Absent Environment\",\"time_to_respond_by\":\"2020-11-29T18:50:39.722Z\",\"result\":\"PENDING\",\"investigator_comment\":\"WITH_MERCHANT RETRIEVAL PENDING 1000 USD 1000 USD\",\"system\":{\"mid\":\"627384967\",\"hierarchy\":\"111-23-099-001-001\",\"name\":\"ABC INC.\"},\"last_adjustment_amount\":\"\",\"last_adjustment_currency\":\"\",\"last_adjustment_funding\":\"\",\"last_adjustment_time_created\":\"2020-11-20T18:50:39.722Z\",\"net_financial_amount\":\"\",\"net_financial_currency\":\"\",\"net_financial_funding\":\"\",\"payment_method_provider\":[{\"comment\":\"issuer comments 34523\",\"reference\":\"issuer-reference-0001\",\"documents\":[{\"id\":\"DOC_MyEvidence_234234AVCDE-1\"}]}],\"transaction\":{\"time_created\":\"2020-10-05T18:50:39.726Z\",\"type\":\"SALE\",\"amount\":\"1000\",\"currency\":\"USD\",\"reference\":\"my-trans-AAA1\",\"remarks\":\"my-trans-AAA1\",\"payment_method\":{\"card\":{\"number\":\"424242xxxxxx4242\",\"arn\":\"834523482349123\",\"brand\":\"VISA\",\"authcode\":\"234AB\",\"brand_reference\":\"23423421342323A\"}}},\"documents\":[],\"action\":{\"id\":\"ACT_5blBTHnIs4aOCIvGwG7KizYUpsGI0g\",\"type\":\"DISPUTE_SINGLE\",\"time_created\":\"2020-11-24T18:50:39.925Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"JF2GQpeCrOivkBGsTRiqkpkdKp67Gxi0\",\"app_name\":\"test_app\"}}";
+        $rawJson = "{\"id\":\"DIS_SAND_abcd1234\",\"time_created\":\"2020-11-12T18:50:39.721Z\",\"merchant_id\":\"MER_62251730c5574bbcb268191b5f315de8\",\"merchant_name\":\"TEST MERCHANT\",\"account_id\":\"DIA_882c832d13e04185bb6e213d6303ed98\",\"account_name\":\"testdispute\",\"status\":\"WITH_MERCHANT\",\"status_time_created\":\"2020-11-14T18:50:39.721Z\",\"stage\":\"RETRIEVAL\",\"stage_time_created\":\"2020-11-17T18:50:39.722Z\",\"amount\":\"1000\",\"currency\":\"USD\",\"payer_amount\":\"1000\",\"payer_currency\":\"USD\",\"merchant_amount\":\"1000\",\"merchant_currency\":\"USD\",\"reason_code\":\"104\",\"reason_description\":\"Other Fraud-Card Absent Environment\",\"time_to_respond_by\":\"2020-11-29T18:50:39.722Z\",\"result\":\"PENDING\",\"investigator_comment\":\"WITH_MERCHANT RETRIEVAL PENDING 1000 USD 1000 USD\",\"system\":{\"mid\":\"627384967\",\"hierarchy\":\"111-23-099-001-001\",\"name\":\"ABC INC.\"},\"last_adjustment_amount\":\"\",\"last_adjustment_currency\":\"\",\"last_adjustment_funding\":\"\",\"last_adjustment_time_created\":\"2020-11-20T18:50:39.722Z\",\"net_financial_amount\":\"\",\"net_financial_currency\":\"\",\"net_financial_funding\":\"\",\"payment_method_provider\":[{\"comment\":\"issuer comments 34523\",\"reference\":\"issuer-reference-0001\",\"documents\":[{\"id\":\"DOC_MyEvidence_234234AVCDE-1\"}]}],\"transaction\":{\"time_created\":\"2020-10-05T18:50:39.726Z\",\"type\":\"SALE\",\"amount\":\"1000\",\"currency\":\"USD\",\"reference\":\"my-trans-AAA1\",\"remarks\":\"my-trans-AAA1\",\"provider\":{\"payment_method\":{\"card\":{\"number\":\"424242xxxxxx4242\",\"arn\":\"834523482349123\",\"brand\":\"VISA\",\"authcode\":\"234AB\",\"brand_reference\":\"23423421342323A\"}}}},\"documents\":[],\"action\":{\"id\":\"ACT_5blBTHnIs4aOCIvGwG7KizYUpsGI0g\",\"type\":\"DISPUTE_SINGLE\",\"time_created\":\"2020-11-24T18:50:39.925Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"JF2GQpeCrOivkBGsTRiqkpkdKp67Gxi0\",\"app_name\":\"test_app\"}}";
         $doc = json_decode($rawJson);
 
         $disputeSummary = GpApiMapping::mapDisputeSummary($doc);
@@ -196,6 +200,7 @@ class MappingTest extends TestCase
         $this->assertEquals($doc->id, $disputeSummary->caseId);
         $this->assertEquals(new \DateTime($doc->time_created), $disputeSummary->caseIdTime);
         $this->assertEquals($doc->status, $disputeSummary->caseStatus);
+        $this->assertEquals(new \DateTime($doc->status_time_created), $disputeSummary->statusTimeCreated);
         $this->assertEquals($doc->stage, $disputeSummary->caseStage);
         $this->assertEquals(StringUtils::toAmount($doc->amount), $disputeSummary->caseAmount);
         $this->assertEquals($doc->currency, $disputeSummary->caseCurrency);
@@ -212,6 +217,14 @@ class MappingTest extends TestCase
             $this->assertEquals($card->arn, $disputeSummary->transactionARN);
             $this->assertEquals($card->brand, $disputeSummary->transactionCardType);
         }
+        if (!empty($doc->transaction->provider->payment_method->card)) {
+            $card = $doc->transaction->provider->payment_method->card;
+            $this->assertEquals($card->number, $disputeSummary->transactionMaskedCardNumber);
+            $this->assertEquals($card->arn, $disputeSummary->transactionARN);
+            $this->assertEquals($card->brand, $disputeSummary->transactionCardType);
+            $this->assertEquals($card->authcode, $disputeSummary->transactionAuthCode);
+            $this->assertEquals($card->brand_reference, $disputeSummary->transactionBrandReference);
+        }
 
         $this->assertEquals($doc->reason_code, $disputeSummary->reasonCode);
         $this->assertEquals($doc->reason_description, $disputeSummary->reason);
@@ -220,6 +233,66 @@ class MappingTest extends TestCase
         $this->assertEquals(StringUtils::toAmount($doc->last_adjustment_amount), $disputeSummary->lastAdjustmentAmount);
         $this->assertEquals($doc->last_adjustment_currency, $disputeSummary->lastAdjustmentCurrency);
         $this->assertEquals($doc->last_adjustment_funding, $disputeSummary->lastAdjustmentFunding);
+    }
+
+    public function testDisputeSearchRequestIncludesAcquirerCodeAndOrderReferenceFilters()
+    {
+        $builder = new TransactionReportBuilder(ReportType::FIND_DISPUTES_PAGED);
+        $builder->withPaging(1, 10);
+        $builder->where(SearchCriteria::ACQUIRER_CODE, 'ACQ-12345');
+        $builder->where(SearchCriteria::ORDER_ID, 'ORD-98765');
+
+        $config = new stdClass();
+        $config->accessTokenInfo = new stdClass();
+        $config->accessTokenInfo->dataAccountName = 'test-account';
+        $config->accessTokenInfo->dataAccountID = 'account-1';
+
+        $request = (new GpApiReportRequestBuilder())->buildRequest($builder, $config);
+
+        $this->assertSame('ACQ-12345', $request->queryParams['acquirer_code']);
+        $this->assertSame('ORD-98765', $request->queryParams['order.reference']);
+    }
+
+    public function testMapDisputeSummaryIncludesTopLevelContextAndNestedOrderReference()
+    {
+        $rawJson = '{"id":"DIS_SAND_abcd1234","time_created":"2020-11-12T18:50:39.721Z","merchant_id":"MER_001","merchant_name":"Test Merchant","account_id":"ACC_001","account_name":"Test Account","status":"WITH_MERCHANT","status_time_created":"2020-11-14T18:50:39.721Z","stage":"RETRIEVAL","stage_time_created":"2020-11-17T18:50:39.722Z","amount":"1000","currency":"USD","payer_amount":"1000","payer_currency":"USD","merchant_amount":"900","merchant_currency":"USD","net_financial_amount":"100","net_financial_currency":"USD","net_financial_funding":"CREDIT","reason_code":"104","reason_description":"Other Fraud-Card Absent Environment","result":"PENDING","funding_type":"CREDIT","acquirer_code":"ACQ-123","system":{"mid":"627384967","hierarchy":"111-23-099-001-001","name":"ABC INC.","tid":"TID-99","dba":"ABC DBA"},"transaction":{"time_created":"2020-10-05T18:50:39.726Z","type":"SALE","amount":"1000","currency":"USD","reference":"my-trans-AAA1","remarks":"my-trans-AAA1","order":{"reference":"ORD-555"},"provider":{"payment_method":{"card":{"number":"424242xxxxxx4242","arn":"834523482349123","brand":"VISA","authcode":"234AB","brand_reference":"23423421342323A"}}}}}' ;
+        $doc = json_decode($rawJson);
+
+        $disputeSummary = GpApiMapping::mapDisputeSummary($doc);
+
+        $this->assertSame('MER_001', $disputeSummary->merchantId);
+        $this->assertSame('Test Merchant', $disputeSummary->merchantName);
+        $this->assertSame('ACC_001', $disputeSummary->accountId);
+        $this->assertSame('Test Account', $disputeSummary->accountName);
+        $this->assertSame('ACQ-123', $disputeSummary->acquirerCode);
+        $this->assertSame('TID-99', $disputeSummary->systemTid);
+        $this->assertSame('TID-99', $disputeSummary->merchantDeviceIdentifier);
+        $this->assertSame('ABC DBA', $disputeSummary->systemDba);
+        $this->assertSame('ORD-555', $disputeSummary->transactionOrderReference);
+        $this->assertEquals(9.0, $disputeSummary->merchantAmount);
+        $this->assertSame('USD', $disputeSummary->merchantCurrency);
+        $this->assertEquals(1.0, $disputeSummary->netFinancialAmount);
+        $this->assertSame('USD', $disputeSummary->netFinancialCurrency);
+        $this->assertSame('CREDIT', $disputeSummary->netFinancialFunding);
+    }
+
+    public function testMapDisputeSummaryWithoutSystemPreservesZeroValuesAndInitializesNullableFields()
+    {
+        $rawJson = '{"id":"DIS_SAND_zero_case","time_created":"2020-11-12T18:50:39.721Z","merchant_id":"MER_001","merchant_name":"Test Merchant","account_id":"ACC_001","account_name":"Test Account","status":"WITH_MERCHANT","status_time_created":"2020-11-14T18:50:39.721Z","stage":"RETRIEVAL","stage_time_created":"2020-11-17T18:50:39.722Z","amount":"1000","currency":"USD","payer_amount":"0","payer_currency":"USD","merchant_amount":"0","merchant_currency":"USD","net_financial_amount":"0","net_financial_currency":"USD","net_financial_funding":"CREDIT","reason_code":"104","reason_description":"Other Fraud-Card Absent Environment","result":"PENDING","funding_type":"CREDIT"}';
+        $doc = json_decode($rawJson);
+
+        $disputeSummary = GpApiMapping::mapDisputeSummary($doc);
+
+        $this->assertSame('MER_001', $disputeSummary->caseMerchantId);
+        $this->assertSame('MER_001', $disputeSummary->merchantId);
+        $this->assertSame('Test Merchant', $disputeSummary->merchantName);
+        $this->assertNull($disputeSummary->merchantHierarchy);
+        $this->assertNull($disputeSummary->merchantDbaName);
+        $this->assertNull($disputeSummary->merchantDeviceIdentifier);
+        $this->assertSame(0.0, $disputeSummary->merchantAmount);
+        $this->assertSame(0.0, $disputeSummary->netFinancialAmount);
+        $this->assertSame('USD', $disputeSummary->merchantCurrency);
+        $this->assertSame('USD', $disputeSummary->netFinancialCurrency);
     }
 
     public function testMapResponseAPMNormalizesRedirectUrlPathAndPreservesQueryAndFragment()
