@@ -141,12 +141,12 @@ class HostedService
             $response = $this->mapTransactionStatusResponse($response);
         }
 
-        $timestamp = $response["TIMESTAMP"];
-        $merchantId = $response["MERCHANT_ID"];
-        $orderId = $response["ORDER_ID"];
-        $result = $response["RESULT"];
-        $message = $response["MESSAGE"];
-        $transactionId = $response["PASREF"];
+        $timestamp = $response["TIMESTAMP"] ?? "";
+        $merchantId = $response["MERCHANT_ID"] ?? "";
+        $orderId = $response["ORDER_ID"] ?? "";
+        $result = $response["RESULT"] ?? "";
+        $message = $response["MESSAGE"] ?? "";
+        $transactionId = $response["PASREF"] ?? "";
         $authCode = $response["AUTHCODE"] ?? "";
         $paymentMethod = $response["PAYMENTMETHOD"] ?? "";
 

@@ -1099,6 +1099,30 @@ class HppTest extends TestCase
         $this->assertEquals("00", $responseCode);
     }
 
+    public function testParseResponseWithoutUppercaseKeysDoesNotWarn()
+    {
+        $service = new HostedService($this->config());
+
+        $response = [];
+        $response["SHA1HASH"] = GenerationUtils::generateNewHash(
+            "secret",
+            implode('.', ["", "", "", "", "", "", ""]),
+            ShaHashType::SHA1
+        );
+
+        set_error_handler(function ($errno, $errstr) {
+            throw new \ErrorException($errstr);
+        });
+        try {
+            $parsedResponse = $service->parseResponse(json_encode($response));
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertNotNull($parsedResponse);
+        $this->assertEquals("", $parsedResponse->responseCode);
+    }
+
     /* 06. CardStorageCreatePayerStoreCardResponse */
 
     public function testCardStorageCreatePayerStoreCardResponse()
