@@ -1200,9 +1200,16 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         )) {
             if ($paymentMethodContainer instanceof ITokenizable && !empty($paymentMethodContainer->token)) {
                 $paymentMethod->id = $paymentMethodContainer->token;
-                if (!empty($paymentMethodContainer->cvn)) {
-                    $paymentMethod->card = new Card();
-                    $paymentMethod->card->cvv = $paymentMethodContainer->cvn;
+                if (!empty($paymentMethodContainer->cvn) || !empty($builder->billingAddress)) {
+                    $paymentMethod->card = $paymentMethod->card ?? new Card();
+                    if (!empty($paymentMethodContainer->cvn)) {
+                        $paymentMethod->card->cvv = $paymentMethodContainer->cvn;
+                    }
+                    // AVS is carried on payment_method.card even when paying with a token.
+                    if (!empty($builder->billingAddress)) {
+                        $paymentMethod->card->avs_address = $builder->billingAddress->streetAddress1;
+                        $paymentMethod->card->avs_postal_code = $builder->billingAddress->postalCode;
+                    }
                 }
             }
 

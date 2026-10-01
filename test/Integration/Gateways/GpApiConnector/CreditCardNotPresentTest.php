@@ -21,9 +21,11 @@ use GlobalPayments\Api\Entities\Enums\TransactionType;
 use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use GlobalPayments\Api\Entities\Exceptions\BuilderException;
 use GlobalPayments\Api\Entities\Exceptions\GatewayException;
+use GlobalPayments\Api\Entities\IRequestLogger;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Entities\StoredCredential;
 use GlobalPayments\Api\Entities\Transaction;
+use GlobalPayments\Api\Gateways\GatewayResponse;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Services\ReportingService;
@@ -560,6 +562,77 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertNotNull($response);
         $this->assertEquals('SUCCESS', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+    }
+
+    /**
+     *
+     * The goal for this test is to confirm that transaction attempts that contain a payment token
+     * can also include AVS data.
+     *
+     * @return void
+     */
+    public function testCreditSaleWithSingleUseTokenContainsAvsData(): void
+    {
+        // Obtain a single-use payment token
+        $tokenConfig = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $tokenConfig->permissions = ['PMT_POST_Create_Single'];
+        ServicesContainer::configureService($tokenConfig, "singleUseToken");
+
+        $tokenResponse = $this->card->tokenize(true, PaymentMethodUsageMode::SINGLE)
+            ->execute("singleUseToken");
+        $tokenId = $tokenResponse->token;
+
+        $tokenizedCard = new CreditCardData();
+        $tokenizedCard->token = $tokenId;
+        $tokenizedCard->cardHolderName = "James Mason";
+
+        // Capture the raw transaction request data sent to the gateway
+        $requestLogger = new class implements IRequestLogger {
+            public ?string $lastRequestData = null;
+
+            public function requestSent(string $verb, string $endpoint, array $headers, $queryStringParams, $data): void
+            {
+                $this->lastRequestData = $data;
+            }
+
+            public function responseReceived(GatewayResponse $response): void
+            {
+
+            }
+
+            public function responseError(\Exception $e, mixed $headers = ''): void
+            {
+
+            }
+        };
+
+        $captureConfig = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $captureConfig->requestLogger = $requestLogger;
+        ServicesContainer::configureService($captureConfig, "avsRequestCapture");
+
+        $address = new Address();
+        $address->streetAddress1 = "123 Main St.";
+        $address->city = "Downtown";
+        $address->state = "NJ";
+        $address->country = "US";
+        $address->postalCode = "12345";
+
+        $response = $tokenizedCard->charge(16.66)
+            ->withCurrency($this->currency)
+            ->withAddress($address)
+            ->execute("avsRequestCapture");
+
+        $this->assertNotNull($response);
+        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
+
+        // Confirm the raw request data includes AVS street address and zip/postal code values
+        $this->assertNotNull($requestLogger->lastRequestData);
+        $requestData = json_decode($requestLogger->lastRequestData, true);
+        $this->assertArrayHasKey('payment_method', $requestData);
+        $this->assertArrayHasKey('card', $requestData['payment_method']);
+        $this->assertEquals($address->streetAddress1, $requestData['payment_method']['card']['avs_address']);
+        $this->assertEquals($address->postalCode, $requestData['payment_method']['card']['avs_postal_code']);
     }
 
     public function testCardTokenization_MissingCardNumber()

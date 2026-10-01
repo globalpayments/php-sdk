@@ -2,7 +2,11 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version: v14.6.2 (09/24/26)
+## v14.6.3 (10/01/26)
+### Bug Fixes:
+- [GPAPI] Fixed AVS data missing from some transactions
+
+## v14.6.2 (09/24/26)
 ### Enhancements:
 - [GPAPI] Adding missing dispute search request parameters and mapping missing response fields for GET /disputes, GET /disputes/{id}, POST /disputes/{id}/challenge, and GET /disputes/{id}/documents
 - [GPAPI] Adding missing authentication request parameters and correcting decoupled field placement for POST /authentications and POST /authentications/{id}/initiate
