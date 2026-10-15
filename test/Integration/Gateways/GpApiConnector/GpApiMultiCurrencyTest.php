@@ -71,7 +71,7 @@ class GpApiMultiCurrencyTest extends GpApiApacBaseTest
     private function assertTransaction(object $response, string $expectedStatus): void
     {
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals($expectedStatus, $response->responseMessage);
         $this->assertNotEmpty($response->transactionId);
     }
@@ -148,7 +148,7 @@ class GpApiMultiCurrencyTest extends GpApiApacBaseTest
         $void = $sale->reverse()->execute($this->serviceName);
 
         $this->assertNotNull($void);
-        $this->assertEquals('SUCCESS', $void->responseCode);
+        $this->assertEquals('00', $void->responseCode);
         $this->assertNotEmpty($void->transactionId);
     }
 
@@ -162,7 +162,7 @@ class GpApiMultiCurrencyTest extends GpApiApacBaseTest
         $reversal = $auth->reverse()->execute($this->serviceName);
 
         $this->assertNotNull($reversal);
-        $this->assertEquals('SUCCESS', $reversal->responseCode);
+        $this->assertEquals('00', $reversal->responseCode);
         $this->assertNotEmpty($reversal->transactionId);
     }
 

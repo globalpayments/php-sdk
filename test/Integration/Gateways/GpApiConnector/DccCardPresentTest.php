@@ -70,7 +70,7 @@ class DccCardPresentTest extends TestCase
         $dccDetails = $this->getDccDetails();
 
         $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
+        $this->assertEquals('00', $dccDetails->responseCode);
         $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
 
@@ -82,7 +82,7 @@ class DccCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('CAPTURED', $response->responseMessage);
     }
 
@@ -93,7 +93,7 @@ class DccCardPresentTest extends TestCase
         $dccDetails = $this->getDccDetails();
 
         $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
+        $this->assertEquals('00', $dccDetails->responseCode);
         $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
 
@@ -105,7 +105,7 @@ class DccCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $response->responseMessage);
     }
 
@@ -116,7 +116,7 @@ class DccCardPresentTest extends TestCase
         $dccDetails = $this->getDccDetails();
 
         $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
+        $this->assertEquals('00', $dccDetails->responseCode);
         $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
 
@@ -128,7 +128,7 @@ class DccCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('CAPTURED', $response->responseMessage);
     }
 
@@ -139,7 +139,7 @@ class DccCardPresentTest extends TestCase
         $dccDetails = $this->getDccDetails();
 
         $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
+        $this->assertEquals('00', $dccDetails->responseCode);
         $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
 
@@ -151,7 +151,7 @@ class DccCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         $reverse = $transaction->reverse()
@@ -159,7 +159,7 @@ class DccCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($reverse);
-        $this->assertEquals('SUCCESS', $reverse->responseCode);
+        $this->assertEquals('00', $reverse->responseCode);
         $this->assertEquals(TransactionStatus::REVERSED, $reverse->responseMessage);
     }
 
@@ -170,7 +170,7 @@ class DccCardPresentTest extends TestCase
         $dccDetails = $this->getDccDetails();
 
         $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
+        $this->assertEquals('00', $dccDetails->responseCode);
         $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
 
@@ -182,7 +182,7 @@ class DccCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         $reverse = $transaction->refund()
@@ -191,7 +191,7 @@ class DccCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($reverse);
-        $this->assertEquals('SUCCESS', $reverse->responseCode);
+        $this->assertEquals('00', $reverse->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $reverse->responseMessage);
     }
 
@@ -209,7 +209,7 @@ class DccCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
+        $this->assertEquals('00', $dccDetails->responseCode);
         $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
 
@@ -222,7 +222,7 @@ class DccCardPresentTest extends TestCase
                 ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
     }
 
@@ -236,7 +236,7 @@ class DccCardPresentTest extends TestCase
 
         $dccDetails = $this->getDccDetails();
         $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
+        $this->assertEquals('00', $dccDetails->responseCode);
         $this->assertEquals('NOT_AVAILABLE', $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
 

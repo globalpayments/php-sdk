@@ -662,7 +662,7 @@ class GpApiMerchantAccountsTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transfer);
-        $this->assertEquals('SUCCESS', $transfer->responseCode);
+        $this->assertEquals('00', $transfer->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transfer->responseMessage);
     }
 
@@ -710,7 +710,7 @@ class GpApiMerchantAccountsTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transfer);
-        $this->assertEquals('SUCCESS', $transfer->responseCode);
+        $this->assertEquals('00', $transfer->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transfer->responseMessage);
     }
 
@@ -754,7 +754,7 @@ class GpApiMerchantAccountsTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transfer);
-        $this->assertEquals('SUCCESS', $transfer->responseCode);
+        $this->assertEquals('00', $transfer->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transfer->responseMessage);
     }
 
@@ -803,7 +803,7 @@ class GpApiMerchantAccountsTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transfer);
-        $this->assertEquals('SUCCESS', $transfer->responseCode);
+        $this->assertEquals('00', $transfer->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transfer->responseMessage);
 
         $exceptionCaught = false;
@@ -1167,7 +1167,7 @@ class GpApiMerchantAccountsTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals("SUCCESS", $response->responseCode);
+        $this->assertEquals("00", $response->responseCode);
         $this->assertNotNull($response->fundsAccountDetails);
         $this->assertEquals(FundsStatus::CAPTURED, $response->fundsAccountDetails->status);
         $this->assertEquals($amount, $response->fundsAccountDetails->amount);
@@ -1194,7 +1194,7 @@ class GpApiMerchantAccountsTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals("SUCCESS", $response->responseCode);
+        $this->assertEquals("00", $response->responseCode);
         $this->assertNotNull($response->fundsAccountDetails);
         $this->assertEquals(FundsStatus::CAPTURED, $response->fundsAccountDetails->status);
         $this->assertEquals($amount, $response->fundsAccountDetails->amount);

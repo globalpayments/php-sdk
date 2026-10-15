@@ -6,6 +6,7 @@ use GlobalPayments\Api\Builders\BaseBuilder;
 use GlobalPayments\Api\Builders\RecurringBuilder;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\Enums\TransactionType;
+use GlobalPayments\Api\Entities\Exceptions\ArgumentException;
 use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
 use GlobalPayments\Api\Entities\IRequestBuilder;
 use GlobalPayments\Api\Entities\Request;
@@ -38,17 +39,13 @@ class GpApiRecurringRequestBuilder implements IRequestBuilder
     {
         /** @var RecurringBuilder $builder */
         $this->builder = $builder;
+        $endpoint = null;
+        $verb = null;
         $requestData = [];
-        /** @var string $merchantUrl */
-        $merchantUrl = '';
-       
-        if($config->merchantId != null){
-            $merchantUrl = "/merchants/".$config->merchantId;
-        }
+
         switch ($builder->transactionType) {
             case TransactionType::CREATE:
                 $endpoint = GpApiRequest::PAYERS_ENDPOINT;
-                $endpoint = $merchantUrl . GpApiRequest::PAYERS_ENDPOINT;
                 $verb = 'POST';
                 if ($builder->entity instanceof Customer) {
                     $this->preparePayerRequest($requestData);
@@ -56,13 +53,15 @@ class GpApiRecurringRequestBuilder implements IRequestBuilder
                 break;
             case TransactionType::EDIT:
                 $endpoint = GpApiRequest::PAYERS_ENDPOINT . '/' . $this->builder->entity->id;
-                $endpoint = $merchantUrl . GpApiRequest::PAYERS_ENDPOINT . "/";
                 $verb = 'PATCH';
                 if ($builder->entity instanceof Customer) {
                     $this->preparePayerRequest($requestData);
                 }
                 break;
+            default:
+                throw new ArgumentException('Unknown recurring transaction type!');
         }
+
         return new GpApiRequest($endpoint, $verb, $requestData);
     }
 

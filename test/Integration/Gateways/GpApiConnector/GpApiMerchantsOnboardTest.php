@@ -76,7 +76,7 @@ class GpApiMerchantsOnboardTest extends TestCase
 
         /** @var User $merchant */
         $this->assertTrue($merchant instanceof User);
-        $this->assertEquals("SUCCESS", $merchant->responseCode);
+        $this->assertEquals("00", $merchant->responseCode);
         $this->assertEquals(UserStatus::UNDER_REVIEW, $merchant->userStatus);
         $this->assertNotEmpty($merchant->userId);
     }
@@ -98,7 +98,7 @@ class GpApiMerchantsOnboardTest extends TestCase
 
         /** @var User $merchant */
         $this->assertTrue($merchant instanceof User);
-        $this->assertEquals("SUCCESS", $merchant->responseCode);
+        $this->assertEquals("00", $merchant->responseCode);
         $this->assertEquals(UserStatus::UNDER_REVIEW, $merchant->userStatus);
         $this->assertEquals($merchantData->userName, $merchant->name);
         $this->assertEquals("Merchant Boarding in progress", $merchant->statusDescription);
@@ -125,7 +125,7 @@ class GpApiMerchantsOnboardTest extends TestCase
 
         /** @var User $merchant */
         $this->assertTrue($merchant instanceof User);
-        $this->assertEquals("SUCCESS", $merchant->responseCode);
+        $this->assertEquals("00", $merchant->responseCode);
         $this->assertEquals(UserStatus::UNDER_REVIEW, $merchant->userStatus);
         $this->assertEquals($merchantData->userName, $merchant->name);
         $this->assertEquals("Merchant Boarding in progress", $merchant->statusDescription);
@@ -167,7 +167,7 @@ class GpApiMerchantsOnboardTest extends TestCase
 
         /** @var User $merchant */
         $this->assertTrue($merchant instanceof User);
-        $this->assertEquals("SUCCESS", $merchant->responseCode);
+        $this->assertEquals("00", $merchant->responseCode);
         $this->assertEquals(UserStatus::UNDER_REVIEW, $merchant->userStatus);
         $this->assertEquals($merchantData->userName, $merchant->name);
         $this->assertEquals("Merchant Boarding in progress", $merchant->statusDescription);
@@ -510,7 +510,7 @@ class GpApiMerchantsOnboardTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertNotNull($response->document);
         $this->assertNotNull($response->document->id);
         $this->assertEquals(FileType::TIF, $response->document->format);
@@ -533,7 +533,7 @@ class GpApiMerchantsOnboardTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertNotNull($response->document);
         $this->assertNotNull($response->document->id);
         $this->assertEquals(FileType::TIF, $response->document->format);
@@ -574,7 +574,7 @@ class GpApiMerchantsOnboardTest extends TestCase
                     ->execute();
 
                 $this->assertNotNull($response);
-                $this->assertEquals('SUCCESS', $response->responseCode);
+                $this->assertEquals('00', $response->responseCode);
                 $this->assertNotNull($response->document);
                 $this->assertNotNull($response->document->id);
                 $this->assertEquals(FileType::TIF, $response->document->format);
@@ -602,7 +602,7 @@ class GpApiMerchantsOnboardTest extends TestCase
                     ->execute();
 
                 $this->assertNotNull($response);
-                $this->assertEquals('SUCCESS', $response->responseCode);
+                $this->assertEquals('00', $response->responseCode);
                 $this->assertNotNull($response->document);
                 $this->assertNotNull($response->document->id);
                 $this->assertEquals($value, $response->document->format);

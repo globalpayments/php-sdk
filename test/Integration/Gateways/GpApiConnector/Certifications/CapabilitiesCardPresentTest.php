@@ -52,7 +52,7 @@ class CapabilitiesCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -69,7 +69,7 @@ class CapabilitiesCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -81,7 +81,7 @@ class CapabilitiesCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -94,7 +94,7 @@ class CapabilitiesCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 }

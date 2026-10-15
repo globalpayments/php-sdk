@@ -143,7 +143,7 @@ class EbtCardTest extends TestCase
     private function assertEbtTransactionResponse($transactionResponse, $transactionStatus): void
     {
         $this->assertNotNull($transactionResponse);
-        $this->assertEquals('SUCCESS', $transactionResponse->responseCode);
+        $this->assertEquals('00', $transactionResponse->responseCode);
         $this->assertEquals($transactionStatus, $transactionResponse->responseMessage);
     }
 

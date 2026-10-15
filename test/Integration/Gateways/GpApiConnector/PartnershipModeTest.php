@@ -193,7 +193,7 @@ class PartnershipModeTest extends TestCase
             ->execute('config_' . $this->merchantId);
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -205,7 +205,7 @@ class PartnershipModeTest extends TestCase
             ->execute('config_' . $this->merchantId);
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
 
         $refundResponse = $response->refund(11)
@@ -213,7 +213,7 @@ class PartnershipModeTest extends TestCase
             ->execute('config_' . $this->merchantId);
 
         $this->assertNotNull($refundResponse);
-        $this->assertEquals('SUCCESS', $refundResponse->responseCode);
+        $this->assertEquals('00', $refundResponse->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $refundResponse->responseMessage);
         unset($config);
     }
@@ -225,7 +225,7 @@ class PartnershipModeTest extends TestCase
             ->execute('config_' . $this->merchantId);
 
         $this->assertNotNull($refundResponse);
-        $this->assertEquals('SUCCESS', $refundResponse->responseCode);
+        $this->assertEquals('00', $refundResponse->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $refundResponse->responseMessage);
         unset($config);
     }
@@ -237,7 +237,7 @@ class PartnershipModeTest extends TestCase
             ->execute('config_' . $this->merchantId);
 
         $this->assertNotNull($authResponse);
-        $this->assertEquals('SUCCESS', $authResponse->responseCode);
+        $this->assertEquals('00', $authResponse->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $authResponse->responseMessage);
 
         $captureResponse = $authResponse->capture(11)
@@ -245,7 +245,7 @@ class PartnershipModeTest extends TestCase
             ->execute('config_' . $this->merchantId);
 
         $this->assertNotNull($captureResponse);
-        $this->assertEquals('SUCCESS', $captureResponse->responseCode);
+        $this->assertEquals('00', $captureResponse->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $captureResponse->responseMessage);
 
         unset($config);
@@ -258,7 +258,7 @@ class PartnershipModeTest extends TestCase
             ->execute('config_' . $this->merchantId);
 
         $this->assertNotNull($authResponse);
-        $this->assertEquals('SUCCESS', $authResponse->responseCode);
+        $this->assertEquals('00', $authResponse->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $authResponse->responseMessage);
 
         $reverseResponse = $authResponse->reverse(11)
@@ -266,7 +266,7 @@ class PartnershipModeTest extends TestCase
             ->execute('config_' . $this->merchantId);
 
         $this->assertNotNull($reverseResponse);
-        $this->assertEquals('SUCCESS', $reverseResponse->responseCode);
+        $this->assertEquals('00', $reverseResponse->responseCode);
         $this->assertEquals(TransactionStatus::REVERSED, $reverseResponse->responseMessage);
         unset($config);
     }
@@ -278,7 +278,7 @@ class PartnershipModeTest extends TestCase
             ->execute('config_' . $this->merchantId);
 
         $this->assertNotNull($authResponse);
-        $this->assertEquals('SUCCESS', $authResponse->responseCode);
+        $this->assertEquals('00', $authResponse->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $authResponse->responseMessage);
 
         $reverseResponse = $authResponse->reverse(11)
@@ -286,7 +286,7 @@ class PartnershipModeTest extends TestCase
             ->execute('config_' . $this->merchantId);
 
         $this->assertNotNull($reverseResponse);
-        $this->assertEquals('SUCCESS', $reverseResponse->responseCode);
+        $this->assertEquals('00', $reverseResponse->responseCode);
         $this->assertEquals(TransactionStatus::REVERSED, $reverseResponse->responseMessage);
 
         $reAuthResponse = $reverseResponse->reauthorized(11)
@@ -294,7 +294,7 @@ class PartnershipModeTest extends TestCase
             ->execute('config_' . $this->merchantId);
 
         $this->assertNotNull($reAuthResponse);
-        $this->assertEquals('SUCCESS', $reAuthResponse->responseCode);
+        $this->assertEquals('00', $reAuthResponse->responseCode);
         $this->assertEquals(TransactionStatus::REVERSED, $reAuthResponse->responseMessage);
         unset($config);
     }
@@ -344,7 +344,7 @@ class PartnershipModeTest extends TestCase
 
         $response = $this->card->charge($this->amount)->withCurrency($this->currency)->execute('config_' . $this->merchantId);
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -353,7 +353,7 @@ class PartnershipModeTest extends TestCase
         $this->markTestSkipped('Missing TKA_ account from the merchant');
         $response = $this->card->tokenize()->execute('config_' . $this->merchantId);
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('ACTIVE', $response->responseMessage);
 
         $tokenizedCard = new CreditCardData();
@@ -364,7 +364,7 @@ class PartnershipModeTest extends TestCase
             ->execute('config_' . $this->merchantId);
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('VERIFIED', $response->responseMessage);
     }
 
@@ -479,7 +479,7 @@ class PartnershipModeTest extends TestCase
             ->execute('config_ACH_' . $this->merchantId);
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         $fundsData = new FundsData();
@@ -494,7 +494,7 @@ class PartnershipModeTest extends TestCase
             ->execute('config_ACH_' . $this->merchantId);
 
         $this->assertNotNull($split);
-        $this->assertEquals('SUCCESS', $split->responseCode);
+        $this->assertEquals('00', $split->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $split->responseMessage);
         $this->assertNotNull($split->transfersFundsAccount);
         /** @var FundsAccountDetails $transfer */
@@ -508,7 +508,7 @@ class PartnershipModeTest extends TestCase
         $reverseTrf = $trfTransaction->reverse()
             ->execute('config_ACH_' . $this->merchantId);
 
-        $this->assertEquals('SUCCESS', $reverseTrf->responseCode);
+        $this->assertEquals('00', $reverseTrf->responseCode);
         $this->assertEquals(TransactionStatus::FUNDED, $reverseTrf->responseMessage);
         $this->assertEquals($transferAmount, $reverseTrf->balanceAmount);
         $this->assertEquals($transferReference, $reverseTrf->clientTransactionId);

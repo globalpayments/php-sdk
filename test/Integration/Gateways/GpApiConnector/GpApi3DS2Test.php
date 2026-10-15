@@ -182,7 +182,7 @@ class GpApi3DS2Test extends TestCase
 
         $response = $this->card->charge($this->amount)->withCurrency($this->currency)->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -221,7 +221,7 @@ class GpApi3DS2Test extends TestCase
 
         $response = $this->card->charge($this->amount)->withCurrency($this->currency)->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -268,7 +268,7 @@ class GpApi3DS2Test extends TestCase
 
         $response = $tokenizedCard->charge($this->amount)->withCurrency($this->currency)->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -315,7 +315,7 @@ class GpApi3DS2Test extends TestCase
         $this->card->threeDSecure = $secureEcom;
         $response = $this->card->charge($this->amount)->withCurrency($this->currency)->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 

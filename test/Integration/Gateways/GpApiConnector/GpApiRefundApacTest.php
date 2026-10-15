@@ -38,7 +38,7 @@ class GpApiRefundApacTest extends GpApiApacBaseTest
     private function assertSuccessfulTransaction(object $transaction, string $expectedStatus, string $context): void
     {
         $this->assertNotNull($transaction, $context . ' response must not be null');
-        $this->assertEquals('SUCCESS', $transaction->responseCode, $context . ' response code must be SUCCESS');
+        $this->assertEquals('00', $transaction->responseCode, $context . ' response code must be SUCCESS');
         $this->assertEquals($expectedStatus, $transaction->responseMessage, $context . ' status must match expected status');
         $this->assertNotEmpty($transaction->transactionId, $context . ' transaction ID must be present');
     }

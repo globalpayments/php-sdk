@@ -106,7 +106,7 @@ class GpApiRiskAssessmentTest extends TestCase
             ->withBrowserData($this->browserData)
             ->execute();
 
-        $this->assertEquals("SUCCESS", $response->responseCode);
+        $this->assertEquals("00", $response->responseCode);
         $this->assertEquals(RiskAssessmentStatus::ACCEPTED, $response->status);
         $this->assertStringStartsWith("RAS_", $response->id);
     }
@@ -124,7 +124,7 @@ class GpApiRiskAssessmentTest extends TestCase
             ->withBrowserData($this->browserData)
             ->execute();
 
-        $this->assertEquals("SUCCESS", $response->responseCode);
+        $this->assertEquals("00", $response->responseCode);
         $this->assertEquals(RiskAssessmentStatus::ACCEPTED, $response->status);
         $this->assertStringStartsWith("RAS_", $response->id);
 
@@ -198,7 +198,7 @@ class GpApiRiskAssessmentTest extends TestCase
             ->withBrowserData($this->browserData)
             ->execute();
 
-        $this->assertEquals("SUCCESS", $response->responseCode);
+        $this->assertEquals("00", $response->responseCode);
         $this->assertEquals(RiskAssessmentStatus::ACCEPTED, $response->status);
     }
 
@@ -212,7 +212,7 @@ class GpApiRiskAssessmentTest extends TestCase
             ->withBrowserData($this->browserData)
             ->execute();
 
-        $this->assertEquals("SUCCESS", $response->responseCode);
+        $this->assertEquals("00", $response->responseCode);
         $this->assertEquals(RiskAssessmentStatus::ACCEPTED, $response->status);
     }
 
@@ -228,7 +228,7 @@ class GpApiRiskAssessmentTest extends TestCase
                 ->withBrowserData($this->browserData)
                 ->execute();
 
-            $this->assertEquals("SUCCESS", $response->responseCode);
+            $this->assertEquals("00", $response->responseCode);
             $this->assertEquals(RiskAssessmentStatus::ACCEPTED, $response->status);
             $this->assertStringStartsWith("RAS_", $response->id);
         }
@@ -248,7 +248,7 @@ class GpApiRiskAssessmentTest extends TestCase
                 ->withDeliveryTimeFrame($value)
                 ->execute();
 
-            $this->assertEquals("SUCCESS", $response->responseCode);
+            $this->assertEquals("00", $response->responseCode);
             $this->assertEquals(RiskAssessmentStatus::ACCEPTED, $response->status);
             $this->assertStringStartsWith("RAS_", $response->id);
         }
@@ -268,7 +268,7 @@ class GpApiRiskAssessmentTest extends TestCase
                 ->withShippingMethod($value)
                 ->execute();
 
-            $this->assertEquals("SUCCESS", $response->responseCode);
+            $this->assertEquals("00", $response->responseCode);
             $this->assertEquals(RiskAssessmentStatus::ACCEPTED, $response->status);
             $this->assertStringStartsWith("RAS_", $response->id);
         }
@@ -288,7 +288,7 @@ class GpApiRiskAssessmentTest extends TestCase
                 ->withOrderTransactionType($value)
                 ->execute();
 
-            $this->assertEquals("SUCCESS", $response->responseCode);
+            $this->assertEquals("00", $response->responseCode);
             $this->assertEquals(RiskAssessmentStatus::ACCEPTED, $response->status);
             $this->assertStringStartsWith("RAS_", $response->id);
         }
@@ -308,7 +308,7 @@ class GpApiRiskAssessmentTest extends TestCase
                 ->withPriorAuthenticationMethod($value)
                 ->execute();
 
-            $this->assertEquals("SUCCESS", $response->responseCode);
+            $this->assertEquals("00", $response->responseCode);
             $this->assertEquals(RiskAssessmentStatus::ACCEPTED, $response->status);
             $this->assertStringStartsWith("RAS_", $response->id);
         }
@@ -328,7 +328,7 @@ class GpApiRiskAssessmentTest extends TestCase
                 ->withCustomerAuthenticationMethod($value)
                 ->execute();
 
-            $this->assertEquals("SUCCESS", $response->responseCode);
+            $this->assertEquals("00", $response->responseCode);
             $this->assertEquals(RiskAssessmentStatus::ACCEPTED, $response->status);
             $this->assertEquals("Apply Exemption", $response->responseMessage);
             $this->assertStringStartsWith("RAS_", $response->id);

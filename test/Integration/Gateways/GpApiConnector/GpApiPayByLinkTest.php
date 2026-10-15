@@ -253,7 +253,7 @@ class GpApiPayByLinkTest extends TestCase
             ->execute("createTransaction");
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         sleep(2);
@@ -290,7 +290,7 @@ class GpApiPayByLinkTest extends TestCase
                 ->execute("createTransaction");
 
             $this->assertNotNull($transaction);
-            $this->assertEquals('SUCCESS', $transaction->responseCode);
+            $this->assertEquals('00', $transaction->responseCode);
             $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
         }
 
@@ -327,14 +327,14 @@ class GpApiPayByLinkTest extends TestCase
             ->execute("createTransaction");
 
         $this->assertNotNull($authorize);
-        $this->assertEquals('SUCCESS', $authorize->responseCode);
+        $this->assertEquals('00', $authorize->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $authorize->responseMessage);
 
         $capture = $authorize->capture($this->amount)
             ->execute("createTransaction");
 
         $this->assertNotNull($capture);
-        $this->assertEquals('SUCCESS', $capture->responseCode);
+        $this->assertEquals('00', $capture->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
 
         sleep(2);
@@ -378,7 +378,7 @@ class GpApiPayByLinkTest extends TestCase
             ->execute("createTransaction");
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         sleep(2);
@@ -447,7 +447,7 @@ class GpApiPayByLinkTest extends TestCase
             ->execute("createTransaction");
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         sleep(2);
@@ -490,7 +490,7 @@ class GpApiPayByLinkTest extends TestCase
             ->withDescription('Update PayByLink description')
             ->execute();
 
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(PayByLinkStatus::ACTIVE, $response->responseMessage);
         $this->assertEquals($amount, $response->balanceAmount);
         $this->assertNotNull($response->payByLinkResponse->url);
@@ -831,7 +831,7 @@ class GpApiPayByLinkTest extends TestCase
 
     private function assertPayByLinkResponse(Transaction $response): void
     {
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(PayByLinkStatus::ACTIVE, $response->responseMessage);
         $this->assertEquals($this->amount, $response->balanceAmount);
         $this->assertNotNull($response->payByLinkResponse->url);

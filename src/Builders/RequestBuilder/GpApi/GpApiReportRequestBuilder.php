@@ -276,8 +276,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
             case ReportType::FIND_ACCOUNTS_PAGED:
                 $endpoint = GpApiRequest::ACCOUNTS_ENDPOINT;
                 if (!empty($builder->searchBuilder->merchantId)) {
-                    $endpoint =  GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' .
-                        $builder->searchBuilder->merchantId . $endpoint;
+                    $endpoint = $config->getMerchantUrl($builder->searchBuilder->merchantId) . $endpoint;
                 }
                 $verb = 'GET';
                 $this->addBasicParams($queryParams, $builder);
@@ -294,7 +293,7 @@ class GpApiReportRequestBuilder implements IRequestBuilder
             case ReportType::FIND_ACCOUNT_DETAIL:
                 $endpoint = GpApiRequest::ACCOUNTS_ENDPOINT . '/' . $builder->searchBuilder->accountId;
                 if (!empty($builder->merchantId)) {
-                    $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $builder->merchantId . $endpoint;
+                    $endpoint = $config->getMerchantUrl($builder->merchantId) . $endpoint;
                 }
                 if (!empty($builder->searchBuilder->address)) {
                     $endpoint .= '/addresses';

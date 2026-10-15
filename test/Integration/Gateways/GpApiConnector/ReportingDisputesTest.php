@@ -719,7 +719,7 @@ class ReportingDisputesTest extends TestCase
         $response = $dispute->accept()->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     public function testDisputeAcceptWrongId()
@@ -750,7 +750,7 @@ class ReportingDisputesTest extends TestCase
         $response = $dispute->challenge($documents)->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     public function testReportDisputeChallenge_MissingType()
@@ -763,7 +763,7 @@ class ReportingDisputesTest extends TestCase
         $response = $dispute->challenge($documents)->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     public function testReportDisputeChallenge_MultipleDocuments()
@@ -783,7 +783,7 @@ class ReportingDisputesTest extends TestCase
         $response = $dispute->challenge($documents)->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     public function testReportDisputeChallenge_MultipleDocuments_ClosedStatus()

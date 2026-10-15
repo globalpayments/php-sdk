@@ -83,7 +83,7 @@ class CreditCardNotPresentTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertNotNull($response->authorizationCode);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         $this->assertNull($response->payerDetails);
     }
@@ -107,7 +107,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         $this->assertNotNull($response->fingerprint);
         $this->assertNotNull($response->fingerprintIndicator);
@@ -124,7 +124,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         $this->assertNotNull($response->fingerprint);
         $this->assertNotNull($response->fingerprintIndicator);
@@ -139,7 +139,7 @@ class CreditCardNotPresentTest extends TestCase
 
         $this->assertNotNull($response);
         $this->assertNotNull($response->authorizationCode);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         $this->assertNull($response->payerDetails);
     }
@@ -170,7 +170,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
     }
 
@@ -183,7 +183,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
 
         $capture = $transaction->capture(30)
@@ -191,7 +191,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($capture);
-        $this->assertEquals('SUCCESS', $capture->responseCode);
+        $this->assertEquals('00', $capture->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
     }
 
@@ -208,7 +208,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
         $this->assertNotNull($transaction->fingerprint);
         $this->assertNotNull($transaction->fingerprintIndicator);
@@ -218,7 +218,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($capture);
-        $this->assertEquals('SUCCESS', $capture->responseCode);
+        $this->assertEquals('00', $capture->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
     }
 
@@ -231,7 +231,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
 
         try {
@@ -254,7 +254,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -271,7 +271,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         $this->assertNotNull($response->fingerprint);
         $this->assertNotNull($response->fingerprintIndicator);
@@ -285,7 +285,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         $response = $transaction->refund()
@@ -294,7 +294,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -308,7 +308,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         try {
@@ -353,7 +353,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         $partialAmount = '4.75';
@@ -362,7 +362,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($partialRefund);
-        $this->assertEquals('SUCCESS', $partialRefund->responseCode);
+        $this->assertEquals('00', $partialRefund->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $partialRefund->responseMessage);
         $this->assertEquals($partialAmount, $partialRefund->balanceAmount);
 
@@ -384,14 +384,14 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         $reverse = $transaction->reverse(20)
             ->execute();
 
         $this->assertNotNull($reverse);
-        $this->assertEquals('SUCCESS', $reverse->responseCode);
+        $this->assertEquals('00', $reverse->responseCode);
         $this->assertEquals(TransactionStatus::REVERSED, $reverse->responseMessage);
     }
 
@@ -403,14 +403,14 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         $defaultReversal = $transaction->reverse()
             ->execute();
 
         $this->assertNotNull($defaultReversal);
-        $this->assertEquals('SUCCESS', $defaultReversal->responseCode);
+        $this->assertEquals('00', $defaultReversal->responseCode);
         $this->assertEquals(TransactionStatus::REVERSED, $defaultReversal->responseMessage);
     }
 
@@ -423,7 +423,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         try {
@@ -444,7 +444,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         try {
@@ -464,26 +464,26 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
         $this->assertTrue($transaction->multiCapture);
 
         $capture1 = $transaction->capture(10)->execute();
 
         $this->assertNotNull($capture1);
-        $this->assertEquals('SUCCESS', $capture1->responseCode);
+        $this->assertEquals('00', $capture1->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $capture1->responseMessage);
 
         $capture2 = $transaction->capture(20)->execute();
 
         $this->assertNotNull($capture2);
-        $this->assertEquals('SUCCESS', $capture2->responseCode);
+        $this->assertEquals('00', $capture2->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $capture2->responseMessage);
 
         $capture3 = $transaction->capture(10)->execute();
 
         $this->assertNotNull($capture3);
-        $this->assertEquals('SUCCESS', $capture3->responseCode);
+        $this->assertEquals('00', $capture3->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $capture3->responseMessage);
     }
 
@@ -495,7 +495,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
 
         $exceptionCaught = false;
@@ -525,7 +525,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('ACTIVE', $response->responseMessage);
     }
 
@@ -551,7 +551,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         $this->assertStringStartsWith('PMT_', $response->token);
         $tokenizedCard->token = $response->token;
@@ -560,7 +560,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -623,7 +623,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute("avsRequestCapture");
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
 
         // Confirm the raw request data includes AVS street address and zip/postal code values
@@ -657,7 +657,7 @@ class CreditCardNotPresentTest extends TestCase
         $response = $this->card->tokenize()->withIdempotencyKey($this->idempotencyKey)->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('ACTIVE', $response->responseMessage);
 
         $exceptionCaught = false;
@@ -688,7 +688,7 @@ class CreditCardNotPresentTest extends TestCase
             ->withOrderId("124214-214221")
             ->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -699,7 +699,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($tokenizeResponse);
-        $this->assertEquals('SUCCESS', $tokenizeResponse->responseCode);
+        $this->assertEquals('00', $tokenizeResponse->responseCode);
         $this->assertEquals('ACTIVE', $tokenizeResponse->responseMessage);
 
         $tokenizedCard = new CreditCardData();
@@ -710,7 +710,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('VERIFIED', $response->responseMessage);
     }
 
@@ -721,7 +721,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($tokenizeResponse);
-        $this->assertEquals('SUCCESS', $tokenizeResponse->responseCode);
+        $this->assertEquals('00', $tokenizeResponse->responseCode);
         $this->assertEquals('ACTIVE', $tokenizeResponse->responseMessage);
 
         $tokenizedCard = new CreditCardData();
@@ -733,7 +733,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('VERIFIED', $response->responseMessage);
 
         try {
@@ -790,7 +790,7 @@ class CreditCardNotPresentTest extends TestCase
             ->withPaymentMethod($tokenizedCard)
             ->withIdempotencyKey($this->idempotencyKey)
             ->execute();
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('DELETED', $response->responseMessage);
 
         try {
@@ -869,7 +869,7 @@ class CreditCardNotPresentTest extends TestCase
             ->withIdempotencyKey($this->idempotencyKey)
             ->execute();
 
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('ACTIVE', $response->responseMessage);
 
         try {
@@ -884,7 +884,7 @@ class CreditCardNotPresentTest extends TestCase
 
         $response = $tokenizedCard->verify()->withCurrency($this->currency)->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('VERIFIED', $response->responseMessage);
 
         $tokenizedCard->expYear = date('Y', strtotime('+2 year'));
@@ -915,7 +915,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         try {
@@ -950,7 +950,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -968,7 +968,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -981,7 +981,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -1007,7 +1007,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals("VERIFIED", $response->responseMessage);
     }
 
@@ -1025,7 +1025,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals("VERIFIED", $response->responseMessage);
     }
 
@@ -1039,7 +1039,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals("VERIFIED", $response->responseMessage);
 
         $exceptionCaught = false;
@@ -1072,18 +1072,35 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals("VERIFIED", $response->responseMessage);
     }
 
     public function testCreditVerification_WithoutCurrency()
     {
         try {
-            $this->card->verify()
+            $this->card->charge(10)
+                ->withAllowDuplicates(true)
                 ->execute();
-        } catch (GatewayException $e) {
-            $this->assertEquals('40005', $e->responseCode);
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the following fields currency', $e->getMessage());
+        } catch (BuilderException $e) {
+            $this->assertEquals('currency cannot be null for this transaction type.', $e->getMessage());
+        }
+    }
+
+    public function testCreditVerification_WithoutCurrency_MerchantScoped()
+    {
+        $config = $this->setUpConfig();
+        $config->merchantId = 'MER_123';
+        $config->merchantManagementAccountID = null;
+
+        ServicesContainer::configureService($config);
+
+        try {
+            $this->card->charge(10)
+                ->withAllowDuplicates(true)
+                ->execute();
+        } catch (BuilderException $e) {
+            $this->assertEquals('currency cannot be null for this transaction type.', $e->getMessage());
         }
     }
 
@@ -1124,14 +1141,14 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
 
         $capture = $transaction->capture('60')
             ->execute();
 
         $this->assertNotNull($capture);
-        $this->assertEquals('SUCCESS', $capture->responseCode);
+        $this->assertEquals('00', $capture->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
 
         $transaction = $this->card->authorize(30)
@@ -1140,7 +1157,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
 
         try {
@@ -1159,14 +1176,14 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
 
         $capture = $transaction->capture('20')
             ->execute();
 
         $this->assertNotNull($capture);
-        $this->assertEquals('SUCCESS', $capture->responseCode);
+        $this->assertEquals('00', $capture->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
     }
 
@@ -1178,7 +1195,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
 
         try {
@@ -1199,14 +1216,14 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
 
         $capture = $transaction->capture('55')
             ->execute();
 
         $this->assertNotNull($capture);
-        $this->assertEquals('SUCCESS', $capture->responseCode);
+        $this->assertEquals('00', $capture->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
 
         try {
@@ -1221,7 +1238,7 @@ class CreditCardNotPresentTest extends TestCase
 
         if (!empty($response)) {
             $this->assertNotNull($response);
-            $this->assertEquals('SUCCESS', $response->responseCode);
+            $this->assertEquals('00', $response->responseCode);
             $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         }
     }
@@ -1237,7 +1254,7 @@ class CreditCardNotPresentTest extends TestCase
                 ->execute();
 
             $this->assertNotNull($response);
-            $this->assertEquals('SUCCESS', $response->responseCode);
+            $this->assertEquals('00', $response->responseCode);
             $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         }
     }
@@ -1292,7 +1309,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
     }
 
@@ -1305,7 +1322,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertNotNull($response->fingerprint);
 
         $tokenizedCard = new CreditCardData();
@@ -1317,7 +1334,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('VERIFIED', $response->responseMessage);
         $this->assertNotNull($response->fingerprint);
     }
@@ -1366,7 +1383,7 @@ class CreditCardNotPresentTest extends TestCase
             ->withPaymentMethodUsageMode(PaymentMethodUsageMode::MULTIPLE)
             ->execute();
 
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('ACTIVE', $response->responseMessage);
         $this->assertEquals($pmtToken, $response->token);
         $this->assertEquals(PaymentMethodUsageMode::MULTIPLE, $response->tokenUsageMode);
@@ -1391,7 +1408,7 @@ class CreditCardNotPresentTest extends TestCase
             ->withPaymentMethodUsageMode(PaymentMethodUsageMode::MULTIPLE)
             ->execute();
         $this->assertNotNull($responseUpdateToken);
-        $this->assertEquals('SUCCESS', $responseUpdateToken->responseCode);
+        $this->assertEquals('00', $responseUpdateToken->responseCode);
         $this->assertEquals('ACTIVE', $responseUpdateToken->responseMessage);
         $this->assertEquals('MULTIPLE', $responseUpdateToken->tokenUsageMode);
 
@@ -1399,7 +1416,7 @@ class CreditCardNotPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->execute();
         $this->assertNotNull($chargeResponse);
-        $this->assertEquals('SUCCESS', $chargeResponse->responseCode);
+        $this->assertEquals('00', $chargeResponse->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $chargeResponse->responseMessage);
     }
 
@@ -1441,7 +1458,7 @@ class CreditCardNotPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertNotEmpty($transaction->token);
     }
 
@@ -1467,7 +1484,7 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertNotNull($transaction);
         $this->assertEquals('N', $transaction->cvnResponseCode);
         $this->assertEquals('N', $transaction->avsResponseCode);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
 
         // Added an additional transaction check that includes an address because
         // the gateway can send different request contents depending on the
@@ -1484,7 +1501,7 @@ class CreditCardNotPresentTest extends TestCase
         $this->assertNotNull($transaction);
         $this->assertEquals('N', $transaction->cvnResponseCode);
         $this->assertEquals('N', $transaction->avsResponseCode);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
     }
 
     public function testCardTokenizationThenUpdateWithoutUsageMode()
@@ -1512,20 +1529,20 @@ class CreditCardNotPresentTest extends TestCase
     public function AvsCardTests(): array
     {
         return [
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_1, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED, "M", "U", "U"],
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_2, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED, "M", "I", "I"],
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_3, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED, "M", "P", "P"],
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_4, "MATCHED", "MATCHED", "MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "M", "M", "M"],
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_5, "MATCHED", "NOT_MATCHED", "NOT_MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "M", "N", "N"],
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_6, "MATCHED", "NOT_MATCHED", "MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "M", "N", "M"],
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_7, "MATCHED", "NOT_MATCHED", "NOT_MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "M", "N", "N"],
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_8, "NOT_MATCHED", "NOT_MATCHED", "MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "N", "N", "M"],
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_9, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED, "N", "U", "U"],
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_10, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED, "N", "I", "I"],
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_11, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", 'SUCCESS', TransactionStatus::CAPTURED, "N", "P", "P"],
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_12, "NOT_MATCHED", "NOT_CHECKED", "MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "N", "P", "M"],
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_13, "NOT_MATCHED", "MATCHED", "NOT_MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "N", "M", "N"],
-            [GpApiAvsCheckTestCards::AVS_MASTERCARD_14, "NOT_MATCHED", "NOT_MATCHED", "NOT_MATCHED", 'SUCCESS', TransactionStatus::CAPTURED, "N", "N", "N"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_1, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", '00', TransactionStatus::CAPTURED, "M", "U", "U"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_2, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", '00', TransactionStatus::CAPTURED, "M", "I", "I"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_3, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", '00', TransactionStatus::CAPTURED, "M", "P", "P"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_4, "MATCHED", "MATCHED", "MATCHED", '00', TransactionStatus::CAPTURED, "M", "M", "M"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_5, "MATCHED", "NOT_MATCHED", "NOT_MATCHED", '00', TransactionStatus::CAPTURED, "M", "N", "N"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_6, "MATCHED", "NOT_MATCHED", "MATCHED", '00', TransactionStatus::CAPTURED, "M", "N", "M"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_7, "MATCHED", "NOT_MATCHED", "NOT_MATCHED", '00', TransactionStatus::CAPTURED, "M", "N", "N"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_8, "NOT_MATCHED", "NOT_MATCHED", "MATCHED", '00', TransactionStatus::CAPTURED, "N", "N", "M"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_9, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", '00', TransactionStatus::CAPTURED, "N", "U", "U"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_10, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", '00', TransactionStatus::CAPTURED, "N", "I", "I"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_11, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", '00', TransactionStatus::CAPTURED, "N", "P", "P"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_12, "NOT_MATCHED", "NOT_CHECKED", "MATCHED", '00', TransactionStatus::CAPTURED, "N", "P", "M"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_13, "NOT_MATCHED", "MATCHED", "NOT_MATCHED", '00', TransactionStatus::CAPTURED, "N", "M", "N"],
+            [GpApiAvsCheckTestCards::AVS_MASTERCARD_14, "NOT_MATCHED", "NOT_MATCHED", "NOT_MATCHED", '00', TransactionStatus::CAPTURED, "N", "N", "N"],
             [GpApiAvsCheckTestCards::AVS_VISA_1, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", 'DECLINED', TransactionStatus::DECLINED, "I", "U", "U"],
             [GpApiAvsCheckTestCards::AVS_VISA_2, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", 'DECLINED', TransactionStatus::DECLINED, "I", "I", "I"],
             [GpApiAvsCheckTestCards::AVS_VISA_3, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", 'DECLINED', TransactionStatus::DECLINED, "I", "P", "P"],

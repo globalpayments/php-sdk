@@ -91,7 +91,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
         $this->assertNotNull($transaction->bnplResponse->redirectUrl);
 
@@ -102,14 +102,14 @@ class GpApiBNPLTest extends TestCase
         $captureTrn = $transaction->capture()->execute();
 
         $this->assertNotNull($captureTrn);
-        $this->assertEquals('SUCCESS', $captureTrn->responseCode);
+        $this->assertEquals('00', $captureTrn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $captureTrn->responseMessage);
 
         sleep(15);
 
         $trnRefund = $captureTrn->refund()->withCurrency($this->currency)->execute();
         $this->assertNotNull($trnRefund);
-        $this->assertEquals('SUCCESS', $trnRefund->responseCode);
+        $this->assertEquals('00', $trnRefund->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trnRefund->responseMessage);
     }
 
@@ -130,7 +130,7 @@ class GpApiBNPLTest extends TestCase
 
         $trnRefund = $trn->refund()->withCurrency($trnSummary->currency)->execute();
         $this->assertNotNull($trnRefund);
-        $this->assertEquals('SUCCESS', $trnRefund->responseCode);
+        $this->assertEquals('00', $trnRefund->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trnRefund->responseMessage);
     }
 
@@ -150,7 +150,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
         $this->assertNotNull($transaction->bnplResponse->redirectUrl);
 
@@ -161,7 +161,7 @@ class GpApiBNPLTest extends TestCase
         $captureTrn = $transaction->capture()->execute();
 
         $this->assertNotNull($captureTrn);
-        $this->assertEquals('SUCCESS', $captureTrn->responseCode);
+        $this->assertEquals('00', $captureTrn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $captureTrn->responseMessage);
 
         sleep(15);
@@ -171,7 +171,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trnRefund);
-        $this->assertEquals('SUCCESS', $trnRefund->responseCode);
+        $this->assertEquals('00', $trnRefund->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trnRefund->responseMessage);
     }
 
@@ -191,7 +191,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
         $this->assertNotNull($transaction->bnplResponse->redirectUrl);
 
@@ -202,7 +202,7 @@ class GpApiBNPLTest extends TestCase
         $captureTrn = $transaction->capture()->execute();
 
         $this->assertNotNull($captureTrn);
-        $this->assertEquals('SUCCESS', $captureTrn->responseCode);
+        $this->assertEquals('00', $captureTrn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $captureTrn->responseMessage);
 
         sleep(15);
@@ -212,7 +212,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trnRefund);
-        $this->assertEquals('SUCCESS', $trnRefund->responseCode);
+        $this->assertEquals('00', $trnRefund->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trnRefund->responseMessage);
 
         $trnRefund = $captureTrn->refund(100)
@@ -220,7 +220,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trnRefund);
-        $this->assertEquals('SUCCESS', $trnRefund->responseCode);
+        $this->assertEquals('00', $trnRefund->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trnRefund->responseMessage);
     }
 
@@ -241,7 +241,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
         $this->assertNotNull($transaction->bnplResponse->redirectUrl);
 
@@ -252,7 +252,7 @@ class GpApiBNPLTest extends TestCase
         $captureTrn = $transaction->reverse()->execute();
 
         $this->assertNotNull($captureTrn);
-        $this->assertEquals('SUCCESS', $captureTrn->responseCode);
+        $this->assertEquals('00', $captureTrn->responseCode);
         $this->assertEquals(TransactionStatus::REVERSED, $captureTrn->responseMessage);
     }
 
@@ -270,7 +270,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
         $this->assertNotNull($transaction->bnplResponse->redirectUrl);
     }
@@ -290,7 +290,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
         $this->assertNotNull($transaction->bnplResponse->redirectUrl);
 
@@ -301,7 +301,7 @@ class GpApiBNPLTest extends TestCase
         $captureTrn = $transaction->capture()->execute();
 
         $this->assertNotNull($captureTrn);
-        $this->assertEquals('SUCCESS', $captureTrn->responseCode);
+        $this->assertEquals('00', $captureTrn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $captureTrn->responseMessage);
     }
 
@@ -320,7 +320,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
         $this->assertNotNull($transaction->bnplResponse->redirectUrl);
 
@@ -331,7 +331,7 @@ class GpApiBNPLTest extends TestCase
         $captureTrn = $transaction->capture()->execute();
 
         $this->assertNotNull($captureTrn);
-        $this->assertEquals('SUCCESS', $captureTrn->responseCode);
+        $this->assertEquals('00', $captureTrn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $captureTrn->responseMessage);
 
         sleep(15);
@@ -341,7 +341,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trnRefund);
-        $this->assertEquals('SUCCESS', $trnRefund->responseCode);
+        $this->assertEquals('00', $trnRefund->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trnRefund->responseMessage);
     }
 
@@ -360,7 +360,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
         $this->assertNotNull($transaction->bnplResponse->redirectUrl);
     }
@@ -380,7 +380,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
         $this->assertNotNull($transaction->bnplResponse->redirectUrl);
 
@@ -391,7 +391,7 @@ class GpApiBNPLTest extends TestCase
         $captureTrn = $transaction->capture(100)->execute();
 
         $this->assertNotNull($captureTrn);
-        $this->assertEquals('SUCCESS', $captureTrn->responseCode);
+        $this->assertEquals('00', $captureTrn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $captureTrn->responseMessage);
     }
 
@@ -411,7 +411,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
         $this->assertNotNull($transaction->bnplResponse->redirectUrl);
 
@@ -422,7 +422,7 @@ class GpApiBNPLTest extends TestCase
         $captureTrn = $transaction->capture(100)->execute();
 
         $this->assertNotNull($captureTrn);
-        $this->assertEquals('SUCCESS', $captureTrn->responseCode);
+        $this->assertEquals('00', $captureTrn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $captureTrn->responseMessage);
 
         sleep(5);
@@ -430,7 +430,7 @@ class GpApiBNPLTest extends TestCase
         $captureTrn = $transaction->capture(100)->execute();
 
         $this->assertNotNull($captureTrn);
-        $this->assertEquals('SUCCESS', $captureTrn->responseCode);
+        $this->assertEquals('00', $captureTrn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $captureTrn->responseMessage);
     }
 
@@ -449,7 +449,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
         $this->assertNotNull($transaction->bnplResponse->redirectUrl);
 
@@ -460,7 +460,7 @@ class GpApiBNPLTest extends TestCase
         $captureTrn = $transaction->capture()->execute();
 
         $this->assertNotNull($captureTrn);
-        $this->assertEquals('SUCCESS', $captureTrn->responseCode);
+        $this->assertEquals('00', $captureTrn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $captureTrn->responseMessage);
 
         sleep(15);
@@ -470,7 +470,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trnRefund);
-        $this->assertEquals('SUCCESS', $trnRefund->responseCode);
+        $this->assertEquals('00', $trnRefund->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trnRefund->responseMessage);
     }
 
@@ -491,7 +491,7 @@ class GpApiBNPLTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
         $this->assertNotNull($transaction->bnplResponse->redirectUrl);
 

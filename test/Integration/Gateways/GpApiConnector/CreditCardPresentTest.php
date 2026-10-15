@@ -57,7 +57,7 @@ class CreditCardPresentTest extends TestCase
             ->withAllowDuplicates(true)
             ->execute();
 
-        $this->assertTransactionResponse($response, 'SUCCESS', TransactionStatus::CAPTURED);
+        $this->assertTransactionResponse($response, '00', TransactionStatus::CAPTURED);
     }
 
     public function testCardPresentWithSwipeTransaction()
@@ -70,7 +70,7 @@ class CreditCardPresentTest extends TestCase
             ->withAllowDuplicates(true)
             ->execute();
 
-        $this->assertTransactionResponse($response, 'SUCCESS', TransactionStatus::PREAUTHORIZED);
+        $this->assertTransactionResponse($response, '00', TransactionStatus::PREAUTHORIZED);
     }
 
     public function testRefundOnCardPresentChipCard()
@@ -84,7 +84,7 @@ class CreditCardPresentTest extends TestCase
             ->withTagData($tag)
             ->execute();
 
-        $this->assertTransactionResponse($response, 'SUCCESS', TransactionStatus::CAPTURED);
+        $this->assertTransactionResponse($response, '00', TransactionStatus::CAPTURED);
     }
 
     public function testCardPresentWithManualEntryModeTransaction()
@@ -95,7 +95,7 @@ class CreditCardPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->execute();
 
-        $this->assertTransactionResponse($response, 'SUCCESS', TransactionStatus::CAPTURED);
+        $this->assertTransactionResponse($response, '00', TransactionStatus::CAPTURED);
     }
 
     public function testCreditVerification_CardPresent()
@@ -106,7 +106,7 @@ class CreditCardPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->execute();
 
-        $this->assertTransactionResponse($response, 'SUCCESS', 'VERIFIED');
+        $this->assertTransactionResponse($response, '00', 'VERIFIED');
     }
 
     public function testCreditVerification_CardPresent_CVNNotMatched()
@@ -130,17 +130,17 @@ class CreditCardPresentTest extends TestCase
             ->withAllowDuplicates(true)
             ->execute();
 
-        $this->assertTransactionResponse($transaction, 'SUCCESS', TransactionStatus::CAPTURED);
+        $this->assertTransactionResponse($transaction, '00', TransactionStatus::CAPTURED);
 
         $reverse = $transaction->reverse()
             ->execute();
 
-        $this->assertTransactionResponse($reverse, 'SUCCESS', TransactionStatus::REVERSED);
+        $this->assertTransactionResponse($reverse, '00', TransactionStatus::REVERSED);
 
         $response = $reverse->reauthorized()
             ->execute();
 
-        $this->assertTransactionResponse($response, 'SUCCESS', TransactionStatus::CAPTURED);
+        $this->assertTransactionResponse($response, '00', TransactionStatus::CAPTURED);
     }
 
     public function testReauthAReversedAuthorizedTransaction()
@@ -152,18 +152,18 @@ class CreditCardPresentTest extends TestCase
             ->withAllowDuplicates(true)
             ->execute();
 
-        $this->assertTransactionResponse($transaction, 'SUCCESS', TransactionStatus::PREAUTHORIZED);
+        $this->assertTransactionResponse($transaction, '00', TransactionStatus::PREAUTHORIZED);
 
         $reverse = $transaction->reverse()
             ->withCurrency($this->currency)
             ->execute();
 
-        $this->assertTransactionResponse($reverse, 'SUCCESS', TransactionStatus::REVERSED);
+        $this->assertTransactionResponse($reverse, '00', TransactionStatus::REVERSED);
 
         $reauthorized = $reverse->reauthorized()
             ->execute();
 
-        $this->assertTransactionResponse($reauthorized, 'SUCCESS', TransactionStatus::PREAUTHORIZED);
+        $this->assertTransactionResponse($reauthorized, '00', TransactionStatus::PREAUTHORIZED);
     }
 
     public function testReauthorizedAnExistingTransaction()
@@ -190,12 +190,12 @@ class CreditCardPresentTest extends TestCase
             ->withCurrency($this->currency)
             ->execute();
 
-        $this->assertTransactionResponse($reverse, 'SUCCESS', TransactionStatus::REVERSED);
+        $this->assertTransactionResponse($reverse, '00', TransactionStatus::REVERSED);
         sleep(2);
         $response = $reverse->reauthorized($result->amount)
             ->execute();
 
-        $this->assertTransactionResponse($response, 'SUCCESS', TransactionStatus::PREAUTHORIZED);
+        $this->assertTransactionResponse($response, '00', TransactionStatus::PREAUTHORIZED);
     }
 
     public function testReauthAReversedAuthorizedTransaction_WithIdempotencyKey()
@@ -208,19 +208,19 @@ class CreditCardPresentTest extends TestCase
             ->withAllowDuplicates(true)
             ->execute();
 
-        $this->assertTransactionResponse($transaction, 'SUCCESS', TransactionStatus::PREAUTHORIZED);
+        $this->assertTransactionResponse($transaction, '00', TransactionStatus::PREAUTHORIZED);
 
         $reverse = $transaction->reverse()
             ->withCurrency($this->currency)
             ->execute();
 
-        $this->assertTransactionResponse($reverse, 'SUCCESS', TransactionStatus::REVERSED);
+        $this->assertTransactionResponse($reverse, '00', TransactionStatus::REVERSED);
 
         $reauthorized = $reverse->reauthorized()
             ->withIdempotencyKey($idempotencyKey)
             ->execute();
 
-        $this->assertTransactionResponse($reauthorized, 'SUCCESS', TransactionStatus::PREAUTHORIZED);
+        $this->assertTransactionResponse($reauthorized, '00', TransactionStatus::PREAUTHORIZED);
 
         $exceptionCaught = false;
         try {
@@ -245,18 +245,18 @@ class CreditCardPresentTest extends TestCase
             ->withAllowDuplicates(true)
             ->execute();
 
-        $this->assertTransactionResponse($transaction, 'SUCCESS', TransactionStatus::CAPTURED);
+        $this->assertTransactionResponse($transaction, '00', TransactionStatus::CAPTURED);
 
         $reverse = $transaction->reverse()
             ->execute();
 
-        $this->assertTransactionResponse($reverse, 'SUCCESS', TransactionStatus::REVERSED);
+        $this->assertTransactionResponse($reverse, '00', TransactionStatus::REVERSED);
         $this->assertEquals($reverse->transactionId, $transaction->transactionId);
 
         $response = $reverse->reauthorized(15)
             ->execute();
 
-        $this->assertTransactionResponse($response, 'SUCCESS', TransactionStatus::CAPTURED);
+        $this->assertTransactionResponse($response, '00', TransactionStatus::CAPTURED);
         $this->assertEquals(15, $response->balanceAmount);
         $this->assertNotEquals($reverse->transactionId, $response->transactionId);
     }
@@ -270,7 +270,7 @@ class CreditCardPresentTest extends TestCase
             ->withAllowDuplicates(true)
             ->execute();
 
-        $this->assertTransactionResponse($refund, 'SUCCESS', TransactionStatus::CAPTURED);
+        $this->assertTransactionResponse($refund, '00', TransactionStatus::CAPTURED);
 
         $exceptionCaught = false;
         try {
@@ -293,7 +293,7 @@ class CreditCardPresentTest extends TestCase
             ->withAllowDuplicates(true)
             ->execute();
 
-        $this->assertTransactionResponse($transaction, 'SUCCESS', TransactionStatus::CAPTURED);
+        $this->assertTransactionResponse($transaction, '00', TransactionStatus::CAPTURED);
 
         $exceptionCaught = false;
         try {
@@ -338,7 +338,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -354,7 +354,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -373,7 +373,7 @@ class CreditCardPresentTest extends TestCase
 
         $this->assertTransactionResponse(
             $transaction,
-            'SUCCESS',
+            '00',
             TransactionStatus::CAPTURED
         );
 
@@ -385,7 +385,7 @@ class CreditCardPresentTest extends TestCase
 
         $this->assertTransactionResponse(
             $response,
-            'SUCCESS',
+            '00',
             TransactionStatus::CAPTURED
         );
     }
@@ -403,7 +403,7 @@ class CreditCardPresentTest extends TestCase
 
         $this->assertTransactionResponse(
             $transaction,
-            'SUCCESS',
+            '00',
             TransactionStatus::PREAUTHORIZED
         );
 
@@ -415,7 +415,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
         $this->assertTransactionResponse(
             $response,
-            'SUCCESS',
+            '00',
             TransactionStatus::PREAUTHORIZED
         );
     }
@@ -430,7 +430,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
         $this->assertTransactionResponse(
             $transaction,
-            'SUCCESS',
+            '00',
             TransactionStatus::CAPTURED
         );
 
@@ -439,7 +439,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
         $this->assertTransactionResponse(
             $response,
-            'SUCCESS',
+            '00',
             TransactionStatus::CAPTURED
         );
     }
@@ -457,7 +457,7 @@ class CreditCardPresentTest extends TestCase
 
         $this->assertTransactionResponse(
             $transaction,
-            'SUCCESS',
+            '00',
             TransactionStatus::CAPTURED
         );
 
@@ -467,7 +467,7 @@ class CreditCardPresentTest extends TestCase
 
         $this->assertTransactionResponse(
             $response,
-            'SUCCESS',
+            '00',
             TransactionStatus::CAPTURED
         );
     }
@@ -484,7 +484,7 @@ class CreditCardPresentTest extends TestCase
 
         $this->assertTransactionResponse(
             $transaction,
-            'SUCCESS',
+            '00',
             TransactionStatus::CAPTURED
         );
 
@@ -493,7 +493,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
         $this->assertTransactionResponse(
             $response,
-            'SUCCESS',
+            '00',
             TransactionStatus::CAPTURED
         );
     }
@@ -509,7 +509,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
         $this->assertTransactionResponse(
             $transaction,
-            'SUCCESS',
+            '00',
             TransactionStatus::CAPTURED
         );
 
@@ -518,7 +518,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
         $this->assertTransactionResponse(
             $response,
-            'SUCCESS',
+            '00',
             TransactionStatus::CAPTURED
         );
     }
@@ -534,7 +534,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
         $this->assertTransactionResponse(
             $transaction,
-            'SUCCESS',
+            '00',
             TransactionStatus::CAPTURED
         );
 
@@ -543,7 +543,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
         $this->assertTransactionResponse(
             $response,
-            'SUCCESS',
+            '00',
             TransactionStatus::CAPTURED
         );
     }
@@ -559,7 +559,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
         $this->assertTransactionResponse(
             $transaction,
-            'SUCCESS',
+            '00',
             TransactionStatus::CAPTURED
         );
 
@@ -603,7 +603,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
 
         $lodgingInfo = new LodgingData();
@@ -625,14 +625,14 @@ class CreditCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
         $this->assertEquals(60, $transaction->authorizedAmount);
 
         $capture = $transaction->capture()->execute();
 
         $this->assertNotNull($capture);
-        $this->assertEquals('SUCCESS', $capture->responseCode);
+        $this->assertEquals('00', $capture->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
     }
 
@@ -645,14 +645,14 @@ class CreditCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
 
         $transaction = $transaction->additionalAuth(10)
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
         $this->assertEquals(60, $transaction->authorizedAmount);
     }
@@ -666,14 +666,14 @@ class CreditCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
 
         $transaction = $transaction->additionalAuth(0)
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
         $this->assertEquals(50, $transaction->authorizedAmount);
     }
@@ -687,7 +687,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($charge);
-        $this->assertEquals('SUCCESS', $charge->responseCode);
+        $this->assertEquals('00', $charge->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $charge->responseMessage);
 
         $exceptionCaught = false;
@@ -712,7 +712,7 @@ class CreditCardPresentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $transaction->responseMessage);
 
         $exceptionCaught = false;
@@ -777,3 +777,4 @@ class CreditCardPresentTest extends TestCase
         $this->assertEquals($transactionStatus, $transaction->responseMessage);
     }
 }
+

@@ -169,7 +169,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
                 if (!$builder->paymentMethod instanceof FundsAccount) {
                     throw new UnsupportedTransactionException("Payment method doesn't support funds transfers");
                 }
-                $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $builder->paymentMethod->merchantId .
+                $endpoint = $config->getMerchantUrl($builder->paymentMethod->merchantId) .
                     GpApiRequest::TRANSFER_ENDPOINT;
                 $verb = 'POST';
                 $requestData = [

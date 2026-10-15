@@ -134,7 +134,7 @@ class GpApiDigitalWalletTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertNotEmpty($response->transactionId); // DEC_ID
         $this->assertNotEmpty($response->decryptId);     // DEC_ID
         $this->assertNotEmpty($response->token);         // PMT_ID
@@ -228,7 +228,7 @@ class GpApiDigitalWalletTest extends TestCase
                 ->execute();
 
             $this->assertTransactionResponse($response, TransactionStatus::CAPTURED);
-            $this->assertEquals('SUCCESS', $response->responseCode);
+            $this->assertEquals('00', $response->responseCode);
         }
     }
 
@@ -497,7 +497,7 @@ class GpApiDigitalWalletTest extends TestCase
     private function assertSuccessfulPaymentMethodCreate($response): void
     {
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertNotEmpty($response->token);
         $this->assertNotEmpty($response->transactionId);
     }
@@ -558,7 +558,7 @@ class GpApiDigitalWalletTest extends TestCase
     private function assertTransactionResponse($transaction, $transactionStatus): void
     {
         $this->assertNotNull($transaction);
-        $this->assertEquals("SUCCESS", $transaction->responseCode);
+        $this->assertEquals("00", $transaction->responseCode);
         $this->assertEquals($transactionStatus, $transaction->responseMessage);
         $this->assertNotEmpty($transaction->transactionId);
     }

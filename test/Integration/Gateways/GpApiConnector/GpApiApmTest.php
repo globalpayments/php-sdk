@@ -246,7 +246,7 @@ class GpApiApmTest extends TestCase
     private function assertCashpressoInitiateResponse(Transaction $response, string $expectedPaymentPlan): void
     {
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertContains($response->responseMessage, [TransactionStatus::INITIATED, TransactionStatus::PENDING]);
         $this->assertNotNull($response->alternativePaymentResponse);
         $this->assertNotEmpty($response->alternativePaymentResponse->redirectUrl);
@@ -662,7 +662,7 @@ class GpApiApmTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $response->responseMessage);
 
         fwrite(STDERR, print_r($response->alternativePaymentResponse->redirectUrl, TRUE));
@@ -689,7 +689,7 @@ class GpApiApmTest extends TestCase
 
         $response = $transaction->confirm()->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -702,7 +702,7 @@ class GpApiApmTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $response->responseMessage);
 
         fwrite(STDERR, print_r($response->alternativePaymentResponse->redirectUrl, TRUE));
@@ -731,13 +731,13 @@ class GpApiApmTest extends TestCase
         $response = $transaction->confirm()->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $response->responseMessage);
 
         $capture = $transaction->capture()->execute();
 
         $this->assertNotNull($capture);
-        $this->assertEquals('SUCCESS', $capture->responseCode);
+        $this->assertEquals('00', $capture->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
     }
 
@@ -750,7 +750,7 @@ class GpApiApmTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals('SUCCESS', $trn->responseCode);
+        $this->assertEquals('00', $trn->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $trn->responseMessage);
 
         fwrite(STDERR, print_r($trn->alternativePaymentResponse->redirectUrl, TRUE));
@@ -777,12 +777,12 @@ class GpApiApmTest extends TestCase
 
         $response = $transaction->confirm()->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
 
         $trnRefund = $transaction->refund()->withCurrency($this->currency)->execute();
         $this->assertNotNull($trnRefund);
-        $this->assertEquals('SUCCESS', $trnRefund->responseCode);
+        $this->assertEquals('00', $trnRefund->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trnRefund->responseMessage);
 
     }
@@ -796,7 +796,7 @@ class GpApiApmTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals('SUCCESS', $trn->responseCode);
+        $this->assertEquals('00', $trn->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $trn->responseMessage);
 
         fwrite(STDERR, print_r($trn->alternativePaymentResponse->redirectUrl, TRUE));
@@ -824,13 +824,13 @@ class GpApiApmTest extends TestCase
 
         $response = $transaction->confirm()->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
 
         $trnReverse = $transaction->reverse()->withCurrency($this->currency)->execute();
 
         $this->assertNotNull($trnReverse);
-        $this->assertEquals('SUCCESS', $trnReverse->responseCode);
+        $this->assertEquals('00', $trnReverse->responseCode);
         $this->assertEquals(TransactionStatus::REVERSED, $trnReverse->responseMessage);
     }
 
@@ -844,7 +844,7 @@ class GpApiApmTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $response->responseMessage);
 
         fwrite(STDERR, print_r($response->alternativePaymentResponse->redirectUrl, TRUE));
@@ -871,17 +871,17 @@ class GpApiApmTest extends TestCase
 
         $response = $transaction->confirm()->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $response->responseMessage);
 
         $capture = $transaction->capture(1)->execute();
         $this->assertNotNull($capture);
-        $this->assertEquals('SUCCESS', $capture->responseCode);
+        $this->assertEquals('00', $capture->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage);
 
         $capture2 = $transaction->capture(2)->execute();
         $this->assertNotNull($capture2);
-        $this->assertEquals('SUCCESS', $capture2->responseCode);
+        $this->assertEquals('00', $capture2->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $capture2->responseMessage);
     }
 
@@ -930,7 +930,7 @@ class GpApiApmTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $response->responseMessage);
         $this->assertNotNull($response->alternativePaymentResponse->redirectUrl);
     }
@@ -950,7 +950,7 @@ class GpApiApmTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $response->responseMessage);
         $this->assertNotNull($response->alternativePaymentResponse->redirectUrl);
         $this->assertEquals(AlternativePaymentType::TEST_PAY, $response->alternativePaymentResponse->providerName);
@@ -970,7 +970,7 @@ class GpApiApmTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $response->responseMessage);
         $this->assertNotNull($response->alternativePaymentResponse->redirectUrl);
         $this->assertEquals(AlternativePaymentType::ALIPAY, $response->alternativePaymentResponse->providerName);
@@ -1129,7 +1129,7 @@ class GpApiApmTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $response->responseMessage);
         $this->assertNotNull($response->alternativePaymentResponse->redirectUrl);
 
@@ -1158,7 +1158,7 @@ class GpApiApmTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $response->responseMessage);
         $this->assertNotNull($response->alternativePaymentResponse->redirectUrl);
 
@@ -1334,7 +1334,7 @@ class GpApiApmTest extends TestCase
                 ->execute();
 
             $this->assertNotNull($response);
-            $this->assertEquals('SUCCESS', $response->responseCode);
+            $this->assertEquals('00', $response->responseCode);
             $this->assertNotNull($response->transactionId);
             $this->assertNotNull($response->alternativePaymentResponse);
             $this->assertEquals(

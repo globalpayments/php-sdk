@@ -25,14 +25,14 @@ class GpApiVoidApacTest extends GpApiApacBaseTest
             ->withAllowDuplicates(true)
             ->execute($serviceName);
 
-        $this->assertEquals('SUCCESS', $auth->responseCode, 'Auth response code must be SUCCESS');
+        $this->assertEquals('00', $auth->responseCode, 'Auth response code must be SUCCESS');
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $auth->responseMessage, 'Auth status must be PREAUTHORIZED');
         $this->assertNotEmpty($auth->transactionId, 'Auth transaction ID must be present');
 
         $voided = $auth->reverse()->execute($serviceName);
 
         $this->assertNotNull($voided, 'Void response must not be null');
-        $this->assertEquals('SUCCESS', $voided->responseCode, 'Void response code must be SUCCESS');
+        $this->assertEquals('00', $voided->responseCode, 'Void response code must be SUCCESS');
         $this->assertNotEmpty($voided->transactionId, 'Void transaction ID must be present');
     }
 

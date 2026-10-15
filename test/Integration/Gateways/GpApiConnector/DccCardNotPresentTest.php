@@ -178,7 +178,7 @@ class DccCardNotPresentTest extends TestCase
         $response = $this->card->tokenize()->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('ACTIVE', $response->responseMessage);
 
         $tokenizedCard = new CreditCardData();
@@ -245,7 +245,7 @@ class DccCardNotPresentTest extends TestCase
 
         $expectedDccValue = $this->getAmount($dccDetails->dccRateData->cardHolderRate);
         $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
+        $this->assertEquals('00', $dccDetails->responseCode);
         $this->assertEquals('NOT_AVAILABLE', $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
         $this->assertEmpty($dccDetails->dccRateData->cardHolderAmount);
@@ -316,7 +316,7 @@ class DccCardNotPresentTest extends TestCase
     private function assertDccInfoResponse($dccDetails): void
     {
         $this->assertNotNull($dccDetails);
-        $this->assertEquals('SUCCESS', $dccDetails->responseCode);
+        $this->assertEquals('00', $dccDetails->responseCode);
         $this->assertEquals('AVAILABLE', $dccDetails->responseMessage);
         $this->assertNotNull($dccDetails->dccRateData);
         $expectedDccValue = $this->getAmount($dccDetails->dccRateData->cardHolderRate);
@@ -327,7 +327,7 @@ class DccCardNotPresentTest extends TestCase
     {
         $expectedDccValue = $this->getAmount($cardHolderRate);
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals($transactionStatus, $transaction->responseMessage);
         if ($transactionStatus !== TransactionStatus::REVERSED) {
             $this->assertEquals($expectedDccValue, $transaction->dccRateData->cardHolderAmount);

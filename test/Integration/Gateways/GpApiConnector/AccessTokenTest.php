@@ -246,7 +246,7 @@ class AccessTokenTest extends TestCase
             ->execute("configName");
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('VERIFIED', $response->responseMessage);
     }
 
@@ -261,7 +261,7 @@ class AccessTokenTest extends TestCase
         sleep(61);
         $response = $this->card->verify()->withCurrency('USD')->execute();
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('VERIFIED', $response->responseMessage);
     }
 

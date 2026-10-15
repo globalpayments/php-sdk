@@ -26,14 +26,14 @@ class GpApiCaptureApacTest extends GpApiApacBaseTest
             ->withAllowDuplicates(true)
             ->execute($serviceName);
 
-        $this->assertEquals('SUCCESS', $auth->responseCode, 'Auth response code must be SUCCESS');
+        $this->assertEquals('00', $auth->responseCode, 'Auth response code must be SUCCESS');
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $auth->responseMessage, 'Auth status must be PREAUTHORIZED');
         $this->assertNotEmpty($auth->transactionId, 'Auth transaction ID must be present');
 
         $capture = $auth->capture($captureAmount)->execute($serviceName);
 
         $this->assertNotNull($capture, 'Capture response must not be null');
-        $this->assertEquals('SUCCESS', $capture->responseCode, 'Capture response code must be SUCCESS');
+        $this->assertEquals('00', $capture->responseCode, 'Capture response code must be SUCCESS');
         $this->assertEquals(TransactionStatus::CAPTURED, $capture->responseMessage, 'Capture status must be CAPTURED');
         $this->assertNotEmpty($capture->transactionId, 'Capture transaction ID must be present');
     }

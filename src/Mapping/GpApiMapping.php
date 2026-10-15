@@ -129,7 +129,15 @@ class GpApiMapping
             return self::mapDecryptResponse($response, $transaction);
         }
 
-        $transaction->responseCode = $response->action->result_code;
+        $rawResultCode = $response->action->result_code
+            ?? $response->result_code
+            ?? $response->response_code
+            ?? null;
+
+        $transaction->responseCode = self::normalizeResponseCode(
+            $rawResultCode !== null ? (string) $rawResultCode : null,
+            $response->status ?? null
+        );
         $transaction->responseMessage = $response->status;
 
         switch ($response->action->type) {
@@ -239,7 +247,11 @@ class GpApiMapping
     {
         $transaction->transactionId = $response->id ?? null;
         $transaction->decryptId = $response->id ?? null;
-        $transaction->responseCode = $response->result ?? ($response->result_code ?? null);
+        $rawResultCode = $response->result ?? ($response->result_code ?? null);
+        $transaction->responseCode = self::normalizeResponseCode(
+            $rawResultCode !== null ? (string) $rawResultCode : null,
+            $response->status ?? null
+        );
         $transaction->responseMessage = $response->status ?? null;
 
         if (!empty($response->payment_method)) {
@@ -253,6 +265,65 @@ class GpApiMapping
         return $transaction;
     }
 
+    private static function normalizeResponseCode(?string $responseCode, ?string $status = null): ?string
+    {
+        $normalizedResponseCode = $responseCode !== null ? strtoupper(trim((string) $responseCode)) : null;
+        $normalizedStatus = ($normalizedResponseCode === null || $normalizedResponseCode === '') && $status !== null
+            ? strtoupper(trim($status))
+            : null;
+
+        foreach ([$normalizedResponseCode, $normalizedStatus] as $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            if (in_array($value, ['00', '10'], true)) {
+                return $value;
+            }
+
+            if (in_array($value, ['0', '000'], true)) {
+                return '00';
+            }
+
+            if (in_array($value, ['1', '010'], true)) {
+                return '10';
+            }
+
+            if (in_array($value, [
+                TransactionStatus::CAPTURED,
+                TransactionStatus::PREAUTHORIZED,
+                TransactionStatus::INITIATED,
+                TransactionStatus::REVERSED,
+                TransactionStatus::BATCHED,
+                TransactionStatus::FUNDED,
+                'SUCCESS',
+                'APPROVED',
+                'APPROVAL',
+                'AUTHORIZED',
+                'AUTHORISED',
+                'CAPTURED',
+                'PREAUTHORISED',
+                'INITIATED',
+                'REVERSED',
+                'BATCHED',
+                'FUNDED',
+            ], true)) {
+                return '00';
+            }
+
+            if (in_array($value, [
+                'PARTIAL_APPROVAL',
+                'PARTIALLY_APPROVED',
+                'PARTIAL_CAPTURED',
+                'PARTIALLY_CAPTURED',
+                'PARTIAL',
+            ], true)) {
+                return '10';
+            }
+        }
+
+        return $normalizedResponseCode ?? $normalizedStatus ?? $responseCode;
+    }
     private static function mapBatchCloseResponse(BatchSummary &$batchSummary, $response): void
     {
         $batchSummary->id = $response->id;
@@ -983,7 +1054,10 @@ class GpApiMapping
             }
         }
         $summary->orderId = $response->order->reference ?? null;
-        $summary->responseCode = $response->action->result_code ?? null;
+        $summary->responseCode = self::normalizeResponseCode(
+            $response->action->result_code ?? $response->result_code ?? $response->response_code ?? null,
+            $response->status ?? null
+        );
 
         return $summary;
     }
@@ -1068,7 +1142,10 @@ class GpApiMapping
         $riskAssessment->accountId = $response->account_id ?? null;
         $riskAssessment->accountName = $response->account_name ?? null;
         $riskAssessment->reference = $response->reference ?? null;
-        $riskAssessment->responseCode = $response->action->result_code ?? null;
+        $riskAssessment->responseCode = self::normalizeResponseCode(
+            $response->action->result_code ?? $response->result_code ?? $response->response_code ?? null,
+            $response->status ?? null
+        );
         $riskAssessment->responseMessage = $response->result ?? null;
         if (isset($response->payment_method->card)) {
             $riskAssessment->cardDetails = self::mapCardDetails($response->payment_method->card);
@@ -1650,7 +1727,10 @@ class GpApiMapping
                 $doc->format = $response->format;
                 $doc->category = $response->function;
                 $user->document = $doc;
-                $user->responseCode = $response->action->result_code ?? null;
+                $user->responseCode = self::normalizeResponseCode(
+                    $response->action->result_code ?? $response->result_code ?? $response->response_code ?? null,
+                    $response->status ?? null
+                );
                 return $user;
             case self::MERCHANT_CREATE:
             case self::MERCHANT_EDIT:
@@ -1664,7 +1744,10 @@ class GpApiMapping
                 $user->timeCreate = !empty($response->time_created) ? new DateTime($response->time_created) : null;
                 $user->timeLastUpdated = !empty($response->time_last_updated) ?
                     new DateTime($response->time_last_updated) : null;
-                $user->responseCode = $response->action->result_code ?? null;
+                $user->responseCode = self::normalizeResponseCode(
+                    $response->action->result_code ?? $response->result_code ?? $response->response_code ?? null,
+                    $response->status ?? null
+                );
                 $user->statusDescription = $response->status_description ?? null;
                 $user->email = $response->email ?? null;
                 if (!empty($response->address)) {
@@ -1704,7 +1787,10 @@ class GpApiMapping
                 $funds->currency = $response->currency ?? null;
                 $funds->account = new UserAccount($response->account_id, $response->account_name);
                 $user->fundsAccountDetails = $funds;
-                $user->responseCode = $response->action->result_code;
+                $user->responseCode = self::normalizeResponseCode(
+                    $response->action->result_code ?? $response->result_code ?? $response->response_code ?? null,
+                    $response->status ?? null
+                );
 
                 return $user;
             default:
@@ -1752,7 +1838,10 @@ class GpApiMapping
     {
         $fp->resourceId = $response->id;
         $fp->status = $fp->responseMessage = $response->status;
-        $fp->responseCode = $response->action->result_code;
+        $fp->responseCode = self::normalizeResponseCode(
+            $response->action->result_code ?? $response->result_code ?? $response->response_code ?? null,
+            $response->status ?? null
+        );
     }
 
     /**

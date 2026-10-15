@@ -20,11 +20,11 @@ use GlobalPayments\Api\Entities\Enums\{
     TransactionStatus
 };
 use DateTime;
-use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
+use GlobalPayments\Api\Entities\GpApi\{AccessTokenInfo, GpApiRequest};
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Utils\GenerationUtils;
-use GlobalPayments\Api\Utils\Logging\RequestConsoleLogger;
+use GlobalPayments\Api\Utils\Logging\{RequestConsoleLogger};
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
@@ -136,12 +136,84 @@ class GpApiInstallmentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         $this->assertNotNull($response->installment->program);
         $this->assertNotNull($response->installment->mode);
         $this->assertNotNull($response->installment->count);
         $this->assertNotNull($response->installment->grace_period_count);
+    }
+
+    public function testRequestEndpointPrefixForDefaultSaleTransaction(): void
+    {
+        $config = $this->setUpConfig();
+        $config->merchantId = null;
+        $config->merchantManagementAccountID = null;
+
+        $this->assertSame('', $config->getRequestEndpointPrefix(GpApiRequest::TRANSACTION_ENDPOINT));
+    }
+
+    public function testRequestEndpointPrefixForMerchantScopedSaleTransaction(): void
+    {
+        $config = $this->setUpConfig();
+        $config->merchantId = 'MER_123';
+        $config->merchantManagementAccountID = null;
+
+        $this->assertSame('/merchants/MER_123', $config->getRequestEndpointPrefix(GpApiRequest::TRANSACTION_ENDPOINT));
+    }
+
+    public function testRequestEndpointPrefixForMmaScopedSaleTransaction(): void
+    {
+        $config = $this->setUpConfig();
+        $config->merchantId = 'MER_123';
+        $config->merchantManagementAccountID = 'MMA_456';
+
+        $this->assertSame('/accounts/MMA_456/merchants/MER_123', $config->getRequestEndpointPrefix(GpApiRequest::TRANSACTION_ENDPOINT));
+    }
+
+    public function testConsoleLoggerAttachedForMerchantAndMmaRouting(): void
+    {
+        $config = $this->setUpConfig();
+        $config->merchantId = 'MER_123';
+        $config->merchantManagementAccountID = 'MMA_456';
+        $config->requestLogger = new RequestConsoleLogger();
+
+        $this->assertSame('/accounts/MMA_456/merchants/MER_123', $config->getRequestEndpointPrefix(GpApiRequest::TRANSACTION_ENDPOINT));
+        $this->assertInstanceOf(RequestConsoleLogger::class, $config->requestLogger);
+    }
+
+    public function testMmaScopedTransactionUsesCorrectEndpoint(): void
+    {
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $config->country = 'US';
+        $config->appId = 'ju9LDqNIxUgY2NeQPgwqc0fLbq3AcJCL';
+        $config->appKey = 'KYYh3YJwyfzqjWNa';
+        $config->serviceUrl = 'https://apis.sandbox.globalpay.com/ucp';
+        $config->merchantId = 'MER_6517954c0c8544feb3f74c825e2b032c';
+        $config->merchantManagementAccountID = 'MMA_344aebc638864d7381909dcf78d4c760';
+        $config->accessTokenInfo = new AccessTokenInfo();
+        $config->accessTokenInfo->transactionProcessingAccountName = 'transaction_processing';
+        $config->accessTokenInfo->transactionProcessingAccountID = null;
+        $config->transactionAccountName = 'transaction_processing';
+        $config->requestLogger = new RequestConsoleLogger();
+
+        ServicesContainer::configureService($config);
+
+        $card = new CreditCardData();
+        $card->number = '4263970000005262';
+        $card->expMonth = '09';
+        $card->expYear = '27';
+        $card->cvn = '131';
+        $card->cardPresent = false;
+        $card->readerPresent = false;
+
+        $response = $card->charge(101)
+            ->withCurrency('USD')
+            ->withAllowDuplicates(true)
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertSame('SUCCESS', $response->responseCode);
     }
 
     public function testCreditSaleForInstallmentMC()
@@ -155,7 +227,7 @@ class GpApiInstallmentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         $this->assertNotNull($response->installment->program);
         $this->assertNotNull($response->installment->mode);
@@ -174,7 +246,7 @@ class GpApiInstallmentTest extends TestCase
             ->execute();
           
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         $this->assertNotNull($response->installment->program);
         $this->assertNotNull($response->installment->mode);
@@ -191,7 +263,7 @@ class GpApiInstallmentTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         $this->assertNull($response->installment);
     }
@@ -290,7 +362,7 @@ class GpApiInstallmentTest extends TestCase
             ->execute();
 
             $this->assertNotNull($response);
-            $this->assertEquals('SUCCESS', $response->responseCode);
+            $this->assertEquals('00', $response->responseCode);
     }
 
     public function testContractReference_MC_Sandbox()
@@ -305,7 +377,7 @@ class GpApiInstallmentTest extends TestCase
             ->execute();
 
             $this->assertNotNull($response);
-            $this->assertEquals('SUCCESS', $response->responseCode);
+            $this->assertEquals('00', $response->responseCode);
     }
 
     /** END Contract Reference Test Cases **/
@@ -318,10 +390,12 @@ class GpApiInstallmentTest extends TestCase
         $config->appKey = 'qgvDUwIhgT8QS2kp';
         $config->serviceUrl = 'https://apis-sit.globalpay.com/ucp';
         $config->accessTokenInfo = new AccessTokenInfo();
+        $config->merchantId = 'MER_6517954c0c8544feb3f74c825e2b032c';
+        $config->merchantManagementAccountID = 'MMA_344aebc638864d7381909dcf78d4c760';
         $config->accessTokenInfo->riskAssessmentAccountName = 'EOS_RiskAssessment';
         $config->accessTokenInfo->transactionProcessingAccountName = 'Portico_SIT_405352';
         $config->accessTokenInfo->transactionProcessingAccountID = 'TRA_ba4aa4dd3cd1426e9eecba3abbd2053c';
-        $config->accessTokenInfo->merchantManagementAccountID = 'MER_e3b91f1af988437f85d000eb272b777d';
+        $config->accessTokenInfo->merchantManagementAccountID = 'MMA_344aebc638864d7381909dcf78d4c760';
 
         $config->requestLogger = new RequestConsoleLogger();
         return $config;

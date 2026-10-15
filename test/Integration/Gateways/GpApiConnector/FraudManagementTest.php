@@ -79,7 +79,7 @@ class FraudManagementTest extends TestCase
                 ->execute();
 
             $this->assertNotNull($response);
-            $this->assertEquals("SUCCESS", $response->responseCode);
+            $this->assertEquals("00", $response->responseCode);
             $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
             $this->assertNotNull($response->fraudFilterResponse);
             $this->assertEquals($fraudFilterMode, $response->fraudFilterResponse->fraudResponseMode);
@@ -103,7 +103,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals("SUCCESS", $response->responseCode);
+        $this->assertEquals("00", $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         $this->assertNotNull($response->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::ACTIVE, $response->fraudFilterResponse->fraudResponseMode);
@@ -139,7 +139,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals("SUCCESS", $response->responseCode);
+        $this->assertEquals("00", $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         $this->assertNotNull($response->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::ACTIVE, $response->fraudFilterResponse->fraudResponseMode);
@@ -170,7 +170,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals("SUCCESS", $response->responseCode);
+        $this->assertEquals("00", $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
         $this->assertNotNull($response->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::ACTIVE, $response->fraudFilterResponse->fraudResponseMode);
@@ -190,7 +190,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::ACTIVE, $trn->fraudFilterResponse->fraudResponseMode);
@@ -201,7 +201,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterResult::HOLD_SUCCESSFUL, $trn->fraudFilterResponse->fraudResponseResult);
@@ -211,7 +211,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterResult::RELEASE_SUCCESSFUL, $trn->fraudFilterResponse->fraudResponseResult);
@@ -219,7 +219,7 @@ class FraudManagementTest extends TestCase
         $trn = $trn->capture()->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
     }
 
@@ -232,7 +232,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::ACTIVE, $trn->fraudFilterResponse->fraudResponseMode);
@@ -242,7 +242,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterResult::HOLD_SUCCESSFUL, $trn->fraudFilterResponse->fraudResponseResult);
@@ -251,7 +251,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterResult::RELEASE_SUCCESSFUL, $trn->fraudFilterResponse->fraudResponseResult);
@@ -259,7 +259,7 @@ class FraudManagementTest extends TestCase
         $trn = $trn->capture()->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
     }
 
@@ -273,7 +273,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::ACTIVE, $trn->fraudFilterResponse->fraudResponseMode);
@@ -301,7 +301,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::ACTIVE, $trn->fraudFilterResponse->fraudResponseMode);
@@ -330,7 +330,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::ACTIVE, $trn->fraudFilterResponse->fraudResponseMode);
@@ -341,7 +341,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterResult::HOLD_SUCCESSFUL, $trn->fraudFilterResponse->fraudResponseResult);
@@ -351,7 +351,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterResult::RELEASE_SUCCESSFUL, $trn->fraudFilterResponse->fraudResponseResult);
@@ -366,7 +366,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::ACTIVE, $trn->fraudFilterResponse->fraudResponseMode);
@@ -377,7 +377,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterResult::HOLD_SUCCESSFUL, $trn->fraudFilterResponse->fraudResponseResult);
@@ -387,7 +387,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterResult::RELEASE_SUCCESSFUL, $trn->fraudFilterResponse->fraudResponseResult);
@@ -397,7 +397,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($refund);
-        $this->assertEquals('SUCCESS', $refund->responseCode);
+        $this->assertEquals('00', $refund->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $refund->responseMessage);
 
     }
@@ -411,7 +411,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::PASSIVE, $trn->fraudFilterResponse->fraudResponseMode);
@@ -422,7 +422,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterResult::HOLD_SUCCESSFUL, $trn->fraudFilterResponse->fraudResponseResult);
@@ -432,7 +432,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterResult::RELEASE_SUCCESSFUL, $trn->fraudFilterResponse->fraudResponseResult);
@@ -447,7 +447,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::ACTIVE, $trn->fraudFilterResponse->fraudResponseMode);
@@ -476,7 +476,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::ACTIVE, $trn->fraudFilterResponse->fraudResponseMode);
@@ -506,7 +506,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::ACTIVE, $trn->fraudFilterResponse->fraudResponseMode);
@@ -517,7 +517,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterResult::RELEASE_SUCCESSFUL, $trn->fraudFilterResponse->fraudResponseResult);
@@ -534,7 +534,7 @@ class FraudManagementTest extends TestCase
                 ->execute();
 
             $this->assertNotNull($trn);
-            $this->assertEquals("SUCCESS", $trn->responseCode);
+            $this->assertEquals("00", $trn->responseCode);
             $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
             $this->assertNotNull($trn->fraudFilterResponse);
             $this->assertEquals(FraudFilterMode::ACTIVE, $trn->fraudFilterResponse->fraudResponseMode);
@@ -545,7 +545,7 @@ class FraudManagementTest extends TestCase
                 ->execute();
 
             $this->assertNotNull($trn);
-            $this->assertEquals("SUCCESS", $trn->responseCode);
+            $this->assertEquals("00", $trn->responseCode);
             $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
             $this->assertNotNull($trn->fraudFilterResponse);
             $this->assertEquals(FraudFilterResult::HOLD_SUCCESSFUL, $trn->fraudFilterResponse->fraudResponseResult);
@@ -555,7 +555,7 @@ class FraudManagementTest extends TestCase
                 ->execute();
 
             $this->assertNotNull($trn);
-            $this->assertEquals("SUCCESS", $trn->responseCode);
+            $this->assertEquals("00", $trn->responseCode);
             $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
             $this->assertNotNull($trn->fraudFilterResponse);
             $this->assertEquals(FraudFilterResult::RELEASE_SUCCESSFUL, $trn->fraudFilterResponse->fraudResponseResult);
@@ -590,7 +590,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::ACTIVE, $trn->fraudFilterResponse->fraudResponseMode);
@@ -620,7 +620,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::ACTIVE, $trn->fraudFilterResponse->fraudResponseMode);
@@ -651,7 +651,7 @@ class FraudManagementTest extends TestCase
                 ->execute();
 
             $this->assertNotNull($trn);
-            $this->assertEquals("SUCCESS", $trn->responseCode);
+            $this->assertEquals("00", $trn->responseCode);
             $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
             $this->assertNotNull($trn->fraudFilterResponse);
             $this->assertEquals(FraudFilterMode::ACTIVE, $trn->fraudFilterResponse->fraudResponseMode);
@@ -662,7 +662,7 @@ class FraudManagementTest extends TestCase
                 ->execute();
 
             $this->assertNotNull($trn);
-            $this->assertEquals("SUCCESS", $trn->responseCode);
+            $this->assertEquals("00", $trn->responseCode);
             $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
             $this->assertNotNull($trn->fraudFilterResponse);
             $this->assertEquals(FraudFilterResult::HOLD_SUCCESSFUL, $trn->fraudFilterResponse->fraudResponseResult);
@@ -697,7 +697,7 @@ class FraudManagementTest extends TestCase
             ->execute();
 
         $this->assertNotNull($trn);
-        $this->assertEquals("SUCCESS", $trn->responseCode);
+        $this->assertEquals("00", $trn->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $trn->responseMessage);
         $this->assertNotNull($trn->fraudFilterResponse);
         $this->assertEquals(FraudFilterMode::ACTIVE, $trn->fraudFilterResponse->fraudResponseMode);
@@ -737,3 +737,4 @@ class FraudManagementTest extends TestCase
         $this->assertEquals(FraudFilterResult::PASS, $trnSummary->fraudManagementResponse->fraudResponseResult);
     }
 }
+

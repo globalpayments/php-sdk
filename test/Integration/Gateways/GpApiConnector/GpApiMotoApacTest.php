@@ -30,7 +30,7 @@ class GpApiMotoApacTest extends GpApiApacBaseTest
 
         $this->assertNotNull($response, 'Response must not be null');
         $this->assertNotEmpty($response->transactionId, 'Transaction ID must be present');
-        $this->assertEquals('SUCCESS', $response->responseCode, 'Response code must be SUCCESS');
+        $this->assertEquals('00', $response->responseCode, 'Response code must be SUCCESS');
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage, 'Status must be CAPTURED');
         $this->assertNotEmpty($response->authorizationCode, 'Authorization code must be present');
     }

@@ -48,7 +48,7 @@ class GpApiVisaAftTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
     }
 
@@ -68,7 +68,7 @@ class GpApiVisaAftTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
     }
 
@@ -81,7 +81,7 @@ class GpApiVisaAftTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
     }
 
@@ -94,7 +94,7 @@ class GpApiVisaAftTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $transaction->responseMessage);
     }
 

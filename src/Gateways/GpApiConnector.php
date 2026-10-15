@@ -91,6 +91,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         }
         $requestBuilder = new \GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiPayerRequestBuilder();
         $request = $requestBuilder::buildGetPayersListRequest($queryParams);
+        $request->endpoint = $this->getMerchantUrl($request) . $request->endpoint;
         $response = $this->doTransaction(
             $request->httpVerb,
             $request->endpoint,
@@ -112,6 +113,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         }
         $requestBuilder = new \GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiPayerRequestBuilder();
         $request = $requestBuilder::buildGetPayerByIdRequest($payerId);
+        $request->endpoint = $this->getMerchantUrl($request) . $request->endpoint;
         $response = $this->doTransaction(
             $request->httpVerb,
             $request->endpoint
@@ -150,6 +152,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         }
         $requestBuilder = new \GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiPayerRequestBuilder();
         $request = $requestBuilder::buildCreatePayerRequest($payerDetails);
+        $request->endpoint = $this->getMerchantUrl($request) . $request->endpoint;
         $response = $this->doTransaction(
             $request->httpVerb,
             $request->endpoint,
@@ -172,6 +175,7 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         }
         $requestBuilder = new \GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiPayerRequestBuilder();
         $request = $requestBuilder::buildEditPayerRequest($payerId, $payerDetails);
+        $request->endpoint = $this->getMerchantUrl($request) . $request->endpoint;
         $response = $this->doTransaction(
             $request->httpVerb,
             $request->endpoint,
@@ -605,9 +609,6 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
 
     private function getMerchantUrl(GpApiRequest $request)
     {
-        return (
-            !empty($this->gpApiConfig->merchantId) &&
-            strpos($request->endpoint, GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT) === false) ?
-            GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $this->gpApiConfig->merchantId : '';
+        return $this->gpApiConfig->getRequestEndpointPrefix($request->endpoint);
     }
 }

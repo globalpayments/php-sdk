@@ -166,7 +166,7 @@ class GpApiVisaInstallmentTest extends TestCase
     private function assertCapturedSuccess($response): void
     {
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 

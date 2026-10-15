@@ -209,7 +209,7 @@ class PorticoAccessTokenTest extends TestCase
             ->execute('PorticoAuthConfig');
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertNotNull($response->transactionId);
         $this->assertNotEmpty($response->transactionId);
     }
@@ -228,13 +228,13 @@ class PorticoAccessTokenTest extends TestCase
         ServicesContainer::configureService($config3, 'MultiConfig3');
 
         $response1 = $this->masterCard->charge(10)->withCurrency('USD')->execute('MultiConfig1');
-        $this->assertEquals('SUCCESS', $response1->responseCode);
+        $this->assertEquals('00', $response1->responseCode);
 
         $response2 = $this->masterCard->charge(11)->withCurrency('USD')->execute('MultiConfig2');
-        $this->assertEquals('SUCCESS', $response2->responseCode);
+        $this->assertEquals('00', $response2->responseCode);
 
         $response3 = $this->visaCard->charge(12)->withCurrency('USD')->execute('MultiConfig3');
-        $this->assertEquals('SUCCESS', $response3->responseCode);
+        $this->assertEquals('00', $response3->responseCode);
     }
 
     public function testPorticoSupportsRefunds(): void
@@ -247,13 +247,13 @@ class PorticoAccessTokenTest extends TestCase
             ->withCurrency('USD')
             ->execute('RefundTestConfig');
 
-        $this->assertEquals('SUCCESS', $charge->responseCode);
+        $this->assertEquals('00', $charge->responseCode);
 
         $refund = $charge->refund()
             ->withCurrency('USD')
             ->execute('RefundTestConfig');
 
-        $this->assertEquals('SUCCESS', $refund->responseCode);
+        $this->assertEquals('00', $refund->responseCode);
     }
 
     public function testSecretKeySupportsVerify(): void
@@ -266,7 +266,7 @@ class PorticoAccessTokenTest extends TestCase
             ->withCurrency('USD')
             ->execute('VerifyTestConfig');
 
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('VERIFIED', $response->responseMessage);
     }
 
@@ -351,7 +351,7 @@ class PorticoAccessTokenTest extends TestCase
     private function assertTransactionResponse(Transaction $transaction, string $transactionStatus): void
     {
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals($transactionStatus, $transaction->responseMessage);
     }
 }

@@ -96,7 +96,7 @@ class GpApiAchTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -108,7 +108,7 @@ class GpApiAchTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -142,7 +142,7 @@ class GpApiAchTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     public function testCheckReauthorize()
@@ -177,7 +177,7 @@ class GpApiAchTest extends TestCase
                 ->execute();
 
             $this->assertNotNull($response);
-            $this->assertEquals('SUCCESS', $response->responseCode);
+            $this->assertEquals('00', $response->responseCode);
         }
     }
 
@@ -190,7 +190,7 @@ class GpApiAchTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
 
         $refund = $response->refund()
@@ -198,7 +198,7 @@ class GpApiAchTest extends TestCase
             ->execute();
 
         $this->assertNotNull($refund);
-        $this->assertEquals('SUCCESS', $refund->responseCode);
+        $this->assertEquals('00', $refund->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $refund->responseMessage);
         $this->assertEquals('A0000', $refund->cardIssuerResponse->result);
     }

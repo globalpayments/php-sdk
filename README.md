@@ -180,6 +180,32 @@ $accessTokenInfo->secondsToExpire;   // TTL in seconds
 $accessTokenInfo->intervalToExpire;  // TTL interval enum
 ```
 
+### GP-API MMA Account Selection
+
+For partner setups with multiple MMA accounts, set `merchantManagementAccountID` on `GpApiConfig` to scope non-token GP-API requests to a specific MMA account.
+
+```php
+use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
+
+$config = new GpApiConfig();
+$config->appId = 'your-app-id';
+$config->appKey = 'your-app-key';
+$config->environment = Environment::TEST;
+$config->channel = Channel::CardNotPresent;
+
+// Partner merchant to transact against
+$config->merchantId = 'MER_1234567890';
+
+// MMA account to route non-access-token requests through
+$config->merchantManagementAccountID = 'MMA_1234567890';
+```
+
+With both values present, transaction requests are routed under the selected MMA account, for example `/accounts/{MMA_ID}/merchants/{MER_ID}/transactions`.
+
+Access token requests continue to use the standard `/accesstoken` endpoint and are not prefixed with the MMA account path.
+
 ### GP-API Account Sync
 
 The GP-API account reporting and edit flows now surface the full account list/detail envelope, including merchant context, paging metadata, and action metadata.

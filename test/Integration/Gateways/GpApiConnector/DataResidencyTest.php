@@ -49,7 +49,7 @@ class DataResidencyTest extends TestCase
             ->execute('eu-config');
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertNotNull($response->transactionId);
     }
 
@@ -73,7 +73,7 @@ class DataResidencyTest extends TestCase
             ->execute('default-config');
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertNotNull($response->transactionId);
     }
 

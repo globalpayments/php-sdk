@@ -77,7 +77,7 @@ class PayerTest extends TestCase
         $tokenizeResponse = $this->card->tokenize()->execute();
 
         $this->assertNotNull($tokenizeResponse);
-        $this->assertEquals('SUCCESS', $tokenizeResponse->responseCode);
+        $this->assertEquals('00', $tokenizeResponse->responseCode);
         $this->assertEquals('ACTIVE', $tokenizeResponse->responseMessage);
 
         $this->card->token = $tokenizeResponse->token;
@@ -94,7 +94,7 @@ class PayerTest extends TestCase
         $card2->token = $tokenize2->token;
 
         $this->assertNotNull($tokenize2);
-        $this->assertEquals('SUCCESS', $tokenize2->responseCode);
+        $this->assertEquals('00', $tokenize2->responseCode);
         $this->assertEquals('ACTIVE', $tokenize2->responseMessage);
 
         $this->newCustomer->addPaymentMethod($card2->token, $card2);
@@ -165,7 +165,7 @@ class PayerTest extends TestCase
         $tokenizeResponse = $this->card->tokenize()->execute();
 
         $this->assertNotNull($tokenizeResponse);
-        $this->assertEquals('SUCCESS', $tokenizeResponse->responseCode);
+        $this->assertEquals('00', $tokenizeResponse->responseCode);
         $this->assertEquals('ACTIVE', $tokenizeResponse->responseMessage);
 
         $this->card->token = $tokenizeResponse->token;
@@ -220,7 +220,7 @@ class PayerTest extends TestCase
             ->execute();
 
         $this->assertNotNull($response);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('ACTIVE', $response->responseMessage);
     }
 
@@ -261,7 +261,7 @@ class PayerTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals(TransactionStatus::INITIATED, $transaction->responseMessage);
         $this->assertNotNull($transaction->bnplResponse->redirectUrl);
     }

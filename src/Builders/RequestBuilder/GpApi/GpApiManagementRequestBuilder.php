@@ -122,8 +122,7 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                     $endpoint = GpApiRequest::TRANSFER_ENDPOINT . '/' . $builder->paymentMethod->transactionId .
                         '/reversal';
                     if (!empty($builder->fundsData->merchantId)) {
-                        $endpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' .
-                            $builder->fundsData->merchantId .
+                        $endpoint = $config->getMerchantUrl($builder->fundsData->merchantId) .
                             $endpoint;
                     }
                 }
@@ -266,7 +265,7 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                     '/split';
                 if ($builder->paymentMethod->paymentMethodType == PaymentMethodType::ACCOUNT_FUNDS) {
                     $endpoint =
-                        GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/' . $builder->fundsData->merchantId .
+                        $config->getMerchantUrl($builder->fundsData->merchantId) .
                         $endpoint;
                 }
                 $verb = 'POST';

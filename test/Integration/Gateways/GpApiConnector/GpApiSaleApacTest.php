@@ -43,7 +43,7 @@ class GpApiSaleApacTest extends GpApiApacBaseTest
         $this->assertNotEmpty($response->transactionId, 'Transaction ID must be present (endpoint was hit)');
 
         // Top-level result
-        $this->assertEquals('SUCCESS', $response->responseCode, 'Result code must be SUCCESS');
+        $this->assertEquals('00', $response->responseCode, 'Result code must be SUCCESS');
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage, 'Status must be CAPTURED for a sale');
 
         // Authorization code proves card-scheme processing happened

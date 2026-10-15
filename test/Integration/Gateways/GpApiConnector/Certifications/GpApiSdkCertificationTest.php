@@ -54,7 +54,7 @@ class GpApiSdkCertificationTest extends TestCase
         $this->assertNotNull($response->authorizationCode);
         $this->assertEquals('VISA', $response->cardType);
         $this->assertEquals('00', $response->cardIssuerResponse->result);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -70,7 +70,7 @@ class GpApiSdkCertificationTest extends TestCase
         $this->assertNotNull($response);
         $this->assertNotNull($response->authorizationCode);
         $this->assertEquals('MASTERCARD', $response->cardType);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -87,7 +87,7 @@ class GpApiSdkCertificationTest extends TestCase
         $this->assertNotNull($response);
         $this->assertNotNull($response->authorizationCode);
         $this->assertEquals('AMEX', $response->cardType);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -104,7 +104,7 @@ class GpApiSdkCertificationTest extends TestCase
         $this->assertNotNull($response->authorizationCode);
         $this->assertEquals('DINERS', $response->cardType);
         $this->assertEquals('00', $response->cardIssuerResponse->result);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -121,7 +121,7 @@ class GpApiSdkCertificationTest extends TestCase
         $this->assertNotNull($response->authorizationCode);
         $this->assertEquals('DISCOVER', $response->cardType);
         $this->assertEquals('00', $response->cardIssuerResponse->result);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 
@@ -138,7 +138,7 @@ class GpApiSdkCertificationTest extends TestCase
         $this->assertNotNull($response->authorizationCode);
         $this->assertEquals('JCB', $response->cardType);
         $this->assertEquals('00', $response->cardIssuerResponse->result);
-        $this->assertEquals('SUCCESS', $response->responseCode);
+        $this->assertEquals('00', $response->responseCode);
         $this->assertEquals(TransactionStatus::CAPTURED, $response->responseMessage);
     }
 

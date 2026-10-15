@@ -24,7 +24,27 @@ class MappingTest extends TestCase
          $this->assertEquals($doc->time_created, $transaction->timestamp);
          $this->assertEquals($doc->status, $transaction->responseMessage);
          $this->assertEquals($doc->reference, $transaction->referenceNumber);
-         $this->assertEquals($doc->action->result_code, $transaction->responseCode);
+         $this->assertEquals('00', $transaction->responseCode);
+
+         $doc->status = 'APPROVED';
+         $doc->action->result_code = 'CAPTURED';
+         $transactionWithCapturedResult = GpApiMapping::mapResponse($doc);
+         $this->assertEquals('00', $transactionWithCapturedResult->responseCode);
+
+         $doc->status = 'PARTIAL_APPROVAL';
+         $doc->action->result_code = 'PARTIAL_CAPTURED';
+         $transactionWithPartialApproval = GpApiMapping::mapResponse($doc);
+         $this->assertEquals('10', $transactionWithPartialApproval->responseCode);
+
+         $doc->status = 'CAPTURED';
+         $doc->action->result_code = 'DECLINED';
+         $transactionWithDeclinedResult = GpApiMapping::mapResponse($doc);
+         $this->assertEquals('DECLINED', $transactionWithDeclinedResult->responseCode);
+
+         $doc->status = 'PENDING';
+         $doc->action->result_code = null;
+         $transactionPending = GpApiMapping::mapResponse($doc);
+         $this->assertEquals('PENDING', $transactionPending->responseCode);
 
          if (!empty($transaction->batchSummary)) {
              $this->assertEquals($doc->batch_id, $transaction->batchSummary->sequenceNumber);

@@ -25,14 +25,14 @@ class GpApiAuthReversalApacTest extends GpApiApacBaseTest
             ->withAllowDuplicates(true)
             ->execute($serviceName);
 
-        $this->assertEquals('SUCCESS', $auth->responseCode, 'Auth response code must be SUCCESS');
+        $this->assertEquals('00', $auth->responseCode, 'Auth response code must be SUCCESS');
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $auth->responseMessage, 'Auth status must be PREAUTHORIZED');
         $this->assertNotEmpty($auth->transactionId, 'Auth transaction ID must be present');
 
         $reversal = $auth->reverse()->execute($serviceName);
 
         $this->assertNotNull($reversal, 'Reversal response must not be null');
-        $this->assertEquals('SUCCESS', $reversal->responseCode, 'Reversal response code must be SUCCESS');
+        $this->assertEquals('00', $reversal->responseCode, 'Reversal response code must be SUCCESS');
         $this->assertNotEmpty($reversal->transactionId, 'Reversal transaction ID must be present');
     }
 

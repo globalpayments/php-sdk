@@ -294,7 +294,7 @@ class GpApiBatchTest extends TestCase
             ->execute();
 
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals('VERIFIED', $transaction->responseMessage);
 
         sleep(1);
@@ -361,7 +361,7 @@ class GpApiBatchTest extends TestCase
     private function assertTransactionResponse($transaction, $transactionStatus): void
     {
         $this->assertNotNull($transaction);
-        $this->assertEquals('SUCCESS', $transaction->responseCode);
+        $this->assertEquals('00', $transaction->responseCode);
         $this->assertEquals($transactionStatus, $transaction->responseMessage);
     }
 

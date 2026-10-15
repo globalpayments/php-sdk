@@ -27,7 +27,7 @@ class GpApiAuthApacTest extends GpApiApacBaseTest
 
         $this->assertNotNull($response, 'Response must not be null');
         $this->assertNotEmpty($response->transactionId, 'Transaction ID must be present');
-        $this->assertEquals('SUCCESS', $response->responseCode, 'Result code must be SUCCESS');
+        $this->assertEquals('00', $response->responseCode, 'Result code must be SUCCESS');
         $this->assertEquals(TransactionStatus::PREAUTHORIZED, $response->responseMessage, 'Status must be PREAUTHORIZED for auth');
         $this->assertNotEmpty($response->authorizationCode, 'Authorization code must be present');
     }

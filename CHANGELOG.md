@@ -2,6 +2,11 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
+## Latest Version: v14.7.0 (10/15/26)
+### Enhancements:
+- [GPAPI] Added merchant management account support for partner GP-API routing. When both the MMA ID and merchant ID are set, merchant requests use /accounts/{MMA_ID}/merchants/{MER_ID}/transactions access-token requests remain unchanged
+- [GPAPI] Normalized GPAPI response statuses such as SUCCESS and CAPTURED to standard SDK response codes like 00 and 10
+
 ## v14.6.3 (10/01/26)
 ### Bug Fixes:
 - [GPAPI] Fixed AVS data missing from some transactions
