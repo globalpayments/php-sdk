@@ -161,6 +161,14 @@ class GpApiMapping
         if (self::isDecryptActionResponse($response)) {
             $transaction->decryptId = $response->id;
         }
+        $transaction->transactionType = $response->type ?? null;
+        $transaction->type = $response->type ?? null;
+        $transaction->channel = $response->channel ?? null;
+        $transaction->amount = isset($response->amount) && $response->amount !== '' ?
+            StringUtils::toAmount($response->amount, $response->currency ?? null) : null;
+        $transaction->currency = $response->currency ?? null;
+        $transaction->country = $response->country ?? null;
+        $transaction->accountName = $response->account_name ?? null;
         $transaction->clientTransactionId = !empty($response->reference) ? $response->reference : null;
         $transaction->timestamp = !empty($response->time_created) ? $response->time_created : '';
         $transaction->referenceNumber = !empty($response->reference) ? $response->reference : null;
@@ -334,8 +342,11 @@ class GpApiMapping
         $batchSummary->hostTotalAmt = !empty($response->host_breakdown->amount) ?
             StringUtils::toAmount($response->host_breakdown->amount, $response->currency ?? null) : null;
         $batchSummary->batchTotals = self::extractBatchTotals($response);
-        foreach ($response->brand_breakdown as $brandBreakdown) {
-            $batchSummary->brandBreakdown[$brandBreakdown->brand] = self::extractBatchTotals($brandBreakdown);
+        $batchSummary->brandBreakdown = [];
+        if (!empty($response->brand_breakdown) && is_iterable($response->brand_breakdown)) {
+            foreach ($response->brand_breakdown as $brandBreakdown) {
+                $batchSummary->brandBreakdown[$brandBreakdown->brand] = self::extractBatchTotals($brandBreakdown);
+            }
         }
     }
 
@@ -400,6 +411,13 @@ class GpApiMapping
         $paymentMethodObj = $paymentMethodResponse->card ?? ($paymentMethodResponse->digital_wallet ?? null);
         if (!empty($paymentMethodObj)) {
             $transaction->cardDetails = self::mapCardDetails($paymentMethodObj);
+            $transaction->entryMode = $paymentMethodResponse->entry_mode ?? $transaction->cardDetails->entryMode ?? null;
+            $transaction->cardDetails->entryMode = $transaction->entryMode;
+            if (!empty($paymentMethodResponse->encryption)) {
+                $transaction->cardDetails->encryption = is_object($paymentMethodResponse->encryption)
+                    ? $paymentMethodResponse->encryption
+                    : (object) $paymentMethodResponse->encryption;
+            }
 
             $transaction->cardLast4 = $paymentMethodObj->masked_number_last4 ?? null;
             $transaction->cardType = $paymentMethodObj->brand ?? null;
@@ -1180,7 +1198,18 @@ class GpApiMapping
         $card->avsAddressResponse = $paymentMethod->avs_address_result ?? null;
         $card->avsResponseCode = $paymentMethod->avs_postal_code_result ?? null;
         $card->tagResponse = $paymentMethod->tag_response ?? null;
+        $card->entryMode = $paymentMethod->entry_mode ?? null;
         $card->funding = $paymentMethod->funding ?? null;
+        $card->track = $paymentMethod->track ?? null;
+        $card->trackNumber = $paymentMethod->track_number ?? $paymentMethod->trackNumber ?? null;
+        $card->tag = $paymentMethod->tag ?? null;
+        $card->chipCondition = $paymentMethod->chip_condition ?? null;
+        $card->pinBlock = $paymentMethod->pin_block ?? null;
+        if (!empty($paymentMethod->encryption)) {
+            $card->encryption = is_object($paymentMethod->encryption)
+                ? $paymentMethod->encryption
+                : (object) $paymentMethod->encryption;
+        }
 
         return $card;
     }

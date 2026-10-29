@@ -71,7 +71,13 @@ class Card
     /** @var string|null The result of the AVS postal code check. */
     public ?string $avsResponseCode;
     public ?string $tagResponse;
-
+    public ?string $entryMode;
     public ?string $funding;
+    public ?string $track;
+    public ?string $trackNumber;
+    public ?string $tag;
+    public $encryption;
+    public ?string $chipCondition;
+    public ?string $pinBlock;
     public ?string $authCode;
 }

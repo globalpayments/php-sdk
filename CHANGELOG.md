@@ -2,7 +2,12 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version: v14.7.0 (10/15/26)
+## Latest Version: v14.7.1 (10/29/26)
+### Enhancements:
+- [GPAPI] Added support for closing batches without a batch ID (POST /batches), including account-based resolution and routing metadata for multi-transit setups
+- [GPAPI] Added Card Present (CP) EMV response mappings for track_number, encryption type, and entry_mode
+
+## v14.7.0 (10/15/26)
 ### Enhancements:
 - [GPAPI] Added merchant management account support for partner GP-API routing. When both the MMA ID and merchant ID are set, merchant requests use /accounts/{MMA_ID}/merchants/{MER_ID}/transactions access-token requests remain unchanged
 - [GPAPI] Normalized GPAPI response statuses such as SUCCESS and CAPTURED to standard SDK response codes like 00 and 10

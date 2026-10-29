@@ -67,6 +67,107 @@ class MappingTest extends TestCase
         }
      }
 
+     public function testMapCardPresentTrackDataResponse()
+     {
+         $doc = new stdClass();
+         $doc->id = 'TRN_CP_123';
+         $doc->time_created = '2024-01-15T10:00:00.000Z';
+         $doc->type = 'SALE';
+         $doc->status = 'APPROVED';
+         $doc->channel = 'CP';
+         $doc->amount = '100';
+         $doc->currency = 'CAD';
+         $doc->country = 'CA';
+         $doc->account_name = 'ACCEO STP';
+         $doc->reference = 'My-Sale-EMV-CHIP-1234345345';
+
+         $doc->payment_method = new stdClass();
+         $doc->payment_method->entry_mode = 'CHIP';
+         $doc->payment_method->card = new stdClass();
+         $doc->payment_method->card->funding = 'DEBIT';
+         $doc->payment_method->card->track = '6ntnzvADzdWnrfh9QFEunPhmgGaH+kBgxREKJuhYeeWsSoBko6OBew==';
+         $doc->payment_method->card->track_number = '2';
+         $doc->payment_method->card->tag = '9F360202104F07A00000000310109F3901059F34035E03008407A00000000310109F0902008C9F1A0201249F270180950508C00080009F3704E45A368482023C009F2608B54ABF38939404209A032310259F02060000000002009F100706010A03A0A8045F2A0201249C01009F080200969F21031106059F3303E0B8C89F4005F000F0A0019F0F05B870BC98009F1E08000000001A0000039F0E0500000000009B02E8009F4104000000599F03060000000000009F0D05B850AC88009F0702FF805F28020124500B56697361204372656469745F3401019F3501229F0607A0000000031010';
+         $doc->payment_method->card->masked_number_last4 = '1234';
+
+         $doc->payment_method->encryption = new stdClass();
+         $doc->payment_method->encryption->version = '05';
+         $doc->payment_method->encryption->method = 'KSN';
+         $doc->payment_method->encryption->info = '//89P4IAAKACpA==';
+         $doc->payment_method->encryption->type = 'ASCII';
+
+         $doc->action = new stdClass();
+         $doc->action->id = 'ACT_CP_123';
+         $doc->action->type = 'TRANSACTION_SINGLE';
+         $doc->action->result_code = 'SUCCESS';
+
+         $transaction = GpApiMapping::mapResponse($doc);
+
+         $requestSnapshot = json_encode($doc, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $responseSnapshot = json_encode([
+            'channel' => $transaction->channel ?? null,
+            'entry_mode' => $transaction->cardDetails->entryMode ?? null,
+            'funding' => $transaction->cardDetails->funding ?? null,
+            'track' => $transaction->cardDetails->track ?? null,
+            'track_number' => $transaction->cardDetails->trackNumber ?? null,
+            'tag' => $transaction->cardDetails->tag ?? null,
+            'encryption' => [
+                'version' => $transaction->cardDetails->encryption->version ?? null,
+                'method' => $transaction->cardDetails->encryption->method ?? null,
+                'info' => $transaction->cardDetails->encryption->info ?? null,
+                'type' => $transaction->cardDetails->encryption->type ?? null,
+            ],
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        $logLine = "CP mapping trace: channel=" . ($transaction->channel ?? 'null')
+            . ", entryMode=" . ($transaction->cardDetails->entryMode ?? 'null')
+            . ", funding=" . ($transaction->cardDetails->funding ?? 'null')
+            . ", track=" . ($transaction->cardDetails->track ?? 'null')
+            . ", trackNumber=" . ($transaction->cardDetails->trackNumber ?? 'null')
+            . ", encryption=" . ($transaction->cardDetails->encryption->version ?? 'null')
+            . "|" . ($transaction->cardDetails->encryption->method ?? 'null')
+            . PHP_EOL
+            . "REQUEST\n" . $requestSnapshot . "\n\nRESPONSE\n" . $responseSnapshot . PHP_EOL;
+        error_log($logLine);
+
+         $this->assertEquals('CP', $transaction->channel ?? null);
+         $this->assertEquals('CHIP', $transaction->cardDetails->entryMode ?? null);
+         $this->assertEquals('DEBIT', $transaction->cardDetails->funding ?? null);
+         $this->assertEquals('6ntnzvADzdWnrfh9QFEunPhmgGaH+kBgxREKJuhYeeWsSoBko6OBew==', $transaction->cardDetails->track ?? null);
+         $this->assertEquals('2', $transaction->cardDetails->trackNumber ?? null);
+         $this->assertEquals('9F360202104F07A00000000310109F3901059F34035E03008407A00000000310109F0902008C9F1A0201249F270180950508C00080009F3704E45A368482023C009F2608B54ABF38939404209A032310259F02060000000002009F100706010A03A0A8045F2A0201249C01009F080200969F21031106059F3303E0B8C89F4005F000F0A0019F0F05B870BC98009F1E08000000001A0000039F0E0500000000009B02E8009F4104000000599F03060000000000009F0D05B850AC88009F0702FF805F28020124500B56697361204372656469745F3401019F3501229F0607A0000000031010', $transaction->cardDetails->tag ?? null);
+         $this->assertEquals('05', $transaction->cardDetails->encryption?->version ?? null);
+         $this->assertEquals('KSN', $transaction->cardDetails->encryption?->method ?? null);
+         $this->assertEquals('//89P4IAAKACpA==', $transaction->cardDetails->encryption?->info ?? null);
+         $this->assertEquals('ASCII', $transaction->cardDetails->encryption?->type ?? null);
+
+         $docFallback = new stdClass();
+         $docFallback->id = 'TRN_CP_123_FALLBACK';
+         $docFallback->time_created = '2024-01-15T10:00:00.000Z';
+         $docFallback->type = 'SALE';
+         $docFallback->status = 'APPROVED';
+         $docFallback->channel = 'CP';
+         $docFallback->amount = '100';
+         $docFallback->currency = 'CAD';
+         $docFallback->country = 'CA';
+         $docFallback->reference = 'My-Sale-EMV-CHIP-1234345345';
+
+         $docFallback->payment_method = new stdClass();
+         $docFallback->payment_method->card = new stdClass();
+         $docFallback->payment_method->card->entry_mode = 'CHIP';
+         $docFallback->payment_method->card->funding = 'DEBIT';
+         $docFallback->payment_method->card->track = 'track-data';
+         $docFallback->payment_method->card->track_number = '2';
+         $docFallback->action = new stdClass();
+         $docFallback->action->id = 'ACT_CP_123_FALLBACK';
+         $docFallback->action->type = 'TRANSACTION_SINGLE';
+         $docFallback->action->result_code = 'SUCCESS';
+
+         $fallbackTransaction = GpApiMapping::mapResponse($docFallback);
+         $this->assertEquals('CHIP', $fallbackTransaction->entryMode ?? null);
+         $this->assertEquals('CHIP', $fallbackTransaction->cardDetails->entryMode ?? null);
+     }
+
      public function testMapTransactionSummaryTest()
      {
          $rawJson = "{\"id\":\"TRN_TvY1QFXxQKtaFSjNaLnDVdo3PZ7ivz\",\"time_created\":\"2020-06-05T03:08:20.896Z\",\"time_last_updated\":\"\",\"status\":\"PREAUTHORIZED\",\"type\":\"SALE\",\"merchant_id\":\"MER_c4c0df11039c48a9b63701adeaa296c3\",\"merchant_name\":\"Sandbox_merchant_2\",\"account_id\":\"TRA_6716058969854a48b33347043ff8225f\",\"account_name\":\"Transaction_Processing\",\"channel\":\"CNP\",\"amount\":\"10000\",\"currency\":\"CAD\",\"reference\":\"My-TRANS-184398775\",\"description\":\"41e7877b-da90-4c5f-befe-7f024b96311e\",\"order_reference\":\"\",\"time_created_reference\":\"\",\"batch_id\":\"\",\"initiator\":\"\",\"country\":\"\",\"language\":\"\",\"ip_address\":\"97.107.232.5\",\"site_reference\":\"\",\"payment_method\":{\"result\":\"00\",\"message\":\"SUCCESS\",\"entry_mode\":\"ECOM\",\"name\":\"NAME NOT PROVIDED\",\"card\":{\"funding\":\"CREDIT\",\"brand\":\"VISA\",\"authcode\":\"12345\",\"brand_reference\":\"TQ76bJf7qzkC30U0\",\"masked_number_first6last4\":\"411111XXXXXX1111\",\"cvv_indicator\":\"PRESENT\",\"cvv_result\":\"MATCHED\",\"avs_address_result\":\"MATCHED\",\"avs_postal_code_result\":\"MATCHED\"}},\"action_create_id\":\"ACT_TvY1QFXxQKtaFSjNaLnDVdo3PZ7ivz\",\"parent_resource_id\":\"TRN_TvY1QFXxQKtaFSjNaLnDVdo3PZ7ivz\",\"action\":{\"id\":\"ACT_kLkU0qND7wyuW0Br76ZNyAnlPTjHsb\",\"type\":\"TRANSACTION_SINGLE\",\"time_created\":\"2020-11-24T15:43:43.990Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"JF2GQpeCrOivkBGsTRiqkpkdKp67Gxi0\",\"app_name\":\"test_app\"}}";

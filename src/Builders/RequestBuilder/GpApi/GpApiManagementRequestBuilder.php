@@ -158,8 +158,52 @@ class GpApiManagementRequestBuilder implements IRequestBuilder
                 $payload['documents'] = $builder->disputeDocuments;
                 break;
             case TransactionType::BATCH_CLOSE:
-                $endpoint = GpApiRequest::BATCHES_ENDPOINT . '/' . $builder->batchReference;
+                $endpoint = GpApiRequest::BATCHES_ENDPOINT;
                 $verb = 'POST';
+                if (!empty($builder->batchReference)) {
+                    $endpoint .= '/' . $builder->batchReference;
+                    break;
+                }
+
+                $payload = [];
+
+                if ($config instanceof GpApiConfig) {
+                    $accountName = $config->accessTokenInfo?->transactionProcessingAccountName;
+                    if (empty($accountName) && isset($config->transactionAccountName)) {
+                        $accountName = $config->transactionAccountName;
+                    }
+
+                    if (!empty($accountName)) {
+                        $payload['account_name'] = $accountName;
+                    }
+
+                    if (!empty($config->accessTokenInfo?->transactionProcessingAccountID)) {
+                        $payload['account_id'] = $config->accessTokenInfo->transactionProcessingAccountID;
+                    }
+
+                    $currency = $builder->currency;
+                    if (empty($currency) && !empty($config->deviceCurrency)) {
+                        $currency = $config->deviceCurrency;
+                    }
+
+                    $hasRoutingContext = !empty($config->channel)
+                        && !empty($currency)
+                        && !empty($config->country);
+
+                    if ($hasRoutingContext) {
+                        $payload['channel'] = $config->channel;
+                        $payload['currency'] = $currency;
+                        $payload['country'] = $config->country;
+                        $payload['payment_methods'] = [PaymentMethodName::CARD];
+                    }
+                }
+
+                $hasRequestContext = !empty($payload);
+                if (!$hasRequestContext) {
+                    throw new BuilderException(
+                        'Batch close without a batch reference requires account_name, account_id, or complete routing configuration.'
+                    );
+                }
                 break;
             case TransactionType::REAUTH:
                 $endpoint = GpApiRequest::TRANSACTION_ENDPOINT . '/' . $builder->paymentMethod->transactionId . '/reauthorization';

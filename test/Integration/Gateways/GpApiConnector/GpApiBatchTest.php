@@ -16,6 +16,7 @@ use GlobalPayments\Api\Services\BatchService;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Tests\Data\BaseGpApiTestConfig;
 use GlobalPayments\Api\Utils\GenerationUtils;
+use GlobalPayments\Api\Utils\Logging\RequestConsoleLogger;
 use PHPUnit\Framework\TestCase;
 
 class GpApiBatchTest extends TestCase
@@ -57,7 +58,10 @@ class GpApiBatchTest extends TestCase
 
     public function setUpConfig(): GpApiConfig
     {
-        return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardPresent);
+        $config->requestLogger = new RequestConsoleLogger();
+
+        return $config;
     }
 
     public function testBatchClose()
@@ -71,6 +75,82 @@ class GpApiBatchTest extends TestCase
 
         $batch = BatchService::closeBatch($transaction->batchSummary->batchReference);
         $this->assertBatchCloseResponse($batch, $this->amount);
+    }
+
+    public function testBatchCloseByAccountName()
+    {
+        $accountName = 'Transit_CNP_Transaction_Processing';
+
+        $saleConfig = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $saleConfig->appId = BaseGpApiTestConfig::VISA_APP_ID;
+        $saleConfig->appKey = BaseGpApiTestConfig::VISA_APP_KEY;
+        $saleConfig->transactionAccountName = $accountName;
+        $saleConfig->accessTokenInfo->transactionProcessingAccountName = $accountName;
+
+        ServicesContainer::configureService($saleConfig);
+
+        $card = new CreditCardData();
+        $card->number = '4111111111111111';
+        $card->expMonth = '12';
+        $card->expYear = '2030';
+        $card->cardHolderName = $this->creditCardData->cardHolderName;
+
+        $transaction = $card->charge($this->amount)
+            ->withCurrency($this->currency)
+            ->withAllowDuplicates(true)
+            ->execute();
+        $this->assertTransactionResponse($transaction, TransactionStatus::CAPTURED);
+
+        sleep(2);
+
+        $closeConfig = BaseGpApiTestConfig::gpApiSetupConfig(null);
+        $closeConfig->appId = BaseGpApiTestConfig::VISA_APP_ID;
+        $closeConfig->appKey = BaseGpApiTestConfig::VISA_APP_KEY;
+        $closeConfig->country = '';
+        $closeConfig->transactionAccountName = $accountName;
+        $closeConfig->accessTokenInfo->transactionProcessingAccountName = $accountName;
+        $closeConfig->channel = null;
+        $closeConfig->deviceCurrency = null;
+
+        ServicesContainer::configureService($closeConfig);
+
+        $batch = BatchService::closeBatch();
+        $this->assertBatchCloseResponse($batch, $this->amount);
+    }
+
+    public function testBatchCloseFallbackAccount()
+    {
+        $accountName = 'Fallback_Transaction_Account';
+
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $config->transactionAccountName = $accountName;
+        $config->accessTokenInfo->transactionProcessingAccountName = '';
+        $config->channel = Channel::CardNotPresent;
+        $config->deviceCurrency = 'EUR';
+
+        $builder = (new ManagementBuilder(TransactionType::BATCH_CLOSE));
+        $builder->currency = '';
+
+        $request = (new \GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiManagementRequestBuilder())->buildRequest($builder, $config);
+
+        $this->assertSame($accountName, $request->requestBody['account_name']);
+        $this->assertSame('EUR', $request->requestBody['currency']);
+    }
+
+    public function testBatchCloseRequiresRouting()
+    {
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(null);
+        $config->country = 'US';
+        $config->channel = null;
+        $config->deviceCurrency = null;
+        $config->accessTokenInfo->transactionProcessingAccountName = '';
+        $config->transactionAccountName = '';
+
+        $this->expectException(\GlobalPayments\Api\Entities\Exceptions\BuilderException::class);
+        $this->expectExceptionMessage('Batch close without a batch reference requires account_name, account_id, or complete routing configuration.');
+
+        (new \GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiManagementRequestBuilder())
+            ->buildRequest(new ManagementBuilder(TransactionType::BATCH_CLOSE), $config);
     }
 
     public function testAuthorizationCaptureBatchClose()
@@ -176,16 +256,9 @@ class GpApiBatchTest extends TestCase
 
         sleep(1);
 
-        $exceptionCaught = false;
-        try {
-            BatchService::closeBatch($transaction->batchSummary->batchReference);
-        } catch (GatewayException $e) {
-            $exceptionCaught = true;
-            $this->assertEquals('40223', $e->responseCode);
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the batch_id', $e->getMessage());
-        } finally {
-            $this->assertTrue($exceptionCaught);
-        }
+        $batch = BatchService::closeBatch();
+        $this->assertNotNull($batch);
+        $this->assertEquals('CLOSED', $batch->responseMessage);
     }
 
     public function testBatchClose_WithIdempotency()
@@ -299,16 +372,9 @@ class GpApiBatchTest extends TestCase
 
         sleep(1);
 
-        $exceptionCaught = false;
-        try {
-            BatchService::closeBatch($transaction->batchSummary->batchReference);
-        } catch (GatewayException $e) {
-            $exceptionCaught = true;
-            $this->assertEquals('40223', $e->responseCode);
-            $this->assertEquals('Status Code: MANDATORY_DATA_MISSING - Request expects the batch_id', $e->getMessage());
-        } finally {
-            $this->assertTrue($exceptionCaught);
-        }
+        $batch = BatchService::closeBatch();
+        $this->assertNotNull($batch);
+        $this->assertEquals('CLOSED', $batch->responseMessage);
     }
 
     public function testBatchClose_CardNotPresentChannel()

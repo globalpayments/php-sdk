@@ -236,6 +236,30 @@ class Transaction
     /** @var PaymentMethodUsageMode */
     public $tokenUsageMode;
 
+    /** @var string */
+    public $accountName;
+
+    /** @var string */
+    public $channel;
+
+    /** @var string */
+    public $country;
+
+    /** @var string */
+    public $amount;
+
+    /** @var string */
+    public $currency;
+
+    /** @var string */
+    public $entryMode;
+
+    /** @var string */
+    public $transactionType;
+
+    /** @var string */
+    public $type;
+
     /**
      * The transaction reference.
      *

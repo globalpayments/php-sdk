@@ -17,11 +17,13 @@ class Card
     public $avs_address;
     public $avs_postal_code;
     public $track;
+    public $track_number;
     public $tag;
     public $funding;
     public $chip_condition;
     public $pin_block;
     public $brand_reference;
     public $authcode;
+    public $encryption;
 
  }
