@@ -2,7 +2,11 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version: v14.7.1 (10/29/26)
+## Latest Version: v14.7.2 (11/03/26)
+### Bug Fixes:
+- [GPAPI] Fixed unauthenticated reflected XSS in end-to-end example callback files and hardened GP-ECOM 3DS challenge handling for Base64URL CRes payloads with safe JavaScript serialization
+
+## v14.7.1 (10/29/26)
 ### Enhancements:
 - [GPAPI] Added support for closing batches without a batch ID (POST /batches), including account-based resolution and routing metadata for multi-transit setups
 - [GPAPI] Added Card Present (CP) EMV response mappings for track_number, encryption type, and entry_mode

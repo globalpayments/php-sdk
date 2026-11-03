@@ -80,8 +80,8 @@ $manifest = $provider->createManifest();
     <script>
         // Configure GlobalPayments JS for Transit / TSEP
         GlobalPayments.configure({
-            deviceId: "<?php echo htmlspecialchars($deviceId, ENT_QUOTES, 'UTF-8'); ?>",
-            manifest: "<?php echo htmlspecialchars($manifest, ENT_QUOTES, 'UTF-8'); ?>",
+            deviceId: <?php echo json_encode($deviceId, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
+            manifest: <?php echo json_encode($manifest, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
             env: "sandbox"
         });
 

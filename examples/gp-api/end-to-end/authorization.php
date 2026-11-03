@@ -22,10 +22,10 @@ $paymentToken = $requestData['tokenResponse'];
 console_log($serverTransactionId);
 function console_log($data)
 {
-    $data = htmlspecialchars($data, ENT_NOQUOTES);
+    $safeData = json_encode((string) $data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
     echo '<script>';
-    echo 'if(' . $data . ') {';
-    echo 'console.log(' . json_encode($data) . ')';
+    echo 'if (' . $safeData . ') {';
+    echo 'console.log(' . $safeData . ');';
     echo '}';
     echo '</script>';
 }
