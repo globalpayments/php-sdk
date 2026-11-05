@@ -301,6 +301,52 @@ class GpApiApmTest extends TestCase
         ];
     }
 
+    public function testCashpressoRequestUsesTransactionCountryOverServiceCountry(): void
+    {
+        $config = $this->configureCashpressoService('US');
+        $paymentMethod = $this->createCashpressoPaymentMethod(CashpressoPaymentPlan::PAY_30_DAYS, 'DE');
+        $customer = $this->createCashpressoCustomer();
+        $billingAddress = $this->createCashpressoBillingAddress('DE');
+
+        $builder = $paymentMethod->charge(100.00)
+            ->withCurrency('EUR')
+            ->withDescription('Cashpresso country precedence test')
+            ->withAddress($billingAddress, AddressType::BILLING)
+            ->withAddress($billingAddress, AddressType::SHIPPING)
+            ->withCustomerData($customer)
+            ->withPhoneNumber('+49', '1511234567', PhoneNumberType::HOME)
+            ->withCashpressoShippingMethod(CashpressoShippingMethod::DELIVERY)
+            ->withShippingDate(date('Y-m-d', strtotime('+30 days')))
+            ->withProductData($this->createCashpressoItems());
+
+        $request = (new GpApiAuthorizationRequestBuilder())->buildRequest($builder, $config);
+
+        $this->assertSame('DE', strtoupper((string) ($request->requestBody['country'] ?? '')));
+    }
+
+    public function testCashpressoRequestNormalizesNumericAddressCountryCodesToAlpha2(): void
+    {
+        $config = $this->configureCashpressoService('US');
+        $paymentMethod = $this->createCashpressoPaymentMethod(CashpressoPaymentPlan::PAY_30_DAYS, '276');
+        $customer = $this->createCashpressoCustomer();
+        $billingAddress = $this->createCashpressoBillingAddress('276');
+
+        $builder = $paymentMethod->charge(100.00)
+            ->withCurrency('EUR')
+            ->withDescription('Cashpresso numeric country normalization test')
+            ->withAddress($billingAddress, AddressType::BILLING)
+            ->withAddress($billingAddress, AddressType::SHIPPING)
+            ->withCustomerData($customer)
+            ->withPhoneNumber('+49', '1511234567', PhoneNumberType::HOME)
+            ->withCashpressoShippingMethod(CashpressoShippingMethod::DELIVERY)
+            ->withShippingDate(date('Y-m-d', strtotime('+30 days')))
+            ->withProductData($this->createCashpressoItems());
+
+        $request = (new GpApiAuthorizationRequestBuilder())->buildRequest($builder, $config);
+
+        $this->assertSame('DE', strtoupper((string) ($request->requestBody['country'] ?? '')));
+    }
+
     /**
      * @group integration
      * @group apm

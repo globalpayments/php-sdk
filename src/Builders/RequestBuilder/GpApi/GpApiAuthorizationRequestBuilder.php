@@ -22,6 +22,7 @@ use GlobalPayments\Api\Entities\Enums\{
     CaptureMode,
     CardType,
     Channel,
+    DccRateType,
     DigitalWalletTokenFormat,
     EncyptedMobileType,
     EntryMethod,
@@ -53,7 +54,7 @@ use GlobalPayments\Api\PaymentMethods\{
 };
 use GlobalPayments\Api\PaymentMethods\Interfaces\{ICardData, IEncryptable, ITokenizable, ITrackData};
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
-use GlobalPayments\Api\Utils\{CardUtils, EmvUtils, GenerationUtils, StringUtils};
+use GlobalPayments\Api\Utils\{CardUtils, CountryUtils, EmvUtils, GenerationUtils, StringUtils};
 use GlobalPayments\Api\Utils\Logging\ProtectSensitiveData;
 
 class GpApiAuthorizationRequestBuilder implements IRequestBuilder
@@ -118,11 +119,13 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             case TransactionType::DCC_RATE_LOOKUP:
                 $endpoint = GpApiRequest::DCC_ENDPOINT;
                 $verb = 'POST';
+                $requestData = [];
                 $this->setTransactionProcessingAccount($requestData, $config);
+                $requestData['transaction_type'] = $this->getDccLookupTransactionType($builder);
                 $requestData['channel'] = $config->channel;
                 $requestData['amount'] = StringUtils::toNumeric($builder->amount, $builder->currency);
                 $requestData['currency'] = $builder->currency;
-                $requestData['country'] = $config->country;
+                $requestData['country'] = $this->resolveRequestCountry($builder, $config);
                 $requestData['reference'] = !empty($builder->clientTransactionId) ?
                     $builder->clientTransactionId : GenerationUtils::getGuid();
                 $requestData['payment_method'] = $this->createPaymentMethodParam($builder, $config);
@@ -565,7 +568,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $requestBody['reference'] = !empty($builder->clientTransactionId) ?
             $builder->clientTransactionId : GenerationUtils::getGuid();
         $requestBody['currency'] = $builder->currency;
-        $requestBody['country'] = $config->country;
+        $requestBody['country'] = $this->resolveRequestCountry($builder, $config);
         $requestBody['payment_method'] = $this->createPaymentMethodParam($builder, $config);
         if (!empty($builder->storedCredential)) {
             $this->setRequestStoredCredentials($builder->storedCredential, $requestBody, $builder);
@@ -643,7 +646,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             'account_name' => $config->accessTokenInfo->transactionProcessingAccountName,
             'type' => 'DECRYPT',
             'channel' => $config->channel,
-            'country' => $config->country,
+            'country' => $this->resolveRequestCountry($builder, $config),
             'currency' => $builder->currency,
             'payment_method' => [
                 'name' => $paymentMethod->cardHolderName ?? null,
@@ -676,7 +679,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         $requestBody = [];
         $this->setTransactionProcessingAccount($requestBody, $config);
         $requestBody['channel'] = $config->channel;
-        $requestBody['country'] = $config->country;
+        $requestBody['country'] = $this->resolveRequestCountry($builder, $config);
         $requestBody['type'] = ($builder->transactionType == TransactionType::REFUND ?
             PaymentType::REFUND : PaymentType::SALE);
         $requestBody['capture_mode'] = !empty($captureMode) ? $captureMode : CaptureMode::AUTO;
@@ -804,6 +807,45 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
         return $requestBody;
     }
 
+    private function resolveRequestCountry(AuthorizationBuilder $builder, GpApiConfig $config): ?string
+    {
+        foreach ([
+            $this->readCountryValue($builder->paymentMethod, 'country'),
+            $this->readCountryValue($builder->billingAddress, 'countryCode'),
+            $this->readCountryValue($builder->shippingAddress, 'countryCode'),
+            $config->country ?? null,
+        ] as $country) {
+            $normalizedCountry = $this->normalizeCountryCode($country);
+            if ($normalizedCountry !== null) {
+                return $normalizedCountry;
+            }
+        }
+
+        return null;
+    }
+
+    private function readCountryValue(?object $source, string $propertyName): ?string
+    {
+        if ($source === null || !property_exists($source, $propertyName)) {
+            return null;
+        }
+
+        $value = $source->{$propertyName};
+        return $value === null || $value === '' ? null : (string) $value;
+    }
+
+    private function normalizeCountryCode(?string $country): ?string
+    {
+        if ($country === null || trim((string) $country) === '') {
+            return null;
+        }
+
+        $normalizedCountry = strtoupper(trim((string) $country));
+        $resolvedCountry = CountryUtils::getCountryCodeByCountry($normalizedCountry);
+
+        return $resolvedCountry !== null ? strtoupper($resolvedCountry) : $normalizedCountry;
+    }
+
     private function setTransactionProcessingAccount(array &$requestData, GpApiConfig $config): void
     {
         $accountName = $config->accessTokenInfo?->transactionProcessingAccountName;
@@ -813,6 +855,13 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
 
         $requestData['account_name'] = $accountName;
         $requestData['account_id'] = $config->accessTokenInfo?->transactionProcessingAccountID;
+    }
+
+    private function getDccLookupTransactionType(AuthorizationBuilder $builder): string
+    {
+        $dccRateType = $builder->dccRateData->dccRateType ?? null;
+
+        return $dccRateType === DccRateType::REFUND ? PaymentType::REFUND : PaymentType::SALE;
     }
 
     private function setRequestStoredCredentials(StoredCredential $storedCredential, &$request, $builder = null, $config = null)
@@ -1628,13 +1677,7 @@ class GpApiAuthorizationRequestBuilder implements IRequestBuilder
             throw new ArgumentException('payment_method.apm.payment_plan is required for CASHPRESSO.');
         }
 
-        $country = strtoupper((string) (
-            $config?->country
-            ?? $paymentMethod->country
-            ?? $builder->billingAddress?->countryCode
-            ?? $builder->shippingAddress?->countryCode
-            ?? ''
-        ));
+        $country = $this->resolveRequestCountry($builder, $config) ?? '';
         if (!in_array($country, ['DE', 'AT'], true)) {
             throw new ArgumentException('country must be DE or AT for CASHPRESSO.');
         }

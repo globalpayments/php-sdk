@@ -313,6 +313,21 @@ class Transaction
      */
     public $payFacData;
 
+    /** @var string|null */
+    public ?string $merchantId = null;
+
+    /** @var string|null */
+    public ?string $merchantName = null;
+
+    /** @var string|null */
+    public ?string $accountId = null;
+
+    /** @var Action|null */
+    public ?Action $action = null;
+
+    /** @var array<string,string>|null */
+    public ?array $responseHeaders = null;
+
     /**
      * @deprecated  Will soon be replaced with $cardDetails->cardholderName
      */

@@ -2,12 +2,23 @@
 
 namespace Gateways\GpApiConnector;
 
+use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiAuthorizationRequestBuilder;
+use GlobalPayments\Api\Entities\Enums\Channel;
+use GlobalPayments\Api\Entities\Enums\DccRateType;
+use GlobalPayments\Api\Entities\Enums\Environment;
+use GlobalPayments\Api\Entities\Exceptions\GatewayException;
 use PHPUnit\Framework\TestCase;
 use GlobalPayments\Api\Builders\RequestBuilder\GpApi\GpApiReportRequestBuilder;
 use GlobalPayments\Api\Builders\TransactionReportBuilder;
 use GlobalPayments\Api\Entities\Enums\ReportType;
+use GlobalPayments\Api\Entities\GpApi\AccessTokenInfo;
+use GlobalPayments\Api\Entities\GpApi\GpApiRequest;
+use GlobalPayments\Api\Gateways\GatewayResponse;
+use GlobalPayments\Api\Gateways\GpApiConnector;
 use GlobalPayments\Api\Entities\Reporting\SearchCriteria;
 use GlobalPayments\Api\Mapping\GpApiMapping;
+use GlobalPayments\Api\PaymentMethods\CreditCardData;
+use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use \GlobalPayments\Api\Utils\StringUtils;
 use stdClass;
 
@@ -459,6 +470,183 @@ class MappingTest extends TestCase
             "https://example.com:bad-port//redirect?token=abc#step",
             $transaction->alternativePaymentResponse->redirectUrl
         );
+    }
+
+    public function testDccLookupRequestIncludesTransactionTypeAndFullPaymentMethod()
+    {
+        $card = new CreditCardData();
+        $card->number = '4006097467207025';
+        $card->expMonth = '05';
+        $card->expYear = '2025';
+        $card->cardHolderName = 'James Mason';
+
+        $config = new GpApiConfig();
+        $config->channel = Channel::CardNotPresent;
+        $config->country = 'US';
+        $config->accessTokenInfo = new AccessTokenInfo();
+        $config->accessTokenInfo->transactionProcessingAccountName = 'dcc';
+
+        $builder = $card->getDccRate(DccRateType::REFUND)
+            ->withAmount(100)
+            ->withCurrency('USD')
+            ->withClientTransactionId('becf9f3e-4d33-459c-8ed2-0c4affc9555e');
+
+        $request = (new GpApiAuthorizationRequestBuilder())->buildRequest($builder, $config);
+
+        $this->assertSame('/currency-conversions', $request->endpoint);
+        $this->assertSame('POST', $request->httpVerb);
+        $this->assertSame('dcc', $request->requestBody['account_name']);
+        $this->assertSame('REFUND', $request->requestBody['transaction_type']);
+        $this->assertSame('CNP', $request->requestBody['channel']);
+        $this->assertSame('10000', $request->requestBody['amount']);
+        $this->assertSame('USD', $request->requestBody['currency']);
+        $this->assertSame('US', $request->requestBody['country']);
+        $this->assertSame('becf9f3e-4d33-459c-8ed2-0c4affc9555e', $request->requestBody['reference']);
+        $this->assertSame('James Mason', $request->requestBody['payment_method']->name);
+        $this->assertSame('ECOM', $request->requestBody['payment_method']->entry_mode);
+        $this->assertSame('4006097467207025', $request->requestBody['payment_method']->card->number);
+        $this->assertSame('05', $request->requestBody['payment_method']->card->expiry_month);
+        $this->assertSame('25', $request->requestBody['payment_method']->card->expiry_year);
+    }
+
+    public function testMapDccLookupResponseIncludesExpandedFields()
+    {
+        $rawJson = '{"id":"TRN_uzFr7t4VOqxdLDI44hHmXIjHtOOE8d","time_created":"2021-05-03T21:23:39.718Z","model":"FROM_TRANSACTION_CURRENCY","status":"AVAILABLE","country":"US","transaction_type":"SALE","channel":"CNP","amount":"11099","currency":"USD","minor_units":"2","formatted_amount":"105.55","exchange_rate":"1.8117","payer_amount":"223665","payer_currency":"AUD","margin_rate_percentage":"03.7500","exchange_rate_source":"REUTERS WHOLESALE INTERBANK","exchange_rate_time_created":"2018-08-20T11:18","commission_percentage":"00.0000","merchant_id":"MER_c4c0df11039c48a9b63701adeaa296c3","merchant_name":"Sandbox_merchant_2","account_id":"TRA_86920f927028745yt34d077d88beb29b","account_name":"transaction_processing","reference":"becf9f3e-4d33-459c-8ed2-0c4affc9555e","payment_method":{"name":"James Mason","result":"00","message":"Successful","entry_mode":"ECOM","card":{"masked_number_last4":"XXXXXXXXXXXX7025","brand":"VISA"}},"action":{"id":"ACT_uzFr7t4VOqxdLDI44hHmXIjHtOOE8d","type":"RATE_LOOKUP","time_created":"2021-05-03T21:23:39.718Z","result_code":"SUCCESS","app_id":"4gPqnGBkppGYvoE5UX9EWQlotTxGUDbs","app_name":"sample_app"}}';
+        $transaction = GpApiMapping::mapResponse(json_decode($rawJson));
+
+        $this->assertSame('SALE', $transaction->originalTransactionType);
+        $this->assertSame('US', $transaction->country);
+        $this->assertSame('CNP', $transaction->channel);
+        $this->assertSame('MER_c4c0df11039c48a9b63701adeaa296c3', $transaction->merchantId);
+        $this->assertSame('Sandbox_merchant_2', $transaction->merchantName);
+        $this->assertSame('TRA_86920f927028745yt34d077d88beb29b', $transaction->accountId);
+        $this->assertSame('transaction_processing', $transaction->accountName);
+        $this->assertNotNull($transaction->action);
+        $this->assertSame('RATE_LOOKUP', $transaction->action->type);
+        $this->assertNotNull($transaction->dccRateData);
+        $this->assertSame('FROM_TRANSACTION_CURRENCY', $transaction->dccRateData->model);
+        $this->assertSame('AVAILABLE', $transaction->dccRateData->status);
+        $this->assertSame('SALE', $transaction->dccRateData->transactionType);
+        $this->assertSame('US', $transaction->dccRateData->country);
+        $this->assertSame('CNP', $transaction->dccRateData->channel);
+        $this->assertSame('2', $transaction->dccRateData->minorUnits);
+        $this->assertSame('105.55', $transaction->dccRateData->formattedAmount);
+        $this->assertSame('00', $transaction->dccRateData->paymentMethodResult);
+        $this->assertSame('Successful', $transaction->dccRateData->paymentMethodMessage);
+        $this->assertSame('ECOM', $transaction->dccRateData->paymentMethodEntryMode);
+        $this->assertSame('James Mason', $transaction->dccRateData->paymentMethodName);
+        $this->assertSame('VISA', $transaction->dccRateData->cardDetails->brand);
+        $this->assertSame('XXXXXXXXXXXX7025', $transaction->dccRateData->cardDetails->maskedNumberLast4);
+        $this->assertSame('transaction_processing', $transaction->dccRateData->accountName);
+        $this->assertSame('becf9f3e-4d33-459c-8ed2-0c4affc9555e', $transaction->dccRateData->reference);
+        $this->assertSame('RATE_LOOKUP', $transaction->dccRateData->action->type);
+    }
+
+    public function testDccBinRangesRequestIncludesSupportedQueryFields()
+    {
+        $builder = new TransactionReportBuilder(ReportType::FIND_DCC_BIN_RANGES);
+        $builder->where(SearchCriteria::ACCOUNT_NAME, 'GPECOM_DCC_BIN_Download')
+            ->andWith(SearchCriteria::COUNTRY, 'US')
+            ->andWith(SearchCriteria::MERCHANT_CURRENCY, 'USD')
+            ->andWith(SearchCriteria::PAYER_CURRENCY, ['EUR', 'GBP'])
+            ->andWith(SearchCriteria::TIME_LAST_RECEIVED, '2022-04-11')
+            ->andWith(SearchCriteria::LAST_INDEX, 40);
+
+        $request = (new GpApiReportRequestBuilder())->buildRequest($builder, new stdClass());
+
+        $this->assertSame('/currency-conversions/dcc-bin-ranges', $request->endpoint);
+        $this->assertSame('GET', $request->httpVerb);
+        $this->assertSame('GPECOM_DCC_BIN_Download', $request->queryParams['account_name']);
+        $this->assertSame('US', $request->queryParams['country']);
+        $this->assertSame('USD', $request->queryParams['merchant_currency']);
+        $this->assertSame(['EUR', 'GBP'], $request->queryParams['payer_currency']);
+        $this->assertSame('2022-04-11', $request->queryParams['time_last_received']);
+        $this->assertSame(40, $request->queryParams['last_index']);
+    }
+
+    public function testMapDccBinRangesResponseIncludesFilterRangesAndAction()
+    {
+        $rawJson = '{"time_created":"2022-04-11T13:29:10.596Z","is_last_page":"NO","time_retrieved":"2022-04-11","current_index":40,"current_page_size":20,"merchant_id":"MER_c4c0df11039c48a9b63701adeaa296c3","merchant_name":"Sandbox_merchant_2","account_id":"TRA_d9eea42b1f30482cae161c732d837ed6","account_name":"Transaction_Processing","filter":{"country":"US","merchant_currency":"USD","payer_currency":["EUR","GBP"]},"paging":{},"dcc_bin_ranges":[{"low_prefix_number":"2222420010","high_prefix_number":"2222420269","status":"ACTIVE"}],"action":{"id":"ACT_Kq7jZogQ5mRsY4yvwXguw3iizKGUdI","type":"DCC_BIN_RANGE_LIST","time_created":"2022-04-11T17:48:14.215Z","result_code":"SUCCESS","app_id":"","app_name":"DCCPP"}}';
+        $summary = GpApiMapping::mapReportResponse(json_decode($rawJson), ReportType::FIND_DCC_BIN_RANGES);
+
+        $this->assertSame('2022-04-11T13:29:10.596Z', $summary->timeCreated);
+        $this->assertSame('NO', $summary->isLastPage);
+        $this->assertSame('2022-04-11', $summary->timeRetrieved);
+        $this->assertSame(40, $summary->currentIndex);
+        $this->assertSame(20, $summary->currentPageSize);
+        $this->assertSame('MER_c4c0df11039c48a9b63701adeaa296c3', $summary->merchantId);
+        $this->assertSame('Sandbox_merchant_2', $summary->merchantName);
+        $this->assertSame('TRA_d9eea42b1f30482cae161c732d837ed6', $summary->accountId);
+        $this->assertSame('Transaction_Processing', $summary->accountName);
+        $this->assertSame('US', $summary->filter->country);
+        $this->assertSame('USD', $summary->filter->merchantCurrency);
+        $this->assertSame(['EUR', 'GBP'], $summary->filter->payerCurrency);
+        $this->assertCount(1, $summary->result);
+        $this->assertSame('2222420010', $summary->result[0]->lowPrefixNumber);
+        $this->assertSame('2222420269', $summary->result[0]->highPrefixNumber);
+        $this->assertSame('ACTIVE', $summary->result[0]->status);
+        $this->assertNotNull($summary->action);
+        $this->assertSame('DCC_BIN_RANGE_LIST', $summary->action->type);
+    }
+
+    public function testGpApiGatewayExceptionIncludesStructuredErrorFieldsAndHeaders()
+    {
+        $config = new GpApiConfig();
+        $config->environment = Environment::TEST;
+        $config->accessTokenInfo = new AccessTokenInfo();
+        $config->accessTokenInfo->accessToken = 'token';
+
+        $connector = new class($config) extends GpApiConnector {
+            protected function sendRequest($verb, $endpoint, $data = null, ?array $queryStringParams = null)
+            {
+                $response = new GatewayResponse();
+                $response->statusCode = 400;
+                $response->header = "HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nX-GP-Version: 2021-03-22\r\n\r\n";
+                $response->rawResponse = '{"error_code":"MANDATORY_DATA_MISSING","detailed_error_code":"40005","detailed_error_description":"Request expects the following fields : amount"}';
+
+                return $response;
+            }
+        };
+        $connector->serviceUrl = 'https://apis.sandbox.globalpay.com/ucp';
+
+        $exceptionCaught = false;
+
+        try {
+            $connector->doTransaction('POST', GpApiRequest::DCC_ENDPOINT, ['currency' => 'USD']);
+        } catch (GatewayException $e) {
+            $exceptionCaught = true;
+            $this->assertSame('MANDATORY_DATA_MISSING', $e->errorCode);
+            $this->assertSame('40005', $e->detailedErrorCode);
+            $this->assertSame('Request expects the following fields : amount', $e->detailedErrorDescription);
+            $this->assertSame(400, $e->httpStatusCode);
+            $this->assertSame('2021-03-22', $e->responseHeaders['x-gp-version']);
+            $this->assertSame('application/json', $e->responseHeaders['content-type']);
+        } finally {
+            $this->assertTrue($exceptionCaught);
+        }
+    }
+
+    public function testBuildQueryStringUsesRepeatedKeysForArrayValues(): void
+    {
+        $gateway = new class extends \GlobalPayments\Api\Gateways\Gateway {
+            public function __construct()
+            {
+                parent::__construct('application/json');
+            }
+
+            public function buildQueryStringForTest(array $query): string
+            {
+                return $this->buildQueryString($query);
+            }
+        };
+
+        $this->assertSame('?payer_currency=EUR&payer_currency=GBP', $gateway->buildQueryStringForTest([
+            'payer_currency' => ['EUR', 'GBP'],
+        ]));
+        $this->assertSame('?include_inactive=0&flag=1', $gateway->buildQueryStringForTest([
+            'include_inactive' => false,
+            'flag' => true,
+        ]));
     }
 
     /**

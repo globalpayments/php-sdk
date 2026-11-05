@@ -124,6 +124,11 @@ class ReportingService
             ->withPaging($page, $pageSize);
     }
 
+    public static function findDccBinRanges(): TransactionReportBuilder
+    {
+        return new TransactionReportBuilder(ReportType::FIND_DCC_BIN_RANGES);
+    }
+
     public static function actionDetail($actionId)
     {
         return (new TransactionReportBuilder(ReportType::ACTION_DETAIL))

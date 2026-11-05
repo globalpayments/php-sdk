@@ -8,6 +8,8 @@ use GlobalPayments\Api\Utils\ArrayUtils;
 
 abstract class RestGateway extends Gateway
 {
+    protected ?GatewayResponse $lastGatewayResponse = null;
+
     public function __construct()
     {
         parent::__construct('application/json');
@@ -40,7 +42,7 @@ abstract class RestGateway extends Gateway
             }
         }
 
-        $response = $this->sendRequest(
+        $this->lastGatewayResponse = $response = $this->sendRequest(
             $verb,
             $endpoint,
             $data,
@@ -76,6 +78,11 @@ abstract class RestGateway extends Gateway
                     ),
                     (!empty($error->detailed_error_code) ? $error->detailed_error_code : null)
                 );
+                $gatewayException->errorCode = $error->error_code ?? null;
+                $gatewayException->detailedErrorCode = $error->detailed_error_code ?? null;
+                $gatewayException->detailedErrorDescription = $error->detailed_error_description ?? null;
+                $gatewayException->httpStatusCode = $response->statusCode ?? null;
+                $gatewayException->responseHeaders = $this->parseHeaders($response->header ?? null);
                 if ($this->requestLogger) {
                     $this->requestLogger->responseError($gatewayException, $response->header);
                 }
@@ -117,6 +124,28 @@ abstract class RestGateway extends Gateway
         }
 
         return $response->rawResponse;
+    }
+
+    protected function parseHeaders(?string $rawHeaders): array
+    {
+        if ($rawHeaders === null || trim($rawHeaders) === '') {
+            return [];
+        }
+
+        $normalizedHeaders = [];
+        $headerBlocks = preg_split("/\r\n\r\n|\n\n|\r\r/", trim($rawHeaders)) ?: [];
+        $headerLines = preg_split("/\r\n|\n|\r/", (string) end($headerBlocks)) ?: [];
+
+        foreach ($headerLines as $headerLine) {
+            if (!str_contains($headerLine, ':')) {
+                continue;
+            }
+
+            [$name, $value] = explode(':', $headerLine, 2);
+            $normalizedHeaders[strtolower(trim($name))] = trim($value);
+        }
+
+        return $normalizedHeaders;
     }
 
     private function isGpApi()

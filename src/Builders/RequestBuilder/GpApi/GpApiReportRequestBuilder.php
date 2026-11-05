@@ -188,6 +188,19 @@ class GpApiReportRequestBuilder implements IRequestBuilder
                 $endpoint = GpApiRequest::PAYMENT_METHODS_ENDPOINT . '/' . $builder->searchBuilder->storedPaymentMethodId;
                 $verb = 'GET';
                 break;
+            case ReportType::FIND_DCC_BIN_RANGES:
+                $endpoint = GpApiRequest::DCC_BIN_RANGES_ENDPOINT;
+                $verb = 'GET';
+                $queryParams = [
+                    'account_name' => $builder->searchBuilder->accountName,
+                    'account_id' => $builder->searchBuilder->accountId,
+                    'country' => $builder->searchBuilder->country,
+                    'merchant_currency' => $builder->searchBuilder->merchantCurrency,
+                    'payer_currency' => $this->normalizePayerCurrency($builder->searchBuilder->payerCurrency),
+                    'time_last_received' => $this->formatDateQuery($builder->searchBuilder->timeLastReceived),
+                    'last_index' => $builder->searchBuilder->lastIndex,
+                ];
+                break;
             case ReportType::INSTALLMENT_DETAIL:
                 $endpoint = GpApiRequest::INSTALLMENT_ENDPOINT . '/' . $builder->searchBuilder->installmentId;
                 $verb = 'GET';
@@ -366,6 +379,34 @@ class GpApiReportRequestBuilder implements IRequestBuilder
             $builder->searchBuilder->endDate->format('Y-m-d') : null;
 
         return $queryParams;
+    }
+
+    private function normalizePayerCurrency(mixed $payerCurrency): mixed
+    {
+        if (is_array($payerCurrency)) {
+            return empty($payerCurrency) ? null : $payerCurrency;
+        }
+
+        if (is_string($payerCurrency)) {
+            $trimmed = trim($payerCurrency);
+            return $trimmed === '' ? null : [$trimmed];
+        }
+
+        return null;
+    }
+
+    private function formatDateQuery(mixed $value): ?string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+
+        if (is_string($value)) {
+            $trimmed = trim($value);
+            return $trimmed === '' ? null : $trimmed;
+        }
+
+        return null;
     }
 
     public function buildRequestFromJson(mixed $jsonRequest, mixed $config): mixed

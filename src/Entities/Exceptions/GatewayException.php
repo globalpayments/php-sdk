@@ -18,6 +18,21 @@ class GatewayException extends ApiException
      */
     public $responseMessage;
 
+    /** @var string|null */
+    public ?string $errorCode = null;
+
+    /** @var string|null */
+    public ?string $detailedErrorCode = null;
+
+    /** @var string|null */
+    public ?string $detailedErrorDescription = null;
+
+    /** @var int|null */
+    public ?int $httpStatusCode = null;
+
+    /** @var array<string,string>|null */
+    public ?array $responseHeaders = null;
+
     /**
      * Instantiates a new object
      *

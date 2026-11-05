@@ -161,6 +161,7 @@ class GpApiMapping
         if (self::isDecryptActionResponse($response)) {
             $transaction->decryptId = $response->id;
         }
+        $transaction->action = self::mapActionMetadata($response->action ?? null);
         $transaction->transactionType = $response->type ?? null;
         $transaction->type = $response->type ?? null;
         $transaction->channel = $response->channel ?? null;
@@ -172,7 +173,13 @@ class GpApiMapping
         $transaction->clientTransactionId = !empty($response->reference) ? $response->reference : null;
         $transaction->timestamp = !empty($response->time_created) ? $response->time_created : '';
         $transaction->referenceNumber = !empty($response->reference) ? $response->reference : null;
-        $transaction->originalTransactionType = $response->type ?? null;
+        $transaction->originalTransactionType = $response->type ?? $response->transaction_type ?? null;
+        $transaction->merchantId = $response->merchant_id ?? null;
+        $transaction->merchantName = $response->merchant_name ?? null;
+        $transaction->accountId = $response->account_id ?? null;
+        $transaction->accountName = $response->account_name ?? null;
+        $transaction->country = $response->country ?? null;
+        $transaction->channel = $response->channel ?? null;
         $batchSummary = new BatchSummary();
         $batchSummary->batchReference = !empty($response->batch_id) ? $response->batch_id : null;
         $batchSummary->transactionCount = !empty($response->transaction_count) ? $response->transaction_count : null;
@@ -636,22 +643,43 @@ class GpApiMapping
     private static function mapDccInfo($response): DccRateData
     {
         $dccRateData = new DccRateData();
-        $dccRateData->cardHolderCurrency = !empty($response->payer_currency) ? $response->payer_currency : null;
-        $dccRateData->cardHolderAmount = !empty($response->payer_amount) ?
+        $dccRateData->dccId = $response->id ?? null;
+        $dccRateData->model = $response->model ?? null;
+        $dccRateData->status = $response->status ?? null;
+        $dccRateData->country = $response->country ?? null;
+        $dccRateData->channel = $response->channel ?? null;
+        $dccRateData->transactionType = $response->transaction_type ?? null;
+        $dccRateData->cardHolderCurrency = $response->payer_currency ?? null;
+        $dccRateData->cardHolderAmount = isset($response->payer_amount) && $response->payer_amount !== '' ?
             StringUtils::toAmount($response->payer_amount, $response->payer_currency ?? null) : null;
-        $dccRateData->cardHolderRate = !empty($response->exchange_rate) ? $response->exchange_rate : null;
-        $dccRateData->merchantCurrency = !empty($response->currency) ? $response->currency : null;
-        $dccRateData->merchantAmount = !empty($response->amount) ?
+        $dccRateData->minorUnits = $response->minor_units ?? null;
+        $dccRateData->formattedAmount = $response->formatted_amount ?? null;
+        $dccRateData->cardHolderRate = $response->exchange_rate ?? null;
+        $dccRateData->merchantCurrency = $response->currency ?? null;
+        $dccRateData->merchantAmount = isset($response->amount) && $response->amount !== '' ?
             StringUtils::toAmount($response->amount, $response->currency ?? null) : null;
-        $dccRateData->marginRatePercentage = !empty($response->margin_rate_percentage) ?
-            $response->margin_rate_percentage : null;
-        $dccRateData->exchangeRateSourceName = !empty($response->exchange_rate_source) ?
-            $response->exchange_rate_source : null;
-        $dccRateData->commissionPercentage = !empty($response->commission_percentage) ?
-            $response->commission_percentage : null;
-        $dccRateData->exchangeRateSourceTimestamp = !empty($response->exchange_rate_time_created) ?
-            $response->exchange_rate_time_created : null;
-        $dccRateData->dccId = !empty($response->id) ? $response->id : null;
+        $dccRateData->marginRatePercentage = $response->margin_rate_percentage ?? null;
+        $dccRateData->exchangeRateSourceName = $response->exchange_rate_source ?? null;
+        $dccRateData->commissionPercentage = $response->commission_percentage ?? null;
+        $dccRateData->exchangeRateSourceTimestamp = $response->exchange_rate_time_created ?? null;
+        $dccRateData->merchantId = $response->merchant_id ?? null;
+        $dccRateData->merchantName = $response->merchant_name ?? null;
+        $dccRateData->accountId = $response->account_id ?? null;
+        $dccRateData->accountName = $response->account_name ?? null;
+        $dccRateData->reference = $response->reference ?? null;
+        $dccRateData->action = self::mapActionMetadata($response->action ?? null);
+
+        if (!empty($response->payment_method)) {
+            $paymentMethod = self::normalizeToObject($response->payment_method);
+            $dccRateData->paymentMethodResult = $paymentMethod->result ?? null;
+            $dccRateData->paymentMethodMessage = $paymentMethod->message ?? null;
+            $dccRateData->paymentMethodEntryMode = $paymentMethod->entry_mode ?? null;
+            $dccRateData->paymentMethodName = $paymentMethod->name ?? null;
+
+            if (!empty($paymentMethod->card)) {
+                $dccRateData->cardDetails = self::mapCardDetails(self::normalizeToObject($paymentMethod->card));
+            }
+        }
 
         return $dccRateData;
     }
@@ -710,6 +738,9 @@ class GpApiMapping
             case ReportType::STORED_PAYMENT_METHOD_DETAIL:
                 $report = self::mapStoredPaymentMethodSummary($response);
                 break;
+            case ReportType::FIND_DCC_BIN_RANGES:
+                $report = self::mapDccBinRangeSummary($response);
+                break;
             case ReportType::ACTION_DETAIL:
                 $report = self::mapActionsSummary($response);
                 break;
@@ -747,6 +778,42 @@ class GpApiMapping
         }
 
         return $report;
+    }
+
+    private static function mapDccBinRangeSummary(object $response): PagedResult
+    {
+        $summary = new PagedResult();
+        $summary->timeCreated = $response->time_created ?? null;
+        $summary->isLastPage = $response->is_last_page ?? null;
+        $summary->timeRetrieved = $response->time_retrieved ?? null;
+        $summary->currentIndex = isset($response->current_index) ? (int) $response->current_index : null;
+        $summary->currentPageSize = isset($response->current_page_size) ? (int) $response->current_page_size : null;
+        $summary->merchantId = $response->merchant_id ?? null;
+        $summary->merchantName = $response->merchant_name ?? null;
+        $summary->accountId = $response->account_id ?? null;
+        $summary->accountName = $response->account_name ?? null;
+        $summary->paging = isset($response->paging) ? self::normalizeToObject($response->paging) : null;
+        $summary->action = self::mapActionMetadata($response->action ?? null);
+
+        if (!empty($response->filter)) {
+            $rawFilter = self::normalizeToObject($response->filter);
+            $filter = new \stdClass();
+            $filter->country = $rawFilter->country ?? null;
+            $filter->merchantCurrency = $rawFilter->merchant_currency ?? null;
+            $filter->payerCurrency = isset($rawFilter->payer_currency) ? array_values((array) $rawFilter->payer_currency) : null;
+            $summary->filter = $filter;
+        }
+
+        foreach (($response->dcc_bin_ranges ?? []) as $rawRange) {
+            $rangeData = self::normalizeToObject($rawRange);
+            $summary->result[] = (object) [
+                'lowPrefixNumber' => $rangeData->low_prefix_number ?? null,
+                'highPrefixNumber' => $rangeData->high_prefix_number ?? null,
+                'status' => $rangeData->status ?? null,
+            ];
+        }
+
+        return $summary;
     }
 
     /**

@@ -36,4 +36,5 @@ class ReportType extends Enum
     const OPEN_AUTH = 1073741824; // 1 << 30
     const FIND_INSTALLMENTS_PAGED = 2147483648; // 1 << 31
     const INSTALLMENT_DETAIL = 4294967296; // 1 << 32
+    const FIND_DCC_BIN_RANGES = 8589934592; // 1 << 33
 }

@@ -311,8 +311,10 @@ class GpApiMerchantAccountsTest extends TestCase
         $creditCardInformation->expYear = '2028';
         $creditCardInformation->cvn = '123';
 
+        $accountId = 'FMA_99d20eb3e84d43cd98afa26467c43f64';
+
         $builder = PayFacService::editAccount()
-            ->withAccountNumber('FMA_123456')
+            ->withAccountNumber($accountId)
             ->withAddress($billingAddress)
             ->withCreditCardData($creditCardInformation)
             ->withStatusChangeReason(StatusChangeReason::REMOVE_PARTNERSHIP)
@@ -324,7 +326,7 @@ class GpApiMerchantAccountsTest extends TestCase
         $request = (new GpApiPayFacRequestBuilder())->buildRequest($builder, new GpApiConfig());
 
         $this->assertSame('PATCH', $request->httpVerb);
-        $this->assertSame('/accounts/FMA_123456', $request->endpoint);
+        $this->assertSame('/accounts/' . $accountId, $request->endpoint);
         $this->assertSame(StatusChangeReason::REMOVE_PARTNERSHIP, $request->requestBody['status_change_reason']);
         $this->assertSame('LOST_CARD', $request->requestBody['card_replacement_reason']);
         $this->assertSame('https://example.com/status', $request->requestBody['notifications']['status_url']);

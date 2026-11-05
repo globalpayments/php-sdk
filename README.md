@@ -4,7 +4,11 @@
 
 # GlobalPayments PHP SDK
 
-This SDK makes it easy to integrate your PHP application with our Card Not Present and Card Present APIs. 
+This SDK makes it easy to integrate your PHP application with our Card Not Present and Card Present APIs.
+
+## GP-API Currency Conversions
+
+GP-API currency conversion support is available through the SDK for dynamic currency conversion (DCC) rate lookup and DCC BIN-range retrieval.
 
 ## Solutions
 

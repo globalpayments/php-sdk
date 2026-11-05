@@ -224,9 +224,15 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         }
         $response = $this->executeProcess($builder);
         if ($builder->paymentMethod instanceof AlternativePaymentMethod) {
-            return GpApiMapping::mapResponseAPM($response);
+            $transaction = GpApiMapping::mapResponseAPM($response);
+            $this->applyResponseHeaders($transaction);
+
+            return $transaction;
         }
-        return GpApiMapping::mapResponse($response);
+        $transaction = GpApiMapping::mapResponse($response);
+        $this->applyResponseHeaders($transaction);
+
+        return $transaction;
     }
 
     public function processSecure3d(Secure3dBuilder $builder)
@@ -236,7 +242,10 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         }
         $response = $this->executeProcess($builder);
 
-        return GpApiMapping::mapResponseSecure3D($response);
+        $transaction = GpApiMapping::mapResponseSecure3D($response);
+        $this->applyResponseHeaders($transaction);
+
+        return $transaction;
     }
 
     /**
@@ -256,9 +265,15 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
             $builder->paymentMethod instanceof TransactionReference &&
             $builder->paymentMethod->paymentMethodType == PaymentMethodType::APM
         ) {
-            return GpApiMapping::mapResponseAPM($response);
+            $transaction = GpApiMapping::mapResponseAPM($response);
+            $this->applyResponseHeaders($transaction);
+
+            return $transaction;
         }
-        return GpApiMapping::mapResponse($response);
+        $transaction = GpApiMapping::mapResponse($response);
+        $this->applyResponseHeaders($transaction);
+
+        return $transaction;
     }
 
     /**
@@ -277,7 +292,10 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         }
         $response = $this->executeProcess($builder);
 
-        return GpApiMapping::mapReportResponse($response, $builder->reportType);
+        $report = GpApiMapping::mapReportResponse($response, $builder->reportType);
+        $this->applyResponseHeaders($report);
+
+        return $report;
     }
 
     /**
@@ -486,6 +504,15 @@ class GpApiConnector extends RestGateway implements IPaymentGateway, ISecure3dPr
         }
 
         return json_decode($response);
+    }
+
+    private function applyResponseHeaders(object $resource): void
+    {
+        if ($this->lastGatewayResponse === null) {
+            return;
+        }
+
+        $resource->responseHeaders = $this->parseHeaders($this->lastGatewayResponse->header ?? null);
     }
 
     public function signIn()

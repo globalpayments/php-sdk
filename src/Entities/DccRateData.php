@@ -74,4 +74,58 @@ class DccRateData
     public $merchantCurrency;
     /** @var string */
     public $marginRatePercentage;
+
+    /** @var string|null */
+    public ?string $model = null;
+
+    /** @var string|null */
+    public ?string $status = null;
+
+    /** @var string|null */
+    public ?string $country = null;
+
+    /** @var string|null */
+    public ?string $channel = null;
+
+    /** @var string|null */
+    public ?string $transactionType = null;
+
+    /** @var string|null */
+    public ?string $minorUnits = null;
+
+    /** @var string|null */
+    public ?string $formattedAmount = null;
+
+    /** @var string|null */
+    public ?string $merchantId = null;
+
+    /** @var string|null */
+    public ?string $merchantName = null;
+
+    /** @var string|null */
+    public ?string $accountId = null;
+
+    /** @var string|null */
+    public ?string $accountName = null;
+
+    /** @var string|null */
+    public ?string $reference = null;
+
+    /** @var string|null */
+    public ?string $paymentMethodResult = null;
+
+    /** @var string|null */
+    public ?string $paymentMethodMessage = null;
+
+    /** @var string|null */
+    public ?string $paymentMethodEntryMode = null;
+
+    /** @var string|null */
+    public ?string $paymentMethodName = null;
+
+    /** @var Card|null */
+    public ?Card $cardDetails = null;
+
+    /** @var Action|null */
+    public ?Action $action = null;
 }

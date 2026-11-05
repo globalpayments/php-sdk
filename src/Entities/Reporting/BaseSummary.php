@@ -22,4 +22,7 @@ abstract class BaseSummary
     public ?string $merchantName;
     public ?string $merchantDbaName;
     public ?string $merchantDeviceIdentifier;
+
+    /** @var array<string,string>|null */
+    public ?array $responseHeaders = null;
 }

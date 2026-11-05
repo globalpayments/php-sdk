@@ -671,8 +671,39 @@ class ReportingTransactionsTest extends TestCase
         }
     }
 
+    public function testReportFindDccBinRanges()
+    {
+        ServicesContainer::configureService($this->setUpDccBinRangesConfig());
+
+        $response = ReportingService::findDccBinRanges()
+            ->where(SearchCriteria::ACCOUNT_NAME, 'GPECOM_DCC_BIN_Download')
+            ->andWith(SearchCriteria::COUNTRY, 'US')
+            ->andWith(SearchCriteria::MERCHANT_CURRENCY, 'USD')
+            ->execute();
+
+        $this->assertNotNull($response);
+        $this->assertSame('US', $response->filter?->country);
+        $this->assertSame('USD', $response->filter?->merchantCurrency);
+        $this->assertNotNull($response->action);
+        $this->assertSame('DCC_BIN_RANGE_LIST', $response->action->type);
+        $this->assertNotEmpty($response->result);
+        $this->assertSame('2021-03-22', $response->responseHeaders['x-gp-version'] ?? null);
+        $this->assertNotEmpty($response->responseHeaders['content-type'] ?? null);
+
+        ServicesContainer::configureService($this->setUpConfig());
+    }
+
     public function setUpConfig(): GpApiConfig
     {
         return BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+    }
+
+    public function setUpDccBinRangesConfig(): GpApiConfig
+    {
+        $config = BaseGpApiTestConfig::gpApiSetupConfig(Channel::CardNotPresent);
+        $config->appId = BaseGpApiTestConfig::VISA_APP_ID;
+        $config->appKey = BaseGpApiTestConfig::VISA_APP_KEY;
+
+        return $config;
     }
 }

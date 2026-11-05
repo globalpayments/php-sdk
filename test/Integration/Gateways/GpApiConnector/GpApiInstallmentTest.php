@@ -171,6 +171,32 @@ class GpApiInstallmentTest extends TestCase
         $this->assertSame('/accounts/MMA_456/merchants/MER_123', $config->getRequestEndpointPrefix(GpApiRequest::TRANSACTION_ENDPOINT));
     }
 
+    public function testRequestEndpointPrefixForAbsoluteAccountPaths(): void
+    {
+        $config = $this->setUpConfig();
+        $config->merchantId = 'MER_123';
+        $config->merchantManagementAccountID = 'MMA_456';
+
+        $this->assertSame('', $config->getRequestEndpointPrefix(GpApiRequest::ACCOUNTS_ENDPOINT));
+        $this->assertSame('', $config->getRequestEndpointPrefix(GpApiRequest::ACCOUNTS_ENDPOINT . '/FMA_789'));
+        $this->assertSame('', $config->getRequestEndpointPrefix(
+            GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/MER_123' .
+            GpApiRequest::ACCOUNTS_ENDPOINT . '/FMA_789'
+        ));
+    }
+
+    public function testRequestEndpointPrefixForMerchantScopedAccountDetail(): void
+    {
+        $config = $this->setUpConfig();
+        $config->merchantId = 'MER_123';
+        $config->merchantManagementAccountID = 'MMA_456';
+
+        $fmaEndpoint = GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT . '/MER_123' .
+            GpApiRequest::ACCOUNTS_ENDPOINT . '/FMA_789';
+
+        $this->assertSame('', $config->getRequestEndpointPrefix($fmaEndpoint));
+    }
+
     public function testConsoleLoggerAttachedForMerchantAndMmaRouting(): void
     {
         $config = $this->setUpConfig();

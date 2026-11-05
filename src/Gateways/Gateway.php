@@ -91,7 +91,7 @@ abstract class Gateway
         ?array $queryStringParams = null
     ) {
         try {
-            $queryString = !empty($queryStringParams) ? "?" . http_build_query($queryStringParams) : '';
+            $queryString = $this->buildQueryString($queryStringParams);
             $request = curl_init($this->serviceUrl . $endpoint . $queryString);
 
             $headers = $this->prepareHeaders($data);
@@ -192,6 +192,36 @@ abstract class Gateway
         $isXML = true;
 
         return $xml;
+    }
+
+    protected function buildQueryString(?array $queryStringParams = null): string
+    {
+        if (empty($queryStringParams)) {
+            return '';
+        }
+
+        $queryPairs = [];
+        foreach ($queryStringParams as $key => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            if (is_array($value)) {
+                foreach ($value as $item) {
+                    if ($item === null || $item === '') {
+                        continue;
+                    }
+                    $encodedValue = is_bool($item) ? (string) (int) $item : (string) $item;
+                    $queryPairs[] = rawurlencode((string) $key) . '=' . rawurlencode($encodedValue);
+                }
+                continue;
+            }
+
+            $encodedValue = is_bool($value) ? (string) (int) $value : (string) $value;
+            $queryPairs[] = rawurlencode((string) $key) . '=' . rawurlencode($encodedValue);
+        }
+
+        return empty($queryPairs) ? '' : '?' . implode('&', $queryPairs);
     }
 
     private function prepareHeaders(?string $data) : array

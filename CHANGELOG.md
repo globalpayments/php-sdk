@@ -2,7 +2,11 @@
     <img src="https://developer.globalpay.com/static/media/logo.db1c4126172e20a5c31cf9d5150cc88a.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-## Latest Version: v14.7.2 (11/03/26)
+## Latest Version: v14.8.0 (11/05/26)
+### Enhancements:
+- [GPAPI] Added DCC BIN ranges report support for GET /currency-conversions/dcc-bin-ranges via ReportingService::findDccBinRanges(), with country, merchant currency, payer currency, time last received and last index search criteria
+
+## v14.7.2 (11/03/26)
 ### Bug Fixes:
 - [GPAPI] Fixed unauthenticated reflected XSS in end-to-end example callback files and hardened GP-ECOM 3DS challenge handling for Base64URL CRes payloads with safe JavaScript serialization
 

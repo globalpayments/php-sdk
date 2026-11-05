@@ -165,15 +165,41 @@ class GpApiConfig extends GatewayConfig
         $prefix = '';
         $accountUrl = $this->getMerchantManagementAccountUrl();
 
-        if ($accountUrl !== '' && !$this->hasPathPrefix($endpoint, $accountUrl)) {
+        if (
+            !$this->isAbsoluteAccountPath($endpoint) &&
+            $accountUrl !== '' &&
+            !$this->hasPathPrefix($endpoint, $accountUrl) &&
+            !$this->isMerchantScopedAccountPath($endpoint)
+        ) {
             $prefix .= $accountUrl;
         }
 
-        if (!$this->containsPathSegment($endpoint, GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT)) {
+        if (
+            !$this->isAbsoluteAccountPath($endpoint) &&
+            !$this->containsPathSegment($endpoint, GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT)
+        ) {
             $prefix .= $this->getMerchantUrl($merchantId);
         }
 
         return $prefix;
+    }
+
+    /** Absolute GP-API account routes already include the target account scope and should not be prefixed again. */
+    private function isAbsoluteAccountPath(string $endpoint): bool
+    {
+        $merchants = preg_quote(trim(GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT, '/'), '~');
+        $accounts = preg_quote(trim(GpApiRequest::ACCOUNTS_ENDPOINT, '/'), '~');
+
+        return preg_match('~^(?:' . $merchants . '/[^/]+)?/' . $accounts . '(?:/|$)~', $endpoint) === 1;
+    }
+
+    /** /merchants/{id}/accounts/{id} is absolute per the GP-API Accounts spec and takes no account prefix. */
+    private function isMerchantScopedAccountPath(string $endpoint): bool
+    {
+        $merchants = preg_quote(trim(GpApiRequest::MERCHANT_MANAGEMENT_ENDPOINT, '/'), '~');
+        $accounts = preg_quote(trim(GpApiRequest::ACCOUNTS_ENDPOINT, '/'), '~');
+
+        return preg_match('~(?:^|/)' . $merchants . '/[^/]+/' . $accounts . '/[^/]+~', $endpoint) === 1;
     }
 
     private function hasPathPrefix(string $endpoint, string $path): bool
